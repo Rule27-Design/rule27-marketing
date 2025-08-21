@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
 import HeroSection from './components/HeroSection';
-import ConsultationForm from './components/ConsultationForm';
+import ConsultationForm from './components/ConsultationForm.jsx';
 import ProcessTimeline from './components/ProcessTimeline';
 import ContactOptions from './components/ContactOptions';
 import TrustIndicators from './components/TrustIndicators';
