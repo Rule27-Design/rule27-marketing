@@ -8,6 +8,7 @@ import CapabilityUniverse from './pages/capability-universe';
 import InnovationLaboratory from './pages/innovation-laboratory';
 import WorkShowcaseTheater from './pages/work-showcase-theater';
 import AboutProcessStudio from './pages/about-process-studio';
+import ContactConsultationPortal from './pages/contact-consultation-portal';
 
 const Routes = () => {
   return (
@@ -16,12 +17,13 @@ const Routes = () => {
       <ScrollToTop />
       <RouterRoutes>
         {/* Define your route here */}
-        <Route path="/" element={<CapabilityUniverse />} />
+        <Route path="/" element={<HomepageExperienceHub />} />
         <Route path="/homepage-experience-hub" element={<HomepageExperienceHub />} />
         <Route path="/capability-universe" element={<CapabilityUniverse />} />
         <Route path="/innovation-laboratory" element={<InnovationLaboratory />} />
         <Route path="/work-showcase-theater" element={<WorkShowcaseTheater />} />
         <Route path="/about-process-studio" element={<AboutProcessStudio />} />
+        <Route path="/contact-consultation-portal" element={<ContactConsultationPortal />} />
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
       </ErrorBoundary>
