@@ -1,0 +1,32 @@
+import React from "react";
+import { BrowserRouter, Routes as RouterRoutes, Route } from "react-router-dom";
+import ScrollToTop from "components/ScrollToTop";
+import ErrorBoundary from "components/ErrorBoundary";
+import NotFound from "pages/NotFound";
+import HomepageExperienceHub from './pages/homepage-experience-hub';
+import CapabilityUniverse from './pages/capability-universe';
+import InnovationLaboratory from './pages/innovation-laboratory';
+import WorkShowcaseTheater from './pages/work-showcase-theater';
+import AboutProcessStudio from './pages/about-process-studio';
+
+const Routes = () => {
+  return (
+    <BrowserRouter>
+      <ErrorBoundary>
+      <ScrollToTop />
+      <RouterRoutes>
+        {/* Define your route here */}
+        <Route path="/" element={<CapabilityUniverse />} />
+        <Route path="/homepage-experience-hub" element={<HomepageExperienceHub />} />
+        <Route path="/capability-universe" element={<CapabilityUniverse />} />
+        <Route path="/innovation-laboratory" element={<InnovationLaboratory />} />
+        <Route path="/work-showcase-theater" element={<WorkShowcaseTheater />} />
+        <Route path="/about-process-studio" element={<AboutProcessStudio />} />
+        <Route path="*" element={<NotFound />} />
+      </RouterRoutes>
+      </ErrorBoundary>
+    </BrowserRouter>
+  );
+};
+
+export default Routes;

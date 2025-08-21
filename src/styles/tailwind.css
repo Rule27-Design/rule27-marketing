@@ -1,0 +1,184 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Core Brand Colors */
+    --color-background: #FFFFFF; /* white */
+    --color-foreground: #000000; /* black */
+    --color-card: #FFFFFF; /* white */
+    --color-card-foreground: #000000; /* black */
+    --color-popover: #FFFFFF; /* white */
+    --color-popover-foreground: #000000; /* black */
+    --color-muted: #F8F9FA; /* gray-50 */
+    --color-muted-foreground: #6B7280; /* gray-500 */
+    --color-border: #E5E7EB; /* gray-200 */
+    --color-input: #FFFFFF; /* white */
+    --color-ring: #E53E3E; /* red-600 */
+
+    /* Brand Primary Colors */
+    --color-primary: #000000; /* black */
+    --color-primary-foreground: #FFFFFF; /* white */
+    --color-secondary: #1A1A1A; /* gray-900 */
+    --color-secondary-foreground: #FFFFFF; /* white */
+
+    /* Action & Status Colors */
+    --color-accent: #E53E3E; /* red-600 */
+    --color-accent-foreground: #FFFFFF; /* white */
+    --color-destructive: #EF4444; /* red-500 */
+    --color-destructive-foreground: #FFFFFF; /* white */
+    --color-success: #10B981; /* emerald-500 */
+    --color-success-foreground: #FFFFFF; /* white */
+    --color-warning: #F59E0B; /* amber-500 */
+    --color-warning-foreground: #000000; /* black */
+    --color-error: #EF4444; /* red-500 */
+    --color-error-foreground: #FFFFFF; /* white */
+
+    /* Text Hierarchy */
+    --color-text-primary: #000000; /* black */
+    --color-text-secondary: #6B7280; /* gray-500 */
+    --color-surface: #F8F9FA; /* gray-50 */
+    --color-conversion-accent: #FF6B6B; /* red-400 */
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-inter;
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer components {
+  /* Kinetic Typography Animation */
+  .kinetic-text {
+    @apply inline-block;
+    animation: kinetic-reveal 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    transform: translateY(30px);
+    opacity: 0;
+  }
+
+  .kinetic-text:nth-child(1) { animation-delay: 0s; }
+  .kinetic-text:nth-child(2) { animation-delay: 0.05s; }
+  .kinetic-text:nth-child(3) { animation-delay: 0.1s; }
+  .kinetic-text:nth-child(4) { animation-delay: 0.15s; }
+  .kinetic-text:nth-child(5) { animation-delay: 0.2s; }
+
+  @keyframes kinetic-reveal {
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* Brand Elevation Shadows */
+  .brand-shadow {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .brand-shadow-lg {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Micro-interaction Hover States */
+  .brand-hover {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .brand-hover:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Asymmetrical Grid System */
+  .asymmetric-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1.5fr;
+    grid-gap: 4rem 2rem;
+  }
+
+  @media (max-width: 768px) {
+    .asymmetric-grid {
+      grid-template-columns: 1fr;
+      grid-gap: 2rem;
+    }
+  }
+
+  /* Color Psychology Transitions */
+  .brand-gradient {
+    background: linear-gradient(135deg, #000000 0%, #1A1A1A 50%, #E53E3E 100%);
+    background-size: 200% 200%;
+    animation: gradient-shift 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
+
+  /* Sticky Consultation CTA */
+  .sticky-cta {
+    @apply fixed bottom-6 right-6 z-50;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sticky-cta.visible {
+    transform: translateX(0);
+  }
+
+  /* Progressive Disclosure */
+  .expandable-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .expandable-content.expanded {
+    max-height: 1000px;
+  }
+}
+
+@layer utilities {
+  /* Spacing System - 8px base unit with 1.5 ratio scaling */
+  .space-brand-xs { @apply space-y-2; } /* 8px */
+  .space-brand-sm { @apply space-y-3; } /* 12px */
+  .space-brand-md { @apply space-y-4; } /* 16px */
+  .space-brand-lg { @apply space-y-6; } /* 24px */
+  .space-brand-xl { @apply space-y-8; } /* 32px */
+  .space-brand-2xl { @apply space-y-12; } /* 48px */
+  .space-brand-3xl { @apply space-y-16; } /* 64px */
+  .space-brand-4xl { @apply space-y-24; } /* 96px */
+
+  /* Text Hierarchy Utilities */
+  .text-brand-primary { color: var(--color-text-primary); }
+  .text-brand-secondary { color: var(--color-text-secondary); }
+  
+  /* Brand Animation Utilities */
+  .animate-brand-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .animate-brand-bounce {
+    animation: brand-bounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  @keyframes brand-bounce {
+    0% { transform: scale(0.95); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+}
