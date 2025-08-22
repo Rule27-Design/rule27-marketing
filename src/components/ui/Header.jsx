@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../AppIcon';
 import Button from './Button';
-import Logo from './Logo'; // Import the Logo component
+import Logo from './Logo';
 
 // Navigation configuration
 const NAVIGATION_CONFIG = {
@@ -51,25 +51,6 @@ const MobileNavItem = ({ item, isActive, onClick }) => (
   >
     <Icon name={item.icon} size={20} aria-hidden="true" />
     <span className="font-medium">{item.name}</span>
-  </Link>
-);
-
-// Desktop Nav Item Component
-const DesktopNavItem = ({ item, isActive }) => (
-  <Link
-    to={item.path}
-    className={`relative px-3 py-2 text-sm font-medium transition-all duration-300 group ${
-      isActive
-        ? 'text-accent'
-        : 'text-text-primary hover:text-accent'
-    }`}
-    aria-current={isActive ? 'page' : undefined}
-  >
-    <span className="relative z-10">{item.name}</span>
-    {isActive && (
-      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent" aria-hidden="true"></div>
-    )}
-    <div className="absolute inset-0 bg-accent/5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true"></div>
   </Link>
 );
 
@@ -197,21 +178,51 @@ const Header = () => {
     closeMenu();
   };
 
+  // Desktop Nav Item Component with dynamic colors
+  const DesktopNavItem = ({ item, isActive }) => (
+    <Link
+      to={item.path}
+      className={`relative px-3 py-2 text-sm font-medium transition-all duration-300 group ${
+        isScrolled
+          ? isActive 
+            ? 'text-accent' 
+            : 'text-gray-700 hover:text-accent'
+          : isActive
+            ? 'text-white' 
+            : 'text-gray-200 hover:text-white'
+      }`}
+      aria-current={isActive ? 'page' : undefined}
+    >
+      <span className="relative z-10">{item.name}</span>
+      {isActive && (
+        <div className={`absolute bottom-0 left-0 right-0 h-0.5 transition-colors duration-300 ${
+          isScrolled ? 'bg-accent' : 'bg-white'
+        }`} aria-hidden="true" />
+      )}
+      <div className={`absolute inset-0 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
+        isScrolled ? 'bg-accent/5' : 'bg-white/10'
+      }`} aria-hidden="true" />
+    </Link>
+  );
+
   return (
     <>
       <header 
-        className={`fixed top-0 left-0 right-0 z-brand-header transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled 
-            ? 'bg-background/95 backdrop-blur-md border-b border-border brand-shadow' 
-            : 'bg-transparent'
+            ? 'bg-white/90 backdrop-blur-md shadow-lg border-b border-gray-200' // White frosted glass when scrolled
+            : 'bg-gray-900/80 backdrop-blur-md' // Dark frosted glass at top
         }`}
         role="banner"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo - Using the imported Logo component */}
+            {/* Logo - Changes based on scroll state */}
             <div className="flex-shrink-0">
-              <Logo variant="full" colorScheme="default" />
+              <Logo 
+                variant="full"
+                colorScheme={isScrolled ? "default" : "white"} // White logo on dark, color logo on white
+              />
             </div>
 
             {/* Desktop Navigation */}
@@ -232,10 +243,13 @@ const Header = () => {
             {/* Desktop CTA */}
             <div className="hidden lg:flex items-center space-x-4">
               <Button
-                variant="outline"
+                variant={isScrolled ? "outline" : "default"}
                 size="sm"
                 onClick={() => handleNavigation('/contact-consultation-portal')}
-                className="border-accent text-accent hover:bg-accent hover:text-white"
+                className={isScrolled 
+                  ? "border-accent text-accent hover:bg-accent hover:text-white transition-all duration-300"
+                  : "bg-white text-black hover:bg-gray-100 transition-all duration-300"
+                }
                 aria-label="Start consultation"
               >
                 Start Consultation
@@ -249,7 +263,11 @@ const Header = () => {
                 variant="ghost"
                 size="icon"
                 onClick={toggleMenu}
-                className="text-primary hover:text-accent"
+                className={`transition-colors duration-300 ${
+                  isScrolled 
+                    ? "text-gray-700 hover:text-accent"
+                    : "text-white hover:text-gray-200"
+                }`}
                 aria-expanded={isMenuOpen}
                 aria-controls="mobile-menu"
                 aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
@@ -272,7 +290,7 @@ const Header = () => {
           aria-hidden={!isMenuOpen}
         >
           <nav 
-            className="bg-background border-t border-border brand-shadow-lg"
+            className="bg-white border-t border-gray-200 shadow-lg"
             role="navigation"
             aria-label="Mobile navigation"
           >
@@ -288,7 +306,7 @@ const Header = () => {
               ))}
 
               {/* Mobile Secondary Items */}
-              <div className="pt-4 border-t border-border">
+              <div className="pt-4 border-t border-gray-200">
                 {NAVIGATION_CONFIG.secondary.map((item) => (
                   <MobileNavItem
                     key={item.path}
@@ -329,7 +347,7 @@ const Header = () => {
           variant="default"
           size="lg"
           onClick={() => handleNavigation('/contact-consultation-portal')}
-          className="bg-accent hover:bg-accent/90 text-white brand-shadow-lg animate-brand-bounce"
+          className="bg-accent hover:bg-accent/90 text-white shadow-xl animate-pulse"
           iconName="ArrowRight"
           iconPosition="right"
           aria-label="Book consultation"
