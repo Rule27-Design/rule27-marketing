@@ -56,7 +56,7 @@ const InnovationTicker = () => {
       type: 'thought-leadership',
       icon: 'BookOpen',
       title: 'Published "Future of Brand Design"',
-      description: 'Industry whitepaper downloaded 10,000+ times in first week',
+      description: 'Industry whitepaper downloaded 1,000+ times in first week',
       date: '2024-07-20',
       category: 'Thought Leadership',
       color: 'text-indigo-600',
