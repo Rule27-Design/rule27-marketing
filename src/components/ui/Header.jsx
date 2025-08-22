@@ -178,28 +178,22 @@ const Header = () => {
     closeMenu();
   };
 
-  // Desktop Nav Item Component with dynamic colors
+  // Desktop Nav Item Component - Always dark text
   const DesktopNavItem = ({ item, isActive }) => (
     <Link
       to={item.path}
       className={`relative px-3 py-2 text-sm font-medium transition-all duration-300 group ${
-        isScrolled
-          ? isActive 
-            ? 'text-accent' 
-            : 'text-gray-700 hover:text-accent'
-          : isActive
-            ? 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]' // Shadow for visibility
-            : 'text-gray-200 hover:text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]'
+        isActive 
+          ? 'text-accent' 
+          : 'text-gray-700 hover:text-accent'
       }`}
-      style={!isScrolled ? { textShadow: '0 2px 4px rgba(0,0,0,0.5)' } : {}}
       aria-current={isActive ? 'page' : undefined}
     >
       <span className="relative z-10">{item.name}</span>
       {isActive && (
-        <div className={`absolute bottom-0 left-0 right-0 h-0.5 transition-colors duration-300 ${
-          isScrolled ? 'bg-accent' : 'bg-white'
-        }`} aria-hidden="true" />
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent transition-colors duration-300" aria-hidden="true" />
       )}
+      <div className="absolute inset-0 bg-accent/5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true" />
     </Link>
   );
 
@@ -215,15 +209,15 @@ const Header = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo - Changes based on scroll state */}
+            {/* Logo - Always show color version */}
             <div className="flex-shrink-0">
               <Logo 
                 variant="full"
-                colorScheme="default" // White logo on dark, color logo on white
+                colorScheme="default" // Always show the red/color logo
               />
             </div>
 
-            {/* Desktop Navigation */}
+            {/* Desktop Navigation - Always dark text */}
             <nav 
               className="hidden lg:flex items-center space-x-8"
               role="navigation"
@@ -238,34 +232,27 @@ const Header = () => {
               ))}
             </nav>
 
-            {/* Desktop CTA */}
+            {/* Desktop CTA - Always red background */}
             <div className="hidden lg:flex items-center space-x-4">
               <Button
-                variant={isScrolled ? "default" : "default"}
+                variant="default"
                 size="sm"
                 onClick={() => handleNavigation('/contact-consultation-portal')}
-                className={isScrolled 
-                  ? "border-accent text-black hover:bg-accent hover:text-accent transition-all duration-300"
-                  : "bg-white text-black hover:bg-gray-100 transition-all duration-300"
-                }
+                className="bg-accent text-white hover:bg-accent/90 transition-all duration-300"
                 aria-label="Start consultation"
               >
                 Start Consultation
               </Button>
             </div>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Button - Always dark */}
             <div className="lg:hidden">
               <Button
                 ref={menuButtonRef}
                 variant="ghost"
                 size="icon"
                 onClick={toggleMenu}
-                className={`transition-colors duration-300 ${
-                  isScrolled 
-                    ? "text-gray-700 hover:text-accent"
-                    : "text-white hover:text-gray-200"
-                }`}
+                className="text-gray-700 hover:text-accent transition-colors duration-300"
                 aria-expanded={isMenuOpen}
                 aria-controls="mobile-menu"
                 aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
