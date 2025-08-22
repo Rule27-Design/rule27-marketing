@@ -219,7 +219,7 @@ const Header = () => {
             <div className="flex-shrink-0">
               <Logo 
                 variant="full"
-                colorScheme="default"} // White logo on dark, color logo on white
+                colorScheme="default" // White logo on dark, color logo on white
               />
             </div>
 
