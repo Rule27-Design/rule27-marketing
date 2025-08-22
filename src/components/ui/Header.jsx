@@ -332,7 +332,7 @@ const Header = () => {
           variant="default"
           size="lg"
           onClick={() => handleNavigation('/contact-consultation-portal')}
-          className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent shadow-xl transition-all duration-300"
+          className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent shadow-xl transition-all duration-300 animate-pulse"
           iconName="ArrowRight"
           iconPosition="right"
           aria-label="Book consultation"
