@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../AppIcon';
 import Button from './Button';
+import Logo from './Logo'; // Import the Logo component
 
-// Navigation configuration - centralized for maintainability
+// Navigation configuration
 const NAVIGATION_CONFIG = {
   primary: [
     { name: 'Home', path: '/homepage-experience-hub', icon: 'Home' },
@@ -17,7 +18,7 @@ const NAVIGATION_CONFIG = {
   ]
 };
 
-// Throttle utility for performance
+// Throttle utility
 const throttle = (func, delay) => {
   let timeoutId;
   let lastExecTime = 0;
@@ -36,102 +37,7 @@ const throttle = (func, delay) => {
   };
 };
 
-// Media query hook
-const useMediaQuery = (query) => {
-  const [matches, setMatches] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia(query);
-    setMatches(media.matches);
-    
-    const listener = () => setMatches(media.matches);
-    media.addEventListener('change', listener);
-    
-    return () => media.removeEventListener('change', listener);
-  }, [query]);
-
-  return matches;
-};
-
-// Logo Component - Updated for Rule27 Design branding
-const Logo = ({ variant = 'horizontal', colorScheme = 'default', className = '', size = 'default' }) => {
-  const [imageError, setImageError] = useState(false);
-  
-  // For header, we'll use horizontal layout on desktop, icon on mobile
-  const isMobile = useMediaQuery('(max-width: 640px)');
-  const actualVariant = isMobile ? 'icon' : variant;
-  
-  // Determine logo source based on variant and color scheme
-  const getLogoSrc = () => {
-    const format = imageError ? 'png' : 'svg';
-    const basePath = '/assets/logo';
-    
-    if (actualVariant === 'icon') {
-      switch(colorScheme) {
-        case 'white':
-          return `${basePath}/rule27-icon-white.${format}`;
-        case 'black':
-          return `${basePath}/rule27-icon-black.${format}`;
-        default:
-          return `${basePath}/rule27-icon-color.${format}`;
-      }
-    }
-    
-    switch(colorScheme) {
-      case 'white':
-        return `${basePath}/rule27-white.${format}`;
-      case 'black':
-        return `${basePath}/rule27-black.${format}`;
-      default:
-        return `${basePath}/rule27-color.${format}`;
-    }
-  };
-
-  // Fallback to custom logo if image fails
-  if (imageError) {
-    return (
-      <Link 
-        to="/homepage-experience-hub" 
-        className={`flex items-center space-x-2 group ${className}`}
-        aria-label="Rule27 Design Home"
-      >
-        <div className="relative">
-          <div className={`${size === 'small' ? 'w-8 h-8' : 'w-10 h-10'} bg-[#E53E3E] rounded-full flex items-center justify-center group-hover:bg-[#E53E3E]/90 transition-colors duration-300`}>
-            <span className="text-white font-bold text-lg">27</span>
-          </div>
-        </div>
-        {actualVariant !== 'icon' && (
-          <div className="flex flex-col">
-            <span className="text-xl font-bold text-primary group-hover:text-[#E53E3E] transition-colors duration-300">
-              RULE27
-            </span>
-            <span className="text-xs text-text-secondary font-medium tracking-[0.3em] uppercase">
-              DESIGN
-            </span>
-          </div>
-        )}
-      </Link>
-    );
-  }
-
-  // Primary logo implementation with image
-  return (
-    <Link 
-      to="/homepage-experience-hub" 
-      className={`inline-flex items-center ${className}`}
-      aria-label="Rule27 Design Home"
-    >
-      <img 
-        src={getLogoSrc()}
-        alt="Rule27 Design Logo"
-        className={`${actualVariant === 'icon' ? 'h-10 w-10' : 'h-10 w-auto'} group-hover:scale-105 transition-transform duration-300`}
-        onError={() => setImageError(true)}
-      />
-    </Link>
-  );
-};
-
-// Mobile Menu Item Component for cleaner code
+// Mobile Menu Item Component
 const MobileNavItem = ({ item, isActive, onClick }) => (
   <Link
     to={item.path}
@@ -177,12 +83,12 @@ const Header = () => {
   const menuButtonRef = useRef(null);
   const lastFocusedElement = useRef(null);
 
-  // Throttled scroll handler for performance
+  // Throttled scroll handler
   const handleScroll = useCallback(
     throttle(() => {
       const scrollY = window.scrollY;
       setIsScrolled(scrollY > 20);
-      setShowStickyCTA(scrollY > 500); // Show sticky CTA after scrolling 500px
+      setShowStickyCTA(scrollY > 500);
     }, 100),
     []
   );
@@ -192,7 +98,7 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
-  // Handle click outside to close mobile menu
+  // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -216,7 +122,7 @@ const Header = () => {
     };
   }, [isMenuOpen]);
 
-  // Keyboard navigation support
+  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === 'Escape' && isMenuOpen) {
@@ -227,17 +133,14 @@ const Header = () => {
 
     if (isMenuOpen) {
       document.addEventListener('keydown', handleKeyDown);
-      // Store last focused element and move focus to menu
       lastFocusedElement.current = document.activeElement;
       
-      // Focus first menu item
       const firstMenuItem = mobileMenuRef.current?.querySelector('a');
       firstMenuItem?.focus();
     }
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      // Restore focus when menu closes
       if (!isMenuOpen && lastFocusedElement.current) {
         lastFocusedElement.current.focus();
       }
@@ -289,7 +192,6 @@ const Header = () => {
     return location?.pathname === path;
   };
 
-  // Handle navigation properly with React Router
   const handleNavigation = (path) => {
     navigate(path);
     closeMenu();
@@ -307,9 +209,9 @@ const Header = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
+            {/* Logo - Using the imported Logo component */}
             <div className="flex-shrink-0">
-              <Logo variant={isScrolled ? 'default' : 'default'} />
+              <Logo variant="horizontal" />
             </div>
 
             {/* Desktop Navigation */}
@@ -414,7 +316,7 @@ const Header = () => {
         </div>
       </header>
 
-      {/* Sticky Consultation CTA - Separate from header for better UX */}
+      {/* Sticky Consultation CTA */}
       <div 
         className={`fixed bottom-6 right-6 z-50 transition-all duration-500 ${
           showStickyCTA 
