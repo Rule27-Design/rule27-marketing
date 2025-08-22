@@ -188,9 +188,10 @@ const Header = () => {
             ? 'text-accent' 
             : 'text-gray-700 hover:text-accent'
           : isActive
-            ? 'text-white' 
-            : 'text-gray-200 hover:text-white'
+            ? 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]' // Shadow for visibility
+            : 'text-gray-200 hover:text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]'
       }`}
+      style={!isScrolled ? { textShadow: '0 2px 4px rgba(0,0,0,0.5)' } : {}}
       aria-current={isActive ? 'page' : undefined}
     >
       <span className="relative z-10">{item.name}</span>
@@ -199,9 +200,6 @@ const Header = () => {
           isScrolled ? 'bg-accent' : 'bg-white'
         }`} aria-hidden="true" />
       )}
-      <div className={`absolute inset-0 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
-        isScrolled ? 'bg-accent/5' : 'bg-white/10'
-      }`} aria-hidden="true" />
     </Link>
   );
 
@@ -221,7 +219,7 @@ const Header = () => {
             <div className="flex-shrink-0">
               <Logo 
                 variant="full"
-                colorScheme={isScrolled ? "default" : "white"} // White logo on dark, color logo on white
+                colorScheme="default"} // White logo on dark, color logo on white
               />
             </div>
 
@@ -243,11 +241,11 @@ const Header = () => {
             {/* Desktop CTA */}
             <div className="hidden lg:flex items-center space-x-4">
               <Button
-                variant={isScrolled ? "outline" : "default"}
+                variant={isScrolled ? "default" : "default"}
                 size="sm"
                 onClick={() => handleNavigation('/contact-consultation-portal')}
                 className={isScrolled 
-                  ? "border-accent text-accent hover:bg-accent hover:text-white transition-all duration-300"
+                  ? "border-accent text-black hover:bg-accent hover:text-accent transition-all duration-300"
                   : "bg-white text-black hover:bg-gray-100 transition-all duration-300"
                 }
                 aria-label="Start consultation"
