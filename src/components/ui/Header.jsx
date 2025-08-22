@@ -232,13 +232,13 @@ const Header = () => {
               ))}
             </nav>
 
-            {/* Desktop CTA - Always red background */}
+            {/* Desktop CTA - Red background with white hover */}
             <div className="hidden lg:flex items-center space-x-4">
               <Button
                 variant="default"
                 size="sm"
                 onClick={() => handleNavigation('/contact-consultation-portal')}
-                className="bg-accent text-white hover:bg-accent/90 transition-all duration-300"
+                className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent transition-all duration-300"
                 aria-label="Start consultation"
               >
                 Start Consultation
@@ -308,7 +308,7 @@ const Header = () => {
                   variant="default"
                   fullWidth
                   onClick={() => handleNavigation('/contact-consultation-portal')}
-                  className="bg-accent hover:bg-accent/90 text-white"
+                  className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent transition-all duration-300"
                   aria-label="Start your transformation"
                 >
                   Start Your Transformation
@@ -332,7 +332,7 @@ const Header = () => {
           variant="default"
           size="lg"
           onClick={() => handleNavigation('/contact-consultation-portal')}
-          className="bg-accent hover:bg-accent/90 text-white shadow-xl animate-pulse"
+          className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent shadow-xl transition-all duration-300"
           iconName="ArrowRight"
           iconPosition="right"
           aria-label="Book consultation"
