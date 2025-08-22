@@ -211,7 +211,7 @@ const Header = () => {
           <div className="flex items-center justify-between h-16">
             {/* Logo - Using the imported Logo component */}
             <div className="flex-shrink-0">
-              <Logo variant="horizontal" />
+              <Logo variant="full" colorScheme="default" />
             </div>
 
             {/* Desktop Navigation */}
