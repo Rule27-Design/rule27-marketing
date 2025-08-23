@@ -26,9 +26,9 @@ const Footer = () => {
   };
 
   const socialLinks = [
-    { name: 'LinkedIn', icon: 'Linkedin', href: 'https://linkedin.com/company/rule27' },
-    { name: 'Twitter', icon: 'Twitter', href: 'https://twitter.com/rule27digital' },
-    { name: 'Instagram', icon: 'Instagram', href: 'https://instagram.com/rule27' },
+    { name: 'LinkedIn', icon: 'Linkedin', href: 'https://www.linkedin.com/company/rule27design' },
+    { name: 'Facebook', icon: 'Facebook', href: 'https://www.facebook.com/Rule27Design/' },
+    { name: 'Instagram', icon: 'Instagram', href: 'https://www.instagram.com/rule27design' },
     { name: 'Github', icon: 'Github', href: 'https://github.com/rule27' }
   ];
 
