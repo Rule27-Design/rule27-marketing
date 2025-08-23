@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
+import Footer from '../../components/ui/Footer';
 import HeroSection from './components/HeroSection';
 import CaseStudyCarousel from './components/CaseStudyCarousel';
 import CapabilityZones from './components/CapabilityZones';
@@ -12,10 +13,35 @@ const HomepageExperienceHub = () => {
     // Smooth scroll behavior for anchor links
     document.documentElement.style.scrollBehavior = 'smooth';
     
+    // Add page transition animation
+    document.body.classList.add('page-loaded');
+    
+    // Performance optimization - lazy load images
+    const images = document.querySelectorAll('img[data-src]');
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          img.src = img.dataset.src;
+          img.classList.add('loaded');
+          observer.unobserve(img);
+        }
+      });
+    });
+    
+    images.forEach(img => imageObserver.observe(img));
+    
     // Cleanup on unmount
     return () => {
       document.documentElement.style.scrollBehavior = 'auto';
+      document.body.classList.remove('page-loaded');
+      imageObserver.disconnect();
     };
+  }, []);
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
   }, []);
 
   return (
@@ -26,107 +52,162 @@ const HomepageExperienceHub = () => {
           name="description" 
           content="Rule27 Design is the apex creative and development partner for ambitious brands. We don't just follow design trends—we create them. Break conventional boundaries with the creative partner that makes other agencies look ordinary." 
         />
-        <meta name="keywords" content="creative agency, digital marketing, web development, brand design, Rule27, premium creative services" />
+        <meta name="keywords" content="creative agency, digital marketing, web development, brand design, Rule27, premium creative services, innovation, digital transformation" />
+        
+        {/* Open Graph */}
         <meta property="og:title" content="Rule27 Digital Powerhouse - Creative Excellence Redefined" />
         <meta property="og:description" content="The 27th rule that breaks conventional boundaries. Discover the creative partner that transforms ambitious brands into industry leaders." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://rule27.com/homepage-experience-hub" />
-        <link rel="canonical" href="https://rule27.com/homepage-experience-hub" />
+        <meta property="og:url" content="https://rule27.com" />
+        <meta property="og:image" content="/assets/og-image.jpg" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Rule27 Digital Powerhouse" />
+        <meta name="twitter:description" content="Where creative audacity meets technical precision" />
+        <meta name="twitter:image" content="/assets/og-image.jpg" />
+        
+        {/* Canonical */}
+        <link rel="canonical" href="https://rule27.com" />
+        
+        {/* Preload critical resources */}
+        <link rel="preload" href="/assets/logo/rule27-color.svg" as="image" />
+        <link rel="preload" href="/assets/logo/rule27-icon-white.svg" as="image" />
       </Helmet>
-      <div className="min-h-screen bg-background">
+
+      <div className="min-h-screen bg-background overflow-x-hidden">
         {/* Header */}
         <Header />
 
         {/* Main Content */}
         <main className="pt-16">
-          {/* Hero Section */}
-          <HeroSection />
+          {/* Hero Section with Enhanced Animations */}
+          <section id="hero" className="hero-wrapper">
+            <HeroSection />
+          </section>
 
           {/* Case Study Carousel */}
-          <CaseStudyCarousel />
+          <section id="work" className="section-wrapper">
+            <CaseStudyCarousel />
+          </section>
 
           {/* Capability Zones */}
-          <CapabilityZones />
+          <section id="capabilities" className="section-wrapper">
+            <CapabilityZones />
+          </section>
 
           {/* Innovation Ticker */}
-          <InnovationTicker />
+          <section id="innovation" className="section-wrapper">
+            <InnovationTicker />
+          </section>
 
           {/* Social Proof Section */}
-          <SocialProofSection />
+          <section id="social-proof" className="section-wrapper">
+            <SocialProofSection />
+          </section>
         </main>
 
         {/* Footer */}
-        <footer className="bg-primary text-white py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid md:grid-cols-4 gap-8 mb-12">
-              {/* Brand Section */}
-              <div className="md:col-span-2">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">27</span>
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold">Rule27</h3>
-                    <p className="text-gray-300 text-sm">Digital Powerhouse</p>
-                  </div>
-                </div>
-                <p className="text-gray-300 mb-6 max-w-md">
-                  The creative partner that breaks conventional boundaries and makes 
-                  other agencies look ordinary. Where creative audacity meets technical precision.
-                </p>
-                <div className="flex space-x-4">
-                  <a href="#" className="bg-white/10 hover:bg-white/20 p-3 rounded-full transition-colors duration-300">
-                    <span className="sr-only">LinkedIn</span>
-                    <div className="w-5 h-5 bg-white rounded-sm"></div>
-                  </a>
-                  <a href="#" className="bg-white/10 hover:bg-white/20 p-3 rounded-full transition-colors duration-300">
-                    <span className="sr-only">Twitter</span>
-                    <div className="w-5 h-5 bg-white rounded-sm"></div>
-                  </a>
-                  <a href="#" className="bg-white/10 hover:bg-white/20 p-3 rounded-full transition-colors duration-300">
-                    <span className="sr-only">Instagram</span>
-                    <div className="w-5 h-5 bg-white rounded-sm"></div>
-                  </a>
-                </div>
-              </div>
+        <Footer />
 
-              {/* Quick Links */}
-              <div>
-                <h4 className="font-bold mb-4">Explore</h4>
-                <ul className="space-y-2 text-gray-300">
-                  <li><a href="/capability-universe" className="hover:text-accent transition-colors duration-300">Capabilities</a></li>
-                  <li><a href="/work-showcase-theater" className="hover:text-accent transition-colors duration-300">Work</a></li>
-                  <li><a href="/innovation-laboratory" className="hover:text-accent transition-colors duration-300">Innovation</a></li>
-                  <li><a href="/about-process-studio" className="hover:text-accent transition-colors duration-300">About</a></li>
-                </ul>
-              </div>
-
-              {/* Contact */}
-              <div>
-                <h4 className="font-bold mb-4">Connect</h4>
-                <ul className="space-y-2 text-gray-300">
-                  <li><a href="/contact-consultation-portal" className="hover:text-accent transition-colors duration-300">Start Consultation</a></li>
-                  <li><a href="mailto:hello@rule27.com" className="hover:text-accent transition-colors duration-300">hello@rule27.com</a></li>
-                  <li><a href="tel:+1-555-RULE-27" className="hover:text-accent transition-colors duration-300">+1 (555) RULE-27</a></li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Bottom Bar */}
-            <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center">
-              <p className="text-gray-300 text-sm mb-4 md:mb-0">
-                © {new Date()?.getFullYear()} Rule27 Digital Powerhouse. All rights reserved.
-              </p>
-              <div className="flex space-x-6 text-sm text-gray-300">
-                <a href="#" className="hover:text-accent transition-colors duration-300">Privacy Policy</a>
-                <a href="#" className="hover:text-accent transition-colors duration-300">Terms of Service</a>
-                <a href="#" className="hover:text-accent transition-colors duration-300">Cookies</a>
-              </div>
-            </div>
-          </div>
-        </footer>
+        {/* Back to Top Button */}
+        <BackToTop />
       </div>
+
+      {/* Page-specific styles */}
+      <style jsx>{`
+        .page-loaded {
+          animation: pageLoad 0.6s ease-out;
+        }
+        
+        @keyframes pageLoad {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .section-wrapper {
+          position: relative;
+          overflow: visible;
+        }
+        
+        .hero-wrapper {
+          position: relative;
+          z-index: 1;
+        }
+        
+        img.loaded {
+          animation: imageLoad 0.6s ease-out;
+        }
+        
+        @keyframes imageLoad {
+          from {
+            opacity: 0;
+            filter: blur(5px);
+          }
+          to {
+            opacity: 1;
+            filter: blur(0);
+          }
+        }
+      `}</style>
     </>
+  );
+};
+
+// Back to Top Component
+const BackToTop = () => {
+  const [isVisible, setIsVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    const toggleVisibility = () => {
+      if (window.pageYOffset > 500) {
+        setIsVisible(true);
+      } else {
+        setIsVisible(false);
+      }
+    };
+
+    window.addEventListener('scroll', toggleVisibility);
+    return () => window.removeEventListener('scroll', toggleVisibility);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
+  return (
+    <button
+      onClick={scrollToTop}
+      className={`fixed bottom-6 left-6 z-40 bg-primary hover:bg-accent text-white p-3 rounded-full shadow-lg transition-all duration-500 ${
+        isVisible 
+          ? 'opacity-100 translate-y-0 scale-100' 
+          : 'opacity-0 translate-y-10 scale-95 pointer-events-none'
+      }`}
+      aria-label="Back to top"
+    >
+      <svg 
+        className="w-5 h-5" 
+        fill="none" 
+        stroke="currentColor" 
+        viewBox="0 0 24 24"
+      >
+        <path 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+          strokeWidth={2} 
+          d="M5 10l7-7m0 0l7 7m-7-7v18" 
+        />
+      </svg>
+    </button>
   );
 };
 
