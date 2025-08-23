@@ -35,26 +35,28 @@ const Footer = () => {
   return (
     <footer className="bg-primary text-white py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-12">
           {/* Brand Section */}
-          <div className="md:col-span-2">
-            <div className="mb-6">
-              {/* Use the color logo (which we know works) and make it white with CSS */}
+          <div className="md:col-span-2 text-center md:text-left">
+            <div className="mb-6 flex justify-center md:justify-start">
+              {/* Try white PNG first, fallback to color with filter */}
               <img 
-                src="/assets/logo/rule27-color.svg"
+                src="/assets/logo/rule27-white.png"
                 alt="Rule27 Design"
                 className="h-12 w-auto"
-                style={{ 
-                  filter: 'brightness(0) invert(1)',
-                  WebkitFilter: 'brightness(0) invert(1)'
+                onError={(e) => {
+                  // If white PNG fails, use color PNG with filter
+                  e.target.src = '/assets/logo/rule27-color.png';
+                  e.target.style.filter = 'brightness(0) invert(1)';
+                  e.target.style.WebkitFilter = 'brightness(0) invert(1)';
                 }}
               />
             </div>
-            <p className="text-gray-300 mb-6 max-w-md">
+            <p className="text-gray-300 mb-6 max-w-md mx-auto md:mx-0">
               The creative partner that breaks conventional boundaries and makes 
               other agencies look ordinary. Where creative audacity meets technical precision.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 justify-center md:justify-start mb-8 md:mb-0">
               {socialLinks.map((social) => (
                 <a
                   key={social.name}
@@ -71,14 +73,14 @@ const Footer = () => {
           </div>
 
           {/* Quick Links */}
-          <div>
+          <div className="text-center md:text-left">
             <h4 className="font-bold mb-4 text-lg">Explore</h4>
             <ul className="space-y-2 text-gray-300">
               {footerLinks.explore.map((link) => (
                 <li key={link.path}>
                   <Link
                     to={link.path}
-                    className="hover:text-accent transition-colors duration-300 inline-flex items-center group"
+                    className="hover:text-accent transition-colors duration-300 inline-flex items-center justify-center md:justify-start group"
                   >
                     <span>{link.name}</span>
                     <Icon 
@@ -93,7 +95,7 @@ const Footer = () => {
           </div>
 
           {/* Contact */}
-          <div>
+          <div className="text-center md:text-left">
             <h4 className="font-bold mb-4 text-lg">Connect</h4>
             <ul className="space-y-2 text-gray-300">
               {footerLinks.connect.map((link) => (
@@ -101,7 +103,7 @@ const Footer = () => {
                   {link.external ? (
                     <a
                       href={link.href}
-                      className="hover:text-accent transition-colors duration-300 inline-flex items-center group"
+                      className="hover:text-accent transition-colors duration-300 inline-flex items-center justify-center md:justify-start group"
                     >
                       <span>{link.name}</span>
                       <Icon 
@@ -113,7 +115,7 @@ const Footer = () => {
                   ) : (
                     <Link
                       to={link.path}
-                      className="hover:text-accent transition-colors duration-300 inline-flex items-center group"
+                      className="hover:text-accent transition-colors duration-300 inline-flex items-center justify-center md:justify-start group"
                     >
                       <span>{link.name}</span>
                       <Icon 
@@ -129,35 +131,12 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Newsletter Section */}
-        <div className="border-t border-white/10 py-8 mb-8">
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-              <h3 className="text-xl font-bold mb-2">Stay at the Forefront</h3>
-              <p className="text-gray-300">
-                Get exclusive insights, industry trends, and Rule27 innovations delivered monthly.
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-accent transition-colors duration-300"
-              />
-              <button className="bg-accent hover:bg-accent/90 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 flex items-center space-x-2">
-                <span>Subscribe</span>
-                <Icon name="ArrowRight" size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
-
         {/* Bottom Bar */}
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-300 text-sm mb-4 md:mb-0">
+        <div className="border-t border-white/10 pt-8 mt-12 flex flex-col md:flex-row justify-between items-center">
+          <p className="text-gray-300 text-sm mb-4 md:mb-0 text-center md:text-left">
             © {currentYear} Rule27 Digital Powerhouse. All rights reserved.
           </p>
-          <div className="flex items-center space-x-6">
+          <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
             <div className="flex space-x-6 text-sm text-gray-300">
               {footerLinks.legal.map((link) => (
                 <Link
