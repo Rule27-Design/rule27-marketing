@@ -86,11 +86,20 @@ const HeroSection = () => {
   // Mouse move effect for floating elements and cursor glow
   useEffect(() => {
     const handleMouseMove = (e) => {
+      // Get hero section bounds
+      const heroSection = e.currentTarget;
+      const rect = heroSection.getBoundingClientRect();
+      
+      // Calculate relative position within hero section
+      const relativeX = e.clientX - rect.left;
+      const relativeY = e.clientY - rect.top;
+      
+      // Update mouse position for glow effect (relative to hero)
+      setMousePosition({ x: relativeX, y: relativeY });
+      
+      // Floating elements calculation
       const mouseX = e.clientX / window.innerWidth - 0.5;
       const mouseY = e.clientY / window.innerHeight - 0.5;
-      
-      // Update mouse position for glow effect
-      setMousePosition({ x: e.clientX, y: e.clientY });
       
       const floatingElements = document.querySelectorAll('.floating-interactive');
       floatingElements.forEach((el, index) => {
@@ -99,15 +108,30 @@ const HeroSection = () => {
       });
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    // Add event listener only to hero section
+    const heroElement = document.querySelector('.hero-section');
+    if (heroElement) {
+      heroElement.addEventListener('mousemove', handleMouseMove);
+      
+      // Hide glow when mouse leaves hero
+      heroElement.addEventListener('mouseleave', () => {
+        setMousePosition({ x: -1000, y: -1000 }); // Move glow off-screen
+      });
+    }
+
+    return () => {
+      if (heroElement) {
+        heroElement.removeEventListener('mousemove', handleMouseMove);
+        heroElement.removeEventListener('mouseleave', () => {});
+      }
+    };
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
-      {/* Mouse Follower Glow */}
+    <section className="hero-section relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+      {/* Mouse Follower Glow - Only within hero section */}
       <div 
-        className="pointer-events-none fixed inset-0 z-30 transition-opacity duration-300"
+        className="pointer-events-none absolute inset-0 z-30 transition-opacity duration-300"
         style={{
           background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(229, 62, 62, 0.15), transparent 40%)`,
         }}
