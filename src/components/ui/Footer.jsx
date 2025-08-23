@@ -39,12 +39,23 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="md:col-span-2">
             <div className="mb-6">
-              <Logo 
-                variant="horizontal"
-                colorScheme="white"
-                linkTo={false}
-                showTagline={true}
-              />
+              {/* Using the same approach as Header but with white icon */}
+              <div className="flex items-center space-x-3 group">
+                <Logo 
+                  variant="icon"
+                  colorScheme="white"
+                  linkTo={false}
+                  className="w-12 h-12"
+                />
+                <div className="flex flex-col leading-none">
+                  <span className="text-2xl font-bold text-white tracking-tight">
+                    RULE27
+                  </span>
+                  <span className="text-xs text-gray-300 font-medium tracking-[0.2em] uppercase mt-0.5">
+                    DESIGN
+                  </span>
+                </div>
+              </div>
             </div>
             <p className="text-gray-300 mb-6 max-w-md">
               The creative partner that breaks conventional boundaries and makes 
