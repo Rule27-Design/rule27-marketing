@@ -10,13 +10,17 @@ const HeroSection = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [showCursor, setShowCursor] = useState(true);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const typeSpeed = 100;
   const deleteSpeed = 50;
   const pauseDuration = 2000;
 
-  const dynamicWords = ['Audacity', 'Innovation', 'Excellence', 'Precision', 'Vision', 'Impact'];
+  // Define words outside of component or use useMemo to prevent recreating
+  const dynamicWords = React.useMemo(() => 
+    ['Audacity', 'Innovation', 'Excellence', 'Precision', 'Vision', 'Impact'], 
+  []);
 
-  // Typewriter effect
+  // Typewriter effect - fixed dependency array
   useEffect(() => {
     const word = dynamicWords[currentWordIndex];
     let timeout;
@@ -25,7 +29,7 @@ const HeroSection = () => {
       // Typing
       if (currentText !== word) {
         timeout = setTimeout(() => {
-          setCurrentText(word.slice(0, currentText.length + 1));
+          setCurrentText(prev => word.slice(0, prev.length + 1));
         }, typeSpeed);
       } else {
         // Pause before deleting
@@ -37,7 +41,7 @@ const HeroSection = () => {
       // Deleting
       if (currentText !== '') {
         timeout = setTimeout(() => {
-          setCurrentText(currentText.slice(0, -1));
+          setCurrentText(prev => prev.slice(0, -1));
         }, deleteSpeed);
       } else {
         setIsDeleting(false);
@@ -79,11 +83,14 @@ const HeroSection = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Mouse move effect for floating elements
+  // Mouse move effect for floating elements and cursor glow
   useEffect(() => {
     const handleMouseMove = (e) => {
       const mouseX = e.clientX / window.innerWidth - 0.5;
       const mouseY = e.clientY / window.innerHeight - 0.5;
+      
+      // Update mouse position for glow effect
+      setMousePosition({ x: e.clientX, y: e.clientY });
       
       const floatingElements = document.querySelectorAll('.floating-interactive');
       floatingElements.forEach((el, index) => {
@@ -98,6 +105,14 @@ const HeroSection = () => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+      {/* Mouse Follower Glow */}
+      <div 
+        className="pointer-events-none fixed inset-0 z-30 transition-opacity duration-300"
+        style={{
+          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(229, 62, 62, 0.15), transparent 40%)`,
+        }}
+      />
+      
       {/* Animated Background with Gradient Mesh */}
       <div className="hero-background absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black">
@@ -142,13 +157,13 @@ const HeroSection = () => {
         <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
             <span className="block mb-2">The 27th Rule:</span>
-            <span className="block">
-              Where Creative{' '}
-              <span className="relative inline-block min-w-[280px] text-left">
+            <span className="block text-center md:text-left">
+              <span className="block md:inline">Where Creative{' '}</span>
+              <span className="relative inline-block min-w-[200px] md:min-w-[280px] text-center md:text-left">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent via-red-400 to-accent bg-300% animate-gradient">
                   {currentText}
                 </span>
-                <span className={`${showCursor ? 'opacity-100' : 'opacity-0'} text-accent ml-1 transition-opacity duration-100`}>
+                <span className={`${showCursor ? 'opacity-100' : 'opacity-0'} text-accent transition-opacity duration-100`}>
                   |
                 </span>
                 <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-accent to-transparent transform origin-left animate-pulse"></div>
