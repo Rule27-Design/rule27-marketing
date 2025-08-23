@@ -39,16 +39,17 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="md:col-span-2">
             <div className="mb-6">
-              {/* Direct image approach to ensure logo displays */}
-              <img 
-                src="/assets/logo/rule27-white.svg"
-                alt="Rule27 Design Logo"
-                className="h-14 w-auto"
-                onError={(e) => {
-                  // Fallback to PNG if SVG fails
-                  e.target.src = '/assets/logo/rule27-white.png';
-                }}
-              />
+              {/* Inline SVG Logo - always visible */}
+              <div className="flex items-center space-x-3">
+                <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="24" cy="24" r="24" fill="#E53E3E"/>
+                  <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="20" fontWeight="bold">27</text>
+                </svg>
+                <div>
+                  <div className="text-2xl font-bold text-white">RULE27</div>
+                  <div className="text-xs text-gray-300 tracking-[0.2em] uppercase">Design</div>
+                </div>
+              </div>
             </div>
             <p className="text-gray-300 mb-6 max-w-md">
               The creative partner that breaks conventional boundaries and makes 
