@@ -8,10 +8,15 @@ const HeroSection = () => {
 
   useEffect(() => {
     setIsVisible(true);
+    
+    // Immediate visibility on mobile
+    if (window.innerWidth < 768) {
+      setIsVisible(true);
+    }
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-black via-gray-900 to-primary">
+    <section className="hero-wrapper relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-black via-gray-900 to-primary">
       {/* Animated Background Elements - Optimized for mobile */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-1/4 left-1/4 w-48 sm:w-72 h-48 sm:h-72 bg-accent/20 rounded-full blur-3xl animate-pulse"></div>
@@ -24,7 +29,7 @@ const HeroSection = () => {
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
           className="mb-8 sm:mb-12 flex justify-center"
         >
           <div className="relative group">
@@ -39,7 +44,7 @@ const HeroSection = () => {
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.3 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
         >
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-6 sm:mb-8 leading-tight">
             <span className="block mb-2">The Rebels Behind</span>
@@ -51,7 +56,7 @@ const HeroSection = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.6 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
         >
           <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed px-4">
             Born from <span className="text-accent font-semibold">rebellious innovation</span> and crafted with 
@@ -64,7 +69,7 @@ const HeroSection = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.9 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
           className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 md:gap-8 mb-8 sm:mb-12"
         >
           {[
@@ -88,7 +93,7 @@ const HeroSection = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 1.2 }}
+          transition={{ duration: 0.4, delay: 0.4 }}
         >
           <Button
             variant="default"

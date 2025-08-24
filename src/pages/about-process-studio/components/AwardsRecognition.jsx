@@ -139,7 +139,7 @@ const AwardsRecognition = () => {
   const categories = [
     { id: 'awards', label: 'Awards', icon: 'Award', count: recognitionData?.awards?.length },
     { id: 'certifications', label: 'Certifications', icon: 'Shield', count: recognitionData?.certifications?.length },
-    { id: 'media', label: 'Media Mentions', icon: 'Newspaper', count: recognitionData?.media?.length }
+    { id: 'media', label: 'Media', icon: 'Newspaper', count: recognitionData?.media?.length }
   ];
 
   const activeData = recognitionData?.[activeCategory] || [];
@@ -149,11 +149,19 @@ const AwardsRecognition = () => {
       ([entry]) => {
         setIsInView(entry?.isIntersecting);
       },
-      { threshold: 0.2 }
+      { 
+        threshold: 0.05, // Changed from 0.2 to 0.05 - triggers much sooner
+        rootMargin: '100px' // Add this - starts animation 100px before element is visible
+      }
     );
 
     if (sectionRef?.current) {
       observer?.observe(sectionRef?.current);
+    }
+
+    // Also set visibility immediately on mobile
+    if (window.innerWidth < 768) {
+      setIsInView(true); // Immediate visibility on mobile
     }
 
     return () => observer?.disconnect();
@@ -166,7 +174,7 @@ const AwardsRecognition = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
           className="text-center mb-8 sm:mb-12 lg:mb-16"
         >
           <div className="inline-flex items-center space-x-2 bg-accent/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6">
@@ -182,29 +190,29 @@ const AwardsRecognition = () => {
           </p>
         </motion.div>
 
-        {/* Category Navigation - Mobile Optimized */}
+        {/* Category Navigation - FIXED: Now with flex-wrap */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-8 sm:mb-12 lg:mb-16"
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="flex flex-wrap justify-center gap-3 mb-8 sm:mb-12 lg:mb-16"
         >
           {categories?.map((category) => (
             <button
               key={category?.id}
               onClick={() => setActiveCategory(category?.id)}
-              className={`flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 rounded-xl sm:rounded-2xl font-semibold transition-all duration-500 text-sm sm:text-base ${
+              className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-semibold transition-all duration-300 text-sm sm:text-base ${
                 activeCategory === category?.id
-                  ? 'bg-gradient-to-r from-accent to-primary text-white shadow-brand-elevation transform scale-105'
-                  : 'bg-white text-text-secondary hover:bg-accent/5 hover:text-accent shadow-brand-md'
+                  ? 'bg-gradient-to-r from-accent to-primary text-white shadow-lg transform scale-105'
+                  : 'bg-white text-text-secondary hover:bg-accent/5 hover:text-accent shadow-md'
               }`}
             >
-              <AppIcon name={category?.icon} size={16} sm:size={20} />
-              <span className="hidden sm:inline">{category?.label}</span>
-              <span className="sm:hidden">{category?.label.split(' ')[0]}</span>
-              <span className={`px-2 py-1 rounded-full text-xs ${
+              <AppIcon name={category?.icon} size={16} className="flex-shrink-0" />
+              <span>{category?.label}</span>
+              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
                 activeCategory === category?.id 
-                  ? 'bg-white/20 text-white' :'bg-accent/10 text-accent'
+                  ? 'bg-white/20 text-white' 
+                  : 'bg-accent/10 text-accent'
               }`}>
                 {category?.count}
               </span>
@@ -216,7 +224,7 @@ const AwardsRecognition = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.8, delay: 0.6 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
           className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 lg:mb-16"
         >
           {activeData?.map((item, index) => (
@@ -224,14 +232,14 @@ const AwardsRecognition = () => {
               key={item?.id}
               initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
               animate={isInView ? { opacity: 1, x: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.1 * index }}
+              transition={{ duration: 0.3, delay: 0.05 * index }}
               className="group"
             >
               <div className="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-brand-md hover:shadow-brand-elevation-lg transition-all duration-500 group-hover:-translate-y-2">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4 sm:mb-6">
                   <div className={`w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r ${item?.color} rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                    <AppIcon name={item?.icon} size={24} sm:size={32} className="text-white" />
+                    <AppIcon name={item?.icon} size={24} className="text-white" />
                   </div>
                   <div className="text-right">
                     <span className="inline-block px-2 sm:px-3 py-1 bg-accent/10 text-accent rounded-full text-xs sm:text-sm font-semibold">
@@ -263,7 +271,7 @@ const AwardsRecognition = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.9 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
           className="bg-gradient-to-r from-accent to-primary rounded-xl sm:rounded-2xl lg:rounded-3xl p-8 sm:p-12 text-white text-center"
         >
           <h3 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Recognition by the Numbers</h3>
@@ -276,7 +284,7 @@ const AwardsRecognition = () => {
             ]?.map((stat, index) => (
               <div key={index} className="text-center group">
                 <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 mx-auto group-hover:bg-white/30 transition-colors duration-300">
-                  <AppIcon name={stat?.icon} size={24} sm:size={32} className="text-white" />
+                  <AppIcon name={stat?.icon} size={24} className="text-white" />
                 </div>
                 <div className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2">{stat?.number}</div>
                 <div className="text-white/80 text-xs sm:text-sm">{stat?.label}</div>

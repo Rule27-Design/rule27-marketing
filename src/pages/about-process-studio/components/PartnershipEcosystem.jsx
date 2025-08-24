@@ -155,11 +155,19 @@ const PartnershipEcosystem = () => {
       ([entry]) => {
         setIsInView(entry?.isIntersecting);
       },
-      { threshold: 0.2 }
+      { 
+        threshold: 0.05, // Changed from 0.2 to 0.05 - triggers much sooner
+        rootMargin: '100px' // Add this - starts animation 100px before element is visible
+      }
     );
 
     if (sectionRef?.current) {
       observer?.observe(sectionRef?.current);
+    }
+
+    // Also set visibility immediately on mobile
+    if (window.innerWidth < 768) {
+      setIsInView(true); // Immediate visibility on mobile
     }
 
     return () => observer?.disconnect();
@@ -184,7 +192,7 @@ const PartnershipEcosystem = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
           className="text-center mb-8 sm:mb-12 lg:mb-16"
         >
           <div className="inline-flex items-center space-x-2 bg-accent/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6">
@@ -204,7 +212,7 @@ const PartnershipEcosystem = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.3 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
           className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12 lg:mb-16"
         >
           {[
@@ -218,7 +226,7 @@ const PartnershipEcosystem = () => {
               className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center hover:shadow-brand-md transition-all duration-300 group"
             >
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-accent/10 group-hover:bg-accent rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 mx-auto transition-all duration-300">
-                <AppIcon name={stat?.icon} size={20} sm:size={24} className="text-accent group-hover:text-white transition-colors duration-300" />
+                <AppIcon name={stat?.icon} size={20} className="text-accent group-hover:text-white transition-colors duration-300" />
               </div>
               <div className="text-xl sm:text-2xl font-bold text-primary mb-1">{stat?.number}</div>
               <div className="text-text-secondary text-xs sm:text-sm">{stat?.label}</div>
@@ -226,45 +234,43 @@ const PartnershipEcosystem = () => {
           ))}
         </motion.div>
 
-        {/* Category Filter - Mobile Optimized with horizontal scroll */}
+        {/* Category Filter - FIXED: Now with flex-wrap */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="mb-8 sm:mb-12 lg:mb-16 overflow-x-auto"
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="flex flex-wrap justify-center gap-3 mb-8 sm:mb-12 lg:mb-16"
         >
-          <div className="flex space-x-2 sm:space-x-4 justify-start sm:justify-center min-w-max px-2 sm:px-0">
-            {partnershipCategories?.map((category) => (
-              <button
-                key={category?.id}
-                onClick={() => setPartnerCategory(category?.id)}
-                className={`flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 rounded-xl sm:rounded-2xl font-semibold transition-all duration-500 whitespace-nowrap text-sm sm:text-base ${
-                  partnerCategory === category?.id
-                    ? 'bg-gradient-to-r from-accent to-primary text-white shadow-brand-elevation transform scale-105'
-                    : 'bg-surface text-text-secondary hover:bg-accent/5 hover:text-accent'
-                }`}
-              >
-                <AppIcon name={category?.icon} size={16} sm:size={20} />
-                <span className="hidden sm:inline">{category?.label}</span>
-                <span className="sm:hidden">
-                  {category?.label === 'Data & Analytics' ? 'Data' : category?.label}
-                </span>
-                <span className={`px-2 py-1 rounded-full text-xs ${
+          {partnershipCategories?.map((category) => (
+            <button
+              key={category?.id}
+              onClick={() => setPartnerCategory(category?.id)}
+              className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-semibold transition-all duration-300 text-sm sm:text-base ${
+                partnerCategory === category?.id
+                  ? 'bg-gradient-to-r from-accent to-primary text-white shadow-lg transform scale-105'
+                  : 'bg-surface text-text-secondary hover:bg-accent/5 hover:text-accent'
+              }`}
+            >
+              <AppIcon name={category?.icon} size={16} className="flex-shrink-0" />
+              <span>{category?.label.split(' ')[0]}</span>
+              {category?.count && (
+                <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-bold ${
                   partnerCategory === category?.id 
-                    ? 'bg-white/20 text-white' :'bg-accent/10 text-accent'
+                    ? 'bg-white/20 text-white' 
+                    : 'bg-accent/10 text-accent'
                 }`}>
                   {category?.count}
                 </span>
-              </button>
-            ))}
-          </div>
+              )}
+            </button>
+          ))}
         </motion.div>
 
         {/* Partners Grid - Mobile Optimized */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.8, delay: 0.9 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
           className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 lg:mb-16"
         >
           {activePartners?.map((partner, index) => (
@@ -272,7 +278,7 @@ const PartnershipEcosystem = () => {
               key={partner?.id}
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.1 * index }}
+              transition={{ duration: 0.3, delay: 0.05 * index }}
               className="group cursor-pointer"
               onClick={() => setActivePartner(partner)}
             >
@@ -339,7 +345,7 @@ const PartnershipEcosystem = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 1.2 }}
+          transition={{ duration: 0.4, delay: 0.4 }}
           className="bg-gradient-to-r from-accent to-primary rounded-xl sm:rounded-2xl lg:rounded-3xl p-8 sm:p-12 text-white text-center"
         >
           <h3 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">The Partnership Advantage</h3>
@@ -368,7 +374,7 @@ const PartnershipEcosystem = () => {
             ]?.map((advantage, index) => (
               <div key={index} className="text-center">
                 <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 mx-auto">
-                  <AppIcon name={advantage?.icon} size={24} sm:size={32} className="text-white" />
+                  <AppIcon name={advantage?.icon} size={24} className="text-white" />
                 </div>
                 <h4 className="font-bold text-base sm:text-lg mb-1 sm:mb-2">{advantage?.title}</h4>
                 <p className="text-white/80 text-xs sm:text-sm">{advantage?.description}</p>
