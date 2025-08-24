@@ -67,6 +67,7 @@ const CultureShowcase = () => {
       title: 'Innovation War Room',
       description: 'Where breakthrough ideas are born and impossible becomes inevitable.',
       category: 'workspace',
+      icon: 'Lightbulb',
       imageUrl: 'https://images.unsplash.com/photo-1606857521015-7f9fcf423740?w=400&h=300&fit=crop',
       color: 'from-blue-500 to-purple-500'
     },
@@ -76,15 +77,17 @@ const CultureShowcase = () => {
       title: 'Team Collaboration',
       description: 'Cross-functional magic happening in real-time.',
       category: 'teamwork',
+      icon: 'Users',
       imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=300&fit=crop',
       color: 'from-green-500 to-teal-500'
     },
     {
       id: 3,
-      type: 'video',
+      type: 'image',
       title: 'Behind the Scenes',
       description: 'A day in the life of digital rebels making extraordinary happen.',
       category: 'culture',
+      icon: 'Heart',
       imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
       color: 'from-accent to-red-500'
     },
@@ -94,6 +97,7 @@ const CultureShowcase = () => {
       title: 'Celebration Moments',
       description: 'Celebrating wins, big and small, because every breakthrough matters.',
       category: 'events',
+      icon: 'Award',
       imageUrl: 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=400&h=300&fit=crop',
       color: 'from-yellow-500 to-orange-500'
     },
@@ -103,15 +107,17 @@ const CultureShowcase = () => {
       title: 'Learning Sessions',
       description: 'Continuous learning is part of our DNA—staying ahead of tomorrow.',
       category: 'growth',
+      icon: 'BookOpen',
       imageUrl: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&h=300&fit=crop',
       color: 'from-purple-500 to-pink-500'
     },
     {
       id: 6,
-      type: 'video',
+      type: 'image',
       title: 'Client Co-Creation',
       description: 'Partnership in action—creating solutions together.',
       category: 'collaboration',
+      icon: 'Handshake',
       imageUrl: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400&h=300&fit=crop',
       color: 'from-indigo-500 to-blue-500'
     }
@@ -278,15 +284,11 @@ const CultureShowcase = () => {
                   
                   {/* Content */}
                   <div className="relative h-full flex flex-col justify-between p-4 sm:p-6">
-                    {/* Top Section - Category Badge */}
+                    {/* Top Section - Icon and Category Badge */}
                     <div className="flex justify-between items-start">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-                        media?.type === 'video' 
-                          ? 'bg-white/20 group-hover:bg-white/30' 
-                          : 'bg-white/10 group-hover:bg-white/20'
-                      }`}>
+                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-300 group-hover:bg-white/30 group-hover:scale-110">
                         <AppIcon 
-                          name={media?.type === 'video' ? 'Play' : 'Camera'} 
+                          name={media?.icon} 
                           size={20} 
                           className="text-white" 
                         />
@@ -312,15 +314,6 @@ const CultureShowcase = () => {
                       </div>
                     </div>
                   </div>
-                  
-                  {/* Play Button Overlay for Videos */}
-                  {media?.type === 'video' && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="w-16 h-16 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-110">
-                        <AppIcon name="Play" size={24} className="text-white ml-1" />
-                      </div>
-                    </div>
-                  )}
                 </div>
               </motion.div>
             ))}
