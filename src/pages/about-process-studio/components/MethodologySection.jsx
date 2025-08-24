@@ -126,11 +126,19 @@ const MethodologySection = () => {
       ([entry]) => {
         setIsInView(entry?.isIntersecting);
       },
-      { threshold: 0.2 }
+      { 
+        threshold: 0.05, // Changed from 0.2 to 0.05 - triggers much sooner
+        rootMargin: '100px' // Add this - starts animation 100px before element is visible
+      }
     );
 
     if (sectionRef?.current) {
       observer?.observe(sectionRef?.current);
+    }
+
+    // Also set visibility immediately on mobile
+    if (window.innerWidth < 768) {
+      setIsInView(true); // Immediate visibility on mobile
     }
 
     return () => observer?.disconnect();
@@ -151,7 +159,7 @@ const MethodologySection = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
           className="text-center mb-8 sm:mb-12 lg:mb-16"
         >
           <div className="inline-flex items-center space-x-2 bg-accent/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6">
@@ -167,40 +175,35 @@ const MethodologySection = () => {
           </p>
         </motion.div>
 
-        {/* Process Navigation - Horizontal scroll on mobile */}
+        {/* Process Navigation - FIXED: Now with flex-wrap */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mb-8 sm:mb-12 lg:mb-16 overflow-x-auto"
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="flex flex-wrap justify-center gap-3 mb-8 sm:mb-12 lg:mb-16"
         >
-          <div className="flex space-x-2 sm:space-x-4 justify-start sm:justify-center min-w-max px-2 sm:px-0">
-            {methodology?.map((phase, index) => (
-              <button
-                key={phase?.id}
-                onClick={() => setActivePhase(index)}
-                className={`flex items-center space-x-2 sm:space-x-3 px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold transition-all duration-500 whitespace-nowrap ${
-                  activePhase === index
-                    ? 'bg-gradient-to-r from-accent to-primary text-white shadow-brand-elevation transform scale-105'
-                    : 'bg-white text-text-secondary hover:bg-accent/5 hover:text-accent shadow-brand-md'
-                }`}
-              >
-                <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ${
-                  activePhase === index ? 'bg-white/20' : 'bg-accent/10'
-                }`}>
-                  <AppIcon 
-                    name={phase?.icon} 
-                    size={16} 
-                    className={activePhase === index ? 'text-white' : 'text-accent'} 
-                  />
-                </div>
-                <div className="text-left">
-                  <div className="text-xs sm:text-sm font-bold">Phase {index + 1}</div>
-                  <div className="text-xs opacity-80 hidden sm:block">{phase?.phase}</div>
-                </div>
-              </button>
-            ))}
-          </div>
+          {methodology?.map((phase, index) => (
+            <button
+              key={phase?.id}
+              onClick={() => setActivePhase(index)}
+              className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-semibold transition-all duration-300 text-sm sm:text-base ${
+                activePhase === index
+                  ? 'bg-gradient-to-r from-accent to-primary text-white shadow-lg transform scale-105'
+                  : 'bg-white text-text-secondary hover:bg-accent/5 hover:text-accent shadow-md'
+              }`}
+            >
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                activePhase === index ? 'bg-white/20' : 'bg-accent/10'
+              }`}>
+                <AppIcon 
+                  name={phase?.icon} 
+                  size={14} 
+                  className={activePhase === index ? 'text-white' : 'text-accent'} 
+                />
+              </div>
+              <span>Phase {index + 1}</span>
+            </button>
+          ))}
         </motion.div>
 
         {/* Active Phase Content - Mobile Optimized */}
@@ -210,7 +213,7 @@ const MethodologySection = () => {
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.3 }}
             className="bg-white rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-brand-elevation-lg overflow-hidden"
           >
             {/* Phase Header */}
@@ -218,7 +221,7 @@ const MethodologySection = () => {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center space-x-3 sm:space-x-4">
                   <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center">
-                    <AppIcon name={activeMethodology?.icon} size={24} sm:size={32} className="text-white" />
+                    <AppIcon name={activeMethodology?.icon} size={24} className="text-white" />
                   </div>
                   <div>
                     <h3 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">{activeMethodology?.phase}</h3>
@@ -338,7 +341,7 @@ const MethodologySection = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 1, delay: 1 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
           className="mt-8 sm:mt-12 lg:mt-16"
         >
           <h3 className="text-xl sm:text-2xl font-bold text-center text-primary mb-6 sm:mb-8">End-to-End Journey</h3>
@@ -353,7 +356,7 @@ const MethodologySection = () => {
                         : 'bg-gray-200 text-text-secondary'
                     }`}
                   >
-                    <AppIcon name={phase?.icon} size={20} sm:size={24} />
+                    <AppIcon name={phase?.icon} size={20} />
                   </div>
                   {index < methodology?.length - 1 && (
                     <div className={`w-6 sm:w-8 h-1 transition-colors duration-300 ${

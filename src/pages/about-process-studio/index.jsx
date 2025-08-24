@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
 import Footer from '../../components/ui/Footer';
 import HeroSection from './components/HeroSection';
@@ -12,8 +11,19 @@ import PartnershipEcosystem from './components/PartnershipEcosystem';
 
 const AboutProcessStudio = () => {
   useEffect(() => {
-    // Smooth scroll behavior for anchor links
+    // Reduce motion for mobile devices
+    const isMobile = window.innerWidth < 768;
+    
+    if (isMobile) {
+      // Add a class to body for conditional CSS
+      document.body.classList.add('mobile-device');
+    }
+    
+    // Smooth scroll with less delay
     document.documentElement.style.scrollBehavior = 'smooth';
+    
+    // Faster page appearance
+    document.body.style.opacity = '1';
     
     // Scroll to top on mount
     window.scrollTo(0, 0);
@@ -35,6 +45,7 @@ const AboutProcessStudio = () => {
     
     // Cleanup on unmount
     return () => {
+      document.body.classList.remove('mobile-device');
       document.documentElement.style.scrollBehavior = 'auto';
       imageObserver.disconnect();
     };
@@ -42,37 +53,86 @@ const AboutProcessStudio = () => {
 
   return (
     <>
-      <Helmet>
-        <title>About & Process Studio - Rule27 Digital Powerhouse</title>
-        <meta 
-          name="description" 
-          content="Discover the rebellious spirit of Rule27 - where innovation meets Apple-level execution. Meet our team, explore our methodology, and experience the culture that breaks conventional boundaries." 
-        />
-        <meta name="keywords" content="Rule27 team, creative process, agency methodology, digital innovation, team expertise, company culture" />
+      {/* Global Performance Styles */}
+      <style>{`
+        /* Faster animations on mobile */
+        @media (max-width: 768px) {
+          * {
+            animation-duration: 0.3s !important;
+            transition-duration: 0.2s !important;
+          }
+          
+          /* Disable complex animations on mobile for performance */
+          .animate-pulse {
+            animation: none;
+            opacity: 0.3;
+          }
+          
+          /* Immediate visibility for hero content */
+          .hero-wrapper {
+            opacity: 1 !important;
+            transform: none !important;
+          }
+        }
         
-        {/* Open Graph */}
-        <meta property="og:title" content="About & Process Studio - Rule27's Authentic Brand Story" />
-        <meta property="og:description" content="The rebellious spirit of innovation wrapped in Apple-level execution excellence. Meet the team and methodology behind Rule27's confident disruption." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://rule27.com/about-process-studio" />
-        <meta property="og:image" content="/assets/og-image.jpg" />
+        /* Consistent tab wrapping */
+        .flex-wrap {
+          row-gap: 0.75rem;
+        }
         
-        {/* Twitter Card */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="About Rule27 - The Digital Powerhouse" />
-        <meta name="twitter:description" content="Meet the rebels behind Rule27's creative excellence" />
-        <meta name="twitter:image" content="/assets/og-image.jpg" />
+        /* Better touch targets */
+        button {
+          min-height: 44px;
+          min-width: 44px;
+        }
         
-        {/* Mobile Optimization */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+        /* Prevent white flash on load */
+        body {
+          opacity: 1;
+          background-color: #ffffff;
+        }
         
-        {/* Canonical */}
-        <link rel="canonical" href="https://rule27.com/about-process-studio" />
+        /* Page load animation */
+        .page-loaded {
+          animation: pageLoad 0.6s ease-out;
+        }
         
-        {/* Preload critical resources */}
-        <link rel="preload" href="/assets/logo/rule27-color.svg" as="image" />
-        <link rel="preload" href="/assets/logo/rule27-white.svg" as="image" />
-      </Helmet>
+        @keyframes pageLoad {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .section-wrapper {
+          position: relative;
+          overflow: visible;
+        }
+        
+        .hero-wrapper {
+          position: relative;
+          z-index: 1;
+        }
+        
+        img.loaded {
+          animation: imageLoad 0.6s ease-out;
+        }
+        
+        @keyframes imageLoad {
+          from {
+            opacity: 0;
+            filter: blur(5px);
+          }
+          to {
+            opacity: 1;
+            filter: blur(0);
+          }
+        }
+      `}</style>
 
       <div className="min-h-screen bg-background overflow-x-hidden">
         {/* Header - Same component as homepage */}
@@ -122,49 +182,6 @@ const AboutProcessStudio = () => {
         {/* Back to Top Button */}
         <BackToTop />
       </div>
-
-      {/* Page-specific styles */}
-      <style jsx>{`
-        .page-loaded {
-          animation: pageLoad 0.6s ease-out;
-        }
-        
-        @keyframes pageLoad {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .section-wrapper {
-          position: relative;
-          overflow: visible;
-        }
-        
-        .hero-wrapper {
-          position: relative;
-          z-index: 1;
-        }
-        
-        img.loaded {
-          animation: imageLoad 0.6s ease-out;
-        }
-        
-        @keyframes imageLoad {
-          from {
-            opacity: 0;
-            filter: blur(5px);
-          }
-          to {
-            opacity: 1;
-            filter: blur(0);
-          }
-        }
-      `}</style>
     </>
   );
 };

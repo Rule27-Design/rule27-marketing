@@ -50,11 +50,19 @@ const OriginStory = () => {
       ([entry]) => {
         setIsInView(entry?.isIntersecting);
       },
-      { threshold: 0.3 }
+      { 
+        threshold: 0.05, // Changed from 0.3 to 0.05 - triggers much sooner
+        rootMargin: '100px' // Add this - starts animation 100px before element is visible
+      }
     );
 
     if (sectionRef?.current) {
       observer?.observe(sectionRef?.current);
+    }
+
+    // Also set visibility immediately on mobile
+    if (window.innerWidth < 768) {
+      setIsInView(true); // Immediate visibility on mobile
     }
 
     return () => observer?.disconnect();
@@ -67,7 +75,7 @@ const OriginStory = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
           className="text-center mb-12 sm:mb-16 lg:mb-20"
         >
           <div className="inline-flex items-center space-x-2 bg-accent/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6">
@@ -95,7 +103,7 @@ const OriginStory = () => {
                 key={index}
                 initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
                 animate={isInView ? { opacity: 1, x: 0 } : {}}
-                transition={{ duration: 0.8, delay: index * 0.2 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
                 className={`flex flex-col md:flex-row items-center ${
                   index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
                 }`}
@@ -107,7 +115,7 @@ const OriginStory = () => {
                   <div className="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-brand-md hover:shadow-brand-elevation-lg transition-all duration-500 group cursor-pointer">
                     <div className="flex items-center space-x-3 sm:space-x-4 mb-3 sm:mb-4">
                       <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r ${milestone?.color} rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                        <AppIcon name={milestone?.icon} size={20} sm:size={24} className="text-white" />
+                        <AppIcon name={milestone?.icon} size={20} className="text-white" />
                       </div>
                       <div className="text-xl sm:text-2xl font-bold text-accent">{milestone?.year}</div>
                     </div>
@@ -136,11 +144,11 @@ const OriginStory = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 1, delay: 1 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
           className="mt-12 sm:mt-16 lg:mt-24 text-center"
         >
           <div className="bg-gradient-to-r from-accent to-primary rounded-xl sm:rounded-2xl p-8 sm:p-12 text-white max-w-4xl mx-auto">
-            <AppIcon name="Quote" size={36} sm:size={48} className="mx-auto mb-4 sm:mb-6 opacity-70" />
+            <AppIcon name="Quote" size={36} className="mx-auto mb-4 sm:mb-6 opacity-70" />
             <h3 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">The 27th Rule Philosophy</h3>
             <p className="text-base sm:text-lg md:text-xl leading-relaxed opacity-90">
               "While the industry follows 26 established design principles, we believe in writing the 27th rule - 

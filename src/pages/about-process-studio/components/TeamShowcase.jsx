@@ -100,11 +100,19 @@ const TeamShowcase = () => {
       ([entry]) => {
         setIsInView(entry?.isIntersecting);
       },
-      { threshold: 0.2 }
+      { 
+        threshold: 0.05, // Changed from 0.2 to 0.05 - triggers much sooner
+        rootMargin: '100px' // Add this - starts animation 100px before element is visible
+      }
     );
 
     if (sectionRef?.current) {
       observer?.observe(sectionRef?.current);
+    }
+
+    // Also set visibility immediately on mobile
+    if (window.innerWidth < 768) {
+      setIsInView(true); // Immediate visibility on mobile
     }
 
     return () => observer?.disconnect();
@@ -117,7 +125,7 @@ const TeamShowcase = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
           className="text-center mb-8 sm:mb-12 lg:mb-16"
         >
           <div className="inline-flex items-center space-x-2 bg-accent/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6">
@@ -133,39 +141,34 @@ const TeamShowcase = () => {
           </p>
         </motion.div>
 
-        {/* Category Filter - Horizontal scroll on mobile */}
+        {/* Category Filter - FIXED: Now with flex-wrap */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mb-8 sm:mb-12 lg:mb-16 overflow-x-auto"
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="flex flex-wrap justify-center gap-3 mb-8 sm:mb-12 lg:mb-16"
         >
-          <div className="flex space-x-2 sm:space-x-4 justify-start sm:justify-center min-w-max px-4 sm:px-0">
-            {teamCategories?.map((category) => (
-              <button
-                key={category?.id}
-                onClick={() => setActiveCategory(category?.id)}
-                className={`flex items-center space-x-2 px-3 sm:px-4 lg:px-6 py-2 sm:py-3 rounded-full font-semibold transition-all duration-300 whitespace-nowrap text-sm sm:text-base ${
-                  activeCategory === category?.id
-                    ? 'bg-accent text-white shadow-brand-md transform scale-105'
-                    : 'bg-surface text-text-secondary hover:bg-accent/10 hover:text-accent'
-                }`}
-              >
-                <AppIcon name={category?.icon} size={16} />
-                <span className="hidden sm:inline">{category?.label}</span>
-                <span className="sm:hidden">
-                  {category?.label === 'All Team' ? 'All' : category?.label}
-                </span>
-              </button>
-            ))}
-          </div>
+          {teamCategories?.map((category) => (
+            <button
+              key={category?.id}
+              onClick={() => setActiveCategory(category?.id)}
+              className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-semibold transition-all duration-300 text-sm sm:text-base ${
+                activeCategory === category?.id
+                  ? 'bg-accent text-white shadow-lg transform scale-105'
+                  : 'bg-surface text-text-secondary hover:bg-accent/10 hover:text-accent'
+              }`}
+            >
+              <AppIcon name={category?.icon} size={16} className="flex-shrink-0" />
+              <span>{category?.label}</span>
+            </button>
+          ))}
         </motion.div>
 
         {/* Team Grid - Mobile Optimized */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.8, delay: 0.5 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
         >
           <AnimatePresence mode="wait">
@@ -176,7 +179,7 @@ const TeamShowcase = () => {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
                 className="group cursor-pointer"
                 onClick={() => setSelectedMember(member)}
               >

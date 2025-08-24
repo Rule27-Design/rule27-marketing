@@ -119,11 +119,19 @@ const CultureShowcase = () => {
       ([entry]) => {
         setIsInView(entry?.isIntersecting);
       },
-      { threshold: 0.2 }
+      { 
+        threshold: 0.05, // Changed from 0.2 to 0.05 - triggers much sooner
+        rootMargin: '100px' // Add this - starts animation 100px before element is visible
+      }
     );
 
     if (sectionRef?.current) {
       observer?.observe(sectionRef?.current);
+    }
+
+    // Also set visibility immediately on mobile
+    if (window.innerWidth < 768) {
+      setIsInView(true); // Immediate visibility on mobile
     }
 
     return () => observer?.disconnect();
@@ -144,7 +152,7 @@ const CultureShowcase = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
           className="text-center mb-8 sm:mb-12 lg:mb-16"
         >
           <div className="inline-flex items-center space-x-2 bg-accent/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6">
@@ -164,26 +172,25 @@ const CultureShowcase = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.3 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
           className="mb-12 sm:mb-16 lg:mb-20"
         >
           <h3 className="text-2xl sm:text-3xl font-bold text-center text-primary mb-8 sm:mb-12">Our Core Values</h3>
           
-          {/* Values Navigation - Mobile Optimized */}
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-8 sm:mb-12">
+          {/* Values Navigation - FIXED: Already has flex-wrap, keeping consistency */}
+          <div className="flex flex-wrap justify-center gap-3 mb-8 sm:mb-12">
             {coreValues?.map((value, index) => (
               <button
                 key={value?.id}
                 onClick={() => setActiveValue(index)}
-                className={`flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 rounded-xl sm:rounded-2xl font-semibold transition-all duration-500 text-sm sm:text-base ${
+                className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-semibold transition-all duration-300 text-sm sm:text-base min-w-[140px] sm:min-w-auto ${
                   activeValue === index
-                    ? `bg-gradient-to-r ${value?.color} text-white shadow-brand-elevation transform scale-105`
+                    ? `bg-gradient-to-r ${value?.color} text-white shadow-lg transform scale-105`
                     : 'bg-surface text-text-secondary hover:bg-accent/5 hover:text-accent'
                 }`}
               >
-                <AppIcon name={value?.icon} size={16} sm:size={20} />
-                <span className="hidden sm:inline">{value?.title}</span>
-                <span className="sm:hidden">{value?.title.split(' ')[0]}</span>
+                <AppIcon name={value?.icon} size={16} className="flex-shrink-0" />
+                <span>{value?.title.split(' ')[0]}</span>
               </button>
             ))}
           </div>
@@ -194,7 +201,7 @@ const CultureShowcase = () => {
               <div>
                 <div className="flex items-center space-x-3 sm:space-x-4 mb-4 sm:mb-6">
                   <div className={`w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r ${coreValues?.[activeValue]?.color} rounded-xl sm:rounded-2xl flex items-center justify-center`}>
-                    <AppIcon name={coreValues?.[activeValue]?.icon} size={24} sm:size={32} className="text-white" />
+                    <AppIcon name={coreValues?.[activeValue]?.icon} size={24} className="text-white" />
                   </div>
                   <h4 className="text-2xl sm:text-3xl font-bold text-primary">{coreValues?.[activeValue]?.title}</h4>
                 </div>
@@ -217,7 +224,7 @@ const CultureShowcase = () => {
                 <div className="w-full h-48 sm:h-56 lg:h-64 bg-gradient-to-br from-accent/10 to-primary/10 rounded-xl sm:rounded-2xl flex items-center justify-center">
                   <div className="text-center">
                     <div className={`w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-r ${coreValues?.[activeValue]?.color} rounded-full flex items-center justify-center mb-4 mx-auto`}>
-                      <AppIcon name={coreValues?.[activeValue]?.icon} size={40} sm:size={48} className="text-white" />
+                      <AppIcon name={coreValues?.[activeValue]?.icon} size={40} className="text-white" />
                     </div>
                     <p className="text-text-secondary font-medium text-sm sm:text-base">Value in Action</p>
                   </div>
@@ -231,7 +238,7 @@ const CultureShowcase = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.6 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
           className="mb-12 sm:mb-16 lg:mb-20"
         >
           <h3 className="text-2xl sm:text-3xl font-bold text-center text-primary mb-8 sm:mb-12">Behind the Scenes</h3>
@@ -241,7 +248,7 @@ const CultureShowcase = () => {
                 key={media?.id}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.5, delay: 0.1 * index }}
+                transition={{ duration: 0.3, delay: 0.05 * index }}
                 className="group cursor-pointer"
                 onClick={() => setSelectedMedia(media)}
               >
@@ -250,7 +257,7 @@ const CultureShowcase = () => {
                     <div className="text-center p-4">
                       <AppIcon 
                         name={media?.type === 'video' ? 'Play' : 'Image'} 
-                        size={36} sm:size={48} 
+                        size={36} 
                         className="text-white mb-3 sm:mb-4 mx-auto group-hover:scale-110 transition-transform duration-300" 
                       />
                       <h4 className="text-white font-bold text-base sm:text-lg mb-1 sm:mb-2">{media?.title}</h4>
@@ -273,7 +280,7 @@ const CultureShowcase = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.9 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
         >
           <h3 className="text-2xl sm:text-3xl font-bold text-center text-primary mb-8 sm:mb-12">Why We Love Working Here</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -284,7 +291,7 @@ const CultureShowcase = () => {
               >
                 <div className="flex items-center space-x-3 sm:space-x-4 mb-3 sm:mb-4">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-accent/10 group-hover:bg-accent group-hover:text-white rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300">
-                    <AppIcon name={perk?.icon} size={20} sm:size={24} className="text-accent group-hover:text-white" />
+                    <AppIcon name={perk?.icon} size={20} className="text-accent group-hover:text-white" />
                   </div>
                   <h4 className="font-bold text-primary text-sm sm:text-base">{perk?.title}</h4>
                 </div>
@@ -298,7 +305,7 @@ const CultureShowcase = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 1.2 }}
+          transition={{ duration: 0.4, delay: 0.4 }}
           className="text-center mt-12 sm:mt-16"
         >
           <div className="bg-gradient-to-r from-accent to-primary rounded-xl sm:rounded-2xl lg:rounded-3xl p-8 sm:p-12 text-white">
