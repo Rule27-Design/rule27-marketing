@@ -24,7 +24,7 @@ const CultureShowcase = () => {
     },
     {
       id: 2,
-      title: 'Apple-Level Excellence',
+      title: 'Excellence Obsession',
       description: 'Obsessive attention to detail, relentless pursuit of perfection, and user-first thinking in everything we create.',
       icon: 'Award',
       color: 'from-blue-500 to-purple-400',

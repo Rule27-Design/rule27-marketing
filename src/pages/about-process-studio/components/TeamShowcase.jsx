@@ -26,7 +26,7 @@ const TeamShowcase = () => {
       expertise: ['Brand Strategy', 'Creative Direction', 'Innovation Leadership'],
       bio: 'The rebel who asked "What if design had no limits?" Alex founded Rule27 on the belief that creativity should break boundaries, not follow them.',
       projects: ['Nike Revolution Campaign', 'Tesla Interface Redesign', 'Apple Store Experience'],
-      personality: 'Visionary, Bold, Apple-obsessed',
+      personality: 'Visionary, Bold, Perfectionist',
       social: { linkedin: '#', twitter: '#', instagram: '#' }
     },
     {

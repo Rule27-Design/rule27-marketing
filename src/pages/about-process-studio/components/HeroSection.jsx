@@ -60,7 +60,7 @@ const HeroSection = () => {
         >
           <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed px-4">
             Born from <span className="text-accent font-semibold">rebellious innovation</span> and crafted with 
-            <span className="text-white font-semibold"> Apple-level execution</span>. Meet the minds, methodology, 
+            <span className="text-white font-semibold"> obsessive perfection</span>. Meet the minds, methodology, 
             and culture that make conventional boundaries disappear.
           </p>
         </motion.div>
