@@ -66,42 +66,54 @@ const CultureShowcase = () => {
       type: 'image',
       title: 'Innovation War Room',
       description: 'Where breakthrough ideas are born and impossible becomes inevitable.',
-      category: 'workspace'
+      category: 'workspace',
+      imageUrl: 'https://images.unsplash.com/photo-1606857521015-7f9fcf423740?w=400&h=300&fit=crop',
+      color: 'from-blue-500 to-purple-500'
     },
     {
       id: 2,
       type: 'image',
       title: 'Team Collaboration',
       description: 'Cross-functional magic happening in real-time.',
-      category: 'teamwork'
+      category: 'teamwork',
+      imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=300&fit=crop',
+      color: 'from-green-500 to-teal-500'
     },
     {
       id: 3,
       type: 'video',
       title: 'Behind the Scenes',
       description: 'A day in the life of digital rebels making extraordinary happen.',
-      category: 'culture'
+      category: 'culture',
+      imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
+      color: 'from-accent to-red-500'
     },
     {
       id: 4,
       type: 'image',
       title: 'Celebration Moments',
       description: 'Celebrating wins, big and small, because every breakthrough matters.',
-      category: 'events'
+      category: 'events',
+      imageUrl: 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=400&h=300&fit=crop',
+      color: 'from-yellow-500 to-orange-500'
     },
     {
       id: 5,
       type: 'image',
       title: 'Learning Sessions',
       description: 'Continuous learning is part of our DNA—staying ahead of tomorrow.',
-      category: 'growth'
+      category: 'growth',
+      imageUrl: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&h=300&fit=crop',
+      color: 'from-purple-500 to-pink-500'
     },
     {
       id: 6,
       type: 'video',
       title: 'Client Co-Creation',
       description: 'Partnership in action—creating solutions together.',
-      category: 'collaboration'
+      category: 'collaboration',
+      imageUrl: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400&h=300&fit=crop',
+      color: 'from-indigo-500 to-blue-500'
     }
   ];
 
@@ -252,24 +264,63 @@ const CultureShowcase = () => {
                 className="group cursor-pointer"
                 onClick={() => setSelectedMedia(media)}
               >
-                <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-accent/20 to-primary/20 h-48 sm:h-56 lg:h-64 group-hover:shadow-brand-elevation-lg transition-all duration-500">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center p-4">
-                      <AppIcon 
-                        name={media?.type === 'video' ? 'Play' : 'Image'} 
-                        size={36} 
-                        className="text-white mb-3 sm:mb-4 mx-auto group-hover:scale-110 transition-transform duration-300" 
-                      />
-                      <h4 className="text-white font-bold text-base sm:text-lg mb-1 sm:mb-2">{media?.title}</h4>
-                      <p className="text-white/80 text-xs sm:text-sm px-4">{media?.description}</p>
+                <div className="relative overflow-hidden rounded-xl sm:rounded-2xl h-48 sm:h-56 lg:h-64 bg-gray-100 group-hover:shadow-brand-elevation-lg transition-all duration-500">
+                  {/* Background Image */}
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+                    style={{
+                      backgroundImage: `url(${media?.imageUrl})`,
+                    }}
+                  >
+                    {/* Gradient Overlay */}
+                    <div className={`absolute inset-0 bg-gradient-to-t ${media?.color} opacity-80 group-hover:opacity-70 transition-opacity duration-300`}></div>
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="relative h-full flex flex-col justify-between p-4 sm:p-6">
+                    {/* Top Section - Category Badge */}
+                    <div className="flex justify-between items-start">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                        media?.type === 'video' 
+                          ? 'bg-white/20 group-hover:bg-white/30' 
+                          : 'bg-white/10 group-hover:bg-white/20'
+                      }`}>
+                        <AppIcon 
+                          name={media?.type === 'video' ? 'Play' : 'Camera'} 
+                          size={20} 
+                          className="text-white" 
+                        />
+                      </div>
+                      <span className="bg-white/20 backdrop-blur-sm text-white px-2 sm:px-3 py-1 rounded-full text-xs font-medium">
+                        {media?.category}
+                      </span>
+                    </div>
+                    
+                    {/* Bottom Section - Title and Description */}
+                    <div className="text-white">
+                      <h4 className="font-bold text-base sm:text-lg mb-1 sm:mb-2 group-hover:translate-x-1 transition-transform duration-300">
+                        {media?.title}
+                      </h4>
+                      <p className="text-white/90 text-xs sm:text-sm line-clamp-2">
+                        {media?.description}
+                      </p>
+                      
+                      {/* View More Indicator */}
+                      <div className="mt-3 flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <span className="text-xs font-medium">View Details</span>
+                        <AppIcon name="ArrowRight" size={14} className="text-white" />
+                      </div>
                     </div>
                   </div>
-                  <div className="absolute top-4 right-4">
-                    <span className="bg-white/20 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">
-                      {media?.category}
-                    </span>
-                  </div>
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+                  
+                  {/* Play Button Overlay for Videos */}
+                  {media?.type === 'video' && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-16 h-16 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-110">
+                        <AppIcon name="Play" size={24} className="text-white ml-1" />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             ))}
