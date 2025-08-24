@@ -66,7 +66,7 @@ const MethodologySection = () => {
     {
       id: 3,
       phase: 'Design & Development',
-      subtitle: 'Apple-Level Execution Excellence',
+      subtitle: 'Obsessive Excellence in Execution',
       icon: 'Palette',
       color: 'from-green-500 to-teal-400',
       duration: '4-8 weeks',
