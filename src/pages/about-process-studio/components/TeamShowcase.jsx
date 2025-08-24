@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppIcon from '../../../components/AppIcon';
 
-
 const TeamShowcase = () => {
   const [selectedMember, setSelectedMember] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
@@ -112,57 +111,62 @@ const TeamShowcase = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="py-24 bg-white">
+    <section ref={sectionRef} className="py-12 sm:py-16 md:py-20 lg:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
+        {/* Section Header - Mobile Optimized */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }}
-          className="text-center mb-16"
+          className="text-center mb-8 sm:mb-12 lg:mb-16"
         >
-          <div className="inline-flex items-center space-x-2 bg-accent/10 px-4 py-2 rounded-full mb-6">
+          <div className="inline-flex items-center space-x-2 bg-accent/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6">
             <AppIcon name="Users" size={16} className="text-accent" />
-            <span className="text-accent font-semibold text-sm">Meet Our Team</span>
+            <span className="text-accent font-semibold text-xs sm:text-sm">Meet Our Team</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-primary mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4 sm:mb-6">
             The <span className="text-accent">Rebel Alliance</span>
           </h2>
-          <p className="text-xl text-text-secondary max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4">
             Meet the visionaries, creators, and technical wizards who make Rule27 the digital powerhouse 
             that transforms ambitious brands into industry leaders.
           </p>
         </motion.div>
 
-        {/* Category Filter */}
+        {/* Category Filter - Horizontal scroll on mobile */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex flex-wrap justify-center gap-4 mb-16"
+          className="mb-8 sm:mb-12 lg:mb-16 overflow-x-auto"
         >
-          {teamCategories?.map((category) => (
-            <button
-              key={category?.id}
-              onClick={() => setActiveCategory(category?.id)}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
-                activeCategory === category?.id
-                  ? 'bg-accent text-white shadow-brand-md transform scale-105'
-                  : 'bg-surface text-text-secondary hover:bg-accent/10 hover:text-accent'
-              }`}
-            >
-              <AppIcon name={category?.icon} size={16} />
-              <span>{category?.label}</span>
-            </button>
-          ))}
+          <div className="flex space-x-2 sm:space-x-4 justify-start sm:justify-center min-w-max px-4 sm:px-0">
+            {teamCategories?.map((category) => (
+              <button
+                key={category?.id}
+                onClick={() => setActiveCategory(category?.id)}
+                className={`flex items-center space-x-2 px-3 sm:px-4 lg:px-6 py-2 sm:py-3 rounded-full font-semibold transition-all duration-300 whitespace-nowrap text-sm sm:text-base ${
+                  activeCategory === category?.id
+                    ? 'bg-accent text-white shadow-brand-md transform scale-105'
+                    : 'bg-surface text-text-secondary hover:bg-accent/10 hover:text-accent'
+                }`}
+              >
+                <AppIcon name={category?.icon} size={16} />
+                <span className="hidden sm:inline">{category?.label}</span>
+                <span className="sm:hidden">
+                  {category?.label === 'All Team' ? 'All' : category?.label}
+                </span>
+              </button>
+            ))}
+          </div>
         </motion.div>
 
-        {/* Team Grid */}
+        {/* Team Grid - Mobile Optimized */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.8, delay: 0.5 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
         >
           <AnimatePresence mode="wait">
             {filteredMembers?.map((member, index) => (
@@ -176,12 +180,12 @@ const TeamShowcase = () => {
                 className="group cursor-pointer"
                 onClick={() => setSelectedMember(member)}
               >
-                <div className="bg-surface rounded-2xl overflow-hidden shadow-brand-md hover:shadow-brand-elevation-lg transition-all duration-500 transform group-hover:-translate-y-2">
+                <div className="bg-surface rounded-xl sm:rounded-2xl overflow-hidden shadow-brand-md hover:shadow-brand-elevation-lg transition-all duration-500 transform group-hover:-translate-y-2">
                   {/* Member Image */}
                   <div className="relative overflow-hidden">
-                    <div className="w-full h-64 bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center">
-                      <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-brand-lg">
-                        <span className="text-4xl font-bold text-primary">{member?.name?.charAt(0)}</span>
+                    <div className="w-full h-48 sm:h-56 lg:h-64 bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center">
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 bg-white rounded-full flex items-center justify-center shadow-brand-lg">
+                        <span className="text-3xl sm:text-4xl font-bold text-primary">{member?.name?.charAt(0)}</span>
                       </div>
                     </div>
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300"></div>
@@ -193,31 +197,31 @@ const TeamShowcase = () => {
                   </div>
 
                   {/* Member Info */}
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-primary mb-1 group-hover:text-accent transition-colors duration-300">
+                  <div className="p-4 sm:p-5 lg:p-6">
+                    <h3 className="text-lg sm:text-xl font-bold text-primary mb-1 group-hover:text-accent transition-colors duration-300">
                       {member?.name}
                     </h3>
-                    <p className="text-text-secondary text-sm mb-4">{member?.role}</p>
+                    <p className="text-text-secondary text-xs sm:text-sm mb-3 sm:mb-4">{member?.role}</p>
                     
                     {/* Expertise Tags */}
-                    <div className="flex flex-wrap gap-2 mb-4">
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                       {member?.expertise?.slice(0, 2)?.map((skill, skillIndex) => (
                         <span
                           key={skillIndex}
-                          className="px-3 py-1 bg-accent/10 text-accent text-xs font-medium rounded-full"
+                          className="px-2 sm:px-3 py-1 bg-accent/10 text-accent text-xs font-medium rounded-full"
                         >
                           {skill}
                         </span>
                       ))}
                       {member?.expertise?.length > 2 && (
-                        <span className="px-3 py-1 bg-gray-100 text-text-secondary text-xs font-medium rounded-full">
+                        <span className="px-2 sm:px-3 py-1 bg-gray-100 text-text-secondary text-xs font-medium rounded-full">
                           +{member?.expertise?.length - 2} more
                         </span>
                       )}
                     </div>
 
                     {/* Bio Preview */}
-                    <p className="text-text-secondary text-sm leading-relaxed">
+                    <p className="text-text-secondary text-xs sm:text-sm leading-relaxed line-clamp-3">
                       {member?.bio?.substring(0, 120)}...
                     </p>
                   </div>
@@ -227,62 +231,62 @@ const TeamShowcase = () => {
           </AnimatePresence>
         </motion.div>
 
-        {/* Team Member Detail Modal */}
+        {/* Team Member Detail Modal - Mobile Optimized */}
         <AnimatePresence>
           {selectedMember && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-brand-modal"
+              className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center p-0 sm:p-4 z-brand-modal"
               onClick={() => setSelectedMember(null)}
             >
               <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+                initial={{ y: '100%', opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: '100%', opacity: 0 }}
+                className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl lg:max-w-4xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto"
                 onClick={(e) => e?.stopPropagation()}
               >
-                <div className="p-8">
-                  {/* Header */}
-                  <div className="flex items-start justify-between mb-8">
-                    <div className="flex items-center space-x-6">
-                      <div className="w-24 h-24 bg-gradient-to-br from-accent/20 to-primary/20 rounded-2xl flex items-center justify-center">
-                        <span className="text-3xl font-bold text-primary">{selectedMember?.name?.charAt(0)}</span>
+                <div className="p-6 sm:p-8">
+                  {/* Header with mobile-friendly close button */}
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-center space-x-4 sm:space-x-6">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-accent/20 to-primary/20 rounded-xl sm:rounded-2xl flex items-center justify-center">
+                        <span className="text-2xl sm:text-3xl font-bold text-primary">{selectedMember?.name?.charAt(0)}</span>
                       </div>
                       <div>
-                        <h3 className="text-3xl font-bold text-primary mb-2">{selectedMember?.name}</h3>
-                        <p className="text-accent font-semibold text-lg">{selectedMember?.role}</p>
-                        <p className="text-text-secondary">{selectedMember?.personality}</p>
+                        <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary mb-1 sm:mb-2">{selectedMember?.name}</h3>
+                        <p className="text-accent font-semibold text-sm sm:text-base lg:text-lg">{selectedMember?.role}</p>
+                        <p className="text-text-secondary text-xs sm:text-sm">{selectedMember?.personality}</p>
                       </div>
                     </div>
                     <button
                       onClick={() => setSelectedMember(null)}
-                      className="w-10 h-10 bg-gray-100 hover:bg-accent/10 rounded-full flex items-center justify-center transition-colors duration-300"
+                      className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-100 hover:bg-accent/10 rounded-full flex items-center justify-center transition-colors duration-300 flex-shrink-0"
                     >
                       <AppIcon name="X" size={20} className="text-text-secondary hover:text-accent" />
                     </button>
                   </div>
 
-                  {/* Content Grid */}
-                  <div className="grid md:grid-cols-2 gap-8">
+                  {/* Content Grid - Stack on mobile */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                     {/* Left Column */}
                     <div>
                       {/* Bio */}
-                      <div className="mb-8">
-                        <h4 className="text-xl font-bold text-primary mb-4">About</h4>
-                        <p className="text-text-secondary leading-relaxed">{selectedMember?.bio}</p>
+                      <div className="mb-6 sm:mb-8">
+                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3 sm:mb-4">About</h4>
+                        <p className="text-text-secondary text-sm sm:text-base leading-relaxed">{selectedMember?.bio}</p>
                       </div>
 
                       {/* Expertise */}
-                      <div className="mb-8">
-                        <h4 className="text-xl font-bold text-primary mb-4">Expertise</h4>
-                        <div className="flex flex-wrap gap-3">
+                      <div className="mb-6 sm:mb-8">
+                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3 sm:mb-4">Expertise</h4>
+                        <div className="flex flex-wrap gap-2 sm:gap-3">
                           {selectedMember?.expertise?.map((skill, index) => (
                             <span
                               key={index}
-                              className="px-4 py-2 bg-accent/10 text-accent font-medium rounded-full"
+                              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-accent/10 text-accent font-medium rounded-full text-sm sm:text-base"
                             >
                               {skill}
                             </span>
@@ -294,13 +298,13 @@ const TeamShowcase = () => {
                     {/* Right Column */}
                     <div>
                       {/* Featured Projects */}
-                      <div className="mb-8">
-                        <h4 className="text-xl font-bold text-primary mb-4">Featured Projects</h4>
-                        <ul className="space-y-3">
+                      <div className="mb-6 sm:mb-8">
+                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3 sm:mb-4">Featured Projects</h4>
+                        <ul className="space-y-2 sm:space-y-3">
                           {selectedMember?.projects?.map((project, index) => (
                             <li key={index} className="flex items-center space-x-3">
-                              <AppIcon name="CheckCircle" size={16} className="text-accent" />
-                              <span className="text-text-secondary">{project}</span>
+                              <AppIcon name="CheckCircle" size={16} className="text-accent flex-shrink-0" />
+                              <span className="text-text-secondary text-sm sm:text-base">{project}</span>
                             </li>
                           ))}
                         </ul>
@@ -308,13 +312,13 @@ const TeamShowcase = () => {
 
                       {/* Social Links */}
                       <div>
-                        <h4 className="text-xl font-bold text-primary mb-4">Connect</h4>
-                        <div className="flex space-x-4">
+                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3 sm:mb-4">Connect</h4>
+                        <div className="flex space-x-3 sm:space-x-4">
                           {Object?.entries(selectedMember?.social || {})?.map(([platform, link]) => (
                             <a
                               key={platform}
                               href={link}
-                              className="w-12 h-12 bg-accent/10 hover:bg-accent hover:text-white text-accent rounded-full flex items-center justify-center transition-all duration-300"
+                              className="w-10 h-10 sm:w-12 sm:h-12 bg-accent/10 hover:bg-accent hover:text-white text-accent rounded-full flex items-center justify-center transition-all duration-300"
                             >
                               <AppIcon 
                                 name={platform === 'linkedin' ? 'Linkedin' : platform === 'github' ? 'Github' : 'Share'} 

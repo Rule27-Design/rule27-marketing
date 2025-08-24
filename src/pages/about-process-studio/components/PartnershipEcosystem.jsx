@@ -178,34 +178,34 @@ const PartnershipEcosystem = () => {
   const stats = getPartnershipStats();
 
   return (
-    <section ref={sectionRef} className="py-24 bg-white">
+    <section ref={sectionRef} className="py-12 sm:py-16 md:py-20 lg:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
+        {/* Section Header - Mobile Optimized */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }}
-          className="text-center mb-16"
+          className="text-center mb-8 sm:mb-12 lg:mb-16"
         >
-          <div className="inline-flex items-center space-x-2 bg-accent/10 px-4 py-2 rounded-full mb-6">
+          <div className="inline-flex items-center space-x-2 bg-accent/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6">
             <AppIcon name="Network" size={16} className="text-accent" />
-            <span className="text-accent font-semibold text-sm">Partnership Ecosystem</span>
+            <span className="text-accent font-semibold text-xs sm:text-sm">Partnership Ecosystem</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-primary mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4 sm:mb-6">
             Strategic <span className="text-accent">Alliances</span>
           </h2>
-          <p className="text-xl text-text-secondary max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4">
             Our network of world-class partners enables us to deliver solutions that combine 
             cutting-edge technology with creative excellence. Together, we make the impossible possible.
           </p>
         </motion.div>
 
-        {/* Partnership Stats */}
+        {/* Partnership Stats - Mobile Optimized */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16"
+          className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12 lg:mb-16"
         >
           {[
             { number: stats?.total + '+', label: 'Strategic Partners', icon: 'Users' },
@@ -215,52 +215,57 @@ const PartnershipEcosystem = () => {
           ]?.map((stat, index) => (
             <div
               key={index}
-              className="bg-surface rounded-2xl p-6 text-center hover:shadow-brand-md transition-all duration-300 group"
+              className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center hover:shadow-brand-md transition-all duration-300 group"
             >
-              <div className="w-12 h-12 bg-accent/10 group-hover:bg-accent rounded-2xl flex items-center justify-center mb-4 mx-auto transition-all duration-300">
-                <AppIcon name={stat?.icon} size={24} className="text-accent group-hover:text-white transition-colors duration-300" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-accent/10 group-hover:bg-accent rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 mx-auto transition-all duration-300">
+                <AppIcon name={stat?.icon} size={20} sm:size={24} className="text-accent group-hover:text-white transition-colors duration-300" />
               </div>
-              <div className="text-2xl font-bold text-primary mb-1">{stat?.number}</div>
-              <div className="text-text-secondary text-sm">{stat?.label}</div>
+              <div className="text-xl sm:text-2xl font-bold text-primary mb-1">{stat?.number}</div>
+              <div className="text-text-secondary text-xs sm:text-sm">{stat?.label}</div>
             </div>
           ))}
         </motion.div>
 
-        {/* Category Filter */}
+        {/* Category Filter - Mobile Optimized with horizontal scroll */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="flex flex-wrap justify-center gap-4 mb-16"
+          className="mb-8 sm:mb-12 lg:mb-16 overflow-x-auto"
         >
-          {partnershipCategories?.map((category) => (
-            <button
-              key={category?.id}
-              onClick={() => setPartnerCategory(category?.id)}
-              className={`flex items-center space-x-3 px-6 py-4 rounded-2xl font-semibold transition-all duration-500 ${
-                partnerCategory === category?.id
-                  ? 'bg-gradient-to-r from-accent to-primary text-white shadow-brand-elevation transform scale-105'
-                  : 'bg-surface text-text-secondary hover:bg-accent/5 hover:text-accent'
-              }`}
-            >
-              <AppIcon name={category?.icon} size={20} />
-              <span>{category?.label}</span>
-              <span className={`px-2 py-1 rounded-full text-xs ${
-                partnerCategory === category?.id 
-                  ? 'bg-white/20 text-white' :'bg-accent/10 text-accent'
-              }`}>
-                {category?.count}
-              </span>
-            </button>
-          ))}
+          <div className="flex space-x-2 sm:space-x-4 justify-start sm:justify-center min-w-max px-2 sm:px-0">
+            {partnershipCategories?.map((category) => (
+              <button
+                key={category?.id}
+                onClick={() => setPartnerCategory(category?.id)}
+                className={`flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 rounded-xl sm:rounded-2xl font-semibold transition-all duration-500 whitespace-nowrap text-sm sm:text-base ${
+                  partnerCategory === category?.id
+                    ? 'bg-gradient-to-r from-accent to-primary text-white shadow-brand-elevation transform scale-105'
+                    : 'bg-surface text-text-secondary hover:bg-accent/5 hover:text-accent'
+                }`}
+              >
+                <AppIcon name={category?.icon} size={16} sm:size={20} />
+                <span className="hidden sm:inline">{category?.label}</span>
+                <span className="sm:hidden">
+                  {category?.label === 'Data & Analytics' ? 'Data' : category?.label}
+                </span>
+                <span className={`px-2 py-1 rounded-full text-xs ${
+                  partnerCategory === category?.id 
+                    ? 'bg-white/20 text-white' :'bg-accent/10 text-accent'
+                }`}>
+                  {category?.count}
+                </span>
+              </button>
+            ))}
+          </div>
         </motion.div>
 
-        {/* Partners Grid */}
+        {/* Partners Grid - Mobile Optimized */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.8, delay: 0.9 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16"
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 lg:mb-16"
         >
           {activePartners?.map((partner, index) => (
             <motion.div
@@ -271,52 +276,52 @@ const PartnershipEcosystem = () => {
               className="group cursor-pointer"
               onClick={() => setActivePartner(partner)}
             >
-              <div className="bg-white border border-gray-100 rounded-2xl p-8 hover:shadow-brand-elevation-lg transition-all duration-500 group-hover:-translate-y-2">
+              <div className="bg-white border border-gray-100 rounded-xl sm:rounded-2xl p-6 sm:p-8 hover:shadow-brand-elevation-lg transition-all duration-500 group-hover:-translate-y-2">
                 {/* Partner Header */}
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center">
-                      <span className="font-bold text-primary text-lg">{partner?.name?.charAt(0)}</span>
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                  <div className="flex items-center space-x-3 sm:space-x-4">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-xl sm:rounded-2xl flex items-center justify-center">
+                      <span className="font-bold text-primary text-base sm:text-lg">{partner?.name?.charAt(0)}</span>
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-primary group-hover:text-accent transition-colors duration-300">
+                      <h3 className="text-lg sm:text-xl font-bold text-primary group-hover:text-accent transition-colors duration-300">
                         {partner?.name}
                       </h3>
-                      <p className="text-accent font-semibold text-sm">{partner?.type}</p>
+                      <p className="text-accent font-semibold text-xs sm:text-sm">{partner?.type}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-text-secondary text-sm">Since {partner?.partnership_since}</span>
+                    <span className="text-text-secondary text-xs sm:text-sm">Since {partner?.partnership_since}</span>
                   </div>
                 </div>
 
                 {/* Partnership Details */}
-                <div className="mb-4">
-                  <p className="text-primary font-semibold mb-2">{partner?.relationship}</p>
-                  <p className="text-text-secondary leading-relaxed text-sm">
+                <div className="mb-3 sm:mb-4">
+                  <p className="text-primary font-semibold mb-1 sm:mb-2 text-sm sm:text-base">{partner?.relationship}</p>
+                  <p className="text-text-secondary leading-relaxed text-xs sm:text-sm">
                     {partner?.description}
                   </p>
                 </div>
 
                 {/* Key Benefits */}
-                <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                   {partner?.benefits?.slice(0, 3)?.map((benefit, benefitIndex) => (
                     <span
                       key={benefitIndex}
-                      className="px-3 py-1 bg-accent/10 text-accent text-xs font-medium rounded-full"
+                      className="px-2 sm:px-3 py-1 bg-accent/10 text-accent text-xs font-medium rounded-full"
                     >
                       {benefit}
                     </span>
                   ))}
                   {partner?.benefits?.length > 3 && (
-                    <span className="px-3 py-1 bg-gray-100 text-text-secondary text-xs font-medium rounded-full">
+                    <span className="px-2 sm:px-3 py-1 bg-gray-100 text-text-secondary text-xs font-medium rounded-full">
                       +{partner?.benefits?.length - 3} more
                     </span>
                   )}
                 </div>
 
                 {/* View More Indicator */}
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-xs sm:text-sm">
                   <span className="text-text-secondary">
                     {partner?.projects?.length} joint projects
                   </span>
@@ -330,20 +335,20 @@ const PartnershipEcosystem = () => {
           ))}
         </motion.div>
 
-        {/* Partnership Benefits */}
+        {/* Partnership Benefits - Mobile Optimized */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, delay: 1.2 }}
-          className="bg-gradient-to-r from-accent to-primary rounded-3xl p-12 text-white text-center"
+          className="bg-gradient-to-r from-accent to-primary rounded-xl sm:rounded-2xl lg:rounded-3xl p-8 sm:p-12 text-white text-center"
         >
-          <h3 className="text-3xl font-bold mb-6">The Partnership Advantage</h3>
-          <p className="text-xl opacity-90 mb-8 max-w-3xl mx-auto">
+          <h3 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">The Partnership Advantage</h3>
+          <p className="text-base sm:text-lg md:text-xl opacity-90 mb-6 sm:mb-8 max-w-3xl mx-auto">
             Our strategic partnerships aren't just about technology—they're about expanding possibilities, 
             accelerating innovation, and delivering solutions that individual agencies simply can't match.
           </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 mb-6 sm:mb-8">
             {[
               {
                 icon: 'Zap',
@@ -362,11 +367,11 @@ const PartnershipEcosystem = () => {
               }
             ]?.map((advantage, index) => (
               <div key={index} className="text-center">
-                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-4 mx-auto">
-                  <AppIcon name={advantage?.icon} size={32} className="text-white" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 mx-auto">
+                  <AppIcon name={advantage?.icon} size={24} sm:size={32} className="text-white" />
                 </div>
-                <h4 className="font-bold text-lg mb-2">{advantage?.title}</h4>
-                <p className="text-white/80 text-sm">{advantage?.description}</p>
+                <h4 className="font-bold text-base sm:text-lg mb-1 sm:mb-2">{advantage?.title}</h4>
+                <p className="text-white/80 text-xs sm:text-sm">{advantage?.description}</p>
               </div>
             ))}
           </div>
@@ -374,73 +379,73 @@ const PartnershipEcosystem = () => {
           <Button
             variant="outline"
             size="lg"
-            className="border-2 border-white text-white hover:bg-white hover:text-primary px-8 py-4 font-semibold"
+            className="border-2 border-white text-white hover:bg-white hover:text-primary px-6 sm:px-8 py-3 sm:py-4 font-semibold min-h-[48px]"
           >
             <AppIcon name="Network" size={20} className="mr-2" />
             Explore Partnership Opportunities
           </Button>
         </motion.div>
 
-        {/* Partner Detail Modal */}
+        {/* Partner Detail Modal - Mobile Optimized */}
         {activePartner && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-brand-modal"
+            className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center p-0 sm:p-4 z-brand-modal"
             onClick={() => setActivePartner(null)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto"
               onClick={(e) => e?.stopPropagation()}
             >
-              <div className="p-8">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center">
-                      <span className="font-bold text-primary text-xl">{activePartner?.name?.charAt(0)}</span>
+              <div className="p-6 sm:p-8">
+                <div className="flex items-start justify-between mb-4 sm:mb-6">
+                  <div className="flex items-center space-x-3 sm:space-x-4">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-xl sm:rounded-2xl flex items-center justify-center">
+                      <span className="font-bold text-primary text-lg sm:text-xl">{activePartner?.name?.charAt(0)}</span>
                     </div>
                     <div>
-                      <h3 className="text-2xl font-bold text-primary">{activePartner?.name}</h3>
-                      <p className="text-accent font-semibold">{activePartner?.type}</p>
-                      <p className="text-text-secondary text-sm">Partnership since {activePartner?.partnership_since}</p>
+                      <h3 className="text-xl sm:text-2xl font-bold text-primary">{activePartner?.name}</h3>
+                      <p className="text-accent font-semibold text-sm sm:text-base">{activePartner?.type}</p>
+                      <p className="text-text-secondary text-xs sm:text-sm">Partnership since {activePartner?.partnership_since}</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setActivePartner(null)}
-                    className="w-10 h-10 bg-gray-100 hover:bg-accent/10 rounded-full flex items-center justify-center transition-colors duration-300"
+                    className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-100 hover:bg-accent/10 rounded-full flex items-center justify-center transition-colors duration-300 flex-shrink-0"
                   >
                     <AppIcon name="X" size={20} className="text-text-secondary hover:text-accent" />
                   </button>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div>
-                    <h4 className="font-bold text-primary mb-2">Partnership Focus</h4>
-                    <p className="text-accent font-semibold mb-2">{activePartner?.relationship}</p>
-                    <p className="text-text-secondary leading-relaxed">{activePartner?.description}</p>
+                    <h4 className="font-bold text-primary mb-2 text-base sm:text-lg">Partnership Focus</h4>
+                    <p className="text-accent font-semibold mb-1 sm:mb-2 text-sm sm:text-base">{activePartner?.relationship}</p>
+                    <p className="text-text-secondary leading-relaxed text-sm sm:text-base">{activePartner?.description}</p>
                   </div>
 
                   <div>
-                    <h4 className="font-bold text-primary mb-3">Key Benefits</h4>
-                    <div className="grid grid-cols-2 gap-3">
+                    <h4 className="font-bold text-primary mb-2 sm:mb-3 text-base sm:text-lg">Key Benefits</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                       {activePartner?.benefits?.map((benefit, index) => (
                         <div key={index} className="flex items-center space-x-2">
-                          <AppIcon name="CheckCircle" size={16} className="text-accent" />
-                          <span className="text-text-secondary text-sm">{benefit}</span>
+                          <AppIcon name="CheckCircle" size={16} className="text-accent flex-shrink-0" />
+                          <span className="text-text-secondary text-xs sm:text-sm">{benefit}</span>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   <div>
-                    <h4 className="font-bold text-primary mb-3">Featured Projects</h4>
+                    <h4 className="font-bold text-primary mb-2 sm:mb-3 text-base sm:text-lg">Featured Projects</h4>
                     <ul className="space-y-2">
                       {activePartner?.projects?.map((project, index) => (
                         <li key={index} className="flex items-center space-x-3">
-                          <AppIcon name="ArrowRight" size={14} className="text-accent" />
-                          <span className="text-text-secondary text-sm">{project}</span>
+                          <AppIcon name="ArrowRight" size={14} className="text-accent flex-shrink-0" />
+                          <span className="text-text-secondary text-xs sm:text-sm">{project}</span>
                         </li>
                       ))}
                     </ul>
