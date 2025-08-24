@@ -75,7 +75,7 @@ const HeroSection = () => {
           {[
             { number: '27+', label: 'Visionary Minds' },
             { number: '150+', label: 'Projects Transformed' },
-            { number: '8+', label: 'Years Disrupting' },
+            { number: '11+', label: 'Years Disrupting' },
             { number: '∞', label: 'Conventional Rules Broken' }
           ]?.map((stat, index) => (
             <div key={index} className="text-center group hover:transform hover:scale-105 transition-all duration-300">

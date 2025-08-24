@@ -54,7 +54,7 @@ const OriginStory = () => {
       year: '2023',
       title: 'Innovation Laboratory',
       description: 'Launched our R&D division, pushing boundaries between creativity and technology like never before.',
-      icon: 'Flask',
+      icon: 'Lightbulb',
       color: 'from-accent to-purple-400'
     },
     {
@@ -90,14 +90,14 @@ const OriginStory = () => {
   }, []);
 
   return (
-    <section id="origin-story" ref={sectionRef} className="py-12 sm:py-16 md:py-20 lg:py-24 bg-gradient-to-br from-surface to-white">
+    <section id="origin-story" ref={sectionRef} className="py-8 sm:py-12 md:py-16 lg:py-20 bg-gradient-to-br from-surface to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header - Mobile Optimized */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="text-center mb-12 sm:mb-16 lg:mb-20"
+          className="text-center mb-8 sm:mb-10 lg:mb-12"
         >
           <div className="inline-flex items-center space-x-2 bg-accent/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6">
             <AppIcon name="BookOpen" size={16} className="text-accent" />
@@ -118,7 +118,7 @@ const OriginStory = () => {
           <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-accent to-gray-300"></div>
 
           {/* Milestone Cards - Stack on mobile */}
-          <div className="space-y-8 sm:space-y-12 md:space-y-16 lg:space-y-24">
+          <div className="space-y-6 sm:space-y-8 md:space-y-10 lg:space-y-12">
             {milestones?.map((milestone, index) => (
               <motion.div
                 key={index}
@@ -166,7 +166,7 @@ const OriginStory = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.4, delay: 0.3 }}
-          className="mt-12 sm:mt-16 lg:mt-24 text-center"
+          className="mt-8 sm:mt-12 lg:mt-16 text-center"
         >
           <div className="bg-gradient-to-r from-accent to-primary rounded-xl sm:rounded-2xl p-8 sm:p-12 text-white max-w-4xl mx-auto">
             <AppIcon name="Quote" size={36} className="mx-auto mb-4 sm:mb-6 opacity-70" />
