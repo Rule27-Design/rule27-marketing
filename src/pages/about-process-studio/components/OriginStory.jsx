@@ -9,18 +9,32 @@ const OriginStory = () => {
 
   const milestones = [
     {
-      year: '2016',
-      title: 'The Spark',
-      description: 'Founded by rebels who believed design agencies were playing it too safe. We asked: "What if creativity had no ceiling?"',
+      year: '2014',
+      title: 'Founded',
+      description: 'Rule27 Design was created as a Web Design & Marketing shop by rebels who believed design agencies were playing it too safe. We asked: "What if creativity had no ceiling?"',
       icon: 'Zap',
       color: 'from-accent to-red-400'
     },
     {
-      year: '2018',
+      year: '2015',
       title: 'The 27th Rule',
       description: 'Discovered our philosophy: while others follow 26 design principles, we write the 27th rule that breaks them all.',
       icon: 'Compass',
       color: 'from-accent to-orange-400'
+    },
+    {
+      year: '2017',
+      title: 'CRM Practice',
+      description: 'We started incorporating CRM Implementations for our clients to help connect to their customers. This marked our evolution beyond just design—we became relationship architects.',
+      icon: 'Network',
+      color: 'from-blue-500 to-cyan-400'
+    },
+    {
+      year: '2019',
+      title: 'Full Service',
+      description: 'Hired more staff allowing Rule27 Design to consult on all aspects of IT & Marketing. We became our clients\' one-stop shop, making other agencies look incomplete.',
+      icon: 'Layers',
+      color: 'from-green-500 to-teal-400'
     },
     {
       year: '2020',
@@ -28,6 +42,13 @@ const OriginStory = () => {
       description: 'Pivoted to become the digital powerhouse during global transformation. Made other agencies look ordinary.',
       icon: 'Rocket',
       color: 'from-accent to-pink-400'
+    },
+    {
+      year: '2021',
+      title: 'AI Apps Rollout',
+      description: 'Started working with AI to make sure that we were always using the latest technology and skills. We didn\'t just adopt AI—we made it part of our creative DNA.',
+      icon: 'Cpu',
+      color: 'from-purple-500 to-indigo-400'
     },
     {
       year: '2023',
