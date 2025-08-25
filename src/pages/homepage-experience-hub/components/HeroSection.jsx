@@ -200,7 +200,7 @@ const HeroSection = () => {
         {/* Subheading with Stagger Animation */}
         <div className={`transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed">
-            We don't just follow design trends—we create them. We don't just solve problems—we reimagine possibilities. 
+            We don't just follow design trends, we create them. We don't just solve problems, we reimagine possibilities. 
             <span className="text-accent font-semibold bg-gradient-to-r from-accent to-red-400 bg-clip-text text-transparent"> Break conventional boundaries</span> and discover the creative partner 
             that makes other agencies look ordinary.
           </p>
