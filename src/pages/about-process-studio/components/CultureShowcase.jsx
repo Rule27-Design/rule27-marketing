@@ -96,7 +96,8 @@ const CultureShowcase = () => {
       category: 'collaboration',
       icon: 'Users',
       imageUrl: 'https://images.unsplash.com/photo-1606857521015-7f9fcf423740?w=400&h=300&fit=crop',
-      color: 'from-blue-500 to-purple-500'
+      color: 'from-blue-500 to-purple-500',
+      details: 'Our war room sessions bring together marketers, developers, and strategists to align on project goals and create integrated solutions that deliver results.'
     },
     {
       id: 2,
@@ -106,7 +107,8 @@ const CultureShowcase = () => {
       category: 'growth',
       icon: 'Award',
       imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=300&fit=crop',
-      color: 'from-green-500 to-teal-500'
+      color: 'from-green-500 to-teal-500',
+      details: 'Every new certification represents our commitment to staying ahead of the curve. We celebrate these milestones as a team because expertise benefits everyone.'
     },
     {
       id: 3,
@@ -116,7 +118,8 @@ const CultureShowcase = () => {
       category: 'culture',
       icon: 'Heart',
       imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
-      color: 'from-accent to-red-500'
+      color: 'from-accent to-red-500',
+      details: 'Breaking down silos between marketing and development creates magic. Our integrated teams deliver solutions that are both beautiful and powerful.'
     },
     {
       id: 4,
@@ -126,7 +129,8 @@ const CultureShowcase = () => {
       category: 'success',
       icon: 'TrendingUp',
       imageUrl: 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=400&h=300&fit=crop',
-      color: 'from-yellow-500 to-orange-500'
+      color: 'from-yellow-500 to-orange-500',
+      details: 'Your success is our success. We celebrate every milestone, from successful campaign launches to complex technical deployments that transform businesses.'
     },
     {
       id: 5,
@@ -136,7 +140,8 @@ const CultureShowcase = () => {
       category: 'learning',
       icon: 'BookOpen',
       imageUrl: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&h=300&fit=crop',
-      color: 'from-purple-500 to-pink-500'
+      color: 'from-purple-500 to-pink-500',
+      details: 'Continuous learning is in our DNA. Weekly training sessions ensure our team stays certified and current with the latest platform capabilities.'
     },
     {
       id: 6,
@@ -146,7 +151,8 @@ const CultureShowcase = () => {
       category: 'innovation',
       icon: 'Cpu',
       imageUrl: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400&h=300&fit=crop',
-      color: 'from-indigo-500 to-blue-500'
+      color: 'from-indigo-500 to-blue-500',
+      details: 'Our innovation lab is where we experiment with cutting-edge technologies, ensuring our clients always have access to the latest and greatest solutions.'
     }
   ];
 
@@ -590,26 +596,123 @@ const CultureShowcase = () => {
           </div>
         </motion.div>
 
-        {/* Culture Media Detail Modal - Already animated in original */}
+        {/* COMPLETE Culture Media Detail Modal */}
         <AnimatePresence>
           {selectedMedia && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50"
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 z-50"
               onClick={() => setSelectedMedia(null)}
             >
               <motion.div
                 initial={{ y: '100%', opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: '100%', opacity: 0 }}
+                transition={{ type: "spring", stiffness: 100 }}
                 className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl lg:max-w-4xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto"
                 onClick={(e) => e?.stopPropagation()}
               >
-                {/* Modal content remains the same as original */}
+                {/* Modal Image Header */}
+                <div className="relative h-48 sm:h-64 lg:h-80 overflow-hidden">
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{
+                      backgroundImage: `url(${selectedMedia?.imageUrl})`,
+                    }}
+                  >
+                    <div className={`absolute inset-0 bg-gradient-to-t ${selectedMedia?.color} opacity-70`} />
+                  </div>
+                  
+                  {/* Close Button */}
+                  <motion.button
+                    whileHover={{ scale: 1.1, rotate: 90 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setSelectedMedia(null)}
+                    className="absolute top-4 right-4 w-10 h-10 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-300"
+                  >
+                    <AppIcon name="X" size={20} className="text-white" />
+                  </motion.button>
+
+                  {/* Modal Title Overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
+                    <motion.div 
+                      className="w-14 h-14 sm:w-16 sm:h-16 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center mb-4"
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: "spring", stiffness: 100, delay: 0.2 }}
+                    >
+                      <AppIcon name={selectedMedia?.icon} size={28} className="text-white" />
+                    </motion.div>
+                    <motion.h3 
+                      className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2"
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      {selectedMedia?.title}
+                    </motion.h3>
+                    <motion.span 
+                      className="inline-block bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 200, delay: 0.4 }}
+                    >
+                      {selectedMedia?.category}
+                    </motion.span>
+                  </div>
+                </div>
+
+                {/* Modal Content */}
                 <div className="p-6 sm:p-8">
-                  {/* ... existing modal content ... */}
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <h4 className="text-xl sm:text-2xl font-bold text-primary mb-4">Overview</h4>
+                    <p className="text-text-secondary leading-relaxed mb-6">
+                      {selectedMedia?.description}
+                    </p>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.6 }}
+                  >
+                    <h4 className="text-xl sm:text-2xl font-bold text-primary mb-4">Details</h4>
+                    <p className="text-text-secondary leading-relaxed mb-6">
+                      {selectedMedia?.details}
+                    </p>
+                  </motion.div>
+
+                  {/* Action Buttons */}
+                  <motion.div 
+                    className="flex flex-col sm:flex-row gap-4 pt-4 border-t"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.7 }}
+                  >
+                    <Button
+                      variant="default"
+                      size="lg"
+                      className="flex-1"
+                      onClick={() => setSelectedMedia(null)}
+                    >
+                      <AppIcon name="ArrowLeft" size={20} className="mr-2" />
+                      Back to Gallery
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="flex-1"
+                    >
+                      <AppIcon name="Share2" size={20} className="mr-2" />
+                      Share This
+                    </Button>
+                  </motion.div>
                 </div>
               </motion.div>
             </motion.div>
