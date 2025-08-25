@@ -119,7 +119,7 @@ const AwardsRecognition = () => {
         organization: 'Forbes Magazine',
         year: '2024',
         category: 'Industry Feature',
-        description: 'Featured story on how Rule27 combines marketing excellence with technical innovation.',
+        description: 'Featured story on how Rule27 Design combines marketing excellence with technical innovation.',
         icon: 'FileText',
         color: 'from-indigo-500 to-purple-600'
       },
@@ -321,7 +321,7 @@ const AwardsRecognition = () => {
                 <span className="font-bold text-base sm:text-lg">27</span>
               </div>
               <div className="text-left">
-                <div className="font-semibold text-sm sm:text-base">Rule27 Leadership Team</div>
+                <div className="font-semibold text-sm sm:text-base">Rule27 Design Leadership Team</div>
                 <div className="text-xs sm:text-sm opacity-70">Marketing & Development Excellence</div>
               </div>
             </div>

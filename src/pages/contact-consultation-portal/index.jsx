@@ -27,17 +27,17 @@ const ContactConsultationPortal = () => {
   return (
     <>
       <Helmet>
-        <title>Contact & Consultation Portal - Rule27 Digital Powerhouse</title>
+        <title>Contact & Consultation Portal - Rule27 Design Digital Powerhouse</title>
         <meta 
           name="description" 
-          content="Start your transformation journey with Rule27. Book a strategic consultation, explore our process, and discover how we turn ambitious brands into industry leaders. No ordinary meetings, just game-changing conversations." 
+          content="Start your transformation journey with Rule27 Design. Book a strategic consultation, explore our process, and discover how we turn ambitious brands into industry leaders. No ordinary meetings, just game-changing conversations." 
         />
-        <meta name="keywords" content="consultation, strategy session, contact Rule27, digital transformation consultation, brand strategy meeting, creative agency consultation" />
-        <meta property="og:title" content="Start Your Transformation - Rule27 Consultation Portal" />
-        <meta property="og:description" content="Ready to break conventional boundaries? Book your strategic consultation with Rule27's rebel innovators." />
+        <meta name="keywords" content="consultation, strategy session, contact Rule27 Design, digital transformation consultation, brand strategy meeting, creative agency consultation" />
+        <meta property="og:title" content="Start Your Transformation - Rule27 Design Consultation Portal" />
+        <meta property="og:description" content="Ready to break conventional boundaries? Book your strategic consultation with Rule27 Design's rebel innovators." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://rule27.com/contact-consultation-portal" />
-        <link rel="canonical" href="https://rule27.com/contact-consultation-portal" />
+        <meta property="og:url" content="https://Rule27Design.com/contact-consultation-portal" />
+        <link rel="canonical" href="https://Rule27Design.com/contact-consultation-portal" />
       </Helmet>
 
       <div className="min-h-screen bg-background">

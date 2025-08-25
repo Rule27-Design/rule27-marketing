@@ -33,7 +33,7 @@ const EmergencyContact = () => {
       icon: 'MessageCircle',
       color: 'text-blue-600 bg-blue-50',
       response: 'Response within 4 hours',
-      contact: 'support@rule27.com'
+      contact: 'support@rule27design.com'
     }
   ];
 

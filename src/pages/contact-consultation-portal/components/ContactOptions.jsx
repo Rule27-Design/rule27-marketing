@@ -8,9 +8,9 @@ const ContactOptions = () => {
     {
       icon: 'Mail',
       title: 'Email Us',
-      value: 'hello@rule27.com',
+      value: 'hello@rule27design.com',
       description: 'For general inquiries',
-      action: 'mailto:hello@rule27.com',
+      action: 'mailto:hello@rule27design.com',
       color: 'text-blue-600'
     },
     {

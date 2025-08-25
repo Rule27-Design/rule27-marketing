@@ -519,7 +519,7 @@ const CultureShowcase = () => {
                       <div>
                         <h4 className="text-lg sm:text-xl font-bold text-primary mb-3">Breaking Down Barriers</h4>
                         <p className="text-text-secondary leading-relaxed">
-                          In most agencies, marketers and developers work in separate worlds. Not here. At Rule27, our open 
+                          In most agencies, marketers and developers work in separate worlds. Not here. At Rule27 Design, our open 
                           workspace and collaborative culture mean that a developer might suggest a marketing strategy, and a 
                           marketer might propose a technical solution. This cross-pollination of ideas is what makes our 
                           solutions uniquely powerful.

@@ -464,8 +464,8 @@ const CapabilityUniverse = () => {
   return (
     <>
       <Helmet>
-        <title>Capability Universe - Rule27 Digital Powerhouse</title>
-        <meta name="description" content="Explore Rule27's comprehensive service capabilities across Creative Studio, Digital Marketing Command, Development Lab, and Executive Advisory. Interactive demonstrations and personalized assessments." />
+        <title>Capability Universe - Rule27 Design Digital Powerhouse</title>
+        <meta name="description" content="Explore Rule27 Design's comprehensive service capabilities across Creative Studio, Digital Marketing Command, Development Lab, and Executive Advisory. Interactive demonstrations and personalized assessments." />
         <meta name="keywords" content="digital agency services, creative studio, marketing command, development lab, executive advisory, capability assessment" />
       </Helmet>
       <div className="min-h-screen bg-background">
@@ -485,7 +485,7 @@ const CapabilityUniverse = () => {
                   Capability <span className="text-accent">Universe</span>
                 </h1>
                 <p className="text-xl text-text-secondary max-w-3xl mx-auto leading-relaxed">
-                  Four distinct experience zones showcase Rule27's comprehensive service mastery through immersive, 
+                  Four distinct experience zones showcase Rule27 Design's comprehensive service mastery through immersive, 
                   interactive presentations. Discover the perfect solution for your business transformation.
                 </p>
               </motion.div>

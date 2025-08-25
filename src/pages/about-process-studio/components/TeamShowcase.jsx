@@ -24,7 +24,7 @@ const TeamShowcase = () => {
       category: 'leadership',
       image: '/api/placeholder/300/300',
       expertise: ['Business Strategy', 'Digital Transformation', 'Innovation Leadership'],
-      bio: 'The visionary who founded Rule27 on the belief that one agency should deliver both world-class marketing and enterprise development.',
+      bio: 'The visionary who founded Rule27 Design on the belief that one agency should deliver both world-class marketing and enterprise development.',
       projects: ['Fortune 500 Digital Transformations', 'Multi-Million Dollar Campaigns', 'Enterprise Platform Builds'],
       personality: 'Visionary, Strategic, Results-Driven',
       social: { linkedin: '#', twitter: '#', instagram: '#' }
@@ -171,7 +171,7 @@ const TeamShowcase = () => {
             The <span className="text-accent">Certified Experts</span>
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4">
-            Meet the certified professionals who make Rule27 the digital powerhouse it is—experts in marketing 
+            Meet the certified professionals who make Rule27 Design the digital powerhouse it is—experts in marketing 
             platforms, cloud development, and everything in between.
           </p>
         </motion.div>

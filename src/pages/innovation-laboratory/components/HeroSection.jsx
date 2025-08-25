@@ -62,7 +62,7 @@ const HeroSection = () => {
 
           {/* Subheadline */}
           <motion.p variants={itemVariants} className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto mb-12 leading-relaxed">
-            Experimental features, emerging technologies, and forward-thinking insights that shape the future of digital experiences. Welcome to Rule27's innovation playground.
+            Experimental features, emerging technologies, and forward-thinking insights that shape the future of digital experiences. Welcome to Rule27 Design's innovation playground.
           </motion.p>
 
           {/* CTA Buttons */}

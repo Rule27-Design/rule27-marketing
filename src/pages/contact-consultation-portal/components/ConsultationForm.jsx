@@ -455,7 +455,7 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
               />
               
               <Checkbox
-                label="Send me occasional updates about Rule27's innovations and insights"
+                label="Send me occasional updates about Rule27 Design's innovations and insights"
                 checked={agreement.newsletterOptIn}
                 onChange={(e) => setAgreement({ ...agreement, newsletterOptIn: e.target.checked })}
               />
@@ -508,7 +508,7 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
           Submission Successful!
         </h2>
         <p className="text-text-secondary mb-8 max-w-md mx-auto">
-          Thank you for reaching out to Rule27. We've received your consultation request and will be in touch within 24 hours.
+          Thank you for reaching out to Rule27 Design. We've received your consultation request and will be in touch within 24 hours.
         </p>
         <div className="space-y-4">
           <Button

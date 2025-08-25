@@ -59,7 +59,7 @@ const WorkShowcaseTheater = () => {
         name: "Sarah Chen",
         position: "CEO & Founder",
         avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-        quote: "Rule27 didn\'t just redesign our brand - they transformed our entire business trajectory. The results exceeded every expectation we had."
+        quote: "Rule27 Design didn\'t just redesign our brand - they transformed our entire business trajectory. The results exceeded every expectation we had."
       },
       gallery: [
         "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop",
@@ -104,7 +104,7 @@ const WorkShowcaseTheater = () => {
         name: "Dr. Michael Rodriguez",
         position: "Chief Medical Officer",
         avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-        quote: "The digital transformation Rule27 delivered has fundamentally changed how we deliver patient care. Our staff is happier, patients are more satisfied, and our outcomes have never been better."
+        quote: "The digital transformation Rule27 Design delivered has fundamentally changed how we deliver patient care. Our staff is happier, patients are more satisfied, and our outcomes have never been better."
       },
       gallery: [
         "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=800&h=600&fit=crop",
@@ -149,7 +149,7 @@ const WorkShowcaseTheater = () => {
         name: "Jennifer Walsh",
         position: "Co-Founder & CEO",
         avatar: "https://randomuser.me/api/portraits/women/68.jpg",
-        quote: "Rule27 was instrumental in our journey from startup to IPO. Their strategic guidance and execution excellence made the impossible possible."
+        quote: "Rule27 Design was instrumental in our journey from startup to IPO. Their strategic guidance and execution excellence made the impossible possible."
       },
       gallery: [
         "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&h=600&fit=crop",
@@ -194,7 +194,7 @@ const WorkShowcaseTheater = () => {
         name: "Marcus Thompson",
         position: "Retail Operations Director",
         avatar: "https://randomuser.me/api/portraits/men/45.jpg",
-        quote: "Rule27 helped us bridge the gap between our physical and digital presence. Our customers now have seamless experiences regardless of how they choose to shop with us."
+        quote: "Rule27 Design helped us bridge the gap between our physical and digital presence. Our customers now have seamless experiences regardless of how they choose to shop with us."
       },
       gallery: [
         "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop",
@@ -239,7 +239,7 @@ const WorkShowcaseTheater = () => {
         name: "David Kim",
         position: "VP of Operations",
         avatar: "https://randomuser.me/api/portraits/men/22.jpg",
-        quote: "The smart factory transformation Rule27 delivered has positioned us as a leader in manufacturing innovation. Our efficiency gains have been remarkable."
+        quote: "The smart factory transformation Rule27 Design delivered has positioned us as a leader in manufacturing innovation. Our efficiency gains have been remarkable."
       },
       gallery: [
         "https://images.unsplash.com/photo-1565514020179-026b92b84bb6?w=800&h=600&fit=crop",
@@ -284,7 +284,7 @@ const WorkShowcaseTheater = () => {
         name: "Dr. Lisa Park",
         position: "Chief Academic Officer",
         avatar: "https://randomuser.me/api/portraits/women/55.jpg",
-        quote: "Rule27\'s platform has revolutionized how our students learn. The personalized approach and engaging interface have dramatically improved learning outcomes."
+        quote: "Rule27 Design\'s platform has revolutionized how our students learn. The personalized approach and engaging interface have dramatically improved learning outcomes."
       },
       gallery: [
         "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop",
@@ -381,11 +381,11 @@ const WorkShowcaseTheater = () => {
   return (
     <>
       <Helmet>
-        <title>Work Showcase Theater - Rule27 Digital Powerhouse</title>
-        <meta name="description" content="Explore Rule27's portfolio of transformative case studies. See how we've delivered measurable results across industries through strategic design, development, and marketing excellence." />
+        <title>Work Showcase Theater - Rule27 Design Digital Powerhouse</title>
+        <meta name="description" content="Explore Rule27 Design's portfolio of transformative case studies. See how we've delivered measurable results across industries through strategic design, development, and marketing excellence." />
         <meta name="keywords" content="case studies, portfolio, digital transformation, brand strategy, web development, marketing results, client success stories" />
-        <meta property="og:title" content="Work Showcase Theater - Rule27 Digital Powerhouse" />
-        <meta property="og:description" content="Cinematic case study presentations showcasing Rule27's transformation ability through detailed success stories with measurable outcomes." />
+        <meta property="og:title" content="Work Showcase Theater - Rule27 Design Digital Powerhouse" />
+        <meta property="og:description" content="Cinematic case study presentations showcasing Rule27 Design's transformation ability through detailed success stories with measurable outcomes." />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="/work-showcase-theater" />
       </Helmet>
@@ -487,7 +487,7 @@ const WorkShowcaseTheater = () => {
               Ready to Create Your Success Story?
             </h2>
             <p className="text-xl text-white/90 mb-8">
-              Join the ranks of industry leaders who've transformed their businesses with Rule27. 
+              Join the ranks of industry leaders who've transformed their businesses with Rule27 Design. 
               Let's discuss how we can deliver similar results for your organization.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

@@ -20,7 +20,7 @@ const FAQSection = () => {
     general: [
       {
         id: 'g1',
-        question: "What makes Rule27 different from other agencies?",
+        question: "What makes Rule27 Design different from other agencies?",
         answer: "We're not just another agency—we're creative rebels who break conventional boundaries. Our unique approach combines creative audacity with technical precision, delivering results that make other agencies look ordinary. We achieve 40% higher conversion rates on average through our proprietary methodology that blends behavioral psychology, data science, and bold creativity.",
         highlight: true
       },
@@ -224,7 +224,7 @@ const FAQSection = () => {
             Frequently Asked <span className="text-accent">Questions</span>
           </motion.h2>
           <motion.p variants={itemVariants} className="text-xl text-text-secondary max-w-2xl mx-auto">
-            Everything you need to know about working with Rule27. Can't find your answer? Let's talk.
+            Everything you need to know about working with Rule27 Design. Can't find your answer? Let's talk.
           </motion.p>
         </motion.div>
 
