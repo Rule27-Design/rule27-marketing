@@ -19,54 +19,42 @@ const TeamShowcase = () => {
   const teamMembers = [
     {
       id: 1,
-      name: 'Alex Chen',
+      name: 'Josh Anderson',
       role: 'Founder & CEO',
       category: 'leadership',
       image: '/api/placeholder/300/300',
-      expertise: ['Business Strategy', 'Digital Transformation', 'Innovation Leadership'],
-      bio: 'The visionary who founded Rule27 Design on the belief that one agency should deliver both world-class marketing and enterprise development.',
+      expertise: ['Business Strategy', 'Digital Transformation', 'Innovation Leadership', 'Cloud Architecture', 'DevOps Strategy', 'Technical Innovation'],
+      bio: 'With a passion for driving growth and delivering exceptional results, Josh has successfully spearheaded numerous projects, leading cross-functional teams to achieve remarkable success. With his strong analytical skills and a keen eye for detail, Josh excels in optimizing processes, enhancing operational efficiency, and cultivating strong client relationships. Committed to continuous learning and staying ahead of industry trends, Josh brings a wealth of knowledge and expertise to every endeavor. Whether it\'s crafting innovative strategies or implementing impactful solutions, Josh\'s unwavering dedication and strong leadership qualities make him a valuable asset in driving organizational success.',
       projects: ['Fortune 500 Digital Transformations', 'Multi-Million Dollar Campaigns', 'Enterprise Platform Builds'],
       personality: 'Visionary, Strategic, Results-Driven',
       social: { linkedin: '#', twitter: '#', instagram: '#' }
     },
     {
       id: 2,
-      name: 'Sarah Johnson',
-      role: 'Co-Founder & CTO',
-      category: 'leadership',
-      image: '/api/placeholder/300/300',
-      expertise: ['Cloud Architecture', 'DevOps Strategy', 'Technical Innovation'],
-      bio: 'The technical mastermind who ensures every marketing strategy is backed by bulletproof technology and scalable infrastructure.',
-      projects: ['AWS Enterprise Migrations', 'Marketing Tech Stack Integrations', 'Custom Platform Development'],
-      personality: 'Analytical, Innovative, Problem Solver',
-      social: { linkedin: '#', github: '#', twitter: '#' }
-    },
-    {
-      id: 3,
-      name: 'Marcus Rodriguez',
-      role: 'Chief Marketing Officer',
+      name: 'Warren Jones',
+      role: 'Co-Founder & COO',
       category: 'marketing',
       image: '/api/placeholder/300/300',
       expertise: ['Marketing Strategy', 'Brand Development', 'Campaign Management'],
-      bio: 'The marketing genius who turns brands into movements, with certifications across Salesforce, HubSpot, and Google platforms.',
+      bio: '12+ year\'s experience developing and executing Marketing Strategies. He created impactful campaigns and design for state politicians, local fundraisers, board game manufacturers, medical marijuana operators, radio personalities, mixed media organizations and construction companies. Throughout his career he has perfected the process of reading into peoples personalities to make sure that your design will reach the most impactful audience.',
       projects: ['$10M+ Ad Campaigns', 'Marketing Automation Systems', 'Brand Transformations'],
       personality: 'Creative, Data-Driven, Strategic',
       social: { linkedin: '#', twitter: '#', instagram: '#' }
     },
     {
-      id: 4,
-      name: 'Emily Watson',
+      id: 3,
+      name: 'Chris Stepanski',
       role: 'Head of Development',
       category: 'development',
       image: '/api/placeholder/300/300',
       expertise: ['Full-Stack Development', 'Cloud Solutions', 'API Architecture'],
-      bio: 'AWS and Azure certified developer who leads our technical teams in building scalable, performant digital solutions.',
+      bio: 'Highly accomplished software engineer with a passion for cutting-edge technology and innovation. With a strong foundation in programming languages and a deep understanding of software development methodologies, has successfully designed and implemented scalable solutions for complex projects. His meticulous attention to detail and problem-solving abilities make him a valuable asset in delivering robust software solutions that exceed client expectations.',
       projects: ['E-commerce Platforms', 'SaaS Applications', 'Enterprise Integrations'],
       personality: 'Technical, Detail-Oriented, Efficient',
       social: { linkedin: '#', github: '#', stackoverflow: '#' }
     },
     {
-      id: 5,
+      id: 4,
       name: 'David Kim',
       role: 'Marketing Automation Lead',
       category: 'marketing',
@@ -78,7 +66,7 @@ const TeamShowcase = () => {
       social: { linkedin: '#', twitter: '#', medium: '#' }
     },
     {
-      id: 6,
+      id: 5,
       name: 'Lisa Park',
       role: 'Senior Cloud Architect',
       category: 'development',
@@ -90,7 +78,7 @@ const TeamShowcase = () => {
       social: { linkedin: '#', github: '#', twitter: '#' }
     },
     {
-      id: 7,
+      id: 6,
       name: 'Michael Torres',
       role: 'Creative Director',
       category: 'creative',
@@ -102,7 +90,7 @@ const TeamShowcase = () => {
       social: { linkedin: '#', behance: '#', instagram: '#' }
     },
     {
-      id: 8,
+      id: 7,
       name: 'Rachel Green',
       role: 'Shopify & E-commerce Lead',
       category: 'development',
@@ -114,7 +102,7 @@ const TeamShowcase = () => {
       social: { linkedin: '#', github: '#', twitter: '#' }
     },
     {
-      id: 9,
+      id: 8,
       name: 'James Wilson',
       role: 'Data & Analytics Director',
       category: 'marketing',
