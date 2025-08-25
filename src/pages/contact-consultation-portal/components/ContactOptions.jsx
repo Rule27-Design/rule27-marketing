@@ -32,7 +32,7 @@ const ContactOptions = () => {
     {
       icon: 'MapPin',
       title: 'Visit Us',
-      value: 'Los Angeles, CA',
+      value: 'Scottsdale, Az',
       description: 'By appointment only',
       action: '#',
       color: 'text-purple-600'
