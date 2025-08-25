@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import AppIcon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
@@ -400,6 +400,248 @@ const CultureShowcase = () => {
             </div>
           </div>
         </motion.div>
+
+        {/* Culture Media Detail Modal */}
+        <AnimatePresence>
+          {selectedMedia && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50"
+              onClick={() => setSelectedMedia(null)}
+            >
+            <motion.div
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
+              className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl lg:max-w-4xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e?.stopPropagation()}
+            >
+              <div className="p-6 sm:p-8">
+                {/* Header with close button */}
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex items-center space-x-4">
+                    <div className={`w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r ${selectedMedia?.color} rounded-xl sm:rounded-2xl flex items-center justify-center`}>
+                      <AppIcon name={selectedMedia?.icon} size={32} className="text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary mb-1">{selectedMedia?.title}</h3>
+                      <span className="inline-block px-3 py-1 bg-accent/10 text-accent rounded-full text-sm font-medium">
+                        {selectedMedia?.category}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedMedia(null)}
+                    className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-100 hover:bg-accent/10 rounded-full flex items-center justify-center transition-colors duration-300 flex-shrink-0"
+                  >
+                    <AppIcon name="X" size={20} className="text-text-secondary hover:text-accent" />
+                  </button>
+                </div>
+
+                {/* Image */}
+                <div className="relative rounded-xl overflow-hidden mb-6 h-48 sm:h-64 lg:h-80">
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${selectedMedia?.imageUrl})` }}
+                  >
+                    <div className={`absolute inset-0 bg-gradient-to-t ${selectedMedia?.color} opacity-60`}></div>
+                  </div>
+                </div>
+
+                {/* Content based on category */}
+                <div className="space-y-6">
+                  {selectedMedia?.category === 'collaboration' && (
+                    <>
+                      <div>
+                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3">The Power of Collaboration</h4>
+                        <p className="text-text-secondary leading-relaxed">
+                          Our war room sessions bring together marketing strategists, developers, designers, and data analysts 
+                          in one space. This is where campaigns meet code, where creative ideas are validated with technical 
+                          feasibility, and where integrated solutions are born. No silos, no handoffs—just seamless collaboration 
+                          from concept to completion.
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3">What Happens Here</h4>
+                        <ul className="space-y-2">
+                          <li className="flex items-start space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-text-secondary">Cross-functional brainstorming for integrated solutions</span>
+                          </li>
+                          <li className="flex items-start space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-text-secondary">Real-time problem solving with all stakeholders present</span>
+                          </li>
+                          <li className="flex items-start space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-text-secondary">Rapid prototyping and immediate technical validation</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </>
+                  )}
+
+                  {selectedMedia?.category === 'growth' && (
+                    <>
+                      <div>
+                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3">Continuous Learning Culture</h4>
+                        <p className="text-text-secondary leading-relaxed">
+                          Every new certification is a celebration—not just of individual achievement, but of our collective growth. 
+                          From Salesforce to AWS, HubSpot to Shopify, our team members are constantly expanding their expertise. 
+                          We invest over $50,000 annually in certifications because we believe that staying ahead means never 
+                          stopping learning.
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3">Our Certification Journey</h4>
+                        <ul className="space-y-2">
+                          <li className="flex items-start space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-text-secondary">10+ platform certifications across the team</span>
+                          </li>
+                          <li className="flex items-start space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-text-secondary">100% certification support and paid training time</span>
+                          </li>
+                          <li className="flex items-start space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-text-secondary">Bonuses for each new certification achieved</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </>
+                  )}
+
+                  {selectedMedia?.category === 'culture' && (
+                    <>
+                      <div>
+                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3">Breaking Down Barriers</h4>
+                        <p className="text-text-secondary leading-relaxed">
+                          In most agencies, marketers and developers work in separate worlds. Not here. At Rule27, our open 
+                          workspace and collaborative culture mean that a developer might suggest a marketing strategy, and a 
+                          marketer might propose a technical solution. This cross-pollination of ideas is what makes our 
+                          solutions uniquely powerful.
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3">Our Unique Dynamic</h4>
+                        <ul className="space-y-2">
+                          <li className="flex items-start space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-text-secondary">Marketers who understand technical constraints</span>
+                          </li>
+                          <li className="flex items-start space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-text-secondary">Developers who think about user engagement</span>
+                          </li>
+                          <li className="flex items-start space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-text-secondary">Designers who balance beauty with performance</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </>
+                  )}
+
+                  {selectedMedia?.category === 'success' && (
+                    <>
+                      <div>
+                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3">Shared Victories</h4>
+                        <p className="text-text-secondary leading-relaxed">
+                          Every client win is our win. Whether it's a marketing campaign that exceeds ROI targets or a platform 
+                          deployment that transforms operations, we celebrate together. These moments remind us why we do what 
+                          we do—to help our clients achieve extraordinary results through the perfect blend of marketing and 
+                          technology.
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3">Recent Celebrations</h4>
+                        <ul className="space-y-2">
+                          <li className="flex items-start space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-text-secondary">300% ROI on integrated marketing campaign</span>
+                          </li>
+                          <li className="flex items-start space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-text-secondary">50% reduction in operational costs through automation</span>
+                          </li>
+                          <li className="flex items-start space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-text-secondary">Record-breaking e-commerce platform launch</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </>
+                  )}
+
+                  {selectedMedia?.category === 'learning' && (
+                    <>
+                      <div>
+                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3">Knowledge is Power</h4>
+                        <p className="text-text-secondary leading-relaxed">
+                          Every week, our team gathers for platform training sessions. From deep dives into Salesforce Marketing 
+                          Cloud to hands-on AWS workshops, from HubSpot automation to Shopify Plus features—we ensure everyone 
+                          stays at the cutting edge. Our marketers learn development basics, our developers understand marketing 
+                          principles. This is how we maintain our edge.
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3">Training Program Highlights</h4>
+                        <ul className="space-y-2">
+                          <li className="flex items-start space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-text-secondary">Weekly platform deep-dives and workshops</span>
+                          </li>
+                          <li className="flex items-start space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-text-secondary">Cross-training between marketing and development</span>
+                          </li>
+                          <li className="flex items-start space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-text-secondary">20% time dedicated to learning and experimentation</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </>
+                  )}
+
+                  {selectedMedia?.category === 'innovation' && (
+                    <>
+                      <div>
+                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3">The Future Starts Here</h4>
+                        <p className="text-text-secondary leading-relaxed">
+                          Our innovation lab is where we test tomorrow's solutions today. AI-powered marketing tools, blockchain 
+                          applications, AR/VR experiences, advanced automation—if it's cutting edge, we're experimenting with it. 
+                          This isn't just R&D; it's our commitment to keeping our clients ahead of the curve.
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3">Current Experiments</h4>
+                        <ul className="space-y-2">
+                          <li className="flex items-start space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-text-secondary">AI-driven content personalization engines</span>
+                          </li>
+                          <li className="flex items-start space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-text-secondary">Next-gen marketing automation workflows</span>
+                          </li>
+                          <li className="flex items-start space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-text-secondary">Predictive analytics and machine learning models</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+        </AnimatePresence>
       </div>
     </section>
   );
