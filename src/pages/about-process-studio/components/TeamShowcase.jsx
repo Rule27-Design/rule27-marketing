@@ -148,11 +148,10 @@ const TeamShowcase = () => {
 
   // Card animation variants
   const cardVariants = {
-    hidden: { opacity: 0, y: 50, rotateX: -15 },
+    hidden: { opacity: 0, y: 50 },
     visible: (index) => ({
       opacity: 1,
       y: 0,
-      rotateX: 0,
       transition: {
         delay: index * 0.1,
         duration: 0.5,
@@ -161,26 +160,11 @@ const TeamShowcase = () => {
     }),
     hover: {
       y: -10,
-      scale: 1.02,
       transition: {
         duration: 0.3,
         ease: "easeInOut"
       }
     }
-  };
-
-  // Expertise tag animation
-  const tagVariants = {
-    hidden: { scale: 0, opacity: 0 },
-    visible: (index) => ({
-      scale: 1,
-      opacity: 1,
-      transition: {
-        delay: index * 0.05,
-        type: "spring",
-        stiffness: 200
-      }
-    })
   };
 
   return (
@@ -253,14 +237,14 @@ const TeamShowcase = () => {
           ))}
         </motion.div>
 
-        {/* Enhanced Team Grid with 3D Cards */}
+        {/* Enhanced Team Grid */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.4, delay: 0.3 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 perspective-1000"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
         >
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="popLayout">
             {filteredMembers?.map((member, index) => (
               <motion.div
                 key={member?.id}
@@ -271,14 +255,10 @@ const TeamShowcase = () => {
                 animate="visible"
                 exit={{ opacity: 0, scale: 0.8 }}
                 whileHover="hover"
-                className="group cursor-pointer preserve-3d"
+                className="group cursor-pointer"
                 onClick={() => setSelectedMember(member)}
                 onMouseEnter={() => setHoveredCard(member.id)}
                 onMouseLeave={() => setHoveredCard(null)}
-                style={{
-                  transformStyle: 'preserve-3d',
-                  perspective: '1000px'
-                }}
               >
                 <div className="bg-surface rounded-xl sm:rounded-2xl overflow-hidden shadow-brand-md hover:shadow-brand-elevation-lg transition-all duration-500 relative">
                   {/* Glow effect on hover */}
@@ -290,12 +270,12 @@ const TeamShowcase = () => {
                     transition={{ duration: 0.3 }}
                   />
 
-                  {/* Enhanced Member Image with parallax */}
+                  {/* Member Image */}
                   <div className="relative overflow-hidden">
                     <motion.div 
                       className="w-full h-48 sm:h-56 lg:h-64 bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center"
                       animate={{
-                        scale: hoveredCard === member.id ? 1.1 : 1
+                        scale: hoveredCard === member.id ? 1.05 : 1
                       }}
                       transition={{ duration: 0.4 }}
                     >
@@ -303,8 +283,7 @@ const TeamShowcase = () => {
                         className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 bg-white rounded-full flex items-center justify-center shadow-brand-lg relative z-10"
                         whileHover={{
                           scale: 1.1,
-                          rotate: [0, 5, -5, 0],
-                          transition: { duration: 0.5 }
+                          transition: { duration: 0.3 }
                         }}
                       >
                         <span className="text-3xl sm:text-4xl font-bold text-primary">{member?.name?.charAt(0)}</span>
@@ -315,7 +294,7 @@ const TeamShowcase = () => {
                     <motion.div 
                       className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"
                       initial={{ opacity: 0 }}
-                      animate={{ opacity: hoveredCard === member.id ? 1 : 0 }}
+                      animate={{ opacity: hoveredCard === member.id ? 0.3 : 0 }}
                       transition={{ duration: 0.3 }}
                     />
                     
@@ -335,7 +314,7 @@ const TeamShowcase = () => {
                     </motion.div>
                   </div>
 
-                  {/* Enhanced Member Info */}
+                  {/* Member Info */}
                   <div className="p-4 sm:p-5 lg:p-6">
                     <motion.h3 
                       className="text-lg sm:text-xl font-bold text-primary mb-1 group-hover:text-accent transition-colors duration-300"
@@ -348,34 +327,40 @@ const TeamShowcase = () => {
                     </motion.h3>
                     <p className="text-text-secondary text-xs sm:text-sm mb-3 sm:mb-4">{member?.role}</p>
                     
-                    {/* Animated Expertise Tags */}
-                    <motion.div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+                    {/* FIXED: Expertise Tags - Always Visible */}
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                       {member?.expertise?.slice(0, 2)?.map((skill, skillIndex) => (
                         <motion.span
                           key={skillIndex}
-                          custom={skillIndex}
-                          variants={tagVariants}
-                          initial="hidden"
-                          animate={hoveredCard === member.id ? "visible" : "hidden"}
-                          className="px-2 sm:px-3 py-1 bg-accent/10 text-accent text-xs font-medium rounded-full"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ 
+                            delay: 0.1 + skillIndex * 0.05,
+                            duration: 0.3
+                          }}
+                          whileHover={{ 
+                            scale: 1.05,
+                            backgroundColor: "rgba(229, 62, 62, 0.15)"
+                          }}
+                          className="px-2 sm:px-3 py-1 bg-accent/10 text-accent text-xs font-medium rounded-full transition-all duration-200"
                         >
                           {skill}
                         </motion.span>
                       ))}
                       {member?.expertise?.length > 2 && (
                         <motion.span 
-                          className="px-2 sm:px-3 py-1 bg-gray-100 text-text-secondary text-xs font-medium rounded-full"
-                          animate={{
-                            scale: hoveredCard === member.id ? [1, 1.1, 1] : 1
-                          }}
-                          transition={{ duration: 0.3 }}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2, duration: 0.3 }}
+                          whileHover={{ scale: 1.05 }}
+                          className="px-2 sm:px-3 py-1 bg-gray-100 text-text-secondary text-xs font-medium rounded-full transition-all duration-200"
                         >
                           +{member?.expertise?.length - 2} more
                         </motion.span>
                       )}
-                    </motion.div>
+                    </div>
 
-                    {/* Bio Preview with animated text reveal */}
+                    {/* Bio Preview */}
                     <motion.p 
                       className="text-text-secondary text-xs sm:text-sm leading-relaxed line-clamp-3"
                       initial={{ opacity: 0.7 }}
@@ -404,7 +389,7 @@ const TeamShowcase = () => {
           </AnimatePresence>
         </motion.div>
 
-        {/* Enhanced Team Member Detail Modal */}
+        {/* Team Member Detail Modal - Keep the same */}
         <AnimatePresence>
           {selectedMember && (
             <motion.div
@@ -495,22 +480,21 @@ const TeamShowcase = () => {
                         <p className="text-text-secondary text-sm sm:text-base leading-relaxed">{selectedMember?.bio}</p>
                       </div>
 
-                      {/* Animated Expertise Tags */}
+                      {/* Expertise Tags */}
                       <div className="mb-6 sm:mb-8">
                         <h4 className="text-lg sm:text-xl font-bold text-primary mb-3 sm:mb-4">Expertise</h4>
                         <div className="flex flex-wrap gap-2 sm:gap-3">
                           {selectedMember?.expertise?.map((skill, index) => (
                             <motion.span
                               key={index}
-                              initial={{ scale: 0, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
                               transition={{ 
                                 delay: 0.4 + (index * 0.05),
-                                type: "spring",
-                                stiffness: 200
+                                duration: 0.3
                               }}
                               whileHover={{ scale: 1.05 }}
-                              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-accent/10 text-accent font-medium rounded-full text-sm sm:text-base cursor-default"
+                              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-accent/10 text-accent font-medium rounded-full text-sm sm:text-base cursor-default transition-all duration-200"
                             >
                               {skill}
                             </motion.span>
@@ -588,16 +572,6 @@ const TeamShowcase = () => {
           )}
         </AnimatePresence>
       </div>
-
-      {/* Add custom styles for 3D effects */}
-      <style jsx>{`
-        .perspective-1000 {
-          perspective: 1000px;
-        }
-        .preserve-3d {
-          transform-style: preserve-3d;
-        }
-      `}</style>
     </section>
   );
 };
