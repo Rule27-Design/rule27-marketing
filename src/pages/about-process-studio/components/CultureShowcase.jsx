@@ -12,50 +12,50 @@ const CultureShowcase = () => {
   const coreValues = [
     {
       id: 1,
-      title: 'Confident Disruption',
-      description: 'We don\'t follow trends—we create them. Every project is an opportunity to challenge the status quo.',
-      icon: 'Zap',
+      title: 'Dual Excellence',
+      description: 'We excel at both creative marketing and technical development—no compromises, no outsourcing.',
+      icon: 'Layers',
       color: 'from-accent to-red-400',
       examples: [
-        'Questioning every "that\'s how we\'ve always done it"',
-        'Turning constraints into creative opportunities',
-        'Making bold decisions backed by smart strategy'
+        'Marketing campaigns backed by custom tech',
+        'Development projects with marketing strategy',
+        'Integrated solutions from one trusted partner'
       ]
     },
     {
       id: 2,
-      title: 'Excellence Obsession',
-      description: 'Obsessive attention to detail, relentless pursuit of perfection, and user-first thinking in everything we create.',
-      icon: 'Award',
+      title: 'Certified Expertise',
+      description: 'Our team holds certifications across 10+ platforms—from Salesforce to AWS, HubSpot to Azure.',
+      icon: 'Shield',
       color: 'from-blue-500 to-purple-400',
       examples: [
-        'Pixel-perfect designs that scale beautifully',
-        'Code that\'s as clean as the user interface',
-        'Testing until it\'s better than expected'
+        'Platform-certified professionals',
+        'Continuous learning and certification',
+        'Best practices from every ecosystem'
       ]
     },
     {
       id: 3,
-      title: 'Collaborative Innovation',
-      description: 'The best ideas come from diverse minds working together. We believe in co-creation, not just collaboration.',
-      icon: 'Users',
+      title: 'Innovation First',
+      description: 'We don\'t just follow trends—we create them by combining marketing creativity with technical innovation.',
+      icon: 'Lightbulb',
       color: 'from-green-500 to-teal-400',
       examples: [
-        'Cross-functional teams on every project',
-        'Client partnerships, not vendor relationships',
-        'Learning from everyone, teaching everyone'
+        'AI-powered marketing automation',
+        'Custom solutions for unique challenges',
+        'R&D lab for emerging technologies'
       ]
     },
     {
       id: 4,
-      title: 'Continuous Evolution',
-      description: 'The digital world moves fast. We move faster. Always learning, always improving, never settling.',
-      icon: 'TrendingUp',
+      title: 'Client Partnership',
+      description: 'We\'re not vendors—we\'re partners. Your success is our success, measured and celebrated together.',
+      icon: 'Handshake',
       color: 'from-orange-500 to-yellow-400',
       examples: [
-        'Weekly learning sessions on emerging tech',
-        'Experiment-first approach to new solutions',
-        'Iterating based on real user feedback'
+        'Transparent collaboration at every step',
+        'Shared KPIs and success metrics',
+        'Long-term strategic relationships'
       ]
     }
   ];
@@ -64,28 +64,28 @@ const CultureShowcase = () => {
     {
       id: 1,
       type: 'image',
-      title: 'Innovation War Room',
-      description: 'Where breakthrough ideas are born and impossible becomes inevitable.',
-      category: 'workspace',
-      icon: 'Lightbulb',
+      title: 'War Room Sessions',
+      description: 'Where marketing strategy meets technical architecture in collaborative planning.',
+      category: 'collaboration',
+      icon: 'Users',
       imageUrl: 'https://images.unsplash.com/photo-1606857521015-7f9fcf423740?w=400&h=300&fit=crop',
       color: 'from-blue-500 to-purple-500'
     },
     {
       id: 2,
       type: 'image',
-      title: 'Team Collaboration',
-      description: 'Cross-functional magic happening in real-time.',
-      category: 'teamwork',
-      icon: 'Users',
+      title: 'Certification Celebrations',
+      description: 'Celebrating new platform certifications—our commitment to continuous excellence.',
+      category: 'growth',
+      icon: 'Award',
       imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=300&fit=crop',
       color: 'from-green-500 to-teal-500'
     },
     {
       id: 3,
       type: 'image',
-      title: 'Behind the Scenes',
-      description: 'A day in the life of digital rebels making extraordinary happen.',
+      title: 'Marketing Meets Dev',
+      description: 'Our unique culture where creatives and developers work side by side.',
       category: 'culture',
       icon: 'Heart',
       imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
@@ -94,19 +94,19 @@ const CultureShowcase = () => {
     {
       id: 4,
       type: 'image',
-      title: 'Celebration Moments',
-      description: 'Celebrating wins, big and small, because every breakthrough matters.',
-      category: 'events',
-      icon: 'Award',
+      title: 'Client Success Stories',
+      description: 'Celebrating client wins—from campaign launches to platform deployments.',
+      category: 'success',
+      icon: 'TrendingUp',
       imageUrl: 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=400&h=300&fit=crop',
       color: 'from-yellow-500 to-orange-500'
     },
     {
       id: 5,
       type: 'image',
-      title: 'Learning Sessions',
-      description: 'Continuous learning is part of our DNA—staying ahead of tomorrow.',
-      category: 'growth',
+      title: 'Platform Training',
+      description: 'Weekly sessions on new platforms—from Salesforce to Shopify, AWS to Adobe.',
+      category: 'learning',
       icon: 'BookOpen',
       imageUrl: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&h=300&fit=crop',
       color: 'from-purple-500 to-pink-500'
@@ -114,22 +114,22 @@ const CultureShowcase = () => {
     {
       id: 6,
       type: 'image',
-      title: 'Client Co-Creation',
-      description: 'Partnership in action—creating solutions together.',
-      category: 'collaboration',
-      icon: 'Handshake',
+      title: 'Innovation Lab',
+      description: 'Testing new marketing tech and development frameworks before anyone else.',
+      category: 'innovation',
+      icon: 'Cpu',
       imageUrl: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400&h=300&fit=crop',
       color: 'from-indigo-500 to-blue-500'
     }
   ];
 
   const officePerks = [
-    { icon: 'Coffee', title: 'Unlimited Coffee', description: 'Premium coffee, because great ideas need great fuel' },
-    { icon: 'Gamepad', title: 'Gaming Zone', description: 'Xbox, PS5, and retro games for creative breaks' },
-    { icon: 'Dumbbell', title: 'Fitness Center', description: 'On-site gym because healthy body = creative mind' },
-    { icon: 'BookOpen', title: 'Learning Library', description: 'Unlimited access to courses, books, and conferences' },
-    { icon: 'Plane', title: 'Remote Freedom', description: 'Work from anywhere that sparks your creativity' },
-    { icon: 'Heart', title: 'Mental Health', description: 'Wellness programs and mental health support' }
+    { icon: 'Trophy', title: 'Certification Support', description: 'Full coverage for platform certifications and training' },
+    { icon: 'Users', title: 'Cross-Training', description: 'Marketers learn dev, developers learn marketing' },
+    { icon: 'Zap', title: 'Innovation Time', description: '20% time for experimental projects and learning' },
+    { icon: 'DollarSign', title: 'Performance Bonuses', description: 'Rewards for certifications and project excellence' },
+    { icon: 'Globe', title: 'Remote Flexibility', description: 'Work from anywhere with full support' },
+    { icon: 'Heart', title: 'Health & Wellness', description: 'Comprehensive benefits and mental health support' }
   ];
 
   useEffect(() => {
@@ -138,8 +138,8 @@ const CultureShowcase = () => {
         setIsInView(entry?.isIntersecting);
       },
       { 
-        threshold: 0.05, // Changed from 0.2 to 0.05 - triggers much sooner
-        rootMargin: '100px' // Add this - starts animation 100px before element is visible
+        threshold: 0.05,
+        rootMargin: '100px'
       }
     );
 
@@ -147,9 +147,8 @@ const CultureShowcase = () => {
       observer?.observe(sectionRef?.current);
     }
 
-    // Also set visibility immediately on mobile
     if (window.innerWidth < 768) {
-      setIsInView(true); // Immediate visibility on mobile
+      setIsInView(true);
     }
 
     return () => observer?.disconnect();
@@ -178,11 +177,11 @@ const CultureShowcase = () => {
             <span className="text-accent font-semibold text-xs sm:text-sm">Our Culture</span>
           </div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4 sm:mb-6">
-            Where <span className="text-accent">Innovation</span> Lives
+            Where <span className="text-accent">Excellence</span> Thrives
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4">
-            Our culture isn't just about perks and ping-pong tables. It's about creating an environment 
-            where extraordinary people do extraordinary work, every single day.
+            Our culture brings together the best of both worlds—creative marketing brilliance and technical 
+            development excellence—creating an environment where innovation has no limits.
           </p>
         </motion.div>
 
@@ -353,10 +352,10 @@ const CultureShowcase = () => {
           className="text-center mt-12 sm:mt-16"
         >
           <div className="bg-gradient-to-r from-accent to-primary rounded-xl sm:rounded-2xl lg:rounded-3xl p-8 sm:p-12 text-white">
-            <h3 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Ready to Join the Rebellion?</h3>
+            <h3 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Ready to Join the Powerhouse?</h3>
             <p className="text-base sm:text-lg md:text-xl opacity-90 mb-6 sm:mb-8 max-w-2xl mx-auto">
-              We're always looking for extraordinary people who want to create extraordinary work. 
-              Be part of the team that makes other agencies look ordinary.
+              We're always looking for certified professionals and aspiring experts who want to work at the 
+              intersection of marketing brilliance and technical excellence.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -373,7 +372,7 @@ const CultureShowcase = () => {
                 className="bg-white text-primary hover:bg-gray-100 px-6 sm:px-8 py-3 sm:py-4 font-semibold min-h-[48px]"
               >
                 <AppIcon name="Mail" size={20} className="mr-2" />
-                Send Your Portfolio
+                Send Your Resume
               </Button>
             </div>
           </div>
