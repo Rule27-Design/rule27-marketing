@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import AppIcon from '../../../components/AppIcon';
 
 const AwardsRecognition = () => {
-  const [activeCategory, setActiveCategory] = useState('awards');
+  const [activeCategory, setActiveCategory] = useState('certifications');
   const [isInView, setIsInView] = useState(false);
   const sectionRef = useRef(null);
 
@@ -31,21 +31,21 @@ const AwardsRecognition = () => {
       },
       {
         id: 3,
-        title: 'Best Creative Campaign',
-        organization: 'Creative Marketing Awards',
+        title: 'Best Marketing Campaign',
+        organization: 'Marketing Excellence Awards',
         year: '2023',
         category: 'Creative Excellence',
-        description: 'Awarded for the "Break Your Rules" campaign that redefined industry standards.',
+        description: 'Awarded for campaigns that redefined industry standards and drove exceptional ROI.',
         icon: 'Lightbulb',
         color: 'from-blue-500 to-cyan-500'
       },
       {
         id: 4,
-        title: 'Tech Innovation Leader',
+        title: 'Cloud Innovation Leader',
         organization: 'Digital Innovation Summit',
         year: '2023',
         category: 'Technology',
-        description: 'Recognized for integrating cutting-edge AI and emerging technologies.',
+        description: 'Recognized for integrating cutting-edge cloud solutions and AI technologies.',
         icon: 'Cpu',
         color: 'from-green-500 to-teal-500'
       }
@@ -53,92 +53,112 @@ const AwardsRecognition = () => {
     certifications: [
       {
         id: 1,
-        title: 'Google Premier Partner',
-        organization: 'Google',
+        title: 'Salesforce Marketing Cloud Certified',
+        organization: 'Salesforce',
         year: 'Current',
-        category: 'Digital Marketing',
-        description: 'Elite status for exceptional performance and client success.',
-        icon: 'Shield',
-        color: 'from-red-500 to-pink-500'
+        category: 'Marketing Automation',
+        description: 'Email Specialist, Engagement Consultant, Engagement Developer, Account Engagement Consultant certifications.',
+        icon: 'Cloud',
+        color: 'from-blue-500 to-cyan-500'
       },
       {
         id: 2,
-        title: 'AWS Solution Partner',
+        title: 'AWS Certified Solutions',
         organization: 'Amazon Web Services',
         year: 'Current',
-        category: 'Cloud Technology',
-        description: 'Certified for enterprise-level cloud architecture and implementation.',
-        icon: 'Cloud',
+        category: 'Cloud Development',
+        description: 'AWS Certified Developer Associate & DevOps Engineer Professional certifications.',
+        icon: 'Server',
         color: 'from-orange-500 to-red-500'
       },
       {
         id: 3,
-        title: 'Adobe Solution Partner',
-        organization: 'Adobe',
+        title: 'Google Cloud Partner',
+        organization: 'Google',
         year: 'Current',
-        category: 'Creative Technology',
-        description: 'Recognized expertise in Adobe Creative Cloud enterprise solutions.',
-        icon: 'Image',
-        color: 'from-purple-600 to-blue-600'
+        category: 'Cloud & Marketing',
+        description: 'Professional Cloud Developer & Digital Leader certifications. Premier Partner for marketing solutions.',
+        icon: 'Globe',
+        color: 'from-blue-600 to-green-600'
       },
       {
         id: 4,
-        title: 'ISO 27001 Certified',
-        organization: 'International Standards',
-        year: '2023',
-        category: 'Security',
-        description: 'Information security management system certification.',
-        icon: 'Lock',
-        color: 'from-gray-700 to-gray-900'
+        title: 'Microsoft Azure Certified',
+        organization: 'Microsoft',
+        year: 'Current',
+        category: 'Enterprise Solutions',
+        description: 'Azure Developer Associate certification for enterprise cloud solutions.',
+        icon: 'Layers',
+        color: 'from-indigo-600 to-blue-600'
+      },
+      {
+        id: 5,
+        title: 'HubSpot Solutions Partner',
+        organization: 'HubSpot',
+        year: 'Current',
+        category: 'Marketing & CRM',
+        description: 'Certified in Marketing Software, Inbound Marketing, CMS, RevOps across multiple team members.',
+        icon: 'Target',
+        color: 'from-orange-600 to-red-600'
+      },
+      {
+        id: 6,
+        title: 'Shopify Partner',
+        organization: 'Shopify',
+        year: 'Current',
+        category: 'E-commerce',
+        description: 'Service Partner with Verified Skills badges for e-commerce development and optimization.',
+        icon: 'ShoppingCart',
+        color: 'from-green-600 to-teal-600'
       }
     ],
     media: [
       {
         id: 1,
-        title: 'Forbes: "The Agency Breaking Every Rule"',
+        title: 'Forbes: "The Full-Stack Digital Powerhouse"',
         organization: 'Forbes Magazine',
         year: '2024',
         category: 'Industry Feature',
-        description: 'Featured story on how Rule27 is disrupting the traditional agency model.',
+        description: 'Featured story on how Rule27 combines marketing excellence with technical innovation.',
         icon: 'FileText',
         color: 'from-indigo-500 to-purple-600'
       },
       {
         id: 2,
-        title: 'TechCrunch: Innovation Spotlight',
+        title: 'TechCrunch: Marketing Meets Development',
         organization: 'TechCrunch',
         year: '2024',
         category: 'Tech Coverage',
-        description: 'Highlighted for AI-powered design tools and automated optimization.',
+        description: 'Highlighted for bridging the gap between creative marketing and enterprise development.',
         icon: 'Newspaper',
         color: 'from-green-600 to-blue-600'
       },
       {
         id: 3,
-        title: 'Design Week: Future of Agencies',
-        organization: 'Design Week',
+        title: 'AdWeek: Digital Transformation Leaders',
+        organization: 'AdWeek',
         year: '2023',
-        category: 'Design Industry',
-        description: 'Expert commentary on the evolution of creative agencies.',
-        icon: 'Edit3',
-        color: 'from-teal-500 to-green-500'
+        category: 'Marketing Industry',
+        description: 'Case study on helping Fortune 500 companies with end-to-end digital transformation.',
+        icon: 'Monitor',
+        color: 'from-orange-600 to-red-600'
       },
       {
         id: 4,
-        title: 'Adweek: Digital Transformation',
-        organization: 'Adweek',
+        title: 'MarTech: Integration Excellence',
+        organization: 'MarTech Today',
         year: '2023',
-        category: 'Marketing Industry',
-        description: 'Case study on helping Fortune 500 companies transform digitally.',
-        icon: 'Monitor',
-        color: 'from-orange-600 to-red-600'
+        category: 'Technology',
+        description: 'Recognized for seamless integration of marketing automation with custom development.',
+        icon: 'Link',
+        color: 'from-purple-600 to-pink-600'
       }
     ]
   };
 
   const categories = [
-    { id: 'awards', label: 'Awards', icon: 'Award', count: recognitionData?.awards?.length },
     { id: 'certifications', label: 'Certifications', icon: 'Shield', count: recognitionData?.certifications?.length },
+    { id: 'awards', label: 'Awards', icon: 'Award', count: recognitionData?.awards?.length },
     { id: 'media', label: 'Media', icon: 'Newspaper', count: recognitionData?.media?.length }
   ];
 
@@ -150,8 +170,8 @@ const AwardsRecognition = () => {
         setIsInView(entry?.isIntersecting);
       },
       { 
-        threshold: 0.05, // Changed from 0.2 to 0.05 - triggers much sooner
-        rootMargin: '100px' // Add this - starts animation 100px before element is visible
+        threshold: 0.05,
+        rootMargin: '100px'
       }
     );
 
@@ -159,9 +179,8 @@ const AwardsRecognition = () => {
       observer?.observe(sectionRef?.current);
     }
 
-    // Also set visibility immediately on mobile
     if (window.innerWidth < 768) {
-      setIsInView(true); // Immediate visibility on mobile
+      setIsInView(true);
     }
 
     return () => observer?.disconnect();
@@ -185,8 +204,8 @@ const AwardsRecognition = () => {
             Industry <span className="text-accent">Recognition</span>
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4">
-            Our commitment to excellence doesn't go unnoticed. Here's how the industry, 
-            our peers, and leading publications recognize Rule27's impact.
+            Our dual expertise in marketing and development has earned us recognition from 
+            industry leaders. We're certified across all major platforms, making us your complete digital partner.
           </p>
         </motion.div>
 
@@ -274,13 +293,13 @@ const AwardsRecognition = () => {
           transition={{ duration: 0.4, delay: 0.3 }}
           className="bg-gradient-to-r from-accent to-primary rounded-xl sm:rounded-2xl lg:rounded-3xl p-8 sm:p-12 text-white text-center"
         >
-          <h3 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Recognition by the Numbers</h3>
+          <h3 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Digital Powerhouse by the Numbers</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {[
+              { number: '10+', label: 'Platform Certifications', icon: 'Shield' },
               { number: '25+', label: 'Awards Won', icon: 'Award' },
-              { number: '8+', label: 'Certifications', icon: 'Shield' },
-              { number: '25+', label: 'Media Features', icon: 'Newspaper' },
-              { number: '3', label: 'Years Running', icon: 'TrendingUp' }
+              { number: '8+', label: 'Strategic Partners', icon: 'Network' },
+              { number: '11+', label: 'Years Excellence', icon: 'TrendingUp' }
             ]?.map((stat, index) => (
               <div key={index} className="text-center group">
                 <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 mx-auto group-hover:bg-white/30 transition-colors duration-300">
@@ -293,8 +312,9 @@ const AwardsRecognition = () => {
           </div>
           <div className="mt-8 sm:mt-12 max-w-3xl mx-auto">
             <p className="text-base sm:text-lg md:text-xl opacity-90">
-              "Recognition isn't just about collecting trophies—it's proof that our rebellious approach 
-              to creativity and innovation is making a real impact in the industry."
+              "Our certifications and partnerships aren't just badges—they're proof that we deliver 
+              enterprise-grade solutions with the creativity of a boutique agency and the technical 
+              excellence of a development powerhouse."
             </p>
             <div className="flex items-center justify-center space-x-3 mt-4 sm:mt-6">
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-full flex items-center justify-center">
@@ -302,7 +322,7 @@ const AwardsRecognition = () => {
               </div>
               <div className="text-left">
                 <div className="font-semibold text-sm sm:text-base">Rule27 Leadership Team</div>
-                <div className="text-xs sm:text-sm opacity-70">Digital Powerhouse</div>
+                <div className="text-xs sm:text-sm opacity-70">Marketing & Development Excellence</div>
               </div>
             </div>
           </div>

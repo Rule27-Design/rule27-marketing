@@ -11,82 +11,118 @@ const TeamShowcase = () => {
   const teamCategories = [
     { id: 'all', label: 'All Team', icon: 'Users' },
     { id: 'leadership', label: 'Leadership', icon: 'Crown' },
-    { id: 'creative', label: 'Creative', icon: 'Palette' },
-    { id: 'technical', label: 'Technical', icon: 'Code' },
-    { id: 'strategy', label: 'Strategy', icon: 'Target' }
+    { id: 'marketing', label: 'Marketing', icon: 'Target' },
+    { id: 'development', label: 'Development', icon: 'Code' },
+    { id: 'creative', label: 'Creative', icon: 'Palette' }
   ];
 
   const teamMembers = [
     {
       id: 1,
       name: 'Alex Chen',
-      role: 'Founder & Creative Visionary',
+      role: 'Founder & CEO',
       category: 'leadership',
       image: '/api/placeholder/300/300',
-      expertise: ['Brand Strategy', 'Creative Direction', 'Innovation Leadership'],
-      bio: 'The rebel who asked "What if design had no limits?" Alex founded Rule27 on the belief that creativity should break boundaries, not follow them.',
-      projects: ['Nike Revolution Campaign', 'Tesla Interface Redesign', 'Apple Store Experience'],
-      personality: 'Visionary, Bold, Perfectionist',
+      expertise: ['Business Strategy', 'Digital Transformation', 'Innovation Leadership'],
+      bio: 'The visionary who founded Rule27 on the belief that one agency should deliver both world-class marketing and enterprise development.',
+      projects: ['Fortune 500 Digital Transformations', 'Multi-Million Dollar Campaigns', 'Enterprise Platform Builds'],
+      personality: 'Visionary, Strategic, Results-Driven',
       social: { linkedin: '#', twitter: '#', instagram: '#' }
     },
     {
       id: 2,
       name: 'Sarah Johnson',
-      role: 'Co-Founder & Technical Architect',
+      role: 'Co-Founder & CTO',
       category: 'leadership',
       image: '/api/placeholder/300/300',
-      expertise: ['System Architecture', 'Full-Stack Development', 'AI Integration'],
-      bio: 'The technical mastermind who makes impossible possible. Sarah ensures every creative vision is backed by flawless execution.',
-      projects: ['Netflix Recommendation Engine', 'Spotify AI Features', 'Amazon Voice Interface'],
-      personality: 'Perfectionist, Innovative, Problem Solver',
+      expertise: ['Cloud Architecture', 'DevOps Strategy', 'Technical Innovation'],
+      bio: 'The technical mastermind who ensures every marketing strategy is backed by bulletproof technology and scalable infrastructure.',
+      projects: ['AWS Enterprise Migrations', 'Marketing Tech Stack Integrations', 'Custom Platform Development'],
+      personality: 'Analytical, Innovative, Problem Solver',
       social: { linkedin: '#', github: '#', twitter: '#' }
     },
     {
       id: 3,
       name: 'Marcus Rodriguez',
-      role: 'Head of Brand Experience',
-      category: 'creative',
+      role: 'Chief Marketing Officer',
+      category: 'marketing',
       image: '/api/placeholder/300/300',
-      expertise: ['Brand Identity', 'Motion Graphics', 'Experience Design'],
-      bio: 'The creative force who turns brands into movements. Marcus crafts identities that don\'t just look good—they inspire action.',
-      projects: ['Airbnb Rebrand', 'Google Material Design', 'Microsoft Fluent System'],
-      personality: 'Artistic, Passionate, Detail-oriented',
-      social: { linkedin: '#', behance: '#', instagram: '#' }
+      expertise: ['Marketing Strategy', 'Brand Development', 'Campaign Management'],
+      bio: 'The marketing genius who turns brands into movements, with certifications across Salesforce, HubSpot, and Google platforms.',
+      projects: ['$10M+ Ad Campaigns', 'Marketing Automation Systems', 'Brand Transformations'],
+      personality: 'Creative, Data-Driven, Strategic',
+      social: { linkedin: '#', twitter: '#', instagram: '#' }
     },
     {
       id: 4,
       name: 'Emily Watson',
-      role: 'Lead UX Strategist',
-      category: 'strategy',
+      role: 'Head of Development',
+      category: 'development',
       image: '/api/placeholder/300/300',
-      expertise: ['User Research', 'Journey Mapping', 'Behavioral Psychology'],
-      bio: 'The strategist who understands humans better than they understand themselves. Emily turns user insights into breakthrough experiences.',
-      projects: ['Uber Experience Optimization', 'Instagram Stories UX', 'LinkedIn Learning Platform'],
-      personality: 'Analytical, Empathetic, Data-driven',
-      social: { linkedin: '#', medium: '#', twitter: '#' }
+      expertise: ['Full-Stack Development', 'Cloud Solutions', 'API Architecture'],
+      bio: 'AWS and Azure certified developer who leads our technical teams in building scalable, performant digital solutions.',
+      projects: ['E-commerce Platforms', 'SaaS Applications', 'Enterprise Integrations'],
+      personality: 'Technical, Detail-Oriented, Efficient',
+      social: { linkedin: '#', github: '#', stackoverflow: '#' }
     },
     {
       id: 5,
       name: 'David Kim',
-      role: 'Senior Full-Stack Developer',
-      category: 'technical',
+      role: 'Marketing Automation Lead',
+      category: 'marketing',
       image: '/api/placeholder/300/300',
-      expertise: ['React/Node.js', 'Cloud Architecture', 'Performance Optimization'],
-      bio: 'The code artist who makes websites fly. David builds digital experiences that load faster than you can think.',
-      projects: ['Shopify Speed Optimization', 'PayPal Payment Gateway', 'Zoom Video Platform'],
-      personality: 'Logical, Efficient, Coffee-powered',
-      social: { linkedin: '#', github: '#', stackoverflow: '#' }
+      expertise: ['Salesforce Marketing Cloud', 'HubSpot', 'Email Marketing'],
+      bio: 'Certified across multiple marketing platforms, David architects automation workflows that drive engagement and conversions.',
+      projects: ['Multi-Touch Attribution Models', 'Lead Nurturing Systems', 'Marketing Analytics Dashboards'],
+      personality: 'Analytical, Strategic, Results-Focused',
+      social: { linkedin: '#', twitter: '#', medium: '#' }
     },
     {
       id: 6,
       name: 'Lisa Park',
-      role: 'Head of Innovation Lab',
+      role: 'Senior Cloud Architect',
+      category: 'development',
+      image: '/api/placeholder/300/300',
+      expertise: ['AWS Solutions', 'Azure Architecture', 'DevOps'],
+      bio: 'Multi-cloud certified architect who designs and implements enterprise-grade infrastructure for our clients.',
+      projects: ['Cloud Migrations', 'Microservices Architecture', 'CI/CD Pipelines'],
+      personality: 'Technical, Innovative, Systematic',
+      social: { linkedin: '#', github: '#', twitter: '#' }
+    },
+    {
+      id: 7,
+      name: 'Michael Torres',
+      role: 'Creative Director',
       category: 'creative',
       image: '/api/placeholder/300/300',
-      expertise: ['Emerging Tech', 'AR/VR Design', 'Future Thinking'],
-      bio: 'The future-seer who makes tomorrow happen today. Lisa explores technologies that don\'t exist yet to create experiences that shouldn\'t be possible.',
-      projects: ['Meta VR Interfaces', 'Apple Vision Pro Apps', 'Tesla Autopilot UX'],
-      personality: 'Futuristic, Experimental, Visionary',
+      expertise: ['Brand Design', 'UX/UI Design', 'Creative Strategy'],
+      bio: 'The creative force who ensures every digital experience is not just functional but unforgettable.',
+      projects: ['Brand Identity Systems', 'Website Redesigns', 'Campaign Creative'],
+      personality: 'Artistic, Visionary, Perfectionist',
+      social: { linkedin: '#', behance: '#', instagram: '#' }
+    },
+    {
+      id: 8,
+      name: 'Rachel Green',
+      role: 'Shopify & E-commerce Lead',
+      category: 'development',
+      image: '/api/placeholder/300/300',
+      expertise: ['Shopify Development', 'E-commerce Strategy', 'Conversion Optimization'],
+      bio: 'Shopify Partner certified expert who builds high-converting e-commerce experiences that drive revenue.',
+      projects: ['Multi-Million Dollar Stores', 'Custom Shopify Apps', 'Headless Commerce'],
+      personality: 'Strategic, Technical, Revenue-Focused',
+      social: { linkedin: '#', github: '#', twitter: '#' }
+    },
+    {
+      id: 9,
+      name: 'James Wilson',
+      role: 'Data & Analytics Director',
+      category: 'marketing',
+      image: '/api/placeholder/300/300',
+      expertise: ['Google Analytics', 'Data Science', 'Marketing Analytics'],
+      bio: 'Google certified analyst who transforms data into actionable insights that drive marketing and business decisions.',
+      projects: ['Analytics Implementations', 'Attribution Modeling', 'Predictive Analytics'],
+      personality: 'Analytical, Precise, Insightful',
       social: { linkedin: '#', twitter: '#', medium: '#' }
     }
   ];
@@ -101,8 +137,8 @@ const TeamShowcase = () => {
         setIsInView(entry?.isIntersecting);
       },
       { 
-        threshold: 0.05, // Changed from 0.2 to 0.05 - triggers much sooner
-        rootMargin: '100px' // Add this - starts animation 100px before element is visible
+        threshold: 0.05,
+        rootMargin: '100px'
       }
     );
 
@@ -110,9 +146,8 @@ const TeamShowcase = () => {
       observer?.observe(sectionRef?.current);
     }
 
-    // Also set visibility immediately on mobile
     if (window.innerWidth < 768) {
-      setIsInView(true); // Immediate visibility on mobile
+      setIsInView(true);
     }
 
     return () => observer?.disconnect();
@@ -133,11 +168,11 @@ const TeamShowcase = () => {
             <span className="text-accent font-semibold text-xs sm:text-sm">Meet Our Team</span>
           </div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4 sm:mb-6">
-            The <span className="text-accent">Rebel Alliance</span>
+            The <span className="text-accent">Certified Experts</span>
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4">
-            Meet the visionaries, creators, and technical wizards who make Rule27 the digital powerhouse 
-            that transforms ambitious brands into industry leaders.
+            Meet the certified professionals who make Rule27 the digital powerhouse it is—experts in marketing 
+            platforms, cloud development, and everything in between.
           </p>
         </motion.div>
 

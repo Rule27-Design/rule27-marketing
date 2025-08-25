@@ -10,57 +10,57 @@ const OriginStory = () => {
   const milestones = [
     {
       year: '2014',
-      title: 'Founded',
-      description: 'Rule27 Design was created as a Web Design & Marketing shop by rebels who believed design agencies were playing it too safe. We asked: "What if creativity had no ceiling?"',
+      title: 'Founded as Rule27 Design',
+      description: 'Started as a Web Design & Marketing shop by rebels who believed agencies were playing it too safe. We asked: "What if creativity and technology had no limits?"',
       icon: 'Zap',
       color: 'from-accent to-red-400'
     },
     {
       year: '2015',
-      title: 'The 27th Rule',
-      description: 'Discovered our philosophy: while others follow 26 design principles, we write the 27th rule that breaks them all.',
+      title: 'The 27th Rule Philosophy',
+      description: 'Discovered our philosophy: while others follow 26 design principles, we write the 27th rule that breaks them all. Excellence through innovation became our mantra.',
       icon: 'Compass',
       color: 'from-accent to-orange-400'
     },
     {
       year: '2017',
-      title: 'CRM Practice',
-      description: 'We started incorporating CRM Implementations for our clients to help connect to their customers. This marked our evolution beyond just design—we became relationship architects.',
+      title: 'CRM & Marketing Automation',
+      description: 'Expanded into CRM implementations and marketing automation. Earned our first Salesforce certifications, marking our evolution into relationship architects.',
       icon: 'Network',
       color: 'from-blue-500 to-cyan-400'
     },
     {
       year: '2019',
-      title: 'Full Service',
-      description: 'Hired more staff allowing Rule27 Design to consult on all aspects of IT & Marketing. We became our clients\' one-stop shop, making other agencies look incomplete.',
+      title: 'Full-Service Digital Agency',
+      description: 'Grew our team to provide comprehensive IT & Marketing consulting. Achieved AWS and Google Cloud certifications, becoming our clients\' one-stop digital powerhouse.',
       icon: 'Layers',
       color: 'from-green-500 to-teal-400'
     },
     {
       year: '2020',
-      title: 'Digital Disruption',
-      description: 'Pivoted to become the digital powerhouse during global transformation. Made other agencies look ordinary.',
+      title: 'Enterprise Partnerships',
+      description: 'Secured partnerships with HubSpot, Adobe, and Microsoft Azure. Pivoted to serve enterprise clients during global digital transformation.',
       icon: 'Rocket',
       color: 'from-accent to-pink-400'
     },
     {
       year: '2021',
-      title: 'AI Apps Rollout',
-      description: 'Started working with AI to make sure that we were always using the latest technology and skills. We didn\'t just adopt AI—we made it part of our creative DNA.',
+      title: 'AI & Advanced Technology',
+      description: 'Integrated AI and machine learning into our service offerings. Launched partnerships with Shopify and expanded our development capabilities.',
       icon: 'Cpu',
       color: 'from-purple-500 to-indigo-400'
     },
     {
       year: '2023',
       title: 'Innovation Laboratory',
-      description: 'Launched our R&D division, pushing boundaries between creativity and technology like never before.',
+      description: 'Established our R&D division, pushing boundaries between marketing creativity and technical innovation. Added Snowflake and advanced analytics partnerships.',
       icon: 'Lightbulb',
       color: 'from-accent to-purple-400'
     },
     {
       year: '2025',
-      title: 'Future Redefined',
-      description: 'Today we stand as the creative partner that makes impossible possible, ordinary extraordinary.',
+      title: 'The Digital Powerhouse',
+      description: 'Today we stand as the complete digital partner—10+ platform certifications, 18+ strategic partnerships, delivering marketing excellence with technical precision.',
       icon: 'Crown',
       color: 'from-accent to-blue-400'
     }
@@ -72,8 +72,8 @@ const OriginStory = () => {
         setIsInView(entry?.isIntersecting);
       },
       { 
-        threshold: 0.05, // Changed from 0.3 to 0.05 - triggers much sooner
-        rootMargin: '100px' // Add this - starts animation 100px before element is visible
+        threshold: 0.05,
+        rootMargin: '100px'
       }
     );
 
@@ -81,9 +81,8 @@ const OriginStory = () => {
       observer?.observe(sectionRef?.current);
     }
 
-    // Also set visibility immediately on mobile
     if (window.innerWidth < 768) {
-      setIsInView(true); // Immediate visibility on mobile
+      setIsInView(true);
     }
 
     return () => observer?.disconnect();
@@ -104,11 +103,11 @@ const OriginStory = () => {
             <span className="text-accent font-semibold text-xs sm:text-sm">Our Origin Story</span>
           </div>
           <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-3 sm:mb-4">
-            Born from <span className="text-accent">Rebellious Innovation</span>
+            From <span className="text-accent">Rebellious Startup</span> to Digital Powerhouse
           </h2>
           <p className="text-sm sm:text-base md:text-lg text-text-secondary max-w-3xl mx-auto leading-relaxed px-4">
             Every revolution starts with a simple question: "What if we did things differently?" 
-            Here's how Rule27 evolved from a rebellious idea to a digital powerhouse.
+            Here's how Rule27 evolved from a rebellious idea to a certified leader in both marketing and development.
           </p>
         </motion.div>
 
@@ -172,9 +171,10 @@ const OriginStory = () => {
             <AppIcon name="Quote" size={28} className="mx-auto mb-3 sm:mb-4 opacity-70" />
             <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">The 27th Rule Philosophy</h3>
             <p className="text-sm sm:text-base md:text-lg leading-relaxed opacity-90">
-              "While the industry follows 26 established design principles, we believe in writing the 27th rule - 
-              the one that breaks conventions, challenges norms, and creates extraordinary from ordinary. 
-              This is our rebellion. This is our innovation."
+              "While the industry follows 26 established principles, we believe in writing the 27th rule—the one that 
+              breaks conventions and creates extraordinary from ordinary. We're not just another agency or dev shop. 
+              We're the digital powerhouse that delivers marketing brilliance with technical excellence, making us the 
+              only partner you'll ever need for complete digital transformation."
             </p>
             <div className="mt-4 sm:mt-6 flex justify-center">
               <div className="flex items-center space-x-3">
@@ -183,7 +183,7 @@ const OriginStory = () => {
                 </div>
                 <div className="text-left">
                   <div className="font-semibold text-xs sm:text-sm">Rule27 Founders</div>
-                  <div className="text-xs opacity-70">Digital Rebels</div>
+                  <div className="text-xs opacity-70">Digital Innovators</div>
                 </div>
               </div>
             </div>

@@ -5,145 +5,222 @@ import Button from '../../../components/ui/Button';
 
 const PartnershipEcosystem = () => {
   const [activePartner, setActivePartner] = useState(null);
-  const [partnerCategory, setPartnerCategory] = useState('technology');
+  const [partnerCategory, setPartnerCategory] = useState('marketing');
   const [isInView, setIsInView] = useState(false);
   const sectionRef = useRef(null);
 
   const partnershipCategories = [
-    { id: 'technology', label: 'Technology', icon: 'Cpu', count: 8 },
-    { id: 'creative', label: 'Creative', icon: 'Palette', count: 5 },
-    { id: 'strategic', label: 'Strategic', icon: 'Target', count: 6 },
-    { id: 'data', label: 'Data & Analytics', icon: 'BarChart3', count: 4 }
+    { id: 'marketing', label: 'Marketing', icon: 'Target', count: 6 },
+    { id: 'development', label: 'Development', icon: 'Code', count: 5 },
+    { id: 'cloud', label: 'Cloud & Infrastructure', icon: 'Cloud', count: 4 },
+    { id: 'analytics', label: 'Data & Analytics', icon: 'BarChart3', count: 3 }
   ];
 
   const partnerships = {
-    technology: [
+    marketing: [
       {
         id: 1,
-        name: 'Google Cloud',
-        type: 'Premier Partner',
+        name: 'Salesforce',
+        type: 'Marketing Cloud Partner',
         logo: '/api/placeholder/120/60',
-        relationship: 'Infrastructure & AI Services',
-        description: 'Advanced cloud infrastructure, AI/ML capabilities, and enterprise-grade security for scalable digital solutions.',
-        benefits: ['Global infrastructure', 'Advanced AI tools', 'Enterprise security', '24/7 support'],
-        projects: ['Netflix scaling solution', 'AI-powered recommendation engine'],
-        partnership_since: '2020'
+        relationship: 'Marketing Automation Excellence',
+        description: 'Certified across Marketing Cloud Email Specialist, Engagement Consultant, Engagement Developer, and Account Engagement Consultant.',
+        benefits: ['Marketing automation', 'Customer journey mapping', 'Multi-channel campaigns', 'Lead nurturing'],
+        projects: ['Enterprise CRM implementations', 'Marketing automation workflows', 'Customer engagement platforms'],
+        partnership_since: '2017'
       },
       {
         id: 2,
-        name: 'AWS',
-        type: 'Solution Partner',
+        name: 'HubSpot',
+        type: 'Solutions Partner',
         logo: '/api/placeholder/120/60',
-        relationship: 'Cloud Architecture & DevOps',
-        description: 'Comprehensive cloud solutions, serverless computing, and DevOps automation for enterprise clients.',
-        benefits: ['Scalable infrastructure', 'DevOps automation', 'Cost optimization', 'Security compliance'],
-        projects: ['Shopify performance optimization', 'Fintech security platform'],
+        relationship: 'Inbound Marketing & CRM',
+        description: 'Strategic partner for inbound marketing, CRM implementation, and RevOps optimization with multiple certifications.',
+        benefits: ['Inbound methodology', 'Marketing automation', 'CRM integration', 'RevOps optimization'],
+        projects: ['Full-funnel marketing systems', 'Lead generation campaigns', 'Sales enablement platforms'],
         partnership_since: '2019'
       },
       {
         id: 3,
-        name: 'Microsoft Azure',
-        type: 'Gold Partner',
+        name: 'Google',
+        type: 'Premier Partner',
         logo: '/api/placeholder/120/60',
-        relationship: 'Enterprise Solutions',
-        description: 'Enterprise-grade solutions, Office 365 integration, and hybrid cloud architectures.',
-        benefits: ['Enterprise integration', 'Hybrid cloud', 'Office 365 sync', 'Advanced analytics'],
-        projects: ['Fortune 500 digital transformation', 'Healthcare data platform'],
-        partnership_since: '2021'
-      },
-      {
-        id: 4,
-        name: 'Vercel',
-        type: 'Technology Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Next.js & JAMstack',
-        description: 'Cutting-edge frontend deployment and edge computing for lightning-fast digital experiences.',
-        benefits: ['Edge computing', 'Instant deployment', 'Global CDN', 'Performance optimization'],
-        projects: ['E-commerce platform rebuild', 'SaaS application frontend'],
-        partnership_since: '2022'
-      }
-    ],
-    creative: [
-      {
-        id: 5,
-        name: 'Adobe',
-        type: 'Solution Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Creative Technology',
-        description: 'Enterprise Creative Cloud solutions, digital asset management, and creative workflow optimization.',
-        benefits: ['Creative Cloud Enterprise', 'Asset management', 'Workflow automation', 'Team collaboration'],
-        projects: ['Brand asset management system', 'Creative workflow automation'],
+        relationship: 'Digital Marketing & Analytics',
+        description: 'Premier Partner status for Google Ads, Analytics, and marketing solutions with proven performance excellence.',
+        benefits: ['PPC management', 'Analytics implementation', 'SEO optimization', 'Display advertising'],
+        projects: ['Multi-million dollar ad campaigns', 'Analytics migration projects', 'Performance optimization'],
         partnership_since: '2018'
       },
       {
-        id: 6,
-        name: 'Figma',
-        type: 'Strategic Partner',
+        id: 4,
+        name: 'Adobe',
+        type: 'Solution Partner',
         logo: '/api/placeholder/120/60',
-        relationship: 'Design Collaboration',
-        description: 'Advanced design systems, real-time collaboration, and enterprise design operations.',
-        benefits: ['Real-time collaboration', 'Design systems', 'Version control', 'Developer handoff'],
-        projects: ['Design system for Fortune 100', 'Multi-brand design platform'],
+        relationship: 'Creative & Experience Cloud',
+        description: 'Certified partner for Adobe Creative Cloud and Experience Manager implementations.',
+        benefits: ['Creative workflows', 'Digital asset management', 'Experience optimization', 'Content management'],
+        projects: ['Enterprise DAM systems', 'Creative automation workflows', 'Personalization engines'],
         partnership_since: '2020'
       },
       {
-        id: 7,
-        name: 'Webflow',
-        type: 'Partner Agency',
+        id: 5,
+        name: 'Shopify',
+        type: 'Partner Plus',
         logo: '/api/placeholder/120/60',
-        relationship: 'No-Code Development',
-        description: 'Advanced web development platform for rapid prototyping and content management solutions.',
-        benefits: ['Rapid prototyping', 'Visual development', 'CMS flexibility', 'Client empowerment'],
-        projects: ['Marketing site rebuilds', 'Content management platforms'],
+        relationship: 'E-commerce Solutions',
+        description: 'Service Partner with Verified Skills for building and optimizing high-converting e-commerce experiences.',
+        benefits: ['Custom storefronts', 'App development', 'Conversion optimization', 'Multi-channel selling'],
+        projects: ['Enterprise e-commerce platforms', 'Headless commerce solutions', 'Custom app development'],
         partnership_since: '2021'
+      },
+      {
+        id: 6,
+        name: 'Mailchimp',
+        type: 'Pro Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'Email Marketing',
+        description: 'Certified partner for advanced email marketing strategies and automation workflows.',
+        benefits: ['Email automation', 'Audience segmentation', 'Campaign optimization', 'A/B testing'],
+        projects: ['Multi-brand email systems', 'Automated nurture campaigns', 'Personalization strategies'],
+        partnership_since: '2019'
       }
     ],
-    strategic: [
+    development: [
+      {
+        id: 7,
+        name: 'AWS',
+        type: 'Advanced Tier Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'Cloud Architecture & DevOps',
+        description: 'AWS Certified Developer Associate and DevOps Engineer Professional certifications for enterprise cloud solutions.',
+        benefits: ['Scalable infrastructure', 'Serverless architecture', 'DevOps automation', 'Security compliance'],
+        projects: ['Enterprise migrations', 'Microservices architectures', 'CI/CD pipelines'],
+        partnership_since: '2019'
+      },
       {
         id: 8,
-        name: 'Deloitte Digital',
-        type: 'Strategic Alliance',
+        name: 'Microsoft Azure',
+        type: 'Gold Partner',
         logo: '/api/placeholder/120/60',
-        relationship: 'Enterprise Consulting',
-        description: 'Joint enterprise digital transformation initiatives and strategic consulting partnerships.',
-        benefits: ['Enterprise reach', 'Strategic consulting', 'Industry expertise', 'Global scale'],
-        projects: ['Fortune 500 transformation', 'Digital strategy consulting'],
-        partnership_since: '2022'
+        relationship: 'Enterprise Cloud Solutions',
+        description: 'Azure Developer Associate certified for building enterprise-grade cloud applications and services.',
+        benefits: ['Hybrid cloud solutions', 'Enterprise integration', 'Azure DevOps', 'AI/ML services'],
+        projects: ['Fortune 500 cloud migrations', 'Enterprise app modernization', 'Data platform builds'],
+        partnership_since: '2020'
       },
       {
         id: 9,
-        name: 'Accenture Interactive',
-        type: 'Collaboration Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Innovation Labs',
-        description: 'Collaborative innovation projects and emerging technology exploration for enterprise clients.',
-        benefits: ['Innovation research', 'Emerging tech', 'Enterprise connections', 'R&D collaboration'],
-        projects: ['AI innovation lab', 'VR/AR prototypes'],
-        partnership_since: '2023'
-      }
-    ],
-    data: [
-      {
-        id: 10,
-        name: 'Snowflake',
+        name: 'Google Cloud',
         type: 'Technology Partner',
         logo: '/api/placeholder/120/60',
-        relationship: 'Data Cloud Platform',
-        description: 'Advanced data warehousing, analytics, and machine learning capabilities for data-driven solutions.',
-        benefits: ['Data warehousing', 'Advanced analytics', 'ML capabilities', 'Real-time insights'],
-        projects: ['Customer analytics platform', 'Predictive modeling system'],
+        relationship: 'Cloud Development & AI',
+        description: 'Professional Cloud Developer and Digital Leader certifications for cutting-edge cloud solutions.',
+        benefits: ['Kubernetes expertise', 'AI/ML platforms', 'BigQuery analytics', 'Serverless computing'],
+        projects: ['Data warehouses', 'ML model deployments', 'Real-time analytics platforms'],
+        partnership_since: '2021'
+      },
+      {
+        id: 10,
+        name: 'Vercel',
+        type: 'Agency Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'Next.js & JAMstack',
+        description: 'Specialized partner for building blazing-fast web applications with Next.js and modern JAMstack architecture.',
+        benefits: ['Edge computing', 'Performance optimization', 'Serverless functions', 'Global CDN'],
+        projects: ['Enterprise web apps', 'E-commerce platforms', 'Marketing sites'],
         partnership_since: '2022'
       },
       {
         id: 11,
-        name: 'Mixpanel',
-        type: 'Analytics Partner',
+        name: 'GitHub',
+        type: 'Partner',
         logo: '/api/placeholder/120/60',
-        relationship: 'User Analytics',
-        description: 'Advanced user behavior analytics and product intelligence for optimized user experiences.',
-        benefits: ['User behavior tracking', 'Cohort analysis', 'A/B testing', 'Product intelligence'],
-        projects: ['SaaS analytics dashboard', 'User journey optimization'],
+        relationship: 'DevOps & Collaboration',
+        description: 'Strategic partner for source control, CI/CD, and collaborative development workflows.',
+        benefits: ['Version control', 'CI/CD automation', 'Code review', 'Security scanning'],
+        projects: ['Enterprise DevOps transformations', 'Automated deployment pipelines', 'Code quality systems'],
+        partnership_since: '2018'
+      }
+    ],
+    cloud: [
+      {
+        id: 12,
+        name: 'Cloudflare',
+        type: 'Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'Performance & Security',
+        description: 'Partner for enterprise CDN, security, and performance optimization solutions.',
+        benefits: ['Global CDN', 'DDoS protection', 'Web application firewall', 'Edge computing'],
+        projects: ['Enterprise security implementations', 'Global performance optimization', 'Zero Trust networks'],
+        partnership_since: '2020'
+      },
+      {
+        id: 13,
+        name: 'MongoDB',
+        type: 'Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'Database Solutions',
+        description: 'Certified partner for NoSQL database implementations and data platform architecture.',
+        benefits: ['Scalable databases', 'Real-time sync', 'Atlas cloud', 'Performance optimization'],
+        projects: ['Real-time applications', 'IoT data platforms', 'Content management systems'],
         partnership_since: '2021'
+      },
+      {
+        id: 14,
+        name: 'Redis',
+        type: 'Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'In-Memory Data',
+        description: 'Partner for high-performance caching and real-time data processing solutions.',
+        benefits: ['Caching solutions', 'Session management', 'Real-time analytics', 'Message queuing'],
+        projects: ['High-traffic applications', 'Real-time dashboards', 'Gaming backends'],
+        partnership_since: '2022'
+      },
+      {
+        id: 15,
+        name: 'Netlify',
+        type: 'Agency Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'JAMstack Platform',
+        description: 'Partner for modern web development and deployment with JAMstack architecture.',
+        benefits: ['Instant deployments', 'Serverless functions', 'Form handling', 'Identity management'],
+        projects: ['Marketing sites', 'Static site generators', 'Progressive web apps'],
+        partnership_since: '2021'
+      }
+    ],
+    analytics: [
+      {
+        id: 16,
+        name: 'Segment',
+        type: 'Technology Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'Customer Data Platform',
+        description: 'Partner for customer data infrastructure and unified analytics implementations.',
+        benefits: ['Data collection', 'Customer profiles', 'Event tracking', 'Data governance'],
+        projects: ['CDP implementations', 'Multi-channel tracking', 'Data warehouse integration'],
+        partnership_since: '2022'
+      },
+      {
+        id: 17,
+        name: 'Mixpanel',
+        type: 'Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'Product Analytics',
+        description: 'Partner for advanced product analytics and user behavior tracking.',
+        benefits: ['User analytics', 'Funnel analysis', 'Cohort analysis', 'A/B testing'],
+        projects: ['SaaS analytics', 'Mobile app tracking', 'Conversion optimization'],
+        partnership_since: '2021'
+      },
+      {
+        id: 18,
+        name: 'Snowflake',
+        type: 'Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'Data Cloud',
+        description: 'Partner for cloud data warehousing and advanced analytics solutions.',
+        benefits: ['Data warehousing', 'Data sharing', 'ML/AI workloads', 'Real-time processing'],
+        projects: ['Enterprise data platforms', 'Analytics migrations', 'ML pipelines'],
+        partnership_since: '2023'
       }
     ]
   };
@@ -156,8 +233,8 @@ const PartnershipEcosystem = () => {
         setIsInView(entry?.isIntersecting);
       },
       { 
-        threshold: 0.05, // Changed from 0.2 to 0.05 - triggers much sooner
-        rootMargin: '100px' // Add this - starts animation 100px before element is visible
+        threshold: 0.05,
+        rootMargin: '100px'
       }
     );
 
@@ -165,9 +242,8 @@ const PartnershipEcosystem = () => {
       observer?.observe(sectionRef?.current);
     }
 
-    // Also set visibility immediately on mobile
     if (window.innerWidth < 768) {
-      setIsInView(true); // Immediate visibility on mobile
+      setIsInView(true);
     }
 
     return () => observer?.disconnect();
@@ -177,8 +253,8 @@ const PartnershipEcosystem = () => {
     const allPartners = Object?.values(partnerships)?.flat();
     return {
       total: allPartners?.length,
-      premier: allPartners?.filter(p => p?.type?.includes('Premier'))?.length,
-      strategic: allPartners?.filter(p => p?.type?.includes('Strategic'))?.length,
+      premier: allPartners?.filter(p => p?.type?.includes('Premier') || p?.type?.includes('Gold'))?.length,
+      strategic: allPartners?.filter(p => p?.type?.includes('Partner'))?.length,
       years: Math.max(...allPartners?.map(p => 2025 - parseInt(p?.partnership_since)))
     };
   };
@@ -203,8 +279,8 @@ const PartnershipEcosystem = () => {
             Strategic <span className="text-accent">Alliances</span>
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4">
-            Our network of world-class partners enables us to deliver solutions that combine 
-            cutting-edge technology with creative excellence. Together, we make the impossible possible.
+            Our comprehensive partner network spans marketing platforms, cloud providers, and development tools—enabling 
+            us to deliver integrated solutions that drive both creative excellence and technical innovation.
           </p>
         </motion.div>
 
@@ -217,9 +293,9 @@ const PartnershipEcosystem = () => {
         >
           {[
             { number: stats?.total + '+', label: 'Strategic Partners', icon: 'Users' },
-            { number: stats?.premier + '', label: 'Premier Partnerships', icon: 'Crown' },
-            { number: stats?.years + '+', label: 'Years of Collaboration', icon: 'Clock' },
-            { number: '∞', label: 'Possibilities Unlocked', icon: 'Infinity' }
+            { number: stats?.premier + '+', label: 'Premier Partnerships', icon: 'Crown' },
+            { number: stats?.years + '+', label: 'Years Collaboration', icon: 'Clock' },
+            { number: '100%', label: 'Platform Coverage', icon: 'Globe' }
           ]?.map((stat, index) => (
             <div
               key={index}
@@ -348,28 +424,28 @@ const PartnershipEcosystem = () => {
           transition={{ duration: 0.4, delay: 0.4 }}
           className="bg-gradient-to-r from-accent to-primary rounded-xl sm:rounded-2xl lg:rounded-3xl p-8 sm:p-12 text-white text-center"
         >
-          <h3 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">The Partnership Advantage</h3>
+          <h3 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">The Complete Digital Advantage</h3>
           <p className="text-base sm:text-lg md:text-xl opacity-90 mb-6 sm:mb-8 max-w-3xl mx-auto">
-            Our strategic partnerships aren't just about technology—they're about expanding possibilities, 
-            accelerating innovation, and delivering solutions that individual agencies simply can't match.
+            Our strategic partnerships across marketing and development platforms enable us to deliver 
+            end-to-end solutions that seamlessly integrate creative strategy with technical excellence.
           </p>
           
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 mb-6 sm:mb-8">
             {[
               {
-                icon: 'Zap',
-                title: 'Accelerated Innovation',
-                description: 'Access to cutting-edge tools and technologies before they hit the market.'
+                icon: 'Layers',
+                title: 'Full-Stack Solutions',
+                description: 'From marketing automation to cloud infrastructure, we cover every digital need.'
               },
               {
                 icon: 'Shield',
-                title: 'Enterprise-Grade Security',
-                description: 'Bank-level security and compliance through our certified partnerships.'
+                title: 'Enterprise-Grade',
+                description: 'Certified partnerships ensure security, scalability, and compliance at every level.'
               },
               {
-                icon: 'Globe',
-                title: 'Global Scale',
-                description: 'Worldwide infrastructure and support for projects of any size.'
+                icon: 'Zap',
+                title: 'Seamless Integration',
+                description: 'Our expertise across platforms means everything works together perfectly.'
               }
             ]?.map((advantage, index) => (
               <div key={index} className="text-center">
