@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 import AppIcon from '../../../components/AppIcon';
 
 const OriginStory = () => {
   const [activeTimeline, setActiveTimeline] = useState(0);
   const [isInView, setIsInView] = useState(false);
   const sectionRef = useRef(null);
+  const timelineRef = useRef(null);
+  const inView = useInView(timelineRef, { once: true, margin: "-100px" });
 
   const milestones = [
     {
@@ -88,105 +90,277 @@ const OriginStory = () => {
     return () => observer?.disconnect();
   }, []);
 
+  // Auto-advance timeline
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveTimeline((prev) => (prev + 1) % milestones.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [milestones.length]);
+
+  const timelineVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, x: -50 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15
+      }
+    }
+  };
+
   return (
-    <section id="origin-story" ref={sectionRef} className="py-6 sm:py-10 md:py-14 lg:py-16 bg-gradient-to-br from-surface to-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header - Mobile Optimized */}
+    <section id="origin-story" ref={sectionRef} className="py-6 sm:py-10 md:py-14 lg:py-16 bg-gradient-to-br from-surface to-white relative overflow-hidden">
+      {/* Animated background decoration */}
+      <div className="absolute inset-0 opacity-5">
+        <motion.div
+          className="absolute top-0 left-0 w-96 h-96 bg-accent rounded-full blur-3xl"
+          animate={{
+            x: [0, 100, 0],
+            y: [0, -50, 0],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div
+          className="absolute bottom-0 right-0 w-96 h-96 bg-primary rounded-full blur-3xl"
+          animate={{
+            x: [0, -100, 0],
+            y: [0, 50, 0],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Section Header with Enhanced Animation */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.4, delay: 0.1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="text-center mb-6 sm:mb-8 lg:mb-10"
         >
-          <div className="inline-flex items-center space-x-2 bg-accent/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6">
+          <motion.div 
+            className="inline-flex items-center space-x-2 bg-accent/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
             <AppIcon name="BookOpen" size={16} className="text-accent" />
             <span className="text-accent font-semibold text-xs sm:text-sm">Our Origin Story</span>
-          </div>
+          </motion.div>
           <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-3 sm:mb-4">
-            From <span className="text-accent">Rebellious Startup</span> to Digital Powerhouse
+            From <motion.span 
+              className="text-accent"
+              initial={{ opacity: 0, x: -20 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ delay: 0.2, duration: 0.4 }}
+            >Rebellious Startup</motion.span> to Digital Powerhouse
           </h2>
-          <p className="text-sm sm:text-base md:text-lg text-text-secondary max-w-3xl mx-auto leading-relaxed px-4">
+          <motion.p 
+            className="text-sm sm:text-base md:text-lg text-text-secondary max-w-3xl mx-auto leading-relaxed px-4"
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
+            transition={{ delay: 0.3, duration: 0.4 }}
+          >
             Every revolution starts with a simple question: "What if we did things differently?" 
             Here's how Rule27 Design evolved from a rebellious idea to a certified leader in both marketing and development.
-          </p>
+          </motion.p>
         </motion.div>
 
-        {/* Timeline - Mobile Optimized */}
-        <div className="relative">
-          {/* Timeline Line - Hidden on mobile */}
-          <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-accent to-gray-300"></div>
+        {/* Enhanced Timeline with Animations */}
+        <div className="relative" ref={timelineRef}>
+          {/* Animated Timeline Line */}
+          <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-1 h-full">
+            <motion.div 
+              className="w-full bg-gradient-to-b from-accent to-gray-300"
+              initial={{ height: 0 }}
+              animate={inView ? { height: "100%" } : { height: 0 }}
+              transition={{ duration: 2, ease: "easeInOut" }}
+            />
+          </div>
 
-          {/* Milestone Cards - Stack on mobile */}
-          <div className="space-y-4 sm:space-y-6 md:space-y-8 lg:space-y-10">
+          {/* Milestone Cards with Enhanced Animations */}
+          <motion.div 
+            className="space-y-4 sm:space-y-6 md:space-y-8 lg:space-y-10"
+            variants={timelineVariants}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+          >
             {milestones?.map((milestone, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-                animate={isInView ? { opacity: 1, x: 0 } : {}}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
+                variants={cardVariants}
+                custom={index}
                 className={`flex flex-col md:flex-row items-center ${
                   index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
                 }`}
                 onMouseEnter={() => setActiveTimeline(index)}
                 onTouchStart={() => setActiveTimeline(index)}
               >
-                {/* Content Card */}
-                <div className={`flex-1 w-full ${index % 2 === 0 ? 'md:pr-12' : 'md:pl-12'}`}>
-                  <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-brand-md hover:shadow-brand-elevation-lg transition-all duration-500 group cursor-pointer">
-                    <div className="flex items-center space-x-2 sm:space-x-3 mb-2 sm:mb-3">
-                      <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r ${milestone?.color} rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                        <AppIcon name={milestone?.icon} size={16} className="text-white" />
+                {/* Content Card with Hover Effects */}
+                <motion.div 
+                  className={`flex-1 w-full ${index % 2 === 0 ? 'md:pr-12' : 'md:pl-12'}`}
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <div className={`bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-brand-md hover:shadow-brand-elevation-lg transition-all duration-500 group cursor-pointer relative overflow-hidden ${
+                    activeTimeline === index ? 'ring-2 ring-accent' : ''
+                  }`}>
+                    {/* Animated background gradient */}
+                    <motion.div
+                      className={`absolute inset-0 bg-gradient-to-br ${milestone?.color} opacity-0`}
+                      animate={{
+                        opacity: activeTimeline === index ? 0.05 : 0
+                      }}
+                      transition={{ duration: 0.3 }}
+                    />
+                    
+                    <div className="relative z-10">
+                      <div className="flex items-center space-x-2 sm:space-x-3 mb-2 sm:mb-3">
+                        <motion.div 
+                          className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r ${milestone?.color} rounded-full flex items-center justify-center`}
+                          animate={activeTimeline === index ? {
+                            scale: [1, 1.2, 1],
+                            rotate: [0, 360],
+                          } : {}}
+                          transition={{ duration: 0.5 }}
+                        >
+                          <AppIcon name={milestone?.icon} size={16} className="text-white" />
+                        </motion.div>
+                        <motion.div 
+                          className="text-lg sm:text-xl font-bold text-accent"
+                          animate={activeTimeline === index ? {
+                            x: [0, 5, 0],
+                          } : {}}
+                          transition={{ duration: 0.3 }}
+                        >
+                          {milestone?.year}
+                        </motion.div>
                       </div>
-                      <div className="text-lg sm:text-xl font-bold text-accent">{milestone?.year}</div>
+                      <h3 className="text-lg sm:text-xl font-bold text-primary mb-2 group-hover:text-accent transition-colors duration-300">
+                        {milestone?.title}
+                      </h3>
+                      <p className="text-sm sm:text-base text-text-secondary leading-relaxed group-hover:text-primary transition-colors duration-300">
+                        {milestone?.description}
+                      </p>
                     </div>
-                    <h3 className="text-lg sm:text-xl font-bold text-primary mb-2 group-hover:text-accent transition-colors duration-300">
-                      {milestone?.title}
-                    </h3>
-                    <p className="text-sm sm:text-base text-text-secondary leading-relaxed group-hover:text-primary transition-colors duration-300">
-                      {milestone?.description}
-                    </p>
                   </div>
-                </div>
+                </motion.div>
 
-                {/* Timeline Node - Hidden on mobile */}
-                <div className="hidden md:flex w-6 h-6 bg-accent rounded-full border-4 border-white shadow-brand-md z-10 relative">
-                  <div className={`absolute inset-0 bg-accent rounded-full animate-ping ${activeTimeline === index ? 'opacity-75' : 'opacity-0'}`}></div>
-                </div>
+                {/* Animated Timeline Node */}
+                <motion.div 
+                  className="hidden md:flex w-6 h-6 bg-accent rounded-full border-4 border-white shadow-brand-md z-10 relative"
+                  animate={activeTimeline === index ? {
+                    scale: [1, 1.5, 1],
+                  } : {}}
+                  transition={{ duration: 0.5 }}
+                >
+                  <motion.div 
+                    className="absolute inset-0 bg-accent rounded-full"
+                    animate={activeTimeline === index ? {
+                      opacity: [0.5, 1, 0.5],
+                      scale: [1, 2, 1],
+                    } : {}}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                </motion.div>
 
                 {/* Spacer */}
                 <div className="hidden md:block flex-1"></div>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
-        {/* Philosophy Statement - Mobile Optimized */}
+        {/* Enhanced Philosophy Statement */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.4, delay: 0.3 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
           className="mt-6 sm:mt-10 lg:mt-12 text-center"
         >
-          <div className="bg-gradient-to-r from-accent to-primary rounded-xl sm:rounded-2xl p-6 sm:p-10 text-white max-w-4xl mx-auto">
-            <AppIcon name="Quote" size={28} className="mx-auto mb-3 sm:mb-4 opacity-70" />
-            <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">The 27th Rule Philosophy</h3>
-            <p className="text-sm sm:text-base md:text-lg leading-relaxed opacity-90">
+          <div className="bg-gradient-to-r from-accent to-primary rounded-xl sm:rounded-2xl p-6 sm:p-10 text-white max-w-4xl mx-auto relative overflow-hidden">
+            {/* Animated background pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <motion.div
+                className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,white_1px,transparent_1px)] bg-[size:20px_20px]"
+                animate={{
+                  backgroundPosition: ["0px 0px", "20px 20px"],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "linear"
+                }}
+              />
+            </div>
+            
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 100, delay: 0.5 }}
+            >
+              <AppIcon name="Quote" size={28} className="mx-auto mb-3 sm:mb-4 opacity-70" />
+            </motion.div>
+            <motion.h3 
+              className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              The 27th Rule Philosophy
+            </motion.h3>
+            <motion.p 
+              className="text-sm sm:text-base md:text-lg leading-relaxed opacity-90 relative z-10"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.7 }}
+            >
               "While the industry follows 26 established principles, we believe in writing the 27th rule—the one that 
               breaks conventions and creates extraordinary from ordinary. We're not just another agency or dev shop. 
               We're the digital powerhouse that delivers marketing brilliance with technical excellence, making us the 
               only partner you'll ever need for complete digital transformation."
-            </p>
-            <div className="mt-4 sm:mt-6 flex justify-center">
+            </motion.p>
+            <motion.div 
+              className="mt-4 sm:mt-6 flex justify-center"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 200, delay: 0.8 }}
+            >
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <motion.div 
+                  className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center"
+                  whileHover={{ scale: 1.1, rotate: 360 }}
+                  transition={{ duration: 0.5 }}
+                >
                   <span className="font-bold text-sm sm:text-base">27</span>
-                </div>
+                </motion.div>
                 <div className="text-left">
                   <div className="font-semibold text-xs sm:text-sm">Rule27 Design Founders</div>
                   <div className="text-xs opacity-70">Digital Innovators</div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </motion.div>
       </div>
