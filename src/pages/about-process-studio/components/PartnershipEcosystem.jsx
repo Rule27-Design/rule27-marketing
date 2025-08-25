@@ -10,10 +10,10 @@ const PartnershipEcosystem = () => {
   const sectionRef = useRef(null);
 
   const partnershipCategories = [
-    { id: 'marketing', label: 'Marketing', icon: 'Target', count: 6 },
-    { id: 'development', label: 'Development', icon: 'Code', count: 5 },
-    { id: 'cloud', label: 'Cloud & Infrastructure', icon: 'Cloud', count: 4 },
-    { id: 'analytics', label: 'Data & Analytics', icon: 'BarChart3', count: 3 }
+    { id: 'marketing', label: 'Marketing', icon: 'Target', count: 10 },
+    { id: 'development', label: 'Development', icon: 'Code', count: 8 },
+    { id: 'cloud', label: 'Cloud & Infrastructure', icon: 'Cloud', count: 6 },
+    { id: 'analytics', label: 'Data & Analytics', icon: 'BarChart3', count: 5 }
   ];
 
   const partnerships = {
@@ -83,11 +83,55 @@ const PartnershipEcosystem = () => {
         benefits: ['Email automation', 'Audience segmentation', 'Campaign optimization', 'A/B testing'],
         projects: ['Multi-brand email systems', 'Automated nurture campaigns', 'Personalization strategies'],
         partnership_since: '2019'
+      },
+      {
+        id: 7,
+        name: 'Meta',
+        type: 'Business Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'Social Advertising',
+        description: 'Certified across Meta platforms with 4 professional certifications for advanced social advertising.',
+        benefits: ['Facebook advertising', 'Instagram marketing', 'WhatsApp Business', 'Audience targeting'],
+        projects: ['Multi-million dollar social campaigns', 'Conversion optimization', 'Retargeting strategies'],
+        partnership_since: '2018'
+      },
+      {
+        id: 8,
+        name: 'Klaviyo',
+        type: 'Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'Email & SMS Marketing',
+        description: 'Certified partner for e-commerce email and SMS marketing automation.',
+        benefits: ['Advanced segmentation', 'Predictive analytics', 'SMS marketing', 'Revenue attribution'],
+        projects: ['E-commerce email programs', 'Abandoned cart recovery', 'Customer retention campaigns'],
+        partnership_since: '2021'
+      },
+      {
+        id: 9,
+        name: 'Braze',
+        type: 'Certified Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'Customer Engagement',
+        description: 'Certified practitioner for multi-channel customer engagement and lifecycle marketing.',
+        benefits: ['Cross-channel messaging', 'Customer journeys', 'Real-time personalization', 'Mobile engagement'],
+        projects: ['Omnichannel campaigns', 'App engagement programs', 'Lifecycle marketing'],
+        partnership_since: '2022'
+      },
+      {
+        id: 10,
+        name: 'Marketo',
+        type: 'Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'B2B Marketing Automation',
+        description: 'Expert partner for B2B marketing automation and lead management.',
+        benefits: ['Lead scoring', 'Account-based marketing', 'Revenue attribution', 'Campaign automation'],
+        projects: ['B2B demand generation', 'Lead nurturing programs', 'Marketing operations'],
+        partnership_since: '2020'
       }
     ],
     development: [
       {
-        id: 7,
+        id: 11,
         name: 'AWS',
         type: 'Advanced Tier Partner',
         logo: '/api/placeholder/120/60',
@@ -98,7 +142,7 @@ const PartnershipEcosystem = () => {
         partnership_since: '2019'
       },
       {
-        id: 8,
+        id: 12,
         name: 'Microsoft Azure',
         type: 'Gold Partner',
         logo: '/api/placeholder/120/60',
@@ -109,7 +153,7 @@ const PartnershipEcosystem = () => {
         partnership_since: '2020'
       },
       {
-        id: 9,
+        id: 13,
         name: 'Google Cloud',
         type: 'Technology Partner',
         logo: '/api/placeholder/120/60',
@@ -120,7 +164,7 @@ const PartnershipEcosystem = () => {
         partnership_since: '2021'
       },
       {
-        id: 10,
+        id: 14,
         name: 'Vercel',
         type: 'Agency Partner',
         logo: '/api/placeholder/120/60',
@@ -131,7 +175,7 @@ const PartnershipEcosystem = () => {
         partnership_since: '2022'
       },
       {
-        id: 11,
+        id: 15,
         name: 'GitHub',
         type: 'Partner',
         logo: '/api/placeholder/120/60',
@@ -140,11 +184,44 @@ const PartnershipEcosystem = () => {
         benefits: ['Version control', 'CI/CD automation', 'Code review', 'Security scanning'],
         projects: ['Enterprise DevOps transformations', 'Automated deployment pipelines', 'Code quality systems'],
         partnership_since: '2018'
+      },
+      {
+        id: 16,
+        name: 'Docker',
+        type: 'Certified Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'Containerization',
+        description: 'Docker Certified Associate partner for container-based application deployment.',
+        benefits: ['Container orchestration', 'Microservices', 'Development efficiency', 'Scalable deployments'],
+        projects: ['Containerized applications', 'Microservices architectures', 'DevOps pipelines'],
+        partnership_since: '2020'
+      },
+      {
+        id: 17,
+        name: 'Kubernetes',
+        type: 'Certified',
+        logo: '/api/placeholder/120/60',
+        relationship: 'Container Orchestration',
+        description: 'Certified Kubernetes Administrator for enterprise container orchestration.',
+        benefits: ['Auto-scaling', 'Self-healing', 'Load balancing', 'Rolling updates'],
+        projects: ['K8s clusters', 'Cloud-native apps', 'Multi-cloud deployments'],
+        partnership_since: '2021'
+      },
+      {
+        id: 18,
+        name: 'GitLab',
+        type: 'Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'DevOps Platform',
+        description: 'Partner for complete DevOps lifecycle management and CI/CD.',
+        benefits: ['Complete DevOps', 'Auto DevOps', 'Security scanning', 'Monitoring'],
+        projects: ['DevOps transformations', 'Pipeline automation', 'Security integration'],
+        partnership_since: '2022'
       }
     ],
     cloud: [
       {
-        id: 12,
+        id: 19,
         name: 'Cloudflare',
         type: 'Partner',
         logo: '/api/placeholder/120/60',
@@ -155,7 +232,7 @@ const PartnershipEcosystem = () => {
         partnership_since: '2020'
       },
       {
-        id: 13,
+        id: 20,
         name: 'MongoDB',
         type: 'Partner',
         logo: '/api/placeholder/120/60',
@@ -166,7 +243,7 @@ const PartnershipEcosystem = () => {
         partnership_since: '2021'
       },
       {
-        id: 14,
+        id: 21,
         name: 'Redis',
         type: 'Partner',
         logo: '/api/placeholder/120/60',
@@ -177,49 +254,93 @@ const PartnershipEcosystem = () => {
         partnership_since: '2022'
       },
       {
-        id: 15,
+        id: 22,
         name: 'Netlify',
         type: 'Agency Partner',
         logo: '/api/placeholder/120/60',
         relationship: 'JAMstack Platform',
-        description: 'Partner for modern web development and deployment with JAMstack architecture.',
+        description: 'Certified partner for modern web development and deployment with JAMstack architecture.',
         benefits: ['Instant deployments', 'Serverless functions', 'Form handling', 'Identity management'],
         projects: ['Marketing sites', 'Static site generators', 'Progressive web apps'],
         partnership_since: '2021'
+      },
+      {
+        id: 23,
+        name: 'Fastly',
+        type: 'Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'Edge Computing',
+        description: 'Partner for edge cloud platform and content delivery network solutions.',
+        benefits: ['Edge computing', 'Real-time analytics', 'Instant purging', 'Security'],
+        projects: ['Global CDN setup', 'Edge applications', 'Performance optimization'],
+        partnership_since: '2022'
+      },
+      {
+        id: 24,
+        name: 'DigitalOcean',
+        type: 'Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'Cloud Infrastructure',
+        description: 'Partner for simplified cloud infrastructure and developer-friendly hosting.',
+        benefits: ['Simple cloud hosting', 'Managed databases', 'Kubernetes service', 'App platform'],
+        projects: ['Startup hosting', 'Development environments', 'Application deployments'],
+        partnership_since: '2019'
       }
     ],
     analytics: [
       {
-        id: 16,
+        id: 25,
         name: 'Segment',
         type: 'Technology Partner',
         logo: '/api/placeholder/120/60',
         relationship: 'Customer Data Platform',
-        description: 'Partner for customer data infrastructure and unified analytics implementations.',
+        description: 'Certified partner for customer data infrastructure and unified analytics implementations.',
         benefits: ['Data collection', 'Customer profiles', 'Event tracking', 'Data governance'],
         projects: ['CDP implementations', 'Multi-channel tracking', 'Data warehouse integration'],
         partnership_since: '2022'
       },
       {
-        id: 17,
+        id: 26,
         name: 'Mixpanel',
         type: 'Partner',
         logo: '/api/placeholder/120/60',
         relationship: 'Product Analytics',
-        description: 'Partner for advanced product analytics and user behavior tracking.',
+        description: 'Certified partner for advanced product analytics and user behavior tracking.',
         benefits: ['User analytics', 'Funnel analysis', 'Cohort analysis', 'A/B testing'],
         projects: ['SaaS analytics', 'Mobile app tracking', 'Conversion optimization'],
         partnership_since: '2021'
       },
       {
-        id: 18,
+        id: 27,
         name: 'Snowflake',
         type: 'Partner',
         logo: '/api/placeholder/120/60',
         relationship: 'Data Cloud',
-        description: 'Partner for cloud data warehousing and advanced analytics solutions.',
+        description: 'SnowPro Core certified partner for cloud data warehousing and advanced analytics solutions.',
         benefits: ['Data warehousing', 'Data sharing', 'ML/AI workloads', 'Real-time processing'],
         projects: ['Enterprise data platforms', 'Analytics migrations', 'ML pipelines'],
+        partnership_since: '2023'
+      },
+      {
+        id: 28,
+        name: 'Tableau',
+        type: 'Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'Data Visualization',
+        description: 'Partner for business intelligence and data visualization solutions.',
+        benefits: ['Interactive dashboards', 'Self-service analytics', 'Data storytelling', 'Real-time insights'],
+        projects: ['Executive dashboards', 'Sales analytics', 'Marketing performance'],
+        partnership_since: '2020'
+      },
+      {
+        id: 29,
+        name: 'Databricks',
+        type: 'Partner',
+        logo: '/api/placeholder/120/60',
+        relationship: 'Data & AI Platform',
+        description: 'Partner for unified data analytics and AI platform solutions.',
+        benefits: ['Data lakehouse', 'ML workflows', 'Real-time analytics', 'Collaborative notebooks'],
+        projects: ['Data pipelines', 'ML model deployment', 'Analytics platforms'],
         partnership_since: '2023'
       }
     ]
@@ -279,8 +400,8 @@ const PartnershipEcosystem = () => {
             Strategic <span className="text-accent">Alliances</span>
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4">
-            Our comprehensive partner network spans marketing platforms, cloud providers, and development tools—enabling 
-            us to deliver integrated solutions that drive both creative excellence and technical innovation.
+            Our comprehensive partner network of 29+ strategic alliances spans marketing platforms, cloud providers, 
+            and development tools—enabling us to deliver integrated solutions that drive both creative excellence and technical innovation.
           </p>
         </motion.div>
 
@@ -293,7 +414,7 @@ const PartnershipEcosystem = () => {
         >
           {[
             { number: stats?.total + '+', label: 'Strategic Partners', icon: 'Users' },
-            { number: stats?.premier + '+', label: 'Premier Partnerships', icon: 'Crown' },
+            { number: '60+', label: 'Total Certifications', icon: 'Shield' },
             { number: stats?.years + '+', label: 'Years Collaboration', icon: 'Clock' },
             { number: '100%', label: 'Platform Coverage', icon: 'Globe' }
           ]?.map((stat, index) => (
