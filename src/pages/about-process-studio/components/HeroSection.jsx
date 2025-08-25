@@ -14,10 +14,35 @@ const HeroSection = () => {
   const deleteSpeed = 50;
   const pauseDuration = 2000;
 
-  // Dynamic words for typewriter effect
   const dynamicWords = React.useMemo(() => 
     ['Obsessive Perfection', 'Relentless Excellence', 'Meticulous Craft', 'Flawless Execution', 'Uncompromising Quality'], 
   []);
+
+  // Animated particles background component
+  const ParticlesBackground = () => (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {[...Array(20)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-1 h-1 bg-accent/30 rounded-full"
+          initial={{
+            x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
+            y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 1000),
+          }}
+          animate={{
+            x: [null, Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000)],
+            y: [null, Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 1000)],
+          }}
+          transition={{
+            duration: Math.random() * 20 + 10,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "linear",
+          }}
+        />
+      ))}
+    </div>
+  );
 
   // Typewriter effect
   useEffect(() => {
@@ -25,19 +50,16 @@ const HeroSection = () => {
     let timeout;
 
     if (!isDeleting) {
-      // Typing
       if (currentText !== word) {
         timeout = setTimeout(() => {
           setCurrentText(prev => word.slice(0, prev.length + 1));
         }, typeSpeed);
       } else {
-        // Pause before deleting
         timeout = setTimeout(() => {
           setIsDeleting(true);
         }, pauseDuration);
       }
     } else {
-      // Deleting
       if (currentText !== '') {
         timeout = setTimeout(() => {
           setCurrentText(prev => prev.slice(0, -1));
@@ -144,44 +166,153 @@ const HeroSection = () => {
         <div className="absolute inset-0 opacity-10">
           <div className="h-full w-full bg-[linear-gradient(to_right,#4f4f4f_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
         </div>
+
+        {/* Animated Particles */}
+        <ParticlesBackground />
       </div>
 
-      {/* Floating Elements with Parallax */}
+      {/* Animated Orbiting Elements (Alternative to Globe) */}
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/3 h-[600px] opacity-20 lg:opacity-30 hidden lg:block">
+        <div className="relative w-full h-full">
+          {[...Array(3)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-full h-full"
+              animate={{ rotate: 360 }}
+              transition={{
+                duration: 20 + (i * 5),
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            >
+              <div 
+                className="absolute w-4 h-4 bg-accent rounded-full shadow-lg shadow-accent/50"
+                style={{
+                  top: '50%',
+                  left: '50%',
+                  transform: `translate(-50%, -50%) translateX(${100 + i * 30}px)`
+                }}
+              />
+            </motion.div>
+          ))}
+          {/* Center orb */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-accent/10 rounded-full blur-xl"></div>
+        </div>
+      </div>
+
+      {/* Floating Elements with Enhanced Animations */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="floating-element floating-interactive absolute top-20 left-10 w-4 h-4 bg-accent rounded-full animate-pulse"></div>
-        <div className="floating-element floating-interactive absolute top-40 right-20 w-3 h-3 bg-white/30 rounded-full animate-pulse delay-700"></div>
-        <div className="floating-element floating-interactive absolute bottom-32 left-1/3 w-2 h-2 bg-accent/60 rounded-full animate-pulse delay-1000"></div>
-        <div className="floating-element absolute top-1/2 right-1/4 w-6 h-6 bg-gradient-to-br from-accent to-transparent rounded-full blur-xl animate-bounce delay-500"></div>
-        <div className="floating-element absolute bottom-20 right-10 w-5 h-5 bg-gradient-to-br from-white/20 to-transparent rounded-full blur-lg animate-bounce delay-300"></div>
+        <motion.div 
+          className="floating-element floating-interactive absolute top-20 left-10 w-4 h-4 bg-accent rounded-full"
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.5, 1, 0.5],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div 
+          className="floating-element floating-interactive absolute top-40 right-20 w-3 h-3 bg-white/30 rounded-full"
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.3, 1, 0.3],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 0.5,
+          }}
+        />
+        <motion.div 
+          className="floating-element floating-interactive absolute bottom-32 left-1/3 w-2 h-2 bg-accent/60 rounded-full"
+          animate={{
+            scale: [1, 1.5, 1],
+            opacity: [0.4, 1, 0.4],
+          }}
+          transition={{
+            duration: 3.5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1,
+          }}
+        />
       </div>
       
       {/* Main Content */}
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        {/* Logo with Animation */}
+        {/* Enhanced Logo Animation */}
         <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+          initial={{ scale: 0, opacity: 0, rotate: -180 }}
+          animate={{ scale: 1, opacity: 1, rotate: 0 }}
+          transition={{ 
+            duration: 0.8, 
+            ease: "easeOut",
+            type: "spring",
+            stiffness: 100,
+          }}
           className="mb-8 sm:mb-12 flex justify-center"
         >
           <div className="relative group">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-full flex items-center justify-center group-hover:bg-accent transition-all duration-500 transform group-hover:scale-110 shadow-brand-elevation-lg">
+            <motion.div 
+              className="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-full flex items-center justify-center group-hover:bg-accent transition-all duration-500 transform group-hover:scale-110 shadow-brand-elevation-lg relative z-10"
+              whileHover={{ 
+                scale: 1.1,
+                boxShadow: "0 0 40px rgba(229, 62, 62, 0.6)",
+              }}
+              whileTap={{ scale: 0.95 }}
+            >
               <span className="text-black font-bold text-2xl sm:text-3xl group-hover:text-white transition-colors duration-300">27</span>
-            </div>
-            <div className="absolute -inset-4 bg-gradient-to-r from-accent to-white rounded-full opacity-0 group-hover:opacity-30 transition-opacity duration-500 blur-lg"></div>
+            </motion.div>
+            <motion.div 
+              className="absolute -inset-4 bg-gradient-to-r from-accent to-white rounded-full opacity-0 group-hover:opacity-30 transition-opacity duration-500 blur-lg"
+              animate={{
+                scale: [1, 1.2, 1],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
           </div>
         </motion.div>
 
-        {/* Main Headline with Typewriter Effect */}
-        <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+        {/* Main Headline with Enhanced Animations */}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+        >
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-6 sm:mb-8 leading-tight">
-            <span className="block mb-2">The Rebels Behind</span>
-            <span className="block text-accent mb-2">Rule27 Design</span>
+            <motion.span 
+              className="block mb-2"
+              initial={{ x: -100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              The Rebels Behind
+            </motion.span>
+            <motion.span 
+              className="block text-accent mb-2"
+              initial={{ x: 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
+              Rule27 Design
+            </motion.span>
           </h1>
-        </div>
+        </motion.div>
 
         {/* Subheading with Typewriter Effect */}
-        <div className={`transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+        >
           <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed px-4">
             Born from <span className="text-accent font-semibold">rebellious innovation</span> and crafted with{' '}
             <span className="relative inline-block min-w-[200px] md:min-w-[320px] text-center">
@@ -191,78 +322,169 @@ const HeroSection = () => {
               <span className={`${showCursor ? 'opacity-100' : 'opacity-0'} text-white transition-opacity duration-100`}>
                 |
               </span>
-              <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent transform origin-left animate-pulse"></div>
+              <motion.div 
+                className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent"
+                animate={{
+                  scaleX: [0, 1, 0],
+                  opacity: [0, 1, 0],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
             </span>
             <br />
             Meet the minds, methodology, and culture that make conventional boundaries disappear.
           </p>
-        </div>
+        </motion.div>
 
-        {/* Interactive Stats - Mobile Optimized Grid */}
+        {/* Interactive Stats with Enhanced Animations */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.3 }}
+          transition={{ duration: 0.8, delay: 0.7 }}
           className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 md:gap-8 mb-8 sm:mb-12"
         >
           {[
-            { number: '27+', label: 'Visionary Minds' },
-            { number: '150+', label: 'Projects Transformed' },
-            { number: '11+', label: 'Years Disrupting' },
-            { number: '∞', label: 'Conventional Rules Broken' }
+            { number: '27+', label: 'Visionary Minds', delay: 0.8 },
+            { number: '150+', label: 'Projects Transformed', delay: 0.9 },
+            { number: '11+', label: 'Years Disrupting', delay: 1.0 },
+            { number: '∞', label: 'Conventional Rules Broken', delay: 1.1 }
           ]?.map((stat, index) => (
-            <div key={index} className="text-center group hover:transform hover:scale-105 transition-all duration-300">
-              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-accent mb-1 sm:mb-2 group-hover:text-white transition-colors duration-300">
+            <motion.div 
+              key={index} 
+              className="text-center group hover:transform hover:scale-105 transition-all duration-300"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: stat.delay }}
+              whileHover={{ 
+                scale: 1.1,
+                transition: { type: "spring", stiffness: 300 }
+              }}
+            >
+              <motion.div 
+                className="text-2xl sm:text-3xl md:text-4xl font-bold text-accent mb-1 sm:mb-2 group-hover:text-white transition-colors duration-300"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ 
+                  type: "spring",
+                  stiffness: 100,
+                  delay: stat.delay + 0.1
+                }}
+              >
                 {stat?.number}
-              </div>
+              </motion.div>
               <div className="text-xs sm:text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
                 {stat?.label}
               </div>
-            </div>
+            </motion.div>
           ))}
         </motion.div>
 
-        {/* CTA Button - Touch Friendly */}
+        {/* CTA Buttons with Enhanced Hover Effects */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.4 }}
+          transition={{ duration: 0.8, delay: 1.2 }}
           className="flex flex-col sm:flex-row gap-4 justify-center items-center"
         >
-          <Button
-            variant="default"
-            size="lg"
-            className="w-full sm:w-auto bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-accent/50 min-h-[48px]"
-            onClick={() => document.getElementById('origin-story')?.scrollIntoView({ behavior: 'smooth' })}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <AppIcon name="ChevronDown" size={20} className="mr-2" />
-            Discover Our Story
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full sm:w-auto border-2 border-white/50 text-white hover:bg-white hover:text-black backdrop-blur-sm px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold transform hover:scale-105 transition-all duration-300 min-h-[48px]"
-            onClick={() => document.getElementById('team')?.scrollIntoView({ behavior: 'smooth' })}
+            <Button
+              variant="default"
+              size="lg"
+              className="w-full sm:w-auto bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold transform transition-all duration-300 shadow-2xl hover:shadow-accent/50 min-h-[48px] relative overflow-hidden group"
+              onClick={() => document.getElementById('origin-story')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              <span className="relative z-10 flex items-center">
+                <AppIcon name="ChevronDown" size={20} className="mr-2" />
+                Discover Our Story
+              </span>
+              <motion.div 
+                className="absolute inset-0 bg-gradient-to-r from-red-600 to-accent"
+                initial={{ x: "-100%" }}
+                whileHover={{ x: 0 }}
+                transition={{ duration: 0.3 }}
+              />
+            </Button>
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <AppIcon name="Users" size={20} className="mr-2" />
-            Meet the Rebels
-          </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full sm:w-auto border-2 border-white/50 text-white hover:bg-white hover:text-black backdrop-blur-sm px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold transform transition-all duration-300 min-h-[48px] relative overflow-hidden group"
+              onClick={() => document.getElementById('team')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              <span className="relative z-10 flex items-center">
+                <AppIcon name="Users" size={20} className="mr-2" />
+                Meet the Rebels
+              </span>
+              <motion.div 
+                className="absolute inset-0 bg-white"
+                initial={{ scale: 0, borderRadius: "100%" }}
+                whileHover={{ scale: 2, borderRadius: "0%" }}
+                transition={{ duration: 0.5 }}
+                style={{ originX: 0.5, originY: 0.5 }}
+              />
+            </Button>
+          </motion.div>
         </motion.div>
 
         {/* Enhanced Scroll Indicator */}
-        <div className={`transition-all duration-1000 delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'} mt-12`}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 1.5 }}
+          className="mt-12"
+        >
           <div className="flex flex-col items-center text-gray-400 group cursor-pointer">
-            <span className="text-sm mb-2 tracking-wide group-hover:text-accent transition-colors duration-300">
+            <motion.span 
+              className="text-sm mb-2 tracking-wide group-hover:text-accent transition-colors duration-300"
+              animate={{
+                opacity: [0.5, 1, 0.5],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            >
               Discover More
-            </span>
+            </motion.span>
             <div className="relative">
-              <div className="absolute inset-0 bg-accent/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="animate-bounce">
+              <motion.div 
+                className="absolute inset-0 bg-accent/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                animate={{
+                  scale: [1, 1.5, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+              <motion.div
+                animate={{
+                  y: [0, 10, 0],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
                 <AppIcon name="ChevronDown" size={24} className="text-accent" />
-              </div>
+              </motion.div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
       
       {/* Bottom Gradient */}
