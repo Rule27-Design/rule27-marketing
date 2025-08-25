@@ -13,7 +13,7 @@ const TrustIndicators = () => {
 
   const testimonials = [
     {
-      quote: "Rule27 didn't just meet our expectations—they shattered them. Our 400% growth speaks for itself.",
+      quote: "Rule27 Design didn't just meet our expectations—they shattered them. Our 400% growth speaks for itself.",
       author: 'Sarah Chen',
       role: 'CEO, TechFlow Solutions',
       avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
@@ -75,7 +75,7 @@ const TrustIndicators = () => {
           {/* Section Header */}
           <motion.div variants={itemVariants} className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-              Why Industry Leaders Choose <span className="text-accent">Rule27</span>
+              Why Industry Leaders Choose <span className="text-accent">Rule27 Design</span>
             </h2>
             <p className="text-xl text-text-secondary max-w-3xl mx-auto">
               Don't just take our word for it. See the numbers, read the reviews, and discover why we're the partner of choice for ambitious brands.

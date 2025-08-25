@@ -146,7 +146,7 @@ const CapabilityZones = () => {
           </h2>
           <p className="text-xl text-text-secondary max-w-3xl mx-auto">
             Each zone represents a mastery domain where we've redefined what's possible. 
-            Explore the capabilities that make Rule27 the creative partner of choice.
+            Explore the capabilities that make Rule27 Design the creative partner of choice.
           </p>
         </div>
 

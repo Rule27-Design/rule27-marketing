@@ -176,7 +176,7 @@ const HeroSection = () => {
         <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-6 sm:mb-8 leading-tight">
             <span className="block mb-2">The Rebels Behind</span>
-            <span className="block text-accent mb-2">Rule27</span>
+            <span className="block text-accent mb-2">Rule27 Design</span>
           </h1>
         </div>
 

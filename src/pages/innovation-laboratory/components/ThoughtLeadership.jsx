@@ -34,7 +34,7 @@ const ThoughtLeadership = () => {
       id: 2,
       category: 'methodology',
       type: 'Deep Dive',
-      title: "The Rule27 Method: How We Achieve 40% Higher Conversion Rates",
+      title: "The Rule27 Design Method: How We Achieve 40% Higher Conversion Rates",
       excerpt: `After analyzing 500+ projects, we've identified the exact methodology that consistently delivers exceptional results. This isn't theory—it's battle-tested strategy.\n\nOur proprietary approach combines behavioral psychology, data science, and creative audacity to create experiences that don't just look good—they perform.`,
       author: "Marcus Rodriguez",
       role: "Strategy Lead",

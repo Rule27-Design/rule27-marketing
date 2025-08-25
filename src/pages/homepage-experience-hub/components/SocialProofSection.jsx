@@ -14,7 +14,7 @@ const SocialProofSection = () => {
       title: "CEO & Founder",
       company: "TechFlow Solutions",
       avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80",
-      quote: `Rule27 didn't just redesign our brand—they reimagined our entire market position. The 712% conversion rate increase speaks for itself, but what truly impressed me was their strategic thinking and flawless execution.`,
+      quote: `Rule27 Design didn't just redesign our brand—they reimagined our entire market position. The 712% conversion rate increase speaks for itself, but what truly impressed me was their strategic thinking and flawless execution.`,
       rating: 5,
       companyLogo: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=128&q=80",
       industry: "SaaS Technology",
@@ -26,7 +26,7 @@ const SocialProofSection = () => {
       title: "Chief Marketing Officer",
       company: "EcoVibe Marketplace",
       avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80",
-      quote: `Working with Rule27 was like having a world-class creative team and strategic consultancy rolled into one. They transformed our sustainable marketplace from a startup idea into a $340K monthly revenue powerhouse.`,
+      quote: `Working with Rule27 Design was like having a world-class creative team and strategic consultancy rolled into one. They transformed our sustainable marketplace from a startup idea into a $340K monthly revenue powerhouse.`,
       rating: 5,
       companyLogo: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=128&q=80",
       industry: "E-commerce",
@@ -38,7 +38,7 @@ const SocialProofSection = () => {
       title: "Chief Executive Officer",
       company: "HealthHub Connect",
       avatar: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80",
-      quote: `Rule27's approach to healthcare digital transformation was nothing short of revolutionary. They increased our patient satisfaction from 23% to 94% while creating a platform that our providers actually love using.`,
+      quote: `Rule27 Design's approach to healthcare digital transformation was nothing short of revolutionary. They increased our patient satisfaction from 23% to 94% while creating a platform that our providers actually love using.`,
       rating: 5,
       companyLogo: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?ixlib=rb-4.0.3&auto=format&fit=crop&w=128&q=80",
       industry: "Healthcare",
@@ -133,7 +133,7 @@ const SocialProofSection = () => {
           </h2>
           <p className="text-xl text-text-secondary max-w-3xl mx-auto">
             Don't just take our word for it. See what visionary leaders say about 
-            their transformation journey with Rule27.
+            their transformation journey with Rule27 Design.
           </p>
         </div>
 

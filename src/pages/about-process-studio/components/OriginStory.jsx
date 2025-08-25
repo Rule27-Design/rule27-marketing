@@ -107,7 +107,7 @@ const OriginStory = () => {
           </h2>
           <p className="text-sm sm:text-base md:text-lg text-text-secondary max-w-3xl mx-auto leading-relaxed px-4">
             Every revolution starts with a simple question: "What if we did things differently?" 
-            Here's how Rule27 evolved from a rebellious idea to a certified leader in both marketing and development.
+            Here's how Rule27 Design evolved from a rebellious idea to a certified leader in both marketing and development.
           </p>
         </motion.div>
 
@@ -182,7 +182,7 @@ const OriginStory = () => {
                   <span className="font-bold text-sm sm:text-base">27</span>
                 </div>
                 <div className="text-left">
-                  <div className="font-semibold text-xs sm:text-sm">Rule27 Founders</div>
+                  <div className="font-semibold text-xs sm:text-sm">Rule27 Design Founders</div>
                   <div className="text-xs opacity-70">Digital Innovators</div>
                 </div>
               </div>
