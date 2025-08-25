@@ -1,352 +1,263 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import AppIcon from '../../../components/AppIcon';
-import Button from '../../../components/ui/Button';
 
 const PartnershipEcosystem = () => {
-  const [activePartner, setActivePartner] = useState(null);
-  const [partnerCategory, setPartnerCategory] = useState('marketing');
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [hoveredPartner, setHoveredPartner] = useState(null);
+  const [selectedPartner, setSelectedPartner] = useState(null);
   const [isInView, setIsInView] = useState(false);
   const sectionRef = useRef(null);
+  const gridRef = useRef(null);
+  const inView = useInView(gridRef, { once: true, margin: "-100px" });
 
-  const partnershipCategories = [
-    { id: 'marketing', label: 'Marketing', icon: 'Target', count: 10 },
-    { id: 'development', label: 'Development', icon: 'Code', count: 8 },
-    { id: 'cloud', label: 'Cloud & Infrastructure', icon: 'Cloud', count: 6 },
-    { id: 'analytics', label: 'Data & Analytics', icon: 'BarChart3', count: 5 }
+  const partnerCategories = [
+    { id: 'all', label: 'All Partners', icon: 'Network', count: 18 },
+    { id: 'marketing', label: 'Marketing Platforms', icon: 'Target', count: 8 },
+    { id: 'development', label: 'Development & Cloud', icon: 'Code', count: 6 },
+    { id: 'analytics', label: 'Analytics & Data', icon: 'BarChart', count: 4 }
   ];
 
-  const partnerships = {
-    marketing: [
-      {
-        id: 1,
-        name: 'Salesforce',
-        type: 'Marketing Cloud Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Marketing Automation Excellence',
-        description: 'Certified across Marketing Cloud Email Specialist, Engagement Consultant, Engagement Developer, and Account Engagement Consultant.',
-        benefits: ['Marketing automation', 'Customer journey mapping', 'Multi-channel campaigns', 'Lead nurturing'],
-        projects: ['Enterprise CRM implementations', 'Marketing automation workflows', 'Customer engagement platforms'],
-        partnership_since: '2017'
-      },
-      {
-        id: 2,
-        name: 'HubSpot',
-        type: 'Solutions Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Inbound Marketing & CRM',
-        description: 'Strategic partner for inbound marketing, CRM implementation, and RevOps optimization with multiple certifications.',
-        benefits: ['Inbound methodology', 'Marketing automation', 'CRM integration', 'RevOps optimization'],
-        projects: ['Full-funnel marketing systems', 'Lead generation campaigns', 'Sales enablement platforms'],
-        partnership_since: '2019'
-      },
-      {
-        id: 3,
-        name: 'Google',
-        type: 'Premier Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Digital Marketing & Analytics',
-        description: 'Premier Partner status for Google Ads, Analytics, and marketing solutions with proven performance excellence.',
-        benefits: ['PPC management', 'Analytics implementation', 'SEO optimization', 'Display advertising'],
-        projects: ['Multi-million dollar ad campaigns', 'Analytics migration projects', 'Performance optimization'],
-        partnership_since: '2018'
-      },
-      {
-        id: 4,
-        name: 'Adobe',
-        type: 'Solution Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Creative & Experience Cloud',
-        description: 'Certified partner for Adobe Creative Cloud and Experience Manager implementations.',
-        benefits: ['Creative workflows', 'Digital asset management', 'Experience optimization', 'Content management'],
-        projects: ['Enterprise DAM systems', 'Creative automation workflows', 'Personalization engines'],
-        partnership_since: '2020'
-      },
-      {
-        id: 5,
-        name: 'Shopify',
-        type: 'Partner Plus',
-        logo: '/api/placeholder/120/60',
-        relationship: 'E-commerce Solutions',
-        description: 'Service Partner with Verified Skills for building and optimizing high-converting e-commerce experiences.',
-        benefits: ['Custom storefronts', 'App development', 'Conversion optimization', 'Multi-channel selling'],
-        projects: ['Enterprise e-commerce platforms', 'Headless commerce solutions', 'Custom app development'],
-        partnership_since: '2021'
-      },
-      {
-        id: 6,
-        name: 'Mailchimp',
-        type: 'Pro Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Email Marketing',
-        description: 'Certified partner for advanced email marketing strategies and automation workflows.',
-        benefits: ['Email automation', 'Audience segmentation', 'Campaign optimization', 'A/B testing'],
-        projects: ['Multi-brand email systems', 'Automated nurture campaigns', 'Personalization strategies'],
-        partnership_since: '2019'
-      },
-      {
-        id: 7,
-        name: 'Meta',
-        type: 'Business Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Social Advertising',
-        description: 'Certified across Meta platforms with 4 professional certifications for advanced social advertising.',
-        benefits: ['Facebook advertising', 'Instagram marketing', 'WhatsApp Business', 'Audience targeting'],
-        projects: ['Multi-million dollar social campaigns', 'Conversion optimization', 'Retargeting strategies'],
-        partnership_since: '2018'
-      },
-      {
-        id: 8,
-        name: 'Klaviyo',
-        type: 'Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Email & SMS Marketing',
-        description: 'Certified partner for e-commerce email and SMS marketing automation.',
-        benefits: ['Advanced segmentation', 'Predictive analytics', 'SMS marketing', 'Revenue attribution'],
-        projects: ['E-commerce email programs', 'Abandoned cart recovery', 'Customer retention campaigns'],
-        partnership_since: '2021'
-      },
-      {
-        id: 9,
-        name: 'Braze',
-        type: 'Certified Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Customer Engagement',
-        description: 'Certified practitioner for multi-channel customer engagement and lifecycle marketing.',
-        benefits: ['Cross-channel messaging', 'Customer journeys', 'Real-time personalization', 'Mobile engagement'],
-        projects: ['Omnichannel campaigns', 'App engagement programs', 'Lifecycle marketing'],
-        partnership_since: '2022'
-      },
-      {
-        id: 10,
-        name: 'Marketo',
-        type: 'Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'B2B Marketing Automation',
-        description: 'Expert partner for B2B marketing automation and lead management.',
-        benefits: ['Lead scoring', 'Account-based marketing', 'Revenue attribution', 'Campaign automation'],
-        projects: ['B2B demand generation', 'Lead nurturing programs', 'Marketing operations'],
-        partnership_since: '2020'
-      }
-    ],
-    development: [
-      {
-        id: 11,
-        name: 'AWS',
-        type: 'Advanced Tier Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Cloud Architecture & DevOps',
-        description: 'AWS Certified Developer Associate and DevOps Engineer Professional certifications for enterprise cloud solutions.',
-        benefits: ['Scalable infrastructure', 'Serverless architecture', 'DevOps automation', 'Security compliance'],
-        projects: ['Enterprise migrations', 'Microservices architectures', 'CI/CD pipelines'],
-        partnership_since: '2019'
-      },
-      {
-        id: 12,
-        name: 'Microsoft Azure',
-        type: 'Gold Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Enterprise Cloud Solutions',
-        description: 'Azure Developer Associate certified for building enterprise-grade cloud applications and services.',
-        benefits: ['Hybrid cloud solutions', 'Enterprise integration', 'Azure DevOps', 'AI/ML services'],
-        projects: ['Fortune 500 cloud migrations', 'Enterprise app modernization', 'Data platform builds'],
-        partnership_since: '2020'
-      },
-      {
-        id: 13,
-        name: 'Google Cloud',
-        type: 'Technology Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Cloud Development & AI',
-        description: 'Professional Cloud Developer and Digital Leader certifications for cutting-edge cloud solutions.',
-        benefits: ['Kubernetes expertise', 'AI/ML platforms', 'BigQuery analytics', 'Serverless computing'],
-        projects: ['Data warehouses', 'ML model deployments', 'Real-time analytics platforms'],
-        partnership_since: '2021'
-      },
-      {
-        id: 14,
-        name: 'Vercel',
-        type: 'Agency Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Next.js & JAMstack',
-        description: 'Specialized partner for building blazing-fast web applications with Next.js and modern JAMstack architecture.',
-        benefits: ['Edge computing', 'Performance optimization', 'Serverless functions', 'Global CDN'],
-        projects: ['Enterprise web apps', 'E-commerce platforms', 'Marketing sites'],
-        partnership_since: '2022'
-      },
-      {
-        id: 15,
-        name: 'GitHub',
-        type: 'Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'DevOps & Collaboration',
-        description: 'Strategic partner for source control, CI/CD, and collaborative development workflows.',
-        benefits: ['Version control', 'CI/CD automation', 'Code review', 'Security scanning'],
-        projects: ['Enterprise DevOps transformations', 'Automated deployment pipelines', 'Code quality systems'],
-        partnership_since: '2018'
-      },
-      {
-        id: 16,
-        name: 'Docker',
-        type: 'Certified Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Containerization',
-        description: 'Docker Certified Associate partner for container-based application deployment.',
-        benefits: ['Container orchestration', 'Microservices', 'Development efficiency', 'Scalable deployments'],
-        projects: ['Containerized applications', 'Microservices architectures', 'DevOps pipelines'],
-        partnership_since: '2020'
-      },
-      {
-        id: 17,
-        name: 'Kubernetes',
-        type: 'Certified',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Container Orchestration',
-        description: 'Certified Kubernetes Administrator for enterprise container orchestration.',
-        benefits: ['Auto-scaling', 'Self-healing', 'Load balancing', 'Rolling updates'],
-        projects: ['K8s clusters', 'Cloud-native apps', 'Multi-cloud deployments'],
-        partnership_since: '2021'
-      },
-      {
-        id: 18,
-        name: 'GitLab',
-        type: 'Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'DevOps Platform',
-        description: 'Partner for complete DevOps lifecycle management and CI/CD.',
-        benefits: ['Complete DevOps', 'Auto DevOps', 'Security scanning', 'Monitoring'],
-        projects: ['DevOps transformations', 'Pipeline automation', 'Security integration'],
-        partnership_since: '2022'
-      }
-    ],
-    cloud: [
-      {
-        id: 19,
-        name: 'Cloudflare',
-        type: 'Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Performance & Security',
-        description: 'Partner for enterprise CDN, security, and performance optimization solutions.',
-        benefits: ['Global CDN', 'DDoS protection', 'Web application firewall', 'Edge computing'],
-        projects: ['Enterprise security implementations', 'Global performance optimization', 'Zero Trust networks'],
-        partnership_since: '2020'
-      },
-      {
-        id: 20,
-        name: 'MongoDB',
-        type: 'Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Database Solutions',
-        description: 'Certified partner for NoSQL database implementations and data platform architecture.',
-        benefits: ['Scalable databases', 'Real-time sync', 'Atlas cloud', 'Performance optimization'],
-        projects: ['Real-time applications', 'IoT data platforms', 'Content management systems'],
-        partnership_since: '2021'
-      },
-      {
-        id: 21,
-        name: 'Redis',
-        type: 'Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'In-Memory Data',
-        description: 'Partner for high-performance caching and real-time data processing solutions.',
-        benefits: ['Caching solutions', 'Session management', 'Real-time analytics', 'Message queuing'],
-        projects: ['High-traffic applications', 'Real-time dashboards', 'Gaming backends'],
-        partnership_since: '2022'
-      },
-      {
-        id: 22,
-        name: 'Netlify',
-        type: 'Agency Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'JAMstack Platform',
-        description: 'Certified partner for modern web development and deployment with JAMstack architecture.',
-        benefits: ['Instant deployments', 'Serverless functions', 'Form handling', 'Identity management'],
-        projects: ['Marketing sites', 'Static site generators', 'Progressive web apps'],
-        partnership_since: '2021'
-      },
-      {
-        id: 23,
-        name: 'Fastly',
-        type: 'Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Edge Computing',
-        description: 'Partner for edge cloud platform and content delivery network solutions.',
-        benefits: ['Edge computing', 'Real-time analytics', 'Instant purging', 'Security'],
-        projects: ['Global CDN setup', 'Edge applications', 'Performance optimization'],
-        partnership_since: '2022'
-      },
-      {
-        id: 24,
-        name: 'DigitalOcean',
-        type: 'Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Cloud Infrastructure',
-        description: 'Partner for simplified cloud infrastructure and developer-friendly hosting.',
-        benefits: ['Simple cloud hosting', 'Managed databases', 'Kubernetes service', 'App platform'],
-        projects: ['Startup hosting', 'Development environments', 'Application deployments'],
-        partnership_since: '2019'
-      }
-    ],
-    analytics: [
-      {
-        id: 25,
-        name: 'Segment',
-        type: 'Technology Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Customer Data Platform',
-        description: 'Certified partner for customer data infrastructure and unified analytics implementations.',
-        benefits: ['Data collection', 'Customer profiles', 'Event tracking', 'Data governance'],
-        projects: ['CDP implementations', 'Multi-channel tracking', 'Data warehouse integration'],
-        partnership_since: '2022'
-      },
-      {
-        id: 26,
-        name: 'Mixpanel',
-        type: 'Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Product Analytics',
-        description: 'Certified partner for advanced product analytics and user behavior tracking.',
-        benefits: ['User analytics', 'Funnel analysis', 'Cohort analysis', 'A/B testing'],
-        projects: ['SaaS analytics', 'Mobile app tracking', 'Conversion optimization'],
-        partnership_since: '2021'
-      },
-      {
-        id: 27,
-        name: 'Snowflake',
-        type: 'Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Data Cloud',
-        description: 'SnowPro Core certified partner for cloud data warehousing and advanced analytics solutions.',
-        benefits: ['Data warehousing', 'Data sharing', 'ML/AI workloads', 'Real-time processing'],
-        projects: ['Enterprise data platforms', 'Analytics migrations', 'ML pipelines'],
-        partnership_since: '2023'
-      },
-      {
-        id: 28,
-        name: 'Tableau',
-        type: 'Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Data Visualization',
-        description: 'Partner for business intelligence and data visualization solutions.',
-        benefits: ['Interactive dashboards', 'Self-service analytics', 'Data storytelling', 'Real-time insights'],
-        projects: ['Executive dashboards', 'Sales analytics', 'Marketing performance'],
-        partnership_since: '2020'
-      },
-      {
-        id: 29,
-        name: 'Databricks',
-        type: 'Partner',
-        logo: '/api/placeholder/120/60',
-        relationship: 'Data & AI Platform',
-        description: 'Partner for unified data analytics and AI platform solutions.',
-        benefits: ['Data lakehouse', 'ML workflows', 'Real-time analytics', 'Collaborative notebooks'],
-        projects: ['Data pipelines', 'ML model deployment', 'Analytics platforms'],
-        partnership_since: '2023'
-      }
-    ]
-  };
+  const partners = [
+    {
+      id: 1,
+      name: 'Salesforce',
+      category: 'marketing',
+      description: 'Complete CRM and marketing cloud solutions with 12+ certifications',
+      services: ['CRM Implementation', 'Marketing Cloud', 'Service Cloud', 'Commerce Cloud'],
+      certifications: 12,
+      projects: 50,
+      icon: 'Cloud',
+      color: 'from-blue-500 to-cyan-500',
+      gradient: 'bg-gradient-to-br from-blue-500 to-cyan-500',
+      benefits: ['Enterprise CRM', 'Marketing Automation', 'Customer 360 Platform', 'AI-Powered Insights']
+    },
+    {
+      id: 2,
+      name: 'AWS',
+      category: 'development',
+      description: 'Enterprise cloud infrastructure and development platform',
+      services: ['Cloud Architecture', 'DevOps', 'Serverless', 'Machine Learning'],
+      certifications: 4,
+      projects: 35,
+      icon: 'Server',
+      color: 'from-orange-500 to-yellow-500',
+      gradient: 'bg-gradient-to-br from-orange-500 to-yellow-500',
+      benefits: ['Scalable Infrastructure', 'Global CDN', 'Enterprise Security', 'Cost Optimization']
+    },
+    {
+      id: 3,
+      name: 'HubSpot',
+      category: 'marketing',
+      description: 'Inbound marketing, sales, and service platform',
+      services: ['Marketing Hub', 'Sales Hub', 'Service Hub', 'CMS Hub'],
+      certifications: 9,
+      projects: 45,
+      icon: 'Target',
+      color: 'from-orange-600 to-red-600',
+      gradient: 'bg-gradient-to-br from-orange-600 to-red-600',
+      benefits: ['All-in-One Platform', 'Marketing Automation', 'Lead Generation', 'Customer Service']
+    },
+    {
+      id: 4,
+      name: 'Google Cloud',
+      category: 'development',
+      description: 'AI-first cloud platform with marketing integrations',
+      services: ['Cloud Platform', 'BigQuery', 'AI/ML', 'Google Ads Integration'],
+      certifications: 8,
+      projects: 30,
+      icon: 'Globe',
+      color: 'from-blue-600 to-green-600',
+      gradient: 'bg-gradient-to-br from-blue-600 to-green-600',
+      benefits: ['AI & Machine Learning', 'Data Analytics', 'Global Scale', 'Google Ecosystem']
+    },
+    {
+      id: 5,
+      name: 'Shopify',
+      category: 'development',
+      description: 'E-commerce platform for online stores and retail',
+      services: ['Store Development', 'Plus Solutions', 'Custom Apps', 'Headless Commerce'],
+      certifications: 3,
+      projects: 40,
+      icon: 'ShoppingCart',
+      color: 'from-green-600 to-teal-600',
+      gradient: 'bg-gradient-to-br from-green-600 to-teal-600',
+      benefits: ['E-commerce Excellence', 'Multi-channel Selling', 'App Ecosystem', 'Scalable Commerce']
+    },
+    {
+      id: 6,
+      name: 'Adobe',
+      category: 'marketing',
+      description: 'Creative and marketing cloud solutions',
+      services: ['Experience Manager', 'Analytics', 'Target', 'Campaign'],
+      certifications: 5,
+      projects: 25,
+      icon: 'Image',
+      color: 'from-red-600 to-purple-600',
+      gradient: 'bg-gradient-to-br from-red-600 to-purple-600',
+      benefits: ['Creative Cloud', 'Experience Cloud', 'Personalization', 'Content Management']
+    },
+    {
+      id: 7,
+      name: 'Microsoft Azure',
+      category: 'development',
+      description: 'Enterprise cloud computing and AI services',
+      services: ['Azure Cloud', 'Office 365 Integration', 'Power Platform', 'Azure AI'],
+      certifications: 3,
+      projects: 20,
+      icon: 'Layers',
+      color: 'from-indigo-600 to-blue-600',
+      gradient: 'bg-gradient-to-br from-indigo-600 to-blue-600',
+      benefits: ['Enterprise Integration', 'Hybrid Cloud', 'Security & Compliance', 'Microsoft Ecosystem']
+    },
+    {
+      id: 8,
+      name: 'Meta',
+      category: 'marketing',
+      description: 'Social media advertising and commerce platforms',
+      services: ['Facebook Ads', 'Instagram Marketing', 'WhatsApp Business', 'Commerce'],
+      certifications: 4,
+      projects: 60,
+      icon: 'Share2',
+      color: 'from-blue-700 to-indigo-600',
+      gradient: 'bg-gradient-to-br from-blue-700 to-indigo-600',
+      benefits: ['Social Advertising', 'Audience Targeting', 'Commerce Integration', 'Cross-Platform Reach']
+    },
+    {
+      id: 9,
+      name: 'Klaviyo',
+      category: 'marketing',
+      description: 'Email and SMS marketing automation platform',
+      services: ['Email Marketing', 'SMS Campaigns', 'Segmentation', 'Personalization'],
+      certifications: 1,
+      projects: 35,
+      icon: 'Mail',
+      color: 'from-purple-600 to-pink-600',
+      gradient: 'bg-gradient-to-br from-purple-600 to-pink-600',
+      benefits: ['Advanced Segmentation', 'Predictive Analytics', 'Revenue Attribution', 'E-commerce Focus']
+    },
+    {
+      id: 10,
+      name: 'Snowflake',
+      category: 'analytics',
+      description: 'Cloud data platform for analytics and AI',
+      services: ['Data Warehouse', 'Data Lake', 'Data Sharing', 'Analytics'],
+      certifications: 1,
+      projects: 15,
+      icon: 'Database',
+      color: 'from-cyan-600 to-blue-600',
+      gradient: 'bg-gradient-to-br from-cyan-600 to-blue-600',
+      benefits: ['Unified Data Platform', 'Real-time Analytics', 'Data Sharing', 'Multi-cloud']
+    },
+    {
+      id: 11,
+      name: 'Google Analytics',
+      category: 'analytics',
+      description: 'Web analytics and measurement platform',
+      services: ['GA4 Setup', 'Conversion Tracking', 'Custom Reports', 'Attribution'],
+      certifications: 2,
+      projects: 80,
+      icon: 'BarChart',
+      color: 'from-yellow-500 to-orange-500',
+      gradient: 'bg-gradient-to-br from-yellow-500 to-orange-500',
+      benefits: ['User Behavior Insights', 'Conversion Tracking', 'Custom Reporting', 'Free Platform']
+    },
+    {
+      id: 12,
+      name: 'Braze',
+      category: 'marketing',
+      description: 'Customer engagement and lifecycle marketing',
+      services: ['Lifecycle Campaigns', 'Push Notifications', 'In-App Messaging', 'Personalization'],
+      certifications: 1,
+      projects: 10,
+      icon: 'MessageSquare',
+      color: 'from-teal-600 to-cyan-600',
+      gradient: 'bg-gradient-to-br from-teal-600 to-cyan-600',
+      benefits: ['Omnichannel Engagement', 'Real-time Personalization', 'Customer Journey', 'AI Optimization']
+    },
+    {
+      id: 13,
+      name: 'Mixpanel',
+      category: 'analytics',
+      description: 'Product analytics for user behavior tracking',
+      services: ['Product Analytics', 'User Funnels', 'Retention Analysis', 'A/B Testing'],
+      certifications: 1,
+      projects: 20,
+      icon: 'Activity',
+      color: 'from-purple-500 to-indigo-500',
+      gradient: 'bg-gradient-to-br from-purple-500 to-indigo-500',
+      benefits: ['Product Analytics', 'User Journey Tracking', 'Cohort Analysis', 'Real-time Data']
+    },
+    {
+      id: 14,
+      name: 'Segment',
+      category: 'analytics',
+      description: 'Customer data platform and integration hub',
+      services: ['Data Collection', 'Data Routing', 'Identity Resolution', 'Privacy Management'],
+      certifications: 1,
+      projects: 15,
+      icon: 'GitBranch',
+      color: 'from-green-500 to-teal-500',
+      gradient: 'bg-gradient-to-br from-green-500 to-teal-500',
+      benefits: ['Single Data Source', '300+ Integrations', 'Privacy Compliance', 'Real-time Sync']
+    },
+    {
+      id: 15,
+      name: 'Docker',
+      category: 'development',
+      description: 'Container platform for application deployment',
+      services: ['Containerization', 'Kubernetes', 'CI/CD', 'Microservices'],
+      certifications: 1,
+      projects: 25,
+      icon: 'Box',
+      color: 'from-blue-500 to-cyan-600',
+      gradient: 'bg-gradient-to-br from-blue-500 to-cyan-600',
+      benefits: ['Container Orchestration', 'Scalable Deployment', 'DevOps Integration', 'Portability']
+    },
+    {
+      id: 16,
+      name: 'Netlify',
+      category: 'development',
+      description: 'Modern web development and hosting platform',
+      services: ['Jamstack Hosting', 'Serverless Functions', 'Edge CDN', 'Build Automation'],
+      certifications: 1,
+      projects: 30,
+      icon: 'Globe',
+      color: 'from-teal-500 to-green-500',
+      gradient: 'bg-gradient-to-br from-teal-500 to-green-500',
+      benefits: ['Instant Deployment', 'Global CDN', 'Serverless Backend', 'Git Integration']
+    },
+    {
+      id: 17,
+      name: 'Mailchimp',
+      category: 'marketing',
+      description: 'Marketing automation and email platform',
+      services: ['Email Campaigns', 'Automation', 'Landing Pages', 'Audience Management'],
+      certifications: 1,
+      projects: 40,
+      icon: 'Send',
+      color: 'from-yellow-600 to-orange-600',
+      gradient: 'bg-gradient-to-br from-yellow-600 to-orange-600',
+      benefits: ['Easy Email Marketing', 'Marketing CRM', 'Creative Tools', 'E-commerce Integration']
+    },
+    {
+      id: 18,
+      name: 'WordPress',
+      category: 'development',
+      description: 'Content management and website platform',
+      services: ['Custom Development', 'WooCommerce', 'Performance Optimization', 'Security'],
+      certifications: 0,
+      projects: 50,
+      icon: 'FileText',
+      color: 'from-blue-600 to-indigo-600',
+      gradient: 'bg-gradient-to-br from-blue-600 to-indigo-600',
+      benefits: ['Flexible CMS', 'Plugin Ecosystem', 'SEO Friendly', 'Community Support']
+    }
+  ];
 
-  const activePartners = partnerships?.[partnerCategory] || [];
+  const filteredPartners = activeCategory === 'all' 
+    ? partners 
+    : partners?.filter(partner => partner?.category === activeCategory);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -370,294 +281,532 @@ const PartnershipEcosystem = () => {
     return () => observer?.disconnect();
   }, []);
 
-  const getPartnershipStats = () => {
-    const allPartners = Object?.values(partnerships)?.flat();
-    return {
-      total: allPartners?.length,
-      premier: allPartners?.filter(p => p?.type?.includes('Premier') || p?.type?.includes('Gold'))?.length,
-      strategic: allPartners?.filter(p => p?.type?.includes('Partner'))?.length,
-      years: Math.max(...allPartners?.map(p => 2025 - parseInt(p?.partnership_since)))
-    };
+  const partnerVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: (index) => ({
+      opacity: 1,
+      scale: 1,
+      transition: {
+        delay: index * 0.05,
+        type: "spring",
+        stiffness: 100
+      }
+    })
   };
 
-  const stats = getPartnershipStats();
+  const statVariants = {
+    hidden: { scale: 0, opacity: 0 },
+    visible: {
+      scale: 1,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 200,
+        delay: 0.2
+      }
+    }
+  };
+
+  // Calculate statistics
+  const totalCertifications = partners?.reduce((sum, p) => sum + p.certifications, 0);
+  const totalProjects = partners?.reduce((sum, p) => sum + p.projects, 0);
 
   return (
-    <section ref={sectionRef} className="py-12 sm:py-16 md:py-20 lg:py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header - Mobile Optimized */}
+    <section ref={sectionRef} className="py-12 sm:py-16 md:py-20 lg:py-24 bg-gradient-to-br from-surface via-white to-surface relative overflow-hidden">
+      {/* Animated Network Background */}
+      <div className="absolute inset-0 opacity-5">
+        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="network-pattern" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+              <circle cx="50" cy="50" r="1" fill="#E53E3E" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#network-pattern)" />
+          {/* Animated connection lines */}
+          {[...Array(5)].map((_, i) => (
+            <motion.line
+              key={i}
+              x1={`${20 * i}%`}
+              y1="0%"
+              x2={`${20 * i + 20}%`}
+              y2="100%"
+              stroke="#E53E3E"
+              strokeWidth="0.5"
+              opacity="0.1"
+              animate={{
+                y1: ["0%", "100%", "0%"],
+                y2: ["100%", "0%", "100%"],
+              }}
+              transition={{
+                duration: 10 + i * 2,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+            />
+          ))}
+        </svg>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Enhanced Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.4, delay: 0.1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="text-center mb-8 sm:mb-12 lg:mb-16"
         >
-          <div className="inline-flex items-center space-x-2 bg-accent/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6">
+          <motion.div 
+            className="inline-flex items-center space-x-2 bg-accent/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
             <AppIcon name="Network" size={16} className="text-accent" />
             <span className="text-accent font-semibold text-xs sm:text-sm">Partnership Ecosystem</span>
-          </div>
+          </motion.div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4 sm:mb-6">
-            Strategic <span className="text-accent">Alliances</span>
+            Our <motion.span 
+              className="text-accent"
+              initial={{ opacity: 0, x: -20 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ delay: 0.2, duration: 0.4 }}
+            >Strategic Partners</motion.span>
           </h2>
-          <p className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4">
-            Our comprehensive partner network of 29+ strategic alliances spans marketing platforms, cloud providers, 
-            and development tools—enabling us to deliver integrated solutions that drive both creative excellence and technical innovation.
-          </p>
+          <motion.p 
+            className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4"
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
+            transition={{ delay: 0.3, duration: 0.4 }}
+          >
+            We partner with the world's leading platforms to deliver integrated solutions. 
+            Our {totalCertifications}+ certifications across {partners?.length} platforms ensure you get expert implementation every time.
+          </motion.p>
         </motion.div>
 
-        {/* Partnership Stats - Mobile Optimized */}
+        {/* Animated Statistics Bar */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12 lg:mb-16"
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8 sm:mb-12 lg:mb-16"
         >
           {[
-            { number: stats?.total + '+', label: 'Strategic Partners', icon: 'Users' },
-            { number: '60+', label: 'Total Certifications', icon: 'Shield' },
-            { number: stats?.years + '+', label: 'Years Collaboration', icon: 'Clock' },
-            { number: '100%', label: 'Platform Coverage', icon: 'Globe' }
-          ]?.map((stat, index) => (
-            <div
+            { label: 'Strategic Partners', value: partners?.length, icon: 'Network', color: 'from-accent to-red-400' },
+            { label: 'Total Certifications', value: totalCertifications, icon: 'Award', color: 'from-blue-500 to-cyan-400' },
+            { label: 'Projects Delivered', value: totalProjects, icon: 'CheckCircle', color: 'from-green-500 to-teal-400' },
+            { label: 'Industries Served', value: '15+', icon: 'Globe', color: 'from-purple-500 to-pink-400' }
+          ].map((stat, index) => (
+            <motion.div
               key={index}
-              className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center hover:shadow-brand-md transition-all duration-300 group"
+              variants={statVariants}
+              initial="hidden"
+              animate={isInView ? "visible" : "hidden"}
+              whileHover={{ scale: 1.05 }}
+              className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center shadow-brand-md hover:shadow-brand-elevation-lg transition-all duration-300 relative overflow-hidden"
             >
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-accent/10 group-hover:bg-accent rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 mx-auto transition-all duration-300">
-                <AppIcon name={stat?.icon} size={20} className="text-accent group-hover:text-white transition-colors duration-300" />
-              </div>
-              <div className="text-xl sm:text-2xl font-bold text-primary mb-1">{stat?.number}</div>
-              <div className="text-text-secondary text-xs sm:text-sm">{stat?.label}</div>
-            </div>
+              <motion.div
+                className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-5`}
+                whileHover={{ opacity: 0.1 }}
+                transition={{ duration: 0.3 }}
+              />
+              <motion.div 
+                className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r ${stat.color} rounded-full flex items-center justify-center mb-2 sm:mb-3 mx-auto`}
+                animate={{
+                  rotate: [0, 360],
+                }}
+                transition={{
+                  duration: 20,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+              >
+                <AppIcon name={stat.icon} size={20} className="text-white" />
+              </motion.div>
+              <motion.div 
+                className="text-2xl sm:text-3xl font-bold text-primary mb-1"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ 
+                  type: "spring",
+                  stiffness: 200,
+                  delay: 0.3 + index * 0.1
+                }}
+              >
+                {stat.value}
+              </motion.div>
+              <div className="text-xs sm:text-sm text-text-secondary">{stat.label}</div>
+            </motion.div>
           ))}
         </motion.div>
 
-        {/* Category Filter - FIXED: Now with flex-wrap */}
+        {/* Enhanced Category Filter */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="flex flex-wrap justify-center gap-3 mb-8 sm:mb-12 lg:mb-16"
+          transition={{ duration: 0.4, delay: 0.3 }}
+          className="flex flex-wrap justify-center gap-3 mb-8 sm:mb-12"
         >
-          {partnershipCategories?.map((category) => (
-            <button
+          {partnerCategories?.map((category, index) => (
+            <motion.button
               key={category?.id}
-              onClick={() => setPartnerCategory(category?.id)}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.05 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setActiveCategory(category?.id)}
               className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-semibold transition-all duration-300 text-sm sm:text-base ${
-                partnerCategory === category?.id
+                activeCategory === category?.id
                   ? 'bg-gradient-to-r from-accent to-primary text-white shadow-lg transform scale-105'
-                  : 'bg-surface text-text-secondary hover:bg-accent/5 hover:text-accent'
+                  : 'bg-white text-text-secondary hover:bg-accent/5 hover:text-accent shadow-md'
               }`}
             >
               <AppIcon name={category?.icon} size={16} className="flex-shrink-0" />
-              <span>{category?.label.split(' ')[0]}</span>
-              {category?.count && (
-                <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-bold ${
-                  partnerCategory === category?.id 
-                    ? 'bg-white/20 text-white' 
-                    : 'bg-accent/10 text-accent'
-                }`}>
-                  {category?.count}
-                </span>
-              )}
-            </button>
+              <span>{category?.label}</span>
+              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
+                activeCategory === category?.id 
+                  ? 'bg-white/20 text-white' 
+                  : 'bg-accent/10 text-accent'
+              }`}>
+                {category?.count}
+              </span>
+            </motion.button>
           ))}
         </motion.div>
 
-        {/* Partners Grid - Mobile Optimized */}
-        <motion.div
+        {/* Enhanced Partners Grid */}
+        <motion.div 
+          ref={gridRef}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12 lg:mb-16"
           initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.4, delay: 0.3 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 lg:mb-16"
+          animate={inView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.4, delay: 0.4 }}
         >
-          {activePartners?.map((partner, index) => (
-            <motion.div
-              key={partner?.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.3, delay: 0.05 * index }}
-              className="group cursor-pointer"
-              onClick={() => setActivePartner(partner)}
-            >
-              <div className="bg-white border border-gray-100 rounded-xl sm:rounded-2xl p-6 sm:p-8 hover:shadow-brand-elevation-lg transition-all duration-500 group-hover:-translate-y-2">
-                {/* Partner Header */}
-                <div className="flex items-center justify-between mb-4 sm:mb-6">
-                  <div className="flex items-center space-x-3 sm:space-x-4">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-xl sm:rounded-2xl flex items-center justify-center">
-                      <span className="font-bold text-primary text-base sm:text-lg">{partner?.name?.charAt(0)}</span>
-                    </div>
-                    <div>
-                      <h3 className="text-lg sm:text-xl font-bold text-primary group-hover:text-accent transition-colors duration-300">
-                        {partner?.name}
-                      </h3>
-                      <p className="text-accent font-semibold text-xs sm:text-sm">{partner?.type}</p>
-                    </div>
+          <AnimatePresence mode="popLayout">
+            {filteredPartners?.map((partner, index) => (
+              <motion.div
+                key={partner?.id}
+                layout
+                variants={partnerVariants}
+                custom={index}
+                initial="hidden"
+                animate="visible"
+                exit={{ opacity: 0, scale: 0.8 }}
+                whileHover={{ y: -5 }}
+                className="group cursor-pointer"
+                onClick={() => setSelectedPartner(partner)}
+                onMouseEnter={() => setHoveredPartner(partner.id)}
+                onMouseLeave={() => setHoveredPartner(null)}
+              >
+                <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-brand-md hover:shadow-brand-elevation-lg transition-all duration-500 h-full relative overflow-hidden">
+                  {/* Animated gradient background */}
+                  <motion.div
+                    className={`absolute inset-0 ${partner?.gradient} opacity-0`}
+                    animate={{
+                      opacity: hoveredPartner === partner.id ? 0.05 : 0
+                    }}
+                    transition={{ duration: 0.3 }}
+                  />
+                  
+                  {/* Partner Header */}
+                  <div className="flex items-center justify-between mb-3 sm:mb-4 relative z-10">
+                    <motion.div 
+                      className={`w-12 h-12 sm:w-14 sm:h-14 ${partner?.gradient} rounded-xl flex items-center justify-center`}
+                      whileHover={{
+                        scale: 1.1,
+                        rotate: [0, -10, 10, 0],
+                        transition: { duration: 0.5 }
+                      }}
+                    >
+                      <AppIcon name={partner?.icon} size={24} className="text-white" />
+                    </motion.div>
+                    <motion.div 
+                      className="text-right"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: hoveredPartner === partner.id ? 1 : 0.7 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {partner?.certifications > 0 && (
+                        <div className="flex items-center space-x-1">
+                          <AppIcon name="Award" size={14} className="text-accent" />
+                          <span className="text-accent font-bold text-sm">{partner?.certifications}</span>
+                        </div>
+                      )}
+                      <div className="text-xs text-text-secondary">{partner?.projects} projects</div>
+                    </motion.div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-text-secondary text-xs sm:text-sm">Since {partner?.partnership_since}</span>
-                  </div>
-                </div>
 
-                {/* Partnership Details */}
-                <div className="mb-3 sm:mb-4">
-                  <p className="text-primary font-semibold mb-1 sm:mb-2 text-sm sm:text-base">{partner?.relationship}</p>
-                  <p className="text-text-secondary leading-relaxed text-xs sm:text-sm">
+                  {/* Partner Info */}
+                  <h3 className="font-bold text-primary mb-2 group-hover:text-accent transition-colors duration-300 text-base sm:text-lg">
+                    {partner?.name}
+                  </h3>
+                  <p className="text-text-secondary text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">
                     {partner?.description}
                   </p>
-                </div>
 
-                {/* Key Benefits */}
-                <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                  {partner?.benefits?.slice(0, 3)?.map((benefit, benefitIndex) => (
-                    <span
-                      key={benefitIndex}
-                      className="px-2 sm:px-3 py-1 bg-accent/10 text-accent text-xs font-medium rounded-full"
-                    >
-                      {benefit}
-                    </span>
-                  ))}
-                  {partner?.benefits?.length > 3 && (
-                    <span className="px-2 sm:px-3 py-1 bg-gray-100 text-text-secondary text-xs font-medium rounded-full">
-                      +{partner?.benefits?.length - 3} more
-                    </span>
-                  )}
-                </div>
-
-                {/* View More Indicator */}
-                <div className="flex items-center justify-between text-xs sm:text-sm">
-                  <span className="text-text-secondary">
-                    {partner?.projects?.length} joint projects
-                  </span>
-                  <div className="flex items-center space-x-2 text-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <span>View details</span>
-                    <AppIcon name="ArrowRight" size={16} />
+                  {/* Service Tags with animation */}
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3">
+                    {partner?.services?.slice(0, 2).map((service, serviceIndex) => (
+                      <motion.span
+                        key={serviceIndex}
+                        initial={{ scale: 0 }}
+                        animate={{ scale: hoveredPartner === partner.id ? 1 : 0.9 }}
+                        transition={{ 
+                          delay: serviceIndex * 0.05,
+                          type: "spring",
+                          stiffness: 200
+                        }}
+                        className="px-2 py-1 bg-surface text-text-secondary text-xs rounded-full"
+                      >
+                        {service}
+                      </motion.span>
+                    ))}
+                    {partner?.services?.length > 2 && (
+                      <span className="px-2 py-1 bg-accent/10 text-accent text-xs rounded-full font-medium">
+                        +{partner?.services?.length - 2}
+                      </span>
+                    )}
                   </div>
+
+                  {/* View Details indicator */}
+                  <motion.div 
+                    className="flex items-center space-x-2 text-accent text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    initial={{ x: -10 }}
+                    animate={{ x: hoveredPartner === partner.id ? 0 : -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <span>View Details</span>
+                    <AppIcon name="ArrowRight" size={14} />
+                  </motion.div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </motion.div>
 
-        {/* Partnership Benefits - Mobile Optimized */}
+        {/* Enhanced CTA Section */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.4, delay: 0.4 }}
-          className="bg-gradient-to-r from-accent to-primary rounded-xl sm:rounded-2xl lg:rounded-3xl p-8 sm:p-12 text-white text-center"
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="text-center bg-gradient-to-r from-accent to-primary rounded-xl sm:rounded-2xl lg:rounded-3xl p-8 sm:p-12 text-white relative overflow-hidden"
         >
-          <h3 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">The Complete Digital Advantage</h3>
-          <p className="text-base sm:text-lg md:text-xl opacity-90 mb-6 sm:mb-8 max-w-3xl mx-auto">
-            Our strategic partnerships across marketing and development platforms enable us to deliver 
-            end-to-end solutions that seamlessly integrate creative strategy with technical excellence.
-          </p>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 mb-6 sm:mb-8">
-            {[
-              {
-                icon: 'Layers',
-                title: 'Full-Stack Solutions',
-                description: 'From marketing automation to cloud infrastructure, we cover every digital need.'
-              },
-              {
-                icon: 'Shield',
-                title: 'Enterprise-Grade',
-                description: 'Certified partnerships ensure security, scalability, and compliance at every level.'
-              },
-              {
-                icon: 'Zap',
-                title: 'Seamless Integration',
-                description: 'Our expertise across platforms means everything works together perfectly.'
-              }
-            ]?.map((advantage, index) => (
-              <div key={index} className="text-center">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 mx-auto">
-                  <AppIcon name={advantage?.icon} size={24} className="text-white" />
-                </div>
-                <h4 className="font-bold text-base sm:text-lg mb-1 sm:mb-2">{advantage?.title}</h4>
-                <p className="text-white/80 text-xs sm:text-sm">{advantage?.description}</p>
-              </div>
-            ))}
+          {/* Animated pattern background */}
+          <div className="absolute inset-0 opacity-10">
+            <motion.div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: 'radial-gradient(circle at 50% 50%, white 1px, transparent 1px)',
+                backgroundSize: '20px 20px',
+              }}
+              animate={{
+                backgroundPosition: ["0px 0px", "20px 20px"],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            />
           </div>
 
-          <Button
-            variant="outline"
-            size="lg"
-            className="border-2 border-white text-white hover:bg-white hover:text-primary px-6 sm:px-8 py-3 sm:py-4 font-semibold min-h-[48px]"
+          <motion.div
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: "spring", stiffness: 100, delay: 0.6 }}
+            className="w-16 h-16 sm:w-20 sm:h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4 sm:mb-6 mx-auto"
           >
-            <AppIcon name="Network" size={20} className="mr-2" />
-            Explore Partnership Opportunities
-          </Button>
+            <AppIcon name="Handshake" size={32} className="text-white" />
+          </motion.div>
+          
+          <motion.h3 
+            className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 relative z-10"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.7 }}
+          >
+            The Power of Partnership
+          </motion.h3>
+          
+          <motion.p 
+            className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 max-w-3xl mx-auto opacity-90 relative z-10"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.8 }}
+          >
+            With certified expertise across every major platform, we're not just implementing tools—we're 
+            architecting complete digital ecosystems that drive real business results.
+          </motion.p>
+
+          <motion.div 
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center relative z-10"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.9 }}
+          >
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-accent rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
+            >
+              <span className="relative z-10">Explore Our Capabilities</span>
+              <motion.div 
+                className="absolute inset-0 bg-accent"
+                initial={{ x: "-100%" }}
+                whileHover={{ x: 0 }}
+                transition={{ duration: 0.3 }}
+              />
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-6 sm:px-8 py-3 sm:py-4 bg-transparent border-2 border-white text-white rounded-full font-semibold hover:bg-white hover:text-accent transition-all duration-300"
+            >
+              Talk to Our Experts
+            </motion.button>
+          </motion.div>
         </motion.div>
 
-        {/* Partner Detail Modal - Mobile Optimized */}
-        {activePartner && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center p-0 sm:p-4 z-brand-modal"
-            onClick={() => setActivePartner(null)}
-          >
+        {/* Partner Detail Modal */}
+        <AnimatePresence>
+          {selectedPartner && (
             <motion.div
-              initial={{ y: '100%', opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto"
-              onClick={(e) => e?.stopPropagation()}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 z-50"
+              onClick={() => setSelectedPartner(null)}
             >
-              <div className="p-6 sm:p-8">
-                <div className="flex items-start justify-between mb-4 sm:mb-6">
-                  <div className="flex items-center space-x-3 sm:space-x-4">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-xl sm:rounded-2xl flex items-center justify-center">
-                      <span className="font-bold text-primary text-lg sm:text-xl">{activePartner?.name?.charAt(0)}</span>
-                    </div>
-                    <div>
-                      <h3 className="text-xl sm:text-2xl font-bold text-primary">{activePartner?.name}</h3>
-                      <p className="text-accent font-semibold text-sm sm:text-base">{activePartner?.type}</p>
-                      <p className="text-text-secondary text-xs sm:text-sm">Partnership since {activePartner?.partnership_since}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setActivePartner(null)}
-                    className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-100 hover:bg-accent/10 rounded-full flex items-center justify-center transition-colors duration-300 flex-shrink-0"
-                  >
-                    <AppIcon name="X" size={20} className="text-text-secondary hover:text-accent" />
-                  </button>
-                </div>
-
-                <div className="space-y-4 sm:space-y-6">
-                  <div>
-                    <h4 className="font-bold text-primary mb-2 text-base sm:text-lg">Partnership Focus</h4>
-                    <p className="text-accent font-semibold mb-1 sm:mb-2 text-sm sm:text-base">{activePartner?.relationship}</p>
-                    <p className="text-text-secondary leading-relaxed text-sm sm:text-base">{activePartner?.description}</p>
-                  </div>
-
-                  <div>
-                    <h4 className="font-bold text-primary mb-2 sm:mb-3 text-base sm:text-lg">Key Benefits</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                      {activePartner?.benefits?.map((benefit, index) => (
-                        <div key={index} className="flex items-center space-x-2">
-                          <AppIcon name="CheckCircle" size={16} className="text-accent flex-shrink-0" />
-                          <span className="text-text-secondary text-xs sm:text-sm">{benefit}</span>
+              <motion.div
+                initial={{ y: '100%', opacity: 0, scale: 0.9 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                exit={{ y: '100%', opacity: 0, scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 100 }}
+                className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl lg:max-w-4xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e?.stopPropagation()}
+              >
+                <div className="p-6 sm:p-8">
+                  {/* Modal Header */}
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-center space-x-4">
+                      <motion.div 
+                        className={`w-16 h-16 sm:w-20 sm:h-20 ${selectedPartner?.gradient} rounded-xl sm:rounded-2xl flex items-center justify-center`}
+                        animate={{
+                          rotate: [0, 360],
+                        }}
+                        transition={{
+                          duration: 20,
+                          repeat: Infinity,
+                          ease: "linear"
+                        }}
+                      >
+                        <AppIcon name={selectedPartner?.icon} size={32} className="text-white" />
+                      </motion.div>
+                      <div>
+                        <h3 className="text-2xl sm:text-3xl font-bold text-primary mb-1">
+                          {selectedPartner?.name}
+                        </h3>
+                        <div className="flex items-center space-x-4 text-sm">
+                          {selectedPartner?.certifications > 0 && (
+                            <div className="flex items-center space-x-1">
+                              <AppIcon name="Award" size={16} className="text-accent" />
+                              <span className="text-accent font-bold">{selectedPartner?.certifications} Certifications</span>
+                            </div>
+                          )}
+                          <div className="flex items-center space-x-1">
+                            <AppIcon name="Briefcase" size={16} className="text-text-secondary" />
+                            <span className="text-text-secondary">{selectedPartner?.projects} Projects</span>
+                          </div>
                         </div>
-                      ))}
+                      </div>
                     </div>
+                    <motion.button
+                      whileHover={{ scale: 1.1, rotate: 90 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => setSelectedPartner(null)}
+                      className="w-10 h-10 bg-gray-100 hover:bg-accent/10 rounded-full flex items-center justify-center transition-colors duration-300"
+                    >
+                      <AppIcon name="X" size={20} className="text-text-secondary hover:text-accent" />
+                    </motion.button>
                   </div>
 
-                  <div>
-                    <h4 className="font-bold text-primary mb-2 sm:mb-3 text-base sm:text-lg">Featured Projects</h4>
-                    <ul className="space-y-2">
-                      {activePartner?.projects?.map((project, index) => (
-                        <li key={index} className="flex items-center space-x-3">
-                          <AppIcon name="ArrowRight" size={14} className="text-accent flex-shrink-0" />
-                          <span className="text-text-secondary text-xs sm:text-sm">{project}</span>
-                        </li>
-                      ))}
-                    </ul>
+                  {/* Modal Content */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                    {/* Services */}
+                    <motion.div
+                      initial={{ x: -50, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      <h4 className="text-xl font-bold text-primary mb-4">Our Services</h4>
+                      <div className="space-y-3">
+                        {selectedPartner?.services?.map((service, index) => (
+                          <motion.div 
+                            key={index}
+                            className="flex items-center space-x-3"
+                            initial={{ x: -20, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ delay: 0.3 + index * 0.05 }}
+                          >
+                            <motion.div
+                              animate={{
+                                scale: [1, 1.2, 1],
+                              }}
+                              transition={{
+                                duration: 2,
+                                repeat: Infinity,
+                                delay: index * 0.2,
+                              }}
+                            >
+                              <AppIcon name="CheckCircle" size={16} className="text-accent flex-shrink-0" />
+                            </motion.div>
+                            <span className="text-text-secondary">{service}</span>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </motion.div>
+
+                    {/* Benefits */}
+                    <motion.div
+                      initial={{ x: 50, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.25 }}
+                    >
+                      <h4 className="text-xl font-bold text-primary mb-4">Key Benefits</h4>
+                      <div className="space-y-3">
+                        {selectedPartner?.benefits?.map((benefit, index) => (
+                          <motion.div 
+                            key={index}
+                            className="flex items-center space-x-3"
+                            initial={{ x: 20, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ delay: 0.35 + index * 0.05 }}
+                          >
+                            <AppIcon name="Star" size={16} className="text-accent flex-shrink-0" />
+                            <span className="text-text-secondary">{benefit}</span>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </motion.div>
                   </div>
+
+                  {/* Description */}
+                  <motion.div 
+                    className="mt-6 p-4 sm:p-6 bg-surface rounded-xl sm:rounded-2xl"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <p className="text-text-secondary leading-relaxed">
+                      {selectedPartner?.description}. Our certified experts leverage this partnership to deliver 
+                      enterprise-grade solutions that drive measurable business outcomes. From implementation to 
+                      optimization, we ensure you get maximum value from your investment.
+                    </p>
+                  </motion.div>
                 </div>
-              </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );

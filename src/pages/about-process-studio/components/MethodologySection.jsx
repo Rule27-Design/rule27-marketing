@@ -1,12 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import AppIcon from '../../../components/AppIcon';
 
 const MethodologySection = () => {
   const [activePhase, setActivePhase] = useState(0);
   const [expandedStep, setExpandedStep] = useState(null);
   const [isInView, setIsInView] = useState(false);
+  const [hoveredPhase, setHoveredPhase] = useState(null);
   const sectionRef = useRef(null);
+  const processRef = useRef(null);
+  const inView = useInView(processRef, { once: true, margin: "-100px" });
 
   const methodology = [
     {
@@ -151,47 +154,125 @@ const MethodologySection = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const phaseVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15
+      }
+    }
+  };
+
+  const stepVariants = {
+    collapsed: { height: 0, opacity: 0 },
+    expanded: { 
+      height: "auto", 
+      opacity: 1,
+      transition: {
+        height: { type: "spring", stiffness: 100, damping: 15 },
+        opacity: { duration: 0.3 }
+      }
+    }
+  };
+
   return (
-    <section ref={sectionRef} className="py-12 sm:py-16 md:py-20 lg:py-24 bg-gradient-to-br from-surface via-white to-surface">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header - Mobile Optimized */}
+    <section ref={sectionRef} className="py-12 sm:py-16 md:py-20 lg:py-24 bg-gradient-to-br from-surface via-white to-surface relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 opacity-5">
+        {[...Array(3)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-64 h-64 bg-gradient-to-br from-accent to-primary rounded-full blur-3xl"
+            style={{
+              left: `${i * 40}%`,
+              top: `${i * 30}%`,
+            }}
+            animate={{
+              x: [0, 50, 0],
+              y: [0, -30, 0],
+              scale: [1, 1.2, 1],
+            }}
+            transition={{
+              duration: 15 + i * 5,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Section Header with Enhanced Animation */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.4, delay: 0.1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="text-center mb-8 sm:mb-12 lg:mb-16"
         >
-          <div className="inline-flex items-center space-x-2 bg-accent/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6">
+          <motion.div 
+            className="inline-flex items-center space-x-2 bg-accent/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
             <AppIcon name="Cog" size={16} className="text-accent" />
             <span className="text-accent font-semibold text-xs sm:text-sm">Our Methodology</span>
-          </div>
+          </motion.div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4 sm:mb-6">
-            The <span className="text-accent">Integrated Approach</span>
+            The <motion.span 
+              className="text-accent"
+              initial={{ opacity: 0, x: -20 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ delay: 0.2, duration: 0.4 }}
+            >Integrated Approach</motion.span>
           </h2>
-          <p className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4">
+          <motion.p 
+            className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4"
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
+            transition={{ delay: 0.3, duration: 0.4 }}
+          >
             Our battle-tested methodology seamlessly combines marketing strategy with technical execution. 
             One team, one process, delivering complete digital transformation.
-          </p>
+          </motion.p>
         </motion.div>
 
-        {/* Process Navigation - FIXED: Now with flex-wrap */}
+        {/* Enhanced Process Navigation */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.4, delay: 0.1 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
           className="flex flex-wrap justify-center gap-3 mb-8 sm:mb-12 lg:mb-16"
         >
           {methodology?.map((phase, index) => (
-            <button
+            <motion.button
               key={phase?.id}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.05 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setActivePhase(index)}
-              className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-semibold transition-all duration-300 text-sm sm:text-base ${
+              onMouseEnter={() => setHoveredPhase(index)}
+              onMouseLeave={() => setHoveredPhase(null)}
+              className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-semibold transition-all duration-300 text-sm sm:text-base relative overflow-hidden ${
                 activePhase === index
                   ? 'bg-gradient-to-r from-accent to-primary text-white shadow-lg transform scale-105'
                   : 'bg-white text-text-secondary hover:bg-accent/5 hover:text-accent shadow-md'
               }`}
             >
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+              {/* Animated background on hover */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-accent/20 to-primary/20"
+                initial={{ x: "-100%" }}
+                animate={{ x: hoveredPhase === index ? "0%" : "-100%" }}
+                transition={{ duration: 0.3 }}
+              />
+              
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 relative z-10 ${
                 activePhase === index ? 'bg-white/20' : 'bg-accent/10'
               }`}>
                 <AppIcon 
@@ -200,50 +281,111 @@ const MethodologySection = () => {
                   className={activePhase === index ? 'text-white' : 'text-accent'} 
                 />
               </div>
-              <span>Phase {index + 1}</span>
-            </button>
+              <span className="relative z-10">Phase {index + 1}</span>
+            </motion.button>
           ))}
         </motion.div>
 
-        {/* Active Phase Content - Mobile Optimized */}
+        {/* Enhanced Active Phase Content */}
         <AnimatePresence mode="wait">
           <motion.div
             key={activePhase}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
+            variants={phaseVariants}
+            initial="hidden"
+            animate="visible"
             exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.3 }}
-            className="bg-white rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-brand-elevation-lg overflow-hidden"
+            className="bg-white rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-brand-elevation-lg overflow-hidden relative"
           >
-            {/* Phase Header */}
-            <div className={`bg-gradient-to-r ${activeMethodology?.color} p-6 sm:p-8 text-white`}>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            {/* Animated gradient background */}
+            <motion.div
+              className={`absolute inset-0 bg-gradient-to-br ${activeMethodology?.color} opacity-5`}
+              animate={{
+                backgroundPosition: ["0% 0%", "100% 100%"],
+              }}
+              transition={{
+                duration: 10,
+                repeat: Infinity,
+                repeatType: "reverse",
+              }}
+            />
+
+            {/* Phase Header with Animation */}
+            <div className={`bg-gradient-to-r ${activeMethodology?.color} p-6 sm:p-8 text-white relative overflow-hidden`}>
+              <motion.div
+                className="absolute inset-0 bg-white/10"
+                animate={{
+                  x: ["-100%", "100%"],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+              />
+              
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative z-10">
                 <div className="flex items-center space-x-3 sm:space-x-4">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center">
+                  <motion.div 
+                    className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-sm"
+                    animate={{
+                      rotate: [0, 360],
+                    }}
+                    transition={{
+                      duration: 20,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  >
                     <AppIcon name={activeMethodology?.icon} size={24} className="text-white" />
-                  </div>
+                  </motion.div>
                   <div>
-                    <h3 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">{activeMethodology?.phase}</h3>
-                    <p className="text-base sm:text-xl opacity-90">{activeMethodology?.subtitle}</p>
+                    <motion.h3 
+                      className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2"
+                      initial={{ y: -20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.1 }}
+                    >
+                      {activeMethodology?.phase}
+                    </motion.h3>
+                    <motion.p 
+                      className="text-base sm:text-xl opacity-90"
+                      initial={{ y: -20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      {activeMethodology?.subtitle}
+                    </motion.p>
                   </div>
                 </div>
-                <div className="text-left sm:text-right">
+                <motion.div 
+                  className="text-left sm:text-right"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200, delay: 0.3 }}
+                >
                   <div className="text-xs sm:text-sm opacity-75">Duration</div>
                   <div className="text-base sm:text-lg font-semibold">{activeMethodology?.duration}</div>
-                </div>
+                </motion.div>
               </div>
             </div>
 
-            {/* Phase Content - Stack on mobile */}
-            <div className="p-6 sm:p-8">
+            {/* Phase Content with Enhanced Animations */}
+            <div className="p-6 sm:p-8 relative z-10">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-                {/* Steps */}
-                <div>
+                {/* Process Steps with Stagger Animation */}
+                <motion.div
+                  initial={{ x: -50, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
                   <h4 className="text-xl sm:text-2xl font-bold text-primary mb-4 sm:mb-6">Process Steps</h4>
                   <div className="space-y-3 sm:space-y-4">
                     {activeMethodology?.steps?.map((step, stepIndex) => (
-                      <div
+                      <motion.div
                         key={stepIndex}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.4 + stepIndex * 0.1 }}
                         className={`border rounded-lg sm:rounded-xl lg:rounded-2xl overflow-hidden transition-all duration-300 ${
                           expandedStep === stepIndex 
                             ? 'border-accent shadow-brand-md' 
@@ -255,26 +397,36 @@ const MethodologySection = () => {
                           className="w-full p-4 sm:p-5 lg:p-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors duration-300"
                         >
                           <div className="flex items-center space-x-3 sm:space-x-4">
-                            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
+                            <motion.div 
+                              className="w-6 h-6 sm:w-8 sm:h-8 bg-accent/10 rounded-full flex items-center justify-center flex-shrink-0"
+                              animate={expandedStep === stepIndex ? {
+                                scale: [1, 1.2, 1],
+                                backgroundColor: ["rgba(229, 62, 62, 0.1)", "rgba(229, 62, 62, 0.2)", "rgba(229, 62, 62, 0.1)"],
+                              } : {}}
+                              transition={{ duration: 0.5 }}
+                            >
                               <span className="text-accent font-semibold text-xs sm:text-sm">{stepIndex + 1}</span>
-                            </div>
+                            </motion.div>
                             <h5 className="font-bold text-primary text-sm sm:text-base">{step?.title}</h5>
                           </div>
-                          <AppIcon 
-                            name="ChevronDown" 
-                            size={20} 
-                            className={`text-text-secondary transition-transform duration-300 flex-shrink-0 ${
-                              expandedStep === stepIndex ? 'rotate-180' : ''
-                            }`}
-                          />
+                          <motion.div
+                            animate={{ rotate: expandedStep === stepIndex ? 180 : 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <AppIcon 
+                              name="ChevronDown" 
+                              size={20} 
+                              className={`text-text-secondary flex-shrink-0`}
+                            />
+                          </motion.div>
                         </button>
                         <AnimatePresence>
                           {expandedStep === stepIndex && (
                             <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.3 }}
+                              variants={stepVariants}
+                              initial="collapsed"
+                              animate="expanded"
+                              exit="collapsed"
                               className="overflow-hidden"
                             >
                               <div className="px-4 sm:px-6 pb-4 sm:pb-6">
@@ -283,12 +435,20 @@ const MethodologySection = () => {
                                   <h6 className="font-semibold text-primary mb-2 text-sm sm:text-base">Tools & Methods:</h6>
                                   <div className="flex flex-wrap gap-1.5 sm:gap-2">
                                     {step?.tools?.map((tool, toolIndex) => (
-                                      <span
+                                      <motion.span
                                         key={toolIndex}
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        transition={{ 
+                                          type: "spring",
+                                          stiffness: 200,
+                                          delay: toolIndex * 0.05 
+                                        }}
+                                        whileHover={{ scale: 1.05 }}
                                         className="px-2 sm:px-3 py-1 bg-accent/10 text-accent text-xs sm:text-sm font-medium rounded-full"
                                       >
                                         {tool}
-                                      </span>
+                                      </motion.span>
                                     ))}
                                   </div>
                                 </div>
@@ -296,51 +456,93 @@ const MethodologySection = () => {
                             </motion.div>
                           )}
                         </AnimatePresence>
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
-                </div>
+                </motion.div>
 
-                {/* Deliverables & Collaboration */}
-                <div className="mt-6 lg:mt-0">
+                {/* Deliverables & Collaboration with Animation */}
+                <motion.div 
+                  className="mt-6 lg:mt-0"
+                  initial={{ x: 50, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.35 }}
+                >
                   {/* Deliverables */}
                   <div className="mb-6 sm:mb-8">
                     <h4 className="text-xl sm:text-2xl font-bold text-primary mb-4 sm:mb-6">Key Deliverables</h4>
-                    <div className="bg-surface rounded-lg sm:rounded-xl lg:rounded-2xl p-4 sm:p-6">
+                    <motion.div 
+                      className="bg-surface rounded-lg sm:rounded-xl lg:rounded-2xl p-4 sm:p-6"
+                      whileHover={{ scale: 1.02 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
                       <ul className="space-y-2 sm:space-y-3">
                         {activeMethodology?.deliverables?.map((deliverable, index) => (
-                          <li key={index} className="flex items-center space-x-3">
-                            <AppIcon name="CheckCircle" size={20} className="text-accent flex-shrink-0" />
+                          <motion.li 
+                            key={index} 
+                            className="flex items-center space-x-3"
+                            initial={{ x: 20, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ delay: 0.5 + index * 0.05 }}
+                          >
+                            <motion.div
+                              animate={{
+                                scale: [1, 1.2, 1],
+                              }}
+                              transition={{
+                                duration: 2,
+                                repeat: Infinity,
+                                delay: index * 0.2,
+                              }}
+                            >
+                              <AppIcon name="CheckCircle" size={20} className="text-accent flex-shrink-0" />
+                            </motion.div>
                             <span className="text-text-secondary font-medium text-sm sm:text-base">{deliverable}</span>
-                          </li>
+                          </motion.li>
                         ))}
                       </ul>
-                    </div>
+                    </motion.div>
                   </div>
 
                   {/* Collaboration */}
                   <div>
                     <h4 className="text-xl sm:text-2xl font-bold text-primary mb-4 sm:mb-6">Client Collaboration</h4>
-                    <div className="bg-gradient-to-r from-accent/5 to-primary/5 rounded-lg sm:rounded-xl lg:rounded-2xl p-4 sm:p-6">
+                    <motion.div 
+                      className="bg-gradient-to-r from-accent/5 to-primary/5 rounded-lg sm:rounded-xl lg:rounded-2xl p-4 sm:p-6"
+                      whileHover={{ scale: 1.02 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
                       <div className="flex items-start space-x-3 sm:space-x-4">
-                        <AppIcon name="Users" size={24} className="text-accent mt-1 flex-shrink-0" />
+                        <motion.div
+                          animate={{
+                            rotate: [0, 360],
+                          }}
+                          transition={{
+                            duration: 20,
+                            repeat: Infinity,
+                            ease: "linear",
+                          }}
+                        >
+                          <AppIcon name="Users" size={24} className="text-accent mt-1 flex-shrink-0" />
+                        </motion.div>
                         <p className="text-text-secondary leading-relaxed text-sm sm:text-base">
                           {activeMethodology?.collaboration}
                         </p>
                       </div>
-                    </div>
+                    </motion.div>
                   </div>
-                </div>
+                </motion.div>
               </div>
             </div>
           </motion.div>
         </AnimatePresence>
 
-        {/* Process Flow Visualization - Mobile Optimized */}
+        {/* Enhanced Process Flow Visualization */}
         <motion.div
+          ref={processRef}
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.4, delay: 0.3 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
           className="mt-8 sm:mt-12 lg:mt-16"
         >
           <h3 className="text-xl sm:text-2xl font-bold text-center text-primary mb-6 sm:mb-8">End-to-End Digital Journey</h3>
@@ -348,19 +550,40 @@ const MethodologySection = () => {
             <div className="flex items-center space-x-2 sm:space-x-4 overflow-x-auto pb-4">
               {methodology?.map((phase, index) => (
                 <React.Fragment key={phase?.id}>
-                  <div
-                    className={`flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 ${
+                  <motion.div
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={inView ? { scale: 1, rotate: 0 } : {}}
+                    transition={{ 
+                      type: "spring",
+                      stiffness: 100,
+                      delay: index * 0.1 
+                    }}
+                    whileHover={{ scale: 1.1 }}
+                    className={`flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 cursor-pointer ${
                       index <= activePhase 
                         ? 'bg-accent text-white shadow-brand-md' 
                         : 'bg-gray-200 text-text-secondary'
                     }`}
+                    onClick={() => setActivePhase(index)}
                   >
                     <AppIcon name={phase?.icon} size={20} />
-                  </div>
+                  </motion.div>
                   {index < methodology?.length - 1 && (
-                    <div className={`w-6 sm:w-8 h-1 transition-colors duration-300 ${
-                      index < activePhase ? 'bg-accent' : 'bg-gray-200'
-                    }`}></div>
+                    <motion.div 
+                      className="w-6 sm:w-8 h-1 transition-colors duration-300"
+                      initial={{ scaleX: 0 }}
+                      animate={inView ? { scaleX: 1 } : {}}
+                      transition={{ 
+                        duration: 0.5,
+                        delay: index * 0.1 + 0.2
+                      }}
+                      style={{
+                        background: index < activePhase 
+                          ? 'linear-gradient(90deg, #E53E3E 0%, #E53E3E 100%)' 
+                          : '#E5E7EB',
+                        originX: 0
+                      }}
+                    />
                   )}
                 </React.Fragment>
               ))}
