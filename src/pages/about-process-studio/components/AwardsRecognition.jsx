@@ -4,6 +4,7 @@ import AppIcon from '../../../components/AppIcon';
 
 const AwardsRecognition = () => {
   const [activeCategory, setActiveCategory] = useState('certifications');
+  const [expandedCertCategory, setExpandedCertCategory] = useState(null);
   const [isInView, setIsInView] = useState(false);
   const sectionRef = useRef(null);
 
@@ -50,68 +51,136 @@ const AwardsRecognition = () => {
         color: 'from-green-500 to-teal-500'
       }
     ],
-    certifications: [
-      {
-        id: 1,
-        title: 'Salesforce Marketing Cloud Certified',
-        organization: 'Salesforce',
-        year: 'Current',
-        category: 'Marketing Automation',
-        description: 'Email Specialist, Engagement Consultant, Engagement Developer, Account Engagement Consultant certifications.',
+    certifications: {
+      salesforce: {
+        platform: 'Salesforce',
         icon: 'Cloud',
-        color: 'from-blue-500 to-cyan-500'
+        color: 'from-blue-500 to-cyan-500',
+        count: 12,
+        certifications: [
+          'Administrator',
+          'Platform Developer I',
+          'Platform Developer II',
+          'Data Architect',
+          'Marketing Cloud Email Specialist',
+          'Marketing Cloud Engagement Consultant',
+          'Marketing Cloud Engagement Developer',
+          'Marketing Cloud Account Engagement Consultant',
+          'Service Cloud Consultant',
+          'Sales Cloud Consultant',
+          'Experience Cloud Consultant',
+          'Platform App Builder'
+        ]
       },
-      {
-        id: 2,
-        title: 'AWS Certified Solutions',
-        organization: 'Amazon Web Services',
-        year: 'Current',
-        category: 'Cloud Development',
-        description: 'AWS Certified Developer Associate & DevOps Engineer Professional certifications.',
+      aws: {
+        platform: 'Amazon Web Services',
         icon: 'Server',
-        color: 'from-orange-500 to-red-500'
+        color: 'from-orange-500 to-red-500',
+        count: 4,
+        certifications: [
+          'Solutions Architect Associate',
+          'Developer Associate',
+          'DevOps Engineer Professional',
+          'Solutions Architect Professional'
+        ]
       },
-      {
-        id: 3,
-        title: 'Google Cloud Partner',
-        organization: 'Google',
-        year: 'Current',
-        category: 'Cloud & Marketing',
-        description: 'Professional Cloud Developer & Digital Leader certifications. Premier Partner for marketing solutions.',
+      google: {
+        platform: 'Google',
         icon: 'Globe',
-        color: 'from-blue-600 to-green-600'
+        color: 'from-blue-600 to-green-600',
+        count: 8,
+        certifications: [
+          'Google Ads Search',
+          'Google Ads Display',
+          'Google Ads Video',
+          'Google Ads Shopping',
+          'Google Analytics Individual Qualification',
+          'Google Analytics 4',
+          'Professional Cloud Developer',
+          'Cloud Digital Leader'
+        ]
       },
-      {
-        id: 4,
-        title: 'Microsoft Azure Certified',
-        organization: 'Microsoft',
-        year: 'Current',
-        category: 'Enterprise Solutions',
-        description: 'Azure Developer Associate certification for enterprise cloud solutions.',
+      microsoft: {
+        platform: 'Microsoft Azure',
         icon: 'Layers',
-        color: 'from-indigo-600 to-blue-600'
+        color: 'from-indigo-600 to-blue-600',
+        count: 3,
+        certifications: [
+          'Azure Developer Associate',
+          'Azure Administrator Associate',
+          'Azure Solutions Architect Expert'
+        ]
       },
-      {
-        id: 5,
-        title: 'HubSpot Solutions Partner',
-        organization: 'HubSpot',
-        year: 'Current',
-        category: 'Marketing & CRM',
-        description: 'Certified in Marketing Software, Inbound Marketing, CMS, RevOps across multiple team members.',
+      hubspot: {
+        platform: 'HubSpot',
         icon: 'Target',
-        color: 'from-orange-600 to-red-600'
+        color: 'from-orange-600 to-red-600',
+        count: 9,
+        certifications: [
+          'Marketing Software',
+          'Inbound Marketing',
+          'Content Marketing',
+          'Email Marketing',
+          'Social Media Marketing',
+          'CMS Implementation',
+          'Sales Software',
+          'Service Hub Software',
+          'Revenue Operations'
+        ]
       },
-      {
-        id: 6,
-        title: 'Shopify Partner',
-        organization: 'Shopify',
-        year: 'Current',
-        category: 'E-commerce',
-        description: 'Service Partner with Verified Skills badges for e-commerce development and optimization.',
+      adobe: {
+        platform: 'Adobe',
+        icon: 'Image',
+        color: 'from-red-600 to-purple-600',
+        count: 5,
+        certifications: [
+          'Adobe Experience Manager Sites Developer',
+          'Adobe Analytics Developer',
+          'Adobe Target Business Practitioner',
+          'Adobe Campaign Developer',
+          'Adobe Creative Cloud Professional'
+        ]
+      },
+      shopify: {
+        platform: 'Shopify',
         icon: 'ShoppingCart',
-        color: 'from-green-600 to-teal-600'
+        color: 'from-green-600 to-teal-600',
+        count: 3,
+        certifications: [
+          'Shopify Partner Academy',
+          'Shopify Plus Certified',
+          'Shopify App Development'
+        ]
+      },
+      meta: {
+        platform: 'Meta',
+        icon: 'Share2',
+        color: 'from-blue-700 to-indigo-600',
+        count: 4,
+        certifications: [
+          'Meta Certified Digital Marketing Associate',
+          'Meta Certified Media Planning Professional',
+          'Meta Certified Media Buying Professional',
+          'Meta Certified Creative Strategy Professional'
+        ]
+      },
+      other: {
+        platform: 'Additional Platforms',
+        icon: 'Award',
+        color: 'from-purple-600 to-pink-600',
+        count: 8,
+        certifications: [
+          'Klaviyo Partner Certification',
+          'Braze Certified Practitioner',
+          'Docker Certified Associate',
+          'Certified Kubernetes Administrator',
+          'Snowflake SnowPro Core',
+          'Mixpanel Product Analytics',
+          'Segment Customer Data Platform',
+          'Netlify Jamstack Certification'
+        ]
       }
-    ],
+    },
     media: [
       {
         id: 1,
@@ -119,7 +188,7 @@ const AwardsRecognition = () => {
         organization: 'Forbes Magazine',
         year: '2024',
         category: 'Industry Feature',
-        description: 'Featured story on how Rule27 Design combines marketing excellence with technical innovation.',
+        description: 'Featured story on how Rule27 combines marketing excellence with technical innovation.',
         icon: 'FileText',
         color: 'from-indigo-500 to-purple-600'
       },
@@ -142,27 +211,20 @@ const AwardsRecognition = () => {
         description: 'Case study on helping Fortune 500 companies with end-to-end digital transformation.',
         icon: 'Monitor',
         color: 'from-orange-600 to-red-600'
-      },
-      {
-        id: 4,
-        title: 'MarTech: Integration Excellence',
-        organization: 'MarTech Today',
-        year: '2023',
-        category: 'Technology',
-        description: 'Recognized for seamless integration of marketing automation with custom development.',
-        icon: 'Link',
-        color: 'from-purple-600 to-pink-600'
       }
     ]
   };
 
+  // Calculate total certifications
+  const totalCertifications = Object.values(recognitionData.certifications).reduce(
+    (sum, platform) => sum + platform.count, 0
+  );
+
   const categories = [
-    { id: 'certifications', label: 'Certifications', icon: 'Shield', count: recognitionData?.certifications?.length },
+    { id: 'certifications', label: 'Certifications', icon: 'Shield', count: totalCertifications },
     { id: 'awards', label: 'Awards', icon: 'Award', count: recognitionData?.awards?.length },
     { id: 'media', label: 'Media', icon: 'Newspaper', count: recognitionData?.media?.length }
   ];
-
-  const activeData = recognitionData?.[activeCategory] || [];
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -204,8 +266,8 @@ const AwardsRecognition = () => {
             Industry <span className="text-accent">Recognition</span>
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4">
-            Our dual expertise in marketing and development has earned us recognition from 
-            industry leaders. We're certified across all major platforms, making us your complete digital partner.
+            With {totalCertifications}+ certifications across 9 major platforms, we're not just certified—we're 
+            comprehensively equipped to handle every aspect of your digital transformation.
           </p>
         </motion.div>
 
@@ -239,52 +301,117 @@ const AwardsRecognition = () => {
           ))}
         </motion.div>
 
-        {/* Recognition Grid - Mobile Optimized */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.4, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 lg:mb-16"
-        >
-          {activeData?.map((item, index) => (
-            <motion.div
-              key={item?.id}
-              initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
-              animate={isInView ? { opacity: 1, x: 0 } : {}}
-              transition={{ duration: 0.3, delay: 0.05 * index }}
-              className="group"
-            >
-              <div className="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-brand-md hover:shadow-brand-elevation-lg transition-all duration-500 group-hover:-translate-y-2">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-4 sm:mb-6">
-                  <div className={`w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r ${item?.color} rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                    <AppIcon name={item?.icon} size={24} className="text-white" />
+        {/* Content Display */}
+        {activeCategory === 'certifications' ? (
+          // Certifications Grid Display
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12 lg:mb-16"
+          >
+            {Object.entries(recognitionData.certifications).map(([key, platform], index) => (
+              <motion.div
+                key={key}
+                initial={{ opacity: 0, y: 20 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.3, delay: 0.05 * index }}
+                className="group"
+              >
+                <div className="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-brand-md hover:shadow-brand-elevation-lg transition-all duration-500 group-hover:-translate-y-2 h-full">
+                  {/* Platform Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r ${platform?.color} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                        <AppIcon name={platform?.icon} size={24} className="text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg sm:text-xl font-bold text-primary group-hover:text-accent transition-colors duration-300">
+                          {platform?.platform}
+                        </h3>
+                        <p className="text-accent font-semibold text-sm">{platform?.count} Certifications</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setExpandedCertCategory(expandedCertCategory === key ? null : key)}
+                      className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center hover:bg-accent hover:text-white transition-all duration-300"
+                    >
+                      <AppIcon 
+                        name={expandedCertCategory === key ? "ChevronUp" : "ChevronDown"} 
+                        size={16} 
+                        className={expandedCertCategory === key ? "text-accent" : "text-text-secondary"}
+                      />
+                    </button>
                   </div>
-                  <div className="text-right">
-                    <span className="inline-block px-2 sm:px-3 py-1 bg-accent/10 text-accent rounded-full text-xs sm:text-sm font-semibold">
-                      {item?.year}
+
+                  {/* Certification List - Expandable */}
+                  <div className={`space-y-1.5 overflow-hidden transition-all duration-500 ${
+                    expandedCertCategory === key ? 'max-h-96' : 'max-h-20'
+                  }`}>
+                    {platform?.certifications.slice(0, expandedCertCategory === key ? undefined : 3).map((cert, certIndex) => (
+                      <div key={certIndex} className="flex items-center space-x-2">
+                        <AppIcon name="CheckCircle" size={14} className="text-accent flex-shrink-0" />
+                        <span className="text-text-secondary text-sm">{cert}</span>
+                      </div>
+                    ))}
+                    {!expandedCertCategory && platform?.certifications.length > 3 && (
+                      <p className="text-accent text-sm font-medium mt-2">
+                        +{platform?.certifications.length - 3} more...
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        ) : (
+          // Awards or Media Grid Display
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 lg:mb-16"
+          >
+            {recognitionData?.[activeCategory]?.map((item, index) => (
+              <motion.div
+                key={item?.id}
+                initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
+                animate={isInView ? { opacity: 1, x: 0 } : {}}
+                transition={{ duration: 0.3, delay: 0.05 * index }}
+                className="group"
+              >
+                <div className="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-brand-md hover:shadow-brand-elevation-lg transition-all duration-500 group-hover:-translate-y-2">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4 sm:mb-6">
+                    <div className={`w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r ${item?.color} rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                      <AppIcon name={item?.icon} size={24} className="text-white" />
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-block px-2 sm:px-3 py-1 bg-accent/10 text-accent rounded-full text-xs sm:text-sm font-semibold">
+                        {item?.year}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="mb-3 sm:mb-4">
+                    <h3 className="text-lg sm:text-xl font-bold text-primary mb-1 sm:mb-2 group-hover:text-accent transition-colors duration-300">
+                      {item?.title}
+                    </h3>
+                    <p className="text-accent font-semibold mb-1 sm:mb-2 text-sm sm:text-base">{item?.organization}</p>
+                    <span className="inline-block px-2 sm:px-3 py-1 bg-surface text-text-secondary rounded-full text-xs sm:text-sm">
+                      {item?.category}
                     </span>
                   </div>
-                </div>
 
-                {/* Content */}
-                <div className="mb-3 sm:mb-4">
-                  <h3 className="text-lg sm:text-xl font-bold text-primary mb-1 sm:mb-2 group-hover:text-accent transition-colors duration-300">
-                    {item?.title}
-                  </h3>
-                  <p className="text-accent font-semibold mb-1 sm:mb-2 text-sm sm:text-base">{item?.organization}</p>
-                  <span className="inline-block px-2 sm:px-3 py-1 bg-surface text-text-secondary rounded-full text-xs sm:text-sm">
-                    {item?.category}
-                  </span>
+                  <p className="text-text-secondary leading-relaxed group-hover:text-primary transition-colors duration-300 text-sm sm:text-base">
+                    {item?.description}
+                  </p>
                 </div>
-
-                <p className="text-text-secondary leading-relaxed group-hover:text-primary transition-colors duration-300 text-sm sm:text-base">
-                  {item?.description}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
 
         {/* Stats Summary - Mobile Optimized */}
         <motion.div
@@ -296,9 +423,9 @@ const AwardsRecognition = () => {
           <h3 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Digital Powerhouse by the Numbers</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {[
-              { number: '10+', label: 'Platform Certifications', icon: 'Shield' },
-              { number: '25+', label: 'Awards Won', icon: 'Award' },
-              { number: '8+', label: 'Strategic Partners', icon: 'Network' },
+              { number: totalCertifications + '+', label: 'Platform Certifications', icon: 'Shield' },
+              { number: '9+', label: 'Platform Partnerships', icon: 'Network' },
+              { number: '25+', label: 'Industry Awards', icon: 'Award' },
               { number: '11+', label: 'Years Excellence', icon: 'TrendingUp' }
             ]?.map((stat, index) => (
               <div key={index} className="text-center group">
@@ -312,17 +439,17 @@ const AwardsRecognition = () => {
           </div>
           <div className="mt-8 sm:mt-12 max-w-3xl mx-auto">
             <p className="text-base sm:text-lg md:text-xl opacity-90">
-              "Our certifications and partnerships aren't just badges—they're proof that we deliver 
-              enterprise-grade solutions with the creativity of a boutique agency and the technical 
-              excellence of a development powerhouse."
+              "Our extensive certifications aren't just badges—they're proof of our commitment to mastery 
+              across every platform. From Salesforce Admin to Data Architect, from AWS Solutions to DevOps, 
+              we have the depth and breadth to handle any challenge."
             </p>
             <div className="flex items-center justify-center space-x-3 mt-4 sm:mt-6">
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-full flex items-center justify-center">
                 <span className="font-bold text-base sm:text-lg">27</span>
               </div>
               <div className="text-left">
-                <div className="font-semibold text-sm sm:text-base">Rule27 Design Leadership Team</div>
-                <div className="text-xs sm:text-sm opacity-70">Marketing & Development Excellence</div>
+                <div className="font-semibold text-sm sm:text-base">Rule27 Leadership Team</div>
+                <div className="text-xs sm:text-sm opacity-70">Certified Across Every Platform</div>
               </div>
             </div>
           </div>
