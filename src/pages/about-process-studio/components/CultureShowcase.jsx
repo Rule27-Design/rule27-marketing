@@ -12,50 +12,74 @@ const CultureShowcase = () => {
   const coreValues = [
     {
       id: 1,
-      title: 'Dual Excellence',
-      description: 'We excel at both creative marketing and technical development—no compromises, no outsourcing.',
-      icon: 'Layers',
+      title: 'Consistency & Excellence',
+      description: 'We deliver proven quality across both marketing and development. Every project, every time, excellence is our standard.',
+      icon: 'Award',
       color: 'from-accent to-red-400',
       examples: [
-        'Marketing campaigns backed by custom tech',
-        'Development projects with marketing strategy',
-        'Integrated solutions from one trusted partner'
+        'Proven track record across 150+ projects',
+        'Certified expertise in 10+ platforms',
+        'Same high standards for marketing and development'
       ]
     },
     {
       id: 2,
-      title: 'Certified Expertise',
-      description: 'Our team holds certifications across 10+ platforms—from Salesforce to AWS, HubSpot to Azure.',
+      title: 'Accountability',
+      description: 'We stand behind every line of code and every campaign we create. If something needs fixing, we own it and we fix it.',
       icon: 'Shield',
       color: 'from-blue-500 to-purple-400',
       examples: [
-        'Platform-certified professionals',
-        'Continuous learning and certification',
-        'Best practices from every ecosystem'
+        'We fix issues, no questions asked',
+        'Clear ownership of every deliverable',
+        'Post-launch support and optimization included'
       ]
     },
     {
       id: 3,
-      title: 'Innovation First',
-      description: 'We don\'t just follow trends—we create them by combining marketing creativity with technical innovation.',
-      icon: 'Lightbulb',
+      title: 'Reliability',
+      description: 'Day or night, campaign launch or server emergency, we\'re the partner you can always count on.',
+      icon: 'Clock',
       color: 'from-green-500 to-teal-400',
       examples: [
-        'AI-powered marketing automation',
-        'Custom solutions for unique challenges',
-        'R&D lab for emerging technologies'
+        '24/7 support for critical issues',
+        'On-time delivery, every time',
+        'Consistent team you know and trust'
       ]
     },
     {
       id: 4,
-      title: 'Client Partnership',
-      description: 'We\'re not vendors—we\'re partners. Your success is our success, measured and celebrated together.',
-      icon: 'Handshake',
+      title: 'Transparency',
+      description: 'No surprises, no hidden agendas. We believe in open, honest communication about timelines, budgets, and challenges.',
+      icon: 'Eye',
       color: 'from-orange-500 to-yellow-400',
       examples: [
-        'Transparent collaboration at every step',
-        'Shared KPIs and success metrics',
-        'Long-term strategic relationships'
+        'Clear project visibility and reporting',
+        'Honest feedback and recommendations',
+        'Open communication about challenges and solutions'
+      ]
+    },
+    {
+      id: 5,
+      title: 'Innovation',
+      description: 'We combine marketing creativity with technical innovation to deliver solutions that set you apart from the competition.',
+      icon: 'Lightbulb',
+      color: 'from-purple-500 to-pink-400',
+      examples: [
+        'Cutting-edge marketing automation',
+        'Custom technical solutions',
+        'Always learning, always improving'
+      ]
+    },
+    {
+      id: 6,
+      title: 'Partnership',
+      description: 'We\'re not just another vendor. We\'re invested in your success as much as you are.',
+      icon: 'Handshake',
+      color: 'from-indigo-500 to-blue-500',
+      examples: [
+        'Strategic guidance beyond the project',
+        'Shared success metrics and KPIs',
+        'Long-term relationships, not transactions'
       ]
     }
   ];
@@ -157,7 +181,7 @@ const CultureShowcase = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveValue((prev) => (prev + 1) % coreValues?.length);
-    }, 5000);
+    }, 6000);
 
     return () => clearInterval(interval);
   }, []);
@@ -180,8 +204,8 @@ const CultureShowcase = () => {
             Where <span className="text-accent">Excellence</span> Thrives
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4">
-            Our culture brings together the best of both worlds—creative marketing brilliance and technical 
-            development excellence—creating an environment where innovation has no limits.
+            Our core values have guided us from day one. These principles, combined with our dual expertise 
+            in marketing and development, create a culture where both creativity and technical excellence flourish.
           </p>
         </motion.div>
 
@@ -192,22 +216,21 @@ const CultureShowcase = () => {
           transition={{ duration: 0.4, delay: 0.1 }}
           className="mb-12 sm:mb-16 lg:mb-20"
         >
-          <h3 className="text-2xl sm:text-3xl font-bold text-center text-primary mb-8 sm:mb-12">Our Core Values</h3>
-          
           {/* Values Navigation - FIXED: Already has flex-wrap, keeping consistency */}
           <div className="flex flex-wrap justify-center gap-3 mb-8 sm:mb-12">
             {coreValues?.map((value, index) => (
               <button
                 key={value?.id}
                 onClick={() => setActiveValue(index)}
-                className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-semibold transition-all duration-300 text-sm sm:text-base min-w-[140px] sm:min-w-auto ${
+                className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-semibold transition-all duration-300 text-sm sm:text-base ${
                   activeValue === index
                     ? `bg-gradient-to-r ${value?.color} text-white shadow-lg transform scale-105`
                     : 'bg-surface text-text-secondary hover:bg-accent/5 hover:text-accent'
                 }`}
               >
                 <AppIcon name={value?.icon} size={16} className="flex-shrink-0" />
-                <span>{value?.title.split(' ')[0]}</span>
+                <span className="hidden sm:inline">{value?.title.split(' ')[0]}</span>
+                <span className="sm:hidden">{value?.title.split(' ')[0]}</span>
               </button>
             ))}
           </div>
