@@ -1,136 +1,125 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import AppIcon from '../../../components/AppIcon';
-import Button from '../../../components/ui/Button';
 
-const CultureShowcase = () => {
-  const [activeValue, setActiveValue] = useState(0);
+const MethodologySection = () => {
+  const [activePhase, setActivePhase] = useState(0);
+  const [expandedStep, setExpandedStep] = useState(null);
   const [isInView, setIsInView] = useState(false);
-  const [selectedMedia, setSelectedMedia] = useState(null);
   const sectionRef = useRef(null);
 
-  const coreValues = [
+  const methodology = [
     {
       id: 1,
-      title: 'Dual Excellence',
-      description: 'We excel at both creative marketing and technical development—no compromises, no outsourcing.',
-      icon: 'Layers',
+      phase: 'Discovery & Strategy',
+      subtitle: 'Understanding Your Complete Digital Needs',
+      icon: 'Search',
       color: 'from-accent to-red-400',
-      examples: [
-        'Marketing campaigns backed by custom tech',
-        'Development projects with marketing strategy',
-        'Integrated solutions from one trusted partner'
-      ]
+      duration: '1-2 weeks',
+      steps: [
+        { 
+          title: 'Business & Technical Audit', 
+          description: 'We analyze your current marketing performance and technical infrastructure to identify opportunities.',
+          tools: ['Marketing Analytics Review', 'Technical Stack Assessment', 'Competitor Analysis']
+        },
+        { 
+          title: 'Platform & Integration Planning', 
+          description: 'Mapping out the ideal combination of marketing platforms and technical solutions for your goals.',
+          tools: ['Platform Selection', 'Integration Architecture', 'Data Flow Mapping']
+        },
+        { 
+          title: 'Strategic Roadmap Development', 
+          description: 'Creating a unified strategy that aligns marketing objectives with technical capabilities.',
+          tools: ['Marketing Strategy', 'Technical Requirements', 'Timeline Planning']
+        }
+      ],
+      deliverables: ['Digital Strategy Document', 'Platform Recommendations', 'Project Roadmap'],
+      collaboration: 'Stakeholder workshops, discovery sessions, and transparent planning'
     },
     {
       id: 2,
-      title: 'Certified Expertise',
-      description: 'Our team holds certifications across 10+ platforms—from Salesforce to AWS, HubSpot to Azure.',
-      icon: 'Shield',
-      color: 'from-blue-500 to-purple-400',
-      examples: [
-        'Platform-certified professionals',
-        'Continuous learning and certification',
-        'Best practices from every ecosystem'
-      ]
-    },
-    {
-      id: 3,
-      title: 'Innovation First',
-      description: 'We don\'t just follow trends—we create them by combining marketing creativity with technical innovation.',
-      icon: 'Lightbulb',
-      color: 'from-green-500 to-teal-400',
-      examples: [
-        'AI-powered marketing automation',
-        'Custom solutions for unique challenges',
-        'R&D lab for emerging technologies'
-      ]
-    },
-    {
-      id: 4,
-      title: 'Client Partnership',
-      description: 'We\'re not vendors—we\'re partners. Your success is our success, measured and celebrated together.',
-      icon: 'Handshake',
+      phase: 'Design & Architecture',
+      subtitle: 'Creating the Blueprint for Success',
+      icon: 'Palette',
       color: 'from-orange-500 to-yellow-400',
-      examples: [
-        'Transparent collaboration at every step',
-        'Shared KPIs and success metrics',
-        'Long-term strategic relationships'
-      ]
-    }
-  ];
-
-  const cultureMedia = [
-    {
-      id: 1,
-      type: 'image',
-      title: 'War Room Sessions',
-      description: 'Where marketing strategy meets technical architecture in collaborative planning.',
-      category: 'collaboration',
-      icon: 'Users',
-      imageUrl: 'https://images.unsplash.com/photo-1606857521015-7f9fcf423740?w=400&h=300&fit=crop',
-      color: 'from-blue-500 to-purple-500'
-    },
-    {
-      id: 2,
-      type: 'image',
-      title: 'Certification Celebrations',
-      description: 'Celebrating new platform certifications—our commitment to continuous excellence.',
-      category: 'growth',
-      icon: 'Award',
-      imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=300&fit=crop',
-      color: 'from-green-500 to-teal-500'
+      duration: '2-3 weeks',
+      steps: [
+        { 
+          title: 'Creative Concept Development', 
+          description: 'Designing compelling brand experiences and marketing campaigns that resonate with your audience.',
+          tools: ['Brand Design', 'Campaign Creative', 'UX/UI Design']
+        },
+        { 
+          title: 'Technical Architecture Design', 
+          description: 'Planning scalable, secure infrastructure and development frameworks.',
+          tools: ['Cloud Architecture', 'API Design', 'Security Planning']
+        },
+        { 
+          title: 'Marketing Automation Blueprints', 
+          description: 'Designing automated workflows that nurture leads and drive conversions.',
+          tools: ['Workflow Design', 'Lead Scoring Models', 'Customer Journey Mapping']
+        }
+      ],
+      deliverables: ['Design Systems', 'Technical Architecture', 'Automation Workflows'],
+      collaboration: 'Design reviews, technical planning sessions, and iterative refinement'
     },
     {
       id: 3,
-      type: 'image',
-      title: 'Marketing Meets Dev',
-      description: 'Our unique culture where creatives and developers work side by side.',
-      category: 'culture',
-      icon: 'Heart',
-      imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
-      color: 'from-accent to-red-500'
+      phase: 'Build & Configure',
+      subtitle: 'Bringing Strategy to Life',
+      icon: 'Code',
+      color: 'from-green-500 to-teal-400',
+      duration: '4-8 weeks',
+      steps: [
+        { 
+          title: 'Platform Implementation', 
+          description: 'Setting up and configuring marketing platforms like Salesforce, HubSpot, and Shopify.',
+          tools: ['CRM Setup', 'Marketing Automation', 'E-commerce Configuration']
+        },
+        { 
+          title: 'Custom Development', 
+          description: 'Building custom applications, integrations, and features using certified expertise.',
+          tools: ['Full-Stack Development', 'API Integration', 'Cloud Deployment']
+        },
+        { 
+          title: 'Quality Assurance & Testing', 
+          description: 'Rigorous testing of both marketing systems and technical implementations.',
+          tools: ['Campaign Testing', 'Performance Testing', 'Security Audits']
+        }
+      ],
+      deliverables: ['Configured Platforms', 'Custom Applications', 'Testing Documentation'],
+      collaboration: 'Sprint reviews, continuous feedback, and agile development'
     },
     {
       id: 4,
-      type: 'image',
-      title: 'Client Success Stories',
-      description: 'Celebrating client wins—from campaign launches to platform deployments.',
-      category: 'success',
-      icon: 'TrendingUp',
-      imageUrl: 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=400&h=300&fit=crop',
-      color: 'from-yellow-500 to-orange-500'
-    },
-    {
-      id: 5,
-      type: 'image',
-      title: 'Platform Training',
-      description: 'Weekly sessions on new platforms—from Salesforce to Shopify, AWS to Adobe.',
-      category: 'learning',
-      icon: 'BookOpen',
-      imageUrl: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&h=300&fit=crop',
-      color: 'from-purple-500 to-pink-500'
-    },
-    {
-      id: 6,
-      type: 'image',
-      title: 'Innovation Lab',
-      description: 'Testing new marketing tech and development frameworks before anyone else.',
-      category: 'innovation',
-      icon: 'Cpu',
-      imageUrl: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400&h=300&fit=crop',
-      color: 'from-indigo-500 to-blue-500'
+      phase: 'Launch & Optimize',
+      subtitle: 'Driving Continuous Success',
+      icon: 'Rocket',
+      color: 'from-blue-500 to-purple-400',
+      duration: 'Ongoing',
+      steps: [
+        { 
+          title: 'Coordinated Launch', 
+          description: 'Seamless deployment of marketing campaigns and technical solutions.',
+          tools: ['Campaign Launch', 'Deployment Management', 'Go-Live Support']
+        },
+        { 
+          title: 'Performance Monitoring', 
+          description: 'Real-time tracking of marketing metrics and technical performance.',
+          tools: ['Analytics Dashboards', 'Performance Monitoring', 'A/B Testing']
+        },
+        { 
+          title: 'Continuous Optimization', 
+          description: 'Ongoing refinement based on data insights and user feedback.',
+          tools: ['Conversion Optimization', 'Performance Tuning', 'Feature Enhancement']
+        }
+      ],
+      deliverables: ['Launch Plan', 'Analytics Reports', 'Optimization Recommendations'],
+      collaboration: 'Regular reviews, performance reports, and strategic adjustments'
     }
   ];
 
-  const officePerks = [
-    { icon: 'Trophy', title: 'Certification Support', description: 'Full coverage for platform certifications and training' },
-    { icon: 'Users', title: 'Cross-Training', description: 'Marketers learn dev, developers learn marketing' },
-    { icon: 'Zap', title: 'Innovation Time', description: '20% time for experimental projects and learning' },
-    { icon: 'DollarSign', title: 'Performance Bonuses', description: 'Rewards for certifications and project excellence' },
-    { icon: 'Globe', title: 'Remote Flexibility', description: 'Work from anywhere with full support' },
-    { icon: 'Heart', title: 'Health & Wellness', description: 'Comprehensive benefits and mental health support' }
-  ];
+  const activeMethodology = methodology?.[activePhase];
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -156,14 +145,14 @@ const CultureShowcase = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveValue((prev) => (prev + 1) % coreValues?.length);
-    }, 5000);
+      setActivePhase((prev) => (prev + 1) % methodology?.length);
+    }, 8000);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <section ref={sectionRef} className="py-12 sm:py-16 md:py-20 lg:py-24 bg-white">
+    <section ref={sectionRef} className="py-12 sm:py-16 md:py-20 lg:py-24 bg-gradient-to-br from-surface via-white to-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header - Mobile Optimized */}
         <motion.div
@@ -173,207 +162,208 @@ const CultureShowcase = () => {
           className="text-center mb-8 sm:mb-12 lg:mb-16"
         >
           <div className="inline-flex items-center space-x-2 bg-accent/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6">
-            <AppIcon name="Heart" size={16} className="text-accent" />
-            <span className="text-accent font-semibold text-xs sm:text-sm">Our Culture</span>
+            <AppIcon name="Cog" size={16} className="text-accent" />
+            <span className="text-accent font-semibold text-xs sm:text-sm">Our Methodology</span>
           </div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4 sm:mb-6">
-            Where <span className="text-accent">Excellence</span> Thrives
+            The <span className="text-accent">Integrated Approach</span>
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4">
-            Our culture brings together the best of both worlds—creative marketing brilliance and technical 
-            development excellence—creating an environment where innovation has no limits.
+            Our battle-tested methodology seamlessly combines marketing strategy with technical execution. 
+            One team, one process, delivering complete digital transformation.
           </p>
         </motion.div>
 
-        {/* Core Values - Mobile Optimized */}
+        {/* Process Navigation - FIXED: Now with flex-wrap */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="mb-12 sm:mb-16 lg:mb-20"
+          className="flex flex-wrap justify-center gap-3 mb-8 sm:mb-12 lg:mb-16"
         >
-          <h3 className="text-2xl sm:text-3xl font-bold text-center text-primary mb-8 sm:mb-12">Our Core Values</h3>
-          
-          {/* Values Navigation - FIXED: Already has flex-wrap, keeping consistency */}
-          <div className="flex flex-wrap justify-center gap-3 mb-8 sm:mb-12">
-            {coreValues?.map((value, index) => (
-              <button
-                key={value?.id}
-                onClick={() => setActiveValue(index)}
-                className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-semibold transition-all duration-300 text-sm sm:text-base min-w-[140px] sm:min-w-auto ${
-                  activeValue === index
-                    ? `bg-gradient-to-r ${value?.color} text-white shadow-lg transform scale-105`
-                    : 'bg-surface text-text-secondary hover:bg-accent/5 hover:text-accent'
-                }`}
-              >
-                <AppIcon name={value?.icon} size={16} className="flex-shrink-0" />
-                <span>{value?.title.split(' ')[0]}</span>
-              </button>
-            ))}
-          </div>
+          {methodology?.map((phase, index) => (
+            <button
+              key={phase?.id}
+              onClick={() => setActivePhase(index)}
+              className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-semibold transition-all duration-300 text-sm sm:text-base ${
+                activePhase === index
+                  ? 'bg-gradient-to-r from-accent to-primary text-white shadow-lg transform scale-105'
+                  : 'bg-white text-text-secondary hover:bg-accent/5 hover:text-accent shadow-md'
+              }`}
+            >
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                activePhase === index ? 'bg-white/20' : 'bg-accent/10'
+              }`}>
+                <AppIcon 
+                  name={phase?.icon} 
+                  size={14} 
+                  className={activePhase === index ? 'text-white' : 'text-accent'} 
+                />
+              </div>
+              <span>Phase {index + 1}</span>
+            </button>
+          ))}
+        </motion.div>
 
-          {/* Active Value Content - Mobile Optimized */}
-          <div className="bg-surface rounded-xl sm:rounded-2xl lg:rounded-3xl p-6 sm:p-8 shadow-brand-md">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 items-center">
-              <div>
-                <div className="flex items-center space-x-3 sm:space-x-4 mb-4 sm:mb-6">
-                  <div className={`w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r ${coreValues?.[activeValue]?.color} rounded-xl sm:rounded-2xl flex items-center justify-center`}>
-                    <AppIcon name={coreValues?.[activeValue]?.icon} size={24} className="text-white" />
+        {/* Active Phase Content - Mobile Optimized */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activePhase}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-brand-elevation-lg overflow-hidden"
+          >
+            {/* Phase Header */}
+            <div className={`bg-gradient-to-r ${activeMethodology?.color} p-6 sm:p-8 text-white`}>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center space-x-3 sm:space-x-4">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center">
+                    <AppIcon name={activeMethodology?.icon} size={24} className="text-white" />
                   </div>
-                  <h4 className="text-2xl sm:text-3xl font-bold text-primary">{coreValues?.[activeValue]?.title}</h4>
+                  <div>
+                    <h3 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">{activeMethodology?.phase}</h3>
+                    <p className="text-base sm:text-xl opacity-90">{activeMethodology?.subtitle}</p>
+                  </div>
                 </div>
-                <p className="text-base sm:text-lg md:text-xl text-text-secondary leading-relaxed mb-4 sm:mb-6">
-                  {coreValues?.[activeValue]?.description}
-                </p>
-                <div>
-                  <h5 className="font-bold text-primary mb-3 sm:mb-4">How We Live This:</h5>
-                  <ul className="space-y-2 sm:space-y-3">
-                    {coreValues?.[activeValue]?.examples?.map((example, index) => (
-                      <li key={index} className="flex items-start space-x-3">
-                        <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
-                        <span className="text-text-secondary text-sm sm:text-base">{example}</span>
-                      </li>
-                    ))}
-                  </ul>
+                <div className="text-left sm:text-right">
+                  <div className="text-xs sm:text-sm opacity-75">Duration</div>
+                  <div className="text-base sm:text-lg font-semibold">{activeMethodology?.duration}</div>
                 </div>
               </div>
-              <div className="relative">
-                <div className="w-full h-48 sm:h-56 lg:h-64 bg-gradient-to-br from-accent/10 to-primary/10 rounded-xl sm:rounded-2xl flex items-center justify-center">
-                  <div className="text-center">
-                    <div className={`w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-r ${coreValues?.[activeValue]?.color} rounded-full flex items-center justify-center mb-4 mx-auto`}>
-                      <AppIcon name={coreValues?.[activeValue]?.icon} size={40} className="text-white" />
+            </div>
+
+            {/* Phase Content - Stack on mobile */}
+            <div className="p-6 sm:p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+                {/* Steps */}
+                <div>
+                  <h4 className="text-xl sm:text-2xl font-bold text-primary mb-4 sm:mb-6">Process Steps</h4>
+                  <div className="space-y-3 sm:space-y-4">
+                    {activeMethodology?.steps?.map((step, stepIndex) => (
+                      <div
+                        key={stepIndex}
+                        className={`border rounded-lg sm:rounded-xl lg:rounded-2xl overflow-hidden transition-all duration-300 ${
+                          expandedStep === stepIndex 
+                            ? 'border-accent shadow-brand-md' 
+                            : 'border-gray-200 hover:border-accent/50'
+                        }`}
+                      >
+                        <button
+                          onClick={() => setExpandedStep(expandedStep === stepIndex ? null : stepIndex)}
+                          className="w-full p-4 sm:p-5 lg:p-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors duration-300"
+                        >
+                          <div className="flex items-center space-x-3 sm:space-x-4">
+                            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
+                              <span className="text-accent font-semibold text-xs sm:text-sm">{stepIndex + 1}</span>
+                            </div>
+                            <h5 className="font-bold text-primary text-sm sm:text-base">{step?.title}</h5>
+                          </div>
+                          <AppIcon 
+                            name="ChevronDown" 
+                            size={20} 
+                            className={`text-text-secondary transition-transform duration-300 flex-shrink-0 ${
+                              expandedStep === stepIndex ? 'rotate-180' : ''
+                            }`}
+                          />
+                        </button>
+                        <AnimatePresence>
+                          {expandedStep === stepIndex && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.3 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="px-4 sm:px-6 pb-4 sm:pb-6">
+                                <p className="text-text-secondary mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base">{step?.description}</p>
+                                <div>
+                                  <h6 className="font-semibold text-primary mb-2 text-sm sm:text-base">Tools & Methods:</h6>
+                                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                                    {step?.tools?.map((tool, toolIndex) => (
+                                      <span
+                                        key={toolIndex}
+                                        className="px-2 sm:px-3 py-1 bg-accent/10 text-accent text-xs sm:text-sm font-medium rounded-full"
+                                      >
+                                        {tool}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Deliverables & Collaboration */}
+                <div className="mt-6 lg:mt-0">
+                  {/* Deliverables */}
+                  <div className="mb-6 sm:mb-8">
+                    <h4 className="text-xl sm:text-2xl font-bold text-primary mb-4 sm:mb-6">Key Deliverables</h4>
+                    <div className="bg-surface rounded-lg sm:rounded-xl lg:rounded-2xl p-4 sm:p-6">
+                      <ul className="space-y-2 sm:space-y-3">
+                        {activeMethodology?.deliverables?.map((deliverable, index) => (
+                          <li key={index} className="flex items-center space-x-3">
+                            <AppIcon name="CheckCircle" size={20} className="text-accent flex-shrink-0" />
+                            <span className="text-text-secondary font-medium text-sm sm:text-base">{deliverable}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <p className="text-text-secondary font-medium text-sm sm:text-base">Value in Action</p>
+                  </div>
+
+                  {/* Collaboration */}
+                  <div>
+                    <h4 className="text-xl sm:text-2xl font-bold text-primary mb-4 sm:mb-6">Client Collaboration</h4>
+                    <div className="bg-gradient-to-r from-accent/5 to-primary/5 rounded-lg sm:rounded-xl lg:rounded-2xl p-4 sm:p-6">
+                      <div className="flex items-start space-x-3 sm:space-x-4">
+                        <AppIcon name="Users" size={24} className="text-accent mt-1 flex-shrink-0" />
+                        <p className="text-text-secondary leading-relaxed text-sm sm:text-base">
+                          {activeMethodology?.collaboration}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </AnimatePresence>
 
-        {/* Culture Gallery - Mobile Optimized */}
+        {/* Process Flow Visualization - Mobile Optimized */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.4, delay: 0.2 }}
-          className="mb-12 sm:mb-16 lg:mb-20"
-        >
-          <h3 className="text-2xl sm:text-3xl font-bold text-center text-primary mb-8 sm:mb-12">Behind the Scenes</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {cultureMedia?.map((media, index) => (
-              <motion.div
-                key={media?.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.3, delay: 0.05 * index }}
-                className="group cursor-pointer"
-                onClick={() => setSelectedMedia(media)}
-              >
-                <div className="relative overflow-hidden rounded-xl sm:rounded-2xl h-48 sm:h-56 lg:h-64 bg-gray-100 group-hover:shadow-brand-elevation-lg transition-all duration-500">
-                  {/* Background Image */}
-                  <div 
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-                    style={{
-                      backgroundImage: `url(${media?.imageUrl})`,
-                    }}
-                  >
-                    {/* Gradient Overlay */}
-                    <div className={`absolute inset-0 bg-gradient-to-t ${media?.color} opacity-80 group-hover:opacity-70 transition-opacity duration-300`}></div>
-                  </div>
-                  
-                  {/* Content */}
-                  <div className="relative h-full flex flex-col justify-between p-4 sm:p-6">
-                    {/* Top Section - Icon and Category Badge */}
-                    <div className="flex justify-between items-start">
-                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-300 group-hover:bg-white/30 group-hover:scale-110">
-                        <AppIcon 
-                          name={media?.icon} 
-                          size={20} 
-                          className="text-white" 
-                        />
-                      </div>
-                      <span className="bg-white/20 backdrop-blur-sm text-white px-2 sm:px-3 py-1 rounded-full text-xs font-medium">
-                        {media?.category}
-                      </span>
-                    </div>
-                    
-                    {/* Bottom Section - Title and Description */}
-                    <div className="text-white">
-                      <h4 className="font-bold text-base sm:text-lg mb-1 sm:mb-2 group-hover:translate-x-1 transition-transform duration-300">
-                        {media?.title}
-                      </h4>
-                      <p className="text-white/90 text-xs sm:text-sm line-clamp-2">
-                        {media?.description}
-                      </p>
-                      
-                      {/* View More Indicator */}
-                      <div className="mt-3 flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <span className="text-xs font-medium">View Details</span>
-                        <AppIcon name="ArrowRight" size={14} className="text-white" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Office Perks - Mobile Optimized */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.4, delay: 0.3 }}
+          className="mt-8 sm:mt-12 lg:mt-16"
         >
-          <h3 className="text-2xl sm:text-3xl font-bold text-center text-primary mb-8 sm:mb-12">Why We Love Working Here</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {officePerks?.map((perk, index) => (
-              <div
-                key={index}
-                className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:shadow-brand-md transition-all duration-300 group"
-              >
-                <div className="flex items-center space-x-3 sm:space-x-4 mb-3 sm:mb-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-accent/10 group-hover:bg-accent group-hover:text-white rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300">
-                    <AppIcon name={perk?.icon} size={20} className="text-accent group-hover:text-white" />
+          <h3 className="text-xl sm:text-2xl font-bold text-center text-primary mb-6 sm:mb-8">End-to-End Digital Journey</h3>
+          <div className="flex justify-center">
+            <div className="flex items-center space-x-2 sm:space-x-4 overflow-x-auto pb-4">
+              {methodology?.map((phase, index) => (
+                <React.Fragment key={phase?.id}>
+                  <div
+                    className={`flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 ${
+                      index <= activePhase 
+                        ? 'bg-accent text-white shadow-brand-md' 
+                        : 'bg-gray-200 text-text-secondary'
+                    }`}
+                  >
+                    <AppIcon name={phase?.icon} size={20} />
                   </div>
-                  <h4 className="font-bold text-primary text-sm sm:text-base">{perk?.title}</h4>
-                </div>
-                <p className="text-text-secondary text-xs sm:text-sm">{perk?.description}</p>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Call to Action - Mobile Optimized */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.4, delay: 0.4 }}
-          className="text-center mt-12 sm:mt-16"
-        >
-          <div className="bg-gradient-to-r from-accent to-primary rounded-xl sm:rounded-2xl lg:rounded-3xl p-8 sm:p-12 text-white">
-            <h3 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Ready to Join the Powerhouse?</h3>
-            <p className="text-base sm:text-lg md:text-xl opacity-90 mb-6 sm:mb-8 max-w-2xl mx-auto">
-              We're always looking for certified professionals and aspiring experts who want to work at the 
-              intersection of marketing brilliance and technical excellence.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-2 border-white text-white hover:bg-white hover:text-primary px-6 sm:px-8 py-3 sm:py-4 font-semibold min-h-[48px]"
-              >
-                <AppIcon name="Users" size={20} className="mr-2" />
-                View Open Positions
-              </Button>
-              <Button
-                variant="default"
-                size="lg"
-                className="bg-white text-primary hover:bg-gray-100 px-6 sm:px-8 py-3 sm:py-4 font-semibold min-h-[48px]"
-              >
-                <AppIcon name="Mail" size={20} className="mr-2" />
-                Send Your Resume
-              </Button>
+                  {index < methodology?.length - 1 && (
+                    <div className={`w-6 sm:w-8 h-1 transition-colors duration-300 ${
+                      index < activePhase ? 'bg-accent' : 'bg-gray-200'
+                    }`}></div>
+                  )}
+                </React.Fragment>
+              ))}
             </div>
           </div>
         </motion.div>
@@ -382,4 +372,4 @@ const CultureShowcase = () => {
   );
 };
 
-export default CultureShowcase;
+export default MethodologySection;

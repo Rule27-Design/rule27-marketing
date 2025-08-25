@@ -160,7 +160,7 @@ const AboutProcessStudio = () => {
             <MethodologySection />
           </section>
 
-          {/* Culture Showcase */}
+          {/* Culture Showcase*/}
           <section id="culture" className="section-wrapper">
             <CultureShowcase />
           </section>
