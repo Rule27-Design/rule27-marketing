@@ -279,12 +279,12 @@ const EnhancedCapabilityAssessment = memo(() => {
           <title>Capability Assessment Report</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 40px; color: #1f2937; }
-            h1 { color: #0891b2; }
-            h2 { color: #0891b2; margin-top: 30px; }
+            h1 { color: #E53E3E; }
+            h2 { color: #E53E3E; margin-top: 30px; }
             .metric { display: inline-block; margin: 10px 20px 10px 0; }
-            .metric strong { color: #0891b2; font-size: 24px; }
+            .metric strong { color: #E53E3E; font-size: 24px; }
             .service { background: #f3f4f6; padding: 20px; margin: 15px 0; border-radius: 8px; }
-            .package { background: #e0f2fe; padding: 20px; margin: 15px 0; border-radius: 8px; border: 2px solid #0891b2; }
+            .package { background: #e0f2fe; padding: 20px; margin: 15px 0; border-radius: 8px; border: 2px solid #E53E3E; }
             .priority { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
             .critical { background: #fee2e2; color: #b91c1c; }
             .high { background: #fef3c7; color: #d97706; }
@@ -400,7 +400,7 @@ const EnhancedCapabilityAssessment = memo(() => {
             <div className="h-[calc(100%-80px)] overflow-hidden">
               {/* Calendly Embed */}
               <iframe
-                src="https://calendly.com/joshanderson-rule27design/60-minute-meeting?embed_type=inline&hide_landing_page_details=true&hide_gdpr_banner=true&primary_color=0891b2"
+                src="https://calendly.com/joshanderson-rule27design/60-minute-meeting?embed_type=inline&hide_landing_page_details=true&hide_gdpr_banner=true&primary_color=E53E3E"
                 width="100%"
                 height="100%"
                 frameBorder="0"
