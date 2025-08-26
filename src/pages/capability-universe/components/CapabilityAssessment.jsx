@@ -22,9 +22,9 @@ const Button = memo(({
   const baseClass = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variants = {
-    default: 'bg-blue-600 text-white hover:bg-blue-700',
-    outline: 'border-2 border-gray-300 text-gray-700 hover:border-blue-600',
-    ghost: 'text-gray-600 hover:bg-gray-100',
+    default: 'bg-accent text-white hover:bg-accent/90',
+    outline: 'border-2 border-border text-text-primary hover:border-accent hover:bg-accent hover:text-white',
+    ghost: 'text-text-secondary hover:bg-accent/10',
   };
   
   const sizes = {
@@ -278,31 +278,34 @@ const EnhancedCapabilityAssessment = memo(() => {
         <head>
           <title>Capability Assessment Report</title>
           <style>
-            body { font-family: Arial, sans-serif; padding: 40px; }
-            h1 { color: #1e40af; }
-            h2 { color: #3730a3; margin-top: 30px; }
+            body { font-family: Arial, sans-serif; padding: 40px; color: #1f2937; }
+            h1 { color: #0891b2; }
+            h2 { color: #0891b2; margin-top: 30px; }
             .metric { display: inline-block; margin: 10px 20px 10px 0; }
-            .metric strong { color: #1e40af; font-size: 24px; }
+            .metric strong { color: #0891b2; font-size: 24px; }
             .service { background: #f3f4f6; padding: 20px; margin: 15px 0; border-radius: 8px; }
-            .package { background: #dbeafe; padding: 20px; margin: 15px 0; border-radius: 8px; }
+            .package { background: #e0f2fe; padding: 20px; margin: 15px 0; border-radius: 8px; border: 2px solid #0891b2; }
+            .priority { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+            .critical { background: #fee2e2; color: #b91c1c; }
+            .high { background: #fef3c7; color: #d97706; }
           </style>
         </head>
         <body>
           <h1>Your Personalized Growth Plan</h1>
-          <p>Business Readiness Score: ${insights.score}/100</p>
+          <p><strong>Business Readiness Score:</strong> ${insights.score}/100</p>
           
           <h2>Assessment Summary</h2>
-          <div class="metric"><strong>Readiness:</strong> ${insights.readiness}</div>
-          <div class="metric"><strong>Priority:</strong> ${insights.priority}</div>
-          <div class="metric"><strong>Approach:</strong> ${insights.approach}</div>
+          <div class="metric"><strong>Readiness:</strong> ${insights.readiness.toUpperCase()}</div>
+          <div class="metric"><strong>Priority:</strong> ${insights.priority.toUpperCase()}</div>
+          <div class="metric"><strong>Approach:</strong> ${insights.approach.toUpperCase()}</div>
           
           <h2>Recommended Services</h2>
           ${services.map(s => `
             <div class="service">
-              <h3>${s.service}</h3>
-              <p><strong>Priority:</strong> ${s.priority}</p>
+              <h3>${s.service} <span class="priority ${s.priority.toLowerCase()}">${s.priority}</span></h3>
               <p>${s.reason}</p>
-              <p><strong>ROI:</strong> ${s.estimatedROI} | <strong>Timeline:</strong> ${s.timeToResults}</p>
+              <p><strong>Services Included:</strong> ${s.services.join(', ')}</p>
+              <p><strong>Expected ROI:</strong> ${s.estimatedROI} | <strong>Timeline:</strong> ${s.timeToResults}</p>
               <p><strong>Investment:</strong> ${s.investment}</p>
             </div>
           `).join('')}
@@ -312,12 +315,15 @@ const EnhancedCapabilityAssessment = memo(() => {
             <div class="package">
               <h3>${p.name}</h3>
               <p>${p.description}</p>
+              <p><strong>Services:</strong> ${p.services.join(', ')}</p>
               <p><strong>Investment:</strong> ${p.investment}</p>
               <p><strong>Timeline:</strong> ${p.timeline}</p>
             </div>
           `).join('')}
           
-          <p style="margin-top: 40px;">Generated on ${new Date().toLocaleDateString()}</p>
+          <p style="margin-top: 40px; color: #6b7280; font-size: 14px;">
+            Report generated on ${new Date().toLocaleDateString()} | Rule27 Design
+          </p>
         </body>
       </html>
     `;
@@ -373,18 +379,18 @@ const EnhancedCapabilityAssessment = memo(() => {
             onClick={() => setShowCalendar(false)}
           />
           <div className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 
-                     bg-white rounded-2xl shadow-2xl z-50 max-w-4xl w-full h-[90vh] md:h-[80vh] overflow-hidden">
-            <div className="p-4 md:p-6 border-b border-gray-200">
+                     bg-background rounded-2xl shadow-2xl z-50 max-w-4xl w-full h-[90vh] md:h-[80vh] overflow-hidden">
+            <div className="p-4 md:p-6 border-b border-border">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Schedule Your Strategy Call</h3>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <h3 className="text-xl font-bold text-primary">Schedule Your Strategy Call</h3>
+                  <p className="text-sm text-text-secondary mt-1">
                     {selectedPackage ? `Discussing: ${selectedPackage.name}` : 'Free 60-minute consultation'}
                   </p>
                 </div>
                 <button
                   onClick={() => setShowCalendar(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 hover:bg-muted rounded-lg transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -394,7 +400,7 @@ const EnhancedCapabilityAssessment = memo(() => {
             <div className="h-[calc(100%-80px)] overflow-hidden">
               {/* Calendly Embed */}
               <iframe
-                src="https://calendly.com/joshanderson-rule27design/60-minute-meeting?embed_type=inline&hide_landing_page_details=true&hide_gdpr_banner=true&primary_color=2563eb"
+                src="https://calendly.com/joshanderson-rule27design/60-minute-meeting?embed_type=inline&hide_landing_page_details=true&hide_gdpr_banner=true&primary_color=0891b2"
                 width="100%"
                 height="100%"
                 frameBorder="0"
@@ -413,16 +419,16 @@ const EnhancedCapabilityAssessment = memo(() => {
     
     return (
       <>
-        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+        <div className="bg-card border border-border rounded-2xl overflow-hidden">
           {/* Results Header */}
-          <div className="p-4 md:p-6 bg-gradient-to-r from-blue-50 to-transparent border-b border-gray-200">
+          <div className="p-4 md:p-6 bg-gradient-to-r from-accent/10 to-transparent border-b border-border">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-600 text-white rounded-lg">
+              <div className="p-2 bg-accent text-white rounded-lg">
                 <CheckCircle size={24} />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-gray-900">Your Personalized Growth Plan</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="text-xl font-bold text-primary">Your Personalized Growth Plan</h3>
+                <p className="text-sm text-text-secondary">
                   Business Readiness Score: {insights.score}/100
                 </p>
               </div>
@@ -430,10 +436,10 @@ const EnhancedCapabilityAssessment = memo(() => {
           </div>
           
           {/* Insights Bar */}
-          <div className="p-4 md:p-6 bg-gray-50">
+          <div className="p-4 md:p-6 bg-muted/50">
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <div className="text-xs text-gray-600 mb-1">Readiness</div>
+                <div className="text-xs text-text-secondary mb-1">Readiness</div>
                 <div className={`font-bold ${
                   insights.readiness === 'high' ? 'text-green-600' : 
                   insights.readiness === 'medium' ? 'text-yellow-600' : 'text-orange-600'
@@ -442,16 +448,16 @@ const EnhancedCapabilityAssessment = memo(() => {
                 </div>
               </div>
               <div>
-                <div className="text-xs text-gray-600 mb-1">Priority</div>
+                <div className="text-xs text-text-secondary mb-1">Priority</div>
                 <div className={`font-bold ${
-                  insights.priority === 'urgent' ? 'text-red-600' : 'text-blue-600'
+                  insights.priority === 'urgent' ? 'text-red-600' : 'text-accent'
                 }`}>
                   {insights.priority.toUpperCase()}
                 </div>
               </div>
               <div>
-                <div className="text-xs text-gray-600 mb-1">Approach</div>
-                <div className="font-bold text-gray-900">
+                <div className="text-xs text-text-secondary mb-1">Approach</div>
+                <div className="font-bold text-primary">
                   {insights.approach.toUpperCase()}
                 </div>
               </div>
@@ -461,28 +467,28 @@ const EnhancedCapabilityAssessment = memo(() => {
           <div className="p-4 md:p-6 space-y-6">
             {/* Recommended Services */}
             <div>
-              <h4 className="font-bold text-gray-900 text-lg mb-4">Recommended Services</h4>
+              <h4 className="font-bold text-primary text-lg mb-4">Recommended Services</h4>
               {services.map((rec, index) => (
                 <div
                   key={index}
-                  className="border border-gray-200 rounded-xl p-4 md:p-6 space-y-3 mb-4"
+                  className="border border-border rounded-xl p-4 md:p-6 space-y-3 mb-4"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h5 className="font-bold text-gray-900">{rec.service}</h5>
+                        <h5 className="font-bold text-primary">{rec.service}</h5>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           rec.priority === 'Critical' ? 'bg-red-100 text-red-700' :
-                          'bg-blue-100 text-blue-700'
+                          'bg-accent/10 text-accent'
                         }`}>
                           {rec.priority}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 mb-3">{rec.reason}</p>
+                      <p className="text-sm text-text-secondary mb-3">{rec.reason}</p>
                       
                       <div className="flex flex-wrap gap-2 mb-3">
                         {rec.services.map((service, idx) => (
-                          <span key={idx} className="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                          <span key={idx} className="text-xs px-2 py-1 bg-muted rounded-full">
                             {service}
                           </span>
                         ))}
@@ -491,11 +497,11 @@ const EnhancedCapabilityAssessment = memo(() => {
                     
                     <div className="grid grid-cols-2 sm:grid-cols-1 gap-2 text-sm">
                       <div>
-                        <div className="text-gray-600 text-xs">ROI</div>
-                        <div className="font-bold text-blue-600">{rec.estimatedROI}</div>
+                        <div className="text-text-secondary text-xs">ROI</div>
+                        <div className="font-bold text-accent">{rec.estimatedROI}</div>
                       </div>
                       <div>
-                        <div className="text-gray-600 text-xs">Timeline</div>
+                        <div className="text-text-secondary text-xs">Timeline</div>
                         <div className="font-semibold">{rec.timeToResults}</div>
                       </div>
                     </div>
@@ -506,22 +512,22 @@ const EnhancedCapabilityAssessment = memo(() => {
 
             {/* Package Recommendations */}
             <div>
-              <h4 className="font-bold text-gray-900 text-lg mb-4">Recommended Package</h4>
+              <h4 className="font-bold text-primary text-lg mb-4">Recommended Package</h4>
               <div className="grid md:grid-cols-1 gap-4">
                 {packages.map((pkg, index) => (
                   <div
                     key={index}
-                    className="border-2 border-blue-600 bg-blue-50 rounded-xl p-4"
+                    className="border-2 border-accent bg-accent/5 rounded-xl p-4"
                   >
-                    <h5 className="font-bold text-gray-900 mb-1">{pkg.name}</h5>
-                    <p className="text-xs text-gray-600 mb-3">{pkg.description}</p>
+                    <h5 className="font-bold text-primary mb-1">{pkg.name}</h5>
+                    <p className="text-xs text-text-secondary mb-3">{pkg.description}</p>
                     <div className="space-y-2 mb-4">
                       <div className="text-sm">
-                        <span className="text-gray-600">Investment: </span>
+                        <span className="text-text-secondary">Investment: </span>
                         <span className="font-semibold">{pkg.investment}</span>
                       </div>
                       <div className="text-sm">
-                        <span className="text-gray-600">Timeline: </span>
+                        <span className="text-text-secondary">Timeline: </span>
                         <span className="font-semibold">{pkg.timeline}</span>
                       </div>
                     </div>
@@ -529,7 +535,7 @@ const EnhancedCapabilityAssessment = memo(() => {
                       variant="default"
                       size="sm"
                       fullWidth
-                      className="bg-blue-600 hover:bg-blue-700"
+                      className="bg-accent hover:bg-accent/90"
                       onClick={() => handleScheduleCall(pkg)}
                     >
                       Discuss This Package
@@ -540,10 +546,10 @@ const EnhancedCapabilityAssessment = memo(() => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-border">
               <Button
                 variant="default"
-                className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+                className="bg-accent hover:bg-accent/90 w-full sm:w-auto"
                 iconName="Calendar"
                 iconPosition="left"
                 onClick={() => handleScheduleCall(null)}
@@ -552,7 +558,7 @@ const EnhancedCapabilityAssessment = memo(() => {
               </Button>
               <Button
                 variant="outline"
-                className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white w-full sm:w-auto"
+                className="border-accent text-accent hover:bg-accent hover:text-white w-full sm:w-auto"
                 iconName="Download"
                 iconPosition="left"
                 onClick={generatePDF}
@@ -563,7 +569,7 @@ const EnhancedCapabilityAssessment = memo(() => {
               <Button
                 variant="ghost"
                 onClick={resetAssessment}
-                className="text-blue-600 hover:bg-blue-50 w-full sm:w-auto"
+                className="text-accent hover:bg-accent/10 w-full sm:w-auto"
               >
                 Retake Assessment
               </Button>
@@ -578,20 +584,20 @@ const EnhancedCapabilityAssessment = memo(() => {
 
   // Question View
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+    <div className="bg-card border border-border rounded-2xl overflow-hidden">
       {/* Header */}
-      <div className="p-4 md:p-6 border-b border-gray-200">
+      <div className="p-4 md:p-6 border-b border-border">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold text-gray-900">Business Growth Assessment</h3>
-          <span className="text-sm text-gray-600">
+          <h3 className="text-xl font-bold text-primary">Business Growth Assessment</h3>
+          <span className="text-sm text-text-secondary">
             {currentStep + 1} of {assessmentQuestions.length}
           </span>
         </div>
         
         {/* Progress Bar */}
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-muted rounded-full h-2">
           <div
-            className="bg-blue-600 h-full rounded-full transition-all duration-300"
+            className="bg-accent h-full rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -601,11 +607,11 @@ const EnhancedCapabilityAssessment = memo(() => {
       <div className="p-4 md:p-6">
         <div className="space-y-6">
           <div>
-            <h4 className="text-lg font-semibold text-gray-900">
+            <h4 className="text-lg font-semibold text-primary">
               {currentQuestion?.title}
             </h4>
             {currentQuestion?.subtitle && (
-              <p className="text-sm text-gray-600 mt-1">{currentQuestion.subtitle}</p>
+              <p className="text-sm text-text-secondary mt-1">{currentQuestion.subtitle}</p>
             )}
           </div>
 
@@ -613,10 +619,10 @@ const EnhancedCapabilityAssessment = memo(() => {
           {currentQuestion?.type === 'slider' && (
             <div className="space-y-6">
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-2">
+                <div className="text-3xl font-bold text-accent mb-2">
                   {formatCurrency(answers[currentQuestion.id] || currentQuestion.defaultValue)}
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-text-secondary">
                   {currentQuestion.ranges?.find(r => 
                     (answers[currentQuestion.id] || currentQuestion.defaultValue) >= r.min && 
                     (answers[currentQuestion.id] || currentQuestion.defaultValue) <= r.max
@@ -632,9 +638,12 @@ const EnhancedCapabilityAssessment = memo(() => {
                   step={currentQuestion.step}
                   value={answers[currentQuestion.id] || currentQuestion.defaultValue}
                   onChange={(e) => handleAnswer(currentQuestion.id, parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-accent"
+                  style={{
+                    background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${((answers[currentQuestion.id] || currentQuestion.defaultValue) - currentQuestion.min) / (currentQuestion.max - currentQuestion.min) * 100}%, var(--muted) ${((answers[currentQuestion.id] || currentQuestion.defaultValue) - currentQuestion.min) / (currentQuestion.max - currentQuestion.min) * 100}%, var(--muted) 100%)`
+                  }}
                 />
-                <div className="flex justify-between text-xs text-gray-600 mt-2">
+                <div className="flex justify-between text-xs text-text-secondary mt-2">
                   <span>{formatCurrency(currentQuestion.min)}</span>
                   <span>{formatCurrency(currentQuestion.max)}</span>
                 </div>
@@ -662,30 +671,30 @@ const EnhancedCapabilityAssessment = memo(() => {
                     className={`flex items-center space-x-3 p-4 rounded-xl border-2 
                              transition-all duration-300 text-left ${
                       isSelected
-                        ? 'border-blue-600 bg-blue-50 text-blue-900' 
+                        ? 'border-accent bg-accent/10 text-accent' 
                         : isDisabled 
-                          ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
-                          : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
+                          ? 'border-muted bg-muted/50 text-text-secondary cursor-not-allowed opacity-50'
+                          : 'border-border hover:border-accent/30 hover:bg-muted/50 text-text-primary'
                     }`}
                     disabled={isDisabled}
                   >
                     <div className={`p-2 rounded-lg flex-shrink-0 ${
-                      isSelected ? 'bg-blue-600 text-white' : 
-                      isDisabled ? 'bg-gray-200 text-gray-400' :
-                      'bg-gray-100 text-gray-600'
+                      isSelected ? 'bg-accent text-white' : 
+                      isDisabled ? 'bg-muted text-text-secondary' :
+                      'bg-muted text-text-secondary'
                     }`}>
                       <Icon name={option.icon} size={20} />
                     </div>
                     <span className="font-medium flex-1">{option.label}</span>
                     {isSelected && (
-                      <Check size={20} className="text-blue-600 flex-shrink-0" />
+                      <Check size={20} className="text-accent flex-shrink-0" />
                     )}
                   </button>
                 );
               })}
               
               {currentQuestion?.type === 'multiple' && currentQuestion?.maxSelections && (
-                <p className="text-xs text-gray-600 text-center mt-2">
+                <p className="text-xs text-text-secondary text-center mt-2">
                   {(answers[currentQuestion.id] || []).length} of {currentQuestion.maxSelections} selected
                 </p>
               )}
@@ -695,7 +704,7 @@ const EnhancedCapabilityAssessment = memo(() => {
       </div>
 
       {/* Navigation */}
-      <div className="p-4 md:p-6 border-t border-gray-200">
+      <div className="p-4 md:p-6 border-t border-border">
         <div className="flex justify-between gap-3">
           <Button
             variant="outline"
@@ -703,7 +712,7 @@ const EnhancedCapabilityAssessment = memo(() => {
             disabled={currentStep === 0}
             iconName="ArrowLeft"
             iconPosition="left"
-            className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white 
+            className="border-accent text-accent hover:bg-accent hover:text-white 
                      disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Previous
@@ -713,7 +722,7 @@ const EnhancedCapabilityAssessment = memo(() => {
             variant="default"
             onClick={nextStep}
             disabled={currentQuestion?.required && !isAnswered}
-            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-accent hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed"
             iconName={currentStep === assessmentQuestions.length - 1 ? "CheckCircle" : "ArrowRight"}
             iconPosition="right"
           >
@@ -724,7 +733,7 @@ const EnhancedCapabilityAssessment = memo(() => {
         {!currentQuestion?.required && (
           <button
             onClick={nextStep}
-            className="w-full text-center text-sm text-gray-600 hover:text-blue-600 mt-3 transition-colors"
+            className="w-full text-center text-sm text-text-secondary hover:text-accent mt-3 transition-colors"
           >
             Skip this question
           </button>
