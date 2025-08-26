@@ -1,5 +1,12 @@
 import React, { useState, useCallback, useMemo, memo, useEffect } from 'react';
-import { ChevronRight, ChevronLeft, Download, Calendar, Check, X, Play, Pause, Search, Filter, Zap, Clock, DollarSign, Target, TrendingUp, Eye, Users, Globe, Lightbulb, Rocket, Building, User, ShoppingCart, Heart, Home, GraduationCap, MapPin, Factory, Grid, Package, UserX, TrendingDown, EyeOff, AlertTriangle, HelpCircle, UserCheck, Code, Mail, FileText, Shield, CheckCircle, ArrowLeft, ArrowRight } from 'lucide-react';
+import { 
+  ChevronRight, ChevronLeft, Download, Calendar, Check, X, Play, Pause, Search, 
+  Filter, Zap, Clock, DollarSign, Target, TrendingUp, Eye, Users, Globe, 
+  Lightbulb, Rocket, Building, User, ShoppingCart, Heart, Home, GraduationCap, 
+  MapPin, Factory, Grid3x3 as Grid, Package, UserX, TrendingDown, EyeOff, 
+  AlertTriangle, HelpCircle, UserCheck, Code, Mail, FileText, Shield, 
+  CheckCircle, ArrowLeft, ArrowRight, Cpu, Map
+} from 'lucide-react';
 
 // Button Component
 const Button = memo(({ 
