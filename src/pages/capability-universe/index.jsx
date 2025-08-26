@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
+import Footer from '../../components/ui/Footer';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import ServiceZoneCard from './components/ServiceZoneCard';
@@ -18,8 +19,13 @@ const CapabilityUniverse = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredServices, setFilteredServices] = useState([]);
 
-  // Service Zones Data
-  const serviceZones = [
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Memoize service zones to prevent recreation on every render
+  const serviceZones = useMemo(() => [
     {
       id: 'creative-studio',
       title: 'Creative Studio',
@@ -56,10 +62,10 @@ const CapabilityUniverse = () => {
       keyServices: ['Strategic Planning', 'Fractional CMO', 'Business Development', 'Market Entry'],
       stats: { projects: 80, satisfaction: 100 }
     }
-  ];
+  ], []);
 
-  // Detailed Services Data
-  const detailedServices = [
+  // Memoize detailed services to prevent recreation
+  const detailedServices = useMemo(() => [
     {
       id: 'brand-identity',
       title: 'Brand Identity Design',
@@ -416,50 +422,68 @@ const CapabilityUniverse = () => {
         ]
       }
     }
-  ];
+  ], []);
 
-  // Filter Categories
-  const filterCategories = [
-    { id: 'all', name: 'All Services', icon: 'Grid', count: detailedServices?.length },
-    { id: 'Creative Studio', name: 'Creative Studio', icon: 'Palette', count: detailedServices?.filter(s => s?.category === 'Creative Studio')?.length },
-    { id: 'Digital Marketing Command', name: 'Marketing Command', icon: 'Target', count: detailedServices?.filter(s => s?.category === 'Digital Marketing Command')?.length },
-    { id: 'Development Lab', name: 'Development Lab', icon: 'Code', count: detailedServices?.filter(s => s?.category === 'Development Lab')?.length },
-    { id: 'Executive Advisory', name: 'Executive Advisory', icon: 'Users', count: detailedServices?.filter(s => s?.category === 'Executive Advisory')?.length }
-  ];
+  // Memoize filter categories
+  const filterCategories = useMemo(() => [
+    { id: 'all', name: 'All Services', icon: 'Grid', count: detailedServices.length },
+    { id: 'Creative Studio', name: 'Creative Studio', icon: 'Palette', count: detailedServices.filter(s => s.category === 'Creative Studio').length },
+    { id: 'Digital Marketing Command', name: 'Marketing Command', icon: 'Target', count: detailedServices.filter(s => s.category === 'Digital Marketing Command').length },
+    { id: 'Development Lab', name: 'Development Lab', icon: 'Code', count: detailedServices.filter(s => s.category === 'Development Lab').length },
+    { id: 'Executive Advisory', name: 'Executive Advisory', icon: 'Users', count: detailedServices.filter(s => s.category === 'Executive Advisory').length }
+  ], [detailedServices]);
 
-  // Filter services based on category and search term
+  // Optimize filtering with useMemo
   useEffect(() => {
     let filtered = detailedServices;
 
     if (activeCategory !== 'all') {
-      filtered = filtered?.filter(service => service?.category === activeCategory);
+      filtered = filtered.filter(service => service.category === activeCategory);
     }
 
     if (searchTerm) {
-      filtered = filtered?.filter(service =>
-        service?.title?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
-        service?.description?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
-        service?.features?.some(feature => feature?.toLowerCase()?.includes(searchTerm?.toLowerCase()))
+      const lowercaseSearch = searchTerm.toLowerCase();
+      filtered = filtered.filter(service =>
+        service.title?.toLowerCase().includes(lowercaseSearch) ||
+        service.description?.toLowerCase().includes(lowercaseSearch) ||
+        service.features?.some(feature => feature.toLowerCase().includes(lowercaseSearch))
       );
     }
 
     setFilteredServices(filtered);
-  }, [activeCategory, searchTerm]);
+  }, [activeCategory, searchTerm, detailedServices]);
 
-  const handleZoneActivate = (zoneId) => {
+  // Memoize handlers
+  const handleZoneActivate = useCallback((zoneId) => {
     setActiveZone(zoneId);
-  };
+  }, []);
 
-  const handleZoneExplore = (zone) => {
-    setActiveZone(zone?.id);
-    // Scroll to services section
-    document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const handleZoneExplore = useCallback((zone) => {
+    setActiveZone(zone.id);
+    // Smooth scroll with fallback
+    const element = document.getElementById('services-section');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, []);
 
-  const handleServiceSelect = (service) => {
+  const handleServiceSelect = useCallback((service) => {
     setSelectedService(service);
     setIsModalOpen(true);
-  };
+  }, []);
+
+  const handleCategoryChange = useCallback((category) => {
+    setActiveCategory(category);
+  }, []);
+
+  const handleSearchChange = useCallback((term) => {
+    setSearchTerm(term);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setIsModalOpen(false);
+    setSelectedService(null);
+  }, []);
 
   return (
     <>
@@ -468,231 +492,238 @@ const CapabilityUniverse = () => {
         <meta name="description" content="Explore Rule27 Design's comprehensive service capabilities across Creative Studio, Digital Marketing Command, Development Lab, and Executive Advisory. Interactive demonstrations and personalized assessments." />
         <meta name="keywords" content="digital agency services, creative studio, marketing command, development lab, executive advisory, capability assessment" />
       </Helmet>
+      
       <div className="min-h-screen bg-background">
         <Header />
         
-        {/* Hero Section */}
-        <section className="pt-24 pb-16 bg-gradient-to-br from-background via-muted/30 to-background">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center space-y-8">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-                className="space-y-4"
-              >
-                <h1 className="text-4xl md:text-6xl font-bold text-primary">
-                  Capability <span className="text-accent">Universe</span>
-                </h1>
-                <p className="text-xl text-text-secondary max-w-3xl mx-auto leading-relaxed">
-                  Four distinct experience zones showcase Rule27 Design's comprehensive service mastery through immersive, 
-                  interactive presentations. Discover the perfect solution for your business transformation.
-                </p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="flex flex-col sm:flex-row gap-4 justify-center"
-              >
-                <Button
-                  variant="default"
-                  size="lg"
-                  className="bg-accent hover:bg-accent/90"
-                  iconName="Zap"
-                  iconPosition="left"
-                  onClick={() => document.getElementById('zones-section')?.scrollIntoView({ behavior: 'smooth' })}
+        <main className="pt-16">
+          {/* Hero Section */}
+          <section className="py-12 md:py-16 lg:py-24 bg-gradient-to-br from-background via-muted/30 to-background">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center space-y-6 md:space-y-8">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8 }}
+                  className="space-y-4"
                 >
-                  Explore Capabilities
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary">
+                    Capability <span className="text-accent">Universe</span>
+                  </h1>
+                  <p className="text-lg md:text-xl text-text-secondary max-w-3xl mx-auto leading-relaxed px-4">
+                    Four distinct experience zones showcase Rule27 Design's comprehensive service mastery through immersive, 
+                    interactive presentations. Discover the perfect solution for your business transformation.
+                  </p>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  className="flex flex-col sm:flex-row gap-4 justify-center px-4"
+                >
+                  <Button
+                    variant="default"
+                    size="lg"
+                    className="bg-accent hover:bg-accent/90 w-full sm:w-auto"
+                    iconName="Zap"
+                    iconPosition="left"
+                    onClick={() => document.getElementById('zones-section')?.scrollIntoView({ behavior: 'smooth' })}
+                  >
+                    Explore Capabilities
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="border-accent text-accent hover:bg-accent hover:text-white w-full sm:w-auto"
+                    iconName="Calculator"
+                    iconPosition="left"
+                    onClick={() => document.getElementById('assessment-section')?.scrollIntoView({ behavior: 'smooth' })}
+                  >
+                    Take Assessment
+                  </Button>
+                </motion.div>
+              </div>
+            </div>
+          </section>
+
+          {/* Service Zones Section */}
+          <section id="zones-section" className="py-12 md:py-16 bg-muted/20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-8 md:mb-12">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-4">
+                  Service Experience Zones
+                </h2>
+                <p className="text-base md:text-lg text-text-secondary max-w-2xl mx-auto px-4">
+                  Each zone represents a core competency area with specialized expertise and proven methodologies
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+                {serviceZones.map((zone) => (
+                  <ServiceZoneCard
+                    key={zone.id}
+                    zone={zone}
+                    isActive={activeZone === zone.id}
+                    onActivate={() => handleZoneActivate(zone.id)}
+                    onExplore={handleZoneExplore}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Interactive Demo Section */}
+          <section className="py-12 md:py-16 bg-background">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-8 md:mb-12">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-4">
+                  Interactive Demonstrations
+                </h2>
+                <p className="text-base md:text-lg text-text-secondary max-w-2xl mx-auto px-4">
+                  Experience our capabilities through live, interactive demonstrations
+                </p>
+              </div>
+
+              <InteractiveDemo activeZone={activeZone} />
+            </div>
+          </section>
+
+          {/* Detailed Services Section */}
+          <section id="services-section" className="py-12 md:py-16 bg-muted/20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-8 md:mb-12">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-4">
+                  Detailed Service Catalog
+                </h2>
+                <p className="text-base md:text-lg text-text-secondary max-w-2xl mx-auto px-4">
+                  Explore our comprehensive service offerings with detailed information and case studies
+                </p>
+              </div>
+
+              <div className="grid lg:grid-cols-4 gap-6 md:gap-8">
+                {/* Filter Sidebar - Hidden on mobile by default */}
+                <div className="lg:col-span-1">
+                  <div className="sticky top-20">
+                    <CapabilityFilter
+                      categories={filterCategories}
+                      activeCategory={activeCategory}
+                      onCategoryChange={handleCategoryChange}
+                      searchTerm={searchTerm}
+                      onSearchChange={handleSearchChange}
+                    />
+                  </div>
+                </div>
+
+                {/* Services Grid */}
+                <div className="lg:col-span-3">
+                  <div className="grid sm:grid-cols-2 gap-4 md:gap-6">
+                    {filteredServices.map((service) => (
+                      <motion.div
+                        key={service.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="bg-card border border-border rounded-2xl p-4 md:p-6 hover:shadow-lg transition-all duration-300 cursor-pointer"
+                        onClick={() => handleServiceSelect(service)}
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="p-3 bg-accent/10 rounded-xl">
+                            <Icon name={service.icon} size={24} className="text-accent" />
+                          </div>
+                          <span className="text-xs px-2 py-1 bg-muted text-text-secondary rounded-full">
+                            {service.category}
+                          </span>
+                        </div>
+
+                        <h3 className="text-lg md:text-xl font-bold text-primary mb-2">{service.title}</h3>
+                        <p className="text-sm md:text-base text-text-secondary mb-4">{service.description}</p>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-wrap gap-2">
+                            {service.features?.slice(0, 2).map((feature, index) => (
+                              <span
+                                key={index}
+                                className="text-xs px-2 py-1 bg-muted text-text-secondary rounded-full"
+                              >
+                                {feature}
+                              </span>
+                            ))}
+                          </div>
+                          <Icon name="ArrowRight" size={16} className="text-accent flex-shrink-0" />
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {filteredServices.length === 0 && (
+                    <div className="text-center py-12">
+                      <Icon name="Search" size={48} className="text-text-secondary mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold text-primary mb-2">No services found</h3>
+                      <p className="text-text-secondary">Try adjusting your search or filter criteria</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Capability Assessment Section */}
+          <section id="assessment-section" className="py-12 md:py-16 bg-background">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-8 md:mb-12">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-4">
+                  Capability Assessment
+                </h2>
+                <p className="text-base md:text-lg text-text-secondary max-w-2xl mx-auto px-4">
+                  Get personalized service recommendations based on your business needs and goals
+                </p>
+              </div>
+
+              <CapabilityAssessment />
+            </div>
+          </section>
+
+          {/* CTA Section */}
+          <section className="py-12 md:py-16 bg-gradient-to-r from-primary to-accent text-white">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
+                Ready to Transform Your Business?
+              </h2>
+              <p className="text-lg md:text-xl mb-8 opacity-90">
+                Let's discuss how our capabilities can drive your success
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  iconName="Calendar"
+                  iconPosition="left"
+                  className="bg-white text-primary hover:bg-white/90 w-full sm:w-auto"
+                >
+                  Schedule Strategy Call
                 </Button>
                 <Button
                   variant="outline"
                   size="lg"
-                  className="border-accent text-accent hover:bg-accent hover:text-white"
-                  iconName="Calculator"
+                  iconName="MessageCircle"
                   iconPosition="left"
-                  onClick={() => document.getElementById('assessment-section')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="border-white text-white hover:bg-white hover:text-primary w-full sm:w-auto"
                 >
-                  Take Assessment
+                  Start Conversation
                 </Button>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
-        {/* Service Zones Section */}
-        <section id="zones-section" className="py-16 bg-muted/20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-                Service Experience Zones
-              </h2>
-              <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-                Each zone represents a core competency area with specialized expertise and proven methodologies
-              </p>
-            </div>
-
-            <div className="grid lg:grid-cols-2 gap-8">
-              {serviceZones?.map((zone) => (
-                <ServiceZoneCard
-                  key={zone?.id}
-                  zone={zone}
-                  isActive={activeZone === zone?.id}
-                  onActivate={() => handleZoneActivate(zone?.id)}
-                  onExplore={handleZoneExplore}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Interactive Demo Section */}
-        <section className="py-16 bg-background">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-                Interactive Demonstrations
-              </h2>
-              <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-                Experience our capabilities through live, interactive demonstrations
-              </p>
-            </div>
-
-            <InteractiveDemo activeZone={activeZone} />
-          </div>
-        </section>
-
-        {/* Detailed Services Section */}
-        <section id="services-section" className="py-16 bg-muted/20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-                Detailed Service Catalog
-              </h2>
-              <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-                Explore our comprehensive service offerings with detailed information and case studies
-              </p>
-            </div>
-
-            <div className="grid lg:grid-cols-4 gap-8">
-              {/* Filter Sidebar */}
-              <div className="lg:col-span-1">
-                <CapabilityFilter
-                  categories={filterCategories}
-                  activeCategory={activeCategory}
-                  onCategoryChange={setActiveCategory}
-                  searchTerm={searchTerm}
-                  onSearchChange={setSearchTerm}
-                />
-              </div>
-
-              {/* Services Grid */}
-              <div className="lg:col-span-3">
-                <div className="grid md:grid-cols-2 gap-6">
-                  {filteredServices?.map((service) => (
-                    <motion.div
-                      key={service?.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5 }}
-                      className="bg-card border border-border rounded-2xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer"
-                      onClick={() => handleServiceSelect(service)}
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-accent/10 rounded-xl">
-                          <Icon name={service?.icon} size={24} className="text-accent" />
-                        </div>
-                        <span className="text-xs px-2 py-1 bg-muted text-text-secondary rounded-full">
-                          {service?.category}
-                        </span>
-                      </div>
-
-                      <h3 className="text-xl font-bold text-primary mb-2">{service?.title}</h3>
-                      <p className="text-text-secondary mb-4">{service?.description}</p>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex space-x-2">
-                          {service?.features?.slice(0, 2)?.map((feature, index) => (
-                            <span
-                              key={index}
-                              className="text-xs px-2 py-1 bg-muted text-text-secondary rounded-full"
-                            >
-                              {feature}
-                            </span>
-                          ))}
-                        </div>
-                        <Icon name="ArrowRight" size={16} className="text-accent" />
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-
-                {filteredServices?.length === 0 && (
-                  <div className="text-center py-12">
-                    <Icon name="Search" size={48} className="text-text-secondary mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-primary mb-2">No services found</h3>
-                    <p className="text-text-secondary">Try adjusting your search or filter criteria</p>
-                  </div>
-                )}
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </main>
 
-        {/* Capability Assessment Section */}
-        <section id="assessment-section" className="py-16 bg-background">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-                Capability Assessment
-              </h2>
-              <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-                Get personalized service recommendations based on your business needs and goals
-              </p>
-            </div>
-
-            <CapabilityAssessment />
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-16 bg-gradient-to-r from-primary to-accent text-white">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Ready to Transform Your Business?
-            </h2>
-            <p className="text-xl mb-8 opacity-90">
-              Let's discuss how our capabilities can drive your success
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                variant="secondary"
-                size="lg"
-                iconName="Calendar"
-                iconPosition="left"
-                className="bg-white text-primary hover:bg-white/90"
-              >
-                Schedule Strategy Call
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                iconName="MessageCircle"
-                iconPosition="left"
-                className="border-white text-white hover:bg-white hover:text-primary"
-              >
-                Start Conversation
-              </Button>
-            </div>
-          </div>
-        </section>
+        <Footer />
 
         {/* Service Detail Modal */}
         <ServiceDetailModal
           service={selectedService}
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={closeModal}
         />
       </div>
     </>
