@@ -8,7 +8,8 @@ const CapabilityFilter = memo(({
   activeCategory, 
   onCategoryChange, 
   searchTerm, 
-  onSearchChange 
+  onSearchChange,
+  onQuickAction 
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
@@ -143,6 +144,7 @@ const CapabilityFilter = memo(({
                     iconName="Calculator"
                     iconPosition="left"
                     className="justify-start border-accent/30 text-accent hover:bg-accent hover:text-white text-xs md:text-sm"
+                    onClick={() => onQuickAction && onQuickAction('roi-calculator')}
                   >
                     ROI Calculator
                   </Button>
@@ -153,6 +155,7 @@ const CapabilityFilter = memo(({
                     iconName="FileText"
                     iconPosition="left"
                     className="justify-start border-accent/30 text-accent hover:bg-accent hover:text-white text-xs md:text-sm"
+                    onClick={() => onQuickAction && onQuickAction('capability-assessment')}
                   >
                     Capability Assessment
                   </Button>
@@ -163,6 +166,7 @@ const CapabilityFilter = memo(({
                     iconName="Calendar"
                     iconPosition="left"
                     className="justify-start border-accent/30 text-accent hover:bg-accent hover:text-white text-xs md:text-sm"
+                    onClick={() => onQuickAction && onQuickAction('book-consultation')}
                   >
                     Book Consultation
                   </Button>
@@ -178,6 +182,7 @@ const CapabilityFilter = memo(({
                   className="bg-accent hover:bg-accent/90 text-white"
                   iconName="Calendar"
                   iconPosition="left"
+                  onClick={() => onQuickAction && onQuickAction('book-consultation')}
                 >
                   Book Consultation
                 </Button>
