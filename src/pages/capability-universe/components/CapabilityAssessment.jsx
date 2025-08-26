@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useCallback, useMemo, memo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
-const CapabilityAssessment = () => {
+const CapabilityAssessment = memo(() => {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
 
-  const assessmentQuestions = [
+  // Memoize assessment questions
+  const assessmentQuestions = useMemo(() => [
     {
       id: 'business-stage',
       title: 'What stage is your business in?',
@@ -66,46 +67,51 @@ const CapabilityAssessment = () => {
         { value: 'flexible', label: 'Flexible timeline', icon: 'MoreHorizontal' }
       ]
     }
-  ];
+  ], []);
 
-  const handleAnswer = (questionId, value, isMultiple = false) => {
+  const handleAnswer = useCallback((questionId, value, isMultiple = false) => {
     setAnswers(prev => {
       if (isMultiple) {
-        const currentAnswers = prev?.[questionId] || [];
-        const newAnswers = currentAnswers?.includes(value)
-          ? currentAnswers?.filter(v => v !== value)
+        const currentAnswers = prev[questionId] || [];
+        const newAnswers = currentAnswers.includes(value)
+          ? currentAnswers.filter(v => v !== value)
           : [...currentAnswers, value];
         return { ...prev, [questionId]: newAnswers };
       } else {
         return { ...prev, [questionId]: value };
       }
     });
-  };
+  }, []);
 
-  const nextStep = () => {
-    if (currentStep < assessmentQuestions?.length - 1) {
-      setCurrentStep(currentStep + 1);
+  const nextStep = useCallback(() => {
+    if (currentStep < assessmentQuestions.length - 1) {
+      setCurrentStep(prev => prev + 1);
     } else {
       setShowResults(true);
     }
-  };
+  }, [currentStep, assessmentQuestions.length]);
 
-  const prevStep = () => {
+  const prevStep = useCallback(() => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+      setCurrentStep(prev => prev - 1);
     }
-  };
+  }, [currentStep]);
 
-  const getRecommendations = () => {
-    const businessStage = answers?.['business-stage'];
-    const goals = answers?.['primary-goals'] || [];
-    const budget = answers?.['budget-range'];
+  const resetAssessment = useCallback(() => {
+    setShowResults(false);
+    setCurrentStep(0);
+    setAnswers({});
+  }, []);
 
-    // Mock recommendation logic
+  const getRecommendations = useMemo(() => {
+    if (!showResults) return [];
+    
+    const businessStage = answers['business-stage'];
+    const goals = answers['primary-goals'] || [];
     const recommendations = [];
 
-    if (goals?.includes('brand-awareness') || goals?.includes('digital-presence')) {
-      recommendations?.push({
+    if (goals.includes('brand-awareness') || goals.includes('digital-presence')) {
+      recommendations.push({
         service: 'Creative Studio',
         priority: 'High',
         reason: 'Your focus on brand awareness indicates a need for strong visual identity and creative assets.',
@@ -114,8 +120,8 @@ const CapabilityAssessment = () => {
       });
     }
 
-    if (goals?.includes('lead-generation') || goals?.includes('sales-growth')) {
-      recommendations?.push({
+    if (goals.includes('lead-generation') || goals.includes('sales-growth')) {
+      recommendations.push({
         service: 'Digital Marketing Command',
         priority: 'High',
         reason: 'Lead generation and sales growth require strategic marketing campaigns and optimization.',
@@ -125,7 +131,7 @@ const CapabilityAssessment = () => {
     }
 
     if (businessStage === 'startup' || businessStage === 'growth') {
-      recommendations?.push({
+      recommendations.push({
         service: 'Executive Advisory',
         priority: 'Medium',
         reason: 'Growing businesses benefit from strategic guidance and fractional executive support.',
@@ -134,66 +140,73 @@ const CapabilityAssessment = () => {
       });
     }
 
-    recommendations?.push({
+    recommendations.push({
       service: 'Development Lab',
-      priority: goals?.includes('operational-efficiency') ? 'High' : 'Medium',
+      priority: goals.includes('operational-efficiency') ? 'High' : 'Medium',
       reason: 'Custom development solutions can address technical challenges and improve efficiency.',
       estimatedCost: '$25,000 - $75,000',
       timeline: '8-12 weeks'
     });
 
     return recommendations;
-  };
+  }, [showResults, answers]);
 
-  const currentQuestion = assessmentQuestions?.[currentStep];
-  const progress = ((currentStep + 1) / assessmentQuestions?.length) * 100;
+  const currentQuestion = assessmentQuestions[currentStep];
+  const progress = ((currentStep + 1) / assessmentQuestions.length) * 100;
+  const isAnswered = currentQuestion && (
+    currentQuestion.type === 'multiple' 
+      ? answers[currentQuestion.id]?.length > 0
+      : !!answers[currentQuestion.id]
+  );
 
   if (showResults) {
-    const recommendations = getRecommendations();
-    
     return (
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
-        <div className="p-6 bg-gradient-to-r from-accent/10 to-transparent border-b border-border">
+        <div className="p-4 md:p-6 bg-gradient-to-r from-accent/10 to-transparent border-b border-border">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-accent text-white rounded-lg">
-              <Icon name="CheckCircle" size={24} />
+              <Icon name="CheckCircle" size={20} className="md:hidden" />
+              <Icon name="CheckCircle" size={24} className="hidden md:block" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-primary">Assessment Complete!</h3>
-              <p className="text-text-secondary">Here are our personalized recommendations</p>
+              <h3 className="text-lg md:text-xl font-bold text-primary">Assessment Complete!</h3>
+              <p className="text-sm md:text-base text-text-secondary">Here are our personalized recommendations</p>
             </div>
           </div>
         </div>
-        <div className="p-6 space-y-6">
-          {recommendations?.map((rec, index) => (
+        
+        <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+          {getRecommendations.map((rec, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="border border-border rounded-xl p-6 space-y-4"
+              className="border border-border rounded-xl p-4 md:p-6 space-y-3 md:space-y-4"
             >
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div>
-                  <h4 className="font-bold text-primary text-lg">{rec?.service}</h4>
-                  <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                    rec?.priority === 'High' ?'bg-accent/20 text-accent' :'bg-muted text-text-secondary'
+                  <h4 className="font-bold text-primary text-base md:text-lg">{rec.service}</h4>
+                  <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${
+                    rec.priority === 'High' 
+                      ? 'bg-accent/20 text-accent' 
+                      : 'bg-muted text-text-secondary'
                   }`}>
-                    {rec?.priority} Priority
+                    {rec.priority} Priority
                   </span>
                 </div>
-                <div className="text-right">
-                  <div className="font-semibold text-primary">{rec?.estimatedCost}</div>
-                  <div className="text-sm text-text-secondary">{rec?.timeline}</div>
+                <div className="text-left sm:text-right">
+                  <div className="font-semibold text-primary text-sm md:text-base">{rec.estimatedCost}</div>
+                  <div className="text-xs md:text-sm text-text-secondary">{rec.timeline}</div>
                 </div>
               </div>
               
-              <p className="text-text-secondary">{rec?.reason}</p>
+              <p className="text-sm md:text-base text-text-secondary">{rec.reason}</p>
               
               <Button
                 variant="outline"
                 size="sm"
-                className="border-accent text-accent hover:bg-accent hover:text-white"
+                className="border-accent text-accent hover:bg-accent hover:text-white w-full sm:w-auto"
                 iconName="ArrowRight"
                 iconPosition="right"
               >
@@ -202,10 +215,10 @@ const CapabilityAssessment = () => {
             </motion.div>
           ))}
 
-          <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-border">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 md:pt-6 border-t border-border">
             <Button
               variant="default"
-              className="bg-accent hover:bg-accent/90"
+              className="bg-accent hover:bg-accent/90 w-full sm:w-auto"
               iconName="Calendar"
               iconPosition="left"
             >
@@ -213,7 +226,7 @@ const CapabilityAssessment = () => {
             </Button>
             <Button
               variant="outline"
-              className="border-accent text-accent hover:bg-accent hover:text-white"
+              className="border-accent text-accent hover:bg-accent hover:text-white w-full sm:w-auto"
               iconName="Download"
               iconPosition="left"
             >
@@ -221,12 +234,8 @@ const CapabilityAssessment = () => {
             </Button>
             <Button
               variant="ghost"
-              onClick={() => {
-                setShowResults(false);
-                setCurrentStep(0);
-                setAnswers({});
-              }}
-              className="text-accent hover:bg-accent/10"
+              onClick={resetAssessment}
+              className="text-accent hover:bg-accent/10 w-full sm:w-auto"
             >
               Retake Assessment
             </Button>
@@ -239,97 +248,113 @@ const CapabilityAssessment = () => {
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden">
       {/* Header */}
-      <div className="p-6 border-b border-border">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold text-primary">Capability Assessment</h3>
-          <span className="text-sm text-text-secondary">
-            {currentStep + 1} of {assessmentQuestions?.length}
+      <div className="p-4 md:p-6 border-b border-border">
+        <div className="flex items-center justify-between mb-3 md:mb-4">
+          <h3 className="text-lg md:text-xl font-bold text-primary">Capability Assessment</h3>
+          <span className="text-xs md:text-sm text-text-secondary">
+            {currentStep + 1} of {assessmentQuestions.length}
           </span>
         </div>
         
         {/* Progress Bar */}
-        <div className="w-full bg-muted rounded-full h-2">
+        <div className="w-full bg-muted rounded-full h-1.5 md:h-2">
           <motion.div
-            className="bg-accent h-2 rounded-full"
+            className="bg-accent h-full rounded-full"
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.3 }}
           />
         </div>
       </div>
+
       {/* Question */}
-      <div className="p-6">
-        <motion.div
-          key={currentStep}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3 }}
-          className="space-y-6"
-        >
-          <h4 className="text-lg font-semibold text-primary">
-            {currentQuestion?.title}
-          </h4>
+      <div className="p-4 md:p-6">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-4 md:space-y-6"
+          >
+            <h4 className="text-base md:text-lg font-semibold text-primary">
+              {currentQuestion?.title}
+            </h4>
 
-          <div className="grid gap-3">
-            {currentQuestion?.options?.map((option) => {
-              const isSelected = currentQuestion?.type === 'multiple'
-                ? (answers?.[currentQuestion?.id] || [])?.includes(option?.value)
-                : answers?.[currentQuestion?.id] === option?.value;
+            <div className="grid gap-2 md:gap-3">
+              {currentQuestion?.options?.map((option) => {
+                const isSelected = currentQuestion.type === 'multiple'
+                  ? (answers[currentQuestion.id] || []).includes(option.value)
+                  : answers[currentQuestion.id] === option.value;
 
-              return (
-                <motion.button
-                  key={option?.value}
-                  onClick={() => handleAnswer(currentQuestion?.id, option?.value, currentQuestion?.type === 'multiple')}
-                  className={`flex items-center space-x-4 p-4 rounded-xl border-2 transition-all duration-300 text-left ${
-                    isSelected
-                      ? 'border-accent bg-accent/10 text-accent' :'border-border hover:border-accent/30 hover:bg-muted/50 text-text-primary'
-                  }`}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div className={`p-2 rounded-lg ${
-                    isSelected ? 'bg-accent text-white' : 'bg-muted text-text-secondary'
-                  }`}>
-                    <Icon name={option?.icon} size={20} />
-                  </div>
-                  <span className="font-medium">{option?.label}</span>
-                  {isSelected && (
-                    <Icon name="Check" size={20} className="ml-auto text-accent" />
-                  )}
-                </motion.button>
-              );
-            })}
-          </div>
-        </motion.div>
+                return (
+                  <motion.button
+                    key={option.value}
+                    onClick={() => handleAnswer(currentQuestion.id, option.value, currentQuestion.type === 'multiple')}
+                    className={`flex items-center space-x-3 md:space-x-4 p-3 md:p-4 rounded-xl border-2 
+                             transition-all duration-300 text-left ${
+                      isSelected
+                        ? 'border-accent bg-accent/10 text-accent' 
+                        : 'border-border hover:border-accent/30 hover:bg-muted/50 text-text-primary'
+                    }`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <div className={`p-1.5 md:p-2 rounded-lg flex-shrink-0 ${
+                      isSelected ? 'bg-accent text-white' : 'bg-muted text-text-secondary'
+                    }`}>
+                      <Icon name={option.icon} size={16} className="md:hidden" />
+                      <Icon name={option.icon} size={20} className="hidden md:block" />
+                    </div>
+                    <span className="font-medium text-sm md:text-base flex-1">{option.label}</span>
+                    {isSelected && (
+                      <div className="flex-shrink-0">
+                        <Icon name="Check" size={16} className="text-accent md:hidden" />
+                        <Icon name="Check" size={20} className="text-accent hidden md:block" />
+                      </div>
+                    )}
+                  </motion.button>
+                );
+              })}
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
+
       {/* Navigation */}
-      <div className="p-6 border-t border-border">
-        <div className="flex justify-between">
+      <div className="p-4 md:p-6 border-t border-border">
+        <div className="flex justify-between gap-3">
           <Button
             variant="outline"
             onClick={prevStep}
             disabled={currentStep === 0}
             iconName="ArrowLeft"
             iconPosition="left"
-            className="border-accent text-accent hover:bg-accent hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="border-accent text-accent hover:bg-accent hover:text-white 
+                     disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
           >
-            Previous
+            <span className="hidden sm:inline">Previous</span>
+            <span className="sm:hidden">Back</span>
           </Button>
           
           <Button
             variant="default"
             onClick={nextStep}
-            disabled={!answers?.[currentQuestion?.id] || (currentQuestion?.type === 'multiple' && (!answers?.[currentQuestion?.id] || answers?.[currentQuestion?.id]?.length === 0))}
-            className="bg-accent hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed"
-            iconName={currentStep === assessmentQuestions?.length - 1 ? "CheckCircle" : "ArrowRight"}
+            disabled={!isAnswered}
+            className="bg-accent hover:bg-accent/90 disabled:opacity-50 
+                     disabled:cursor-not-allowed text-sm md:text-base"
+            iconName={currentStep === assessmentQuestions.length - 1 ? "CheckCircle" : "ArrowRight"}
             iconPosition="right"
           >
-            {currentStep === assessmentQuestions?.length - 1 ? 'Get Results' : 'Next'}
+            {currentStep === assessmentQuestions.length - 1 ? 'Get Results' : 'Next'}
           </Button>
         </div>
       </div>
     </div>
   );
-};
+});
+
+CapabilityAssessment.displayName = 'CapabilityAssessment';
 
 export default CapabilityAssessment;
