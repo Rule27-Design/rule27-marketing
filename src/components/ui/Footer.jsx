@@ -41,7 +41,7 @@ const Footer = () => {
             <div className="mb-6 flex justify-center md:justify-start">
               {/* Try white PNG first, fallback to color with filter */}
               <img 
-                src="/assets/logo/rule27-white-red_stacked.png"
+                src="/assets/logo/rule27-white-red.png"
                 alt="Rule27 Design"
                 className="h-12 w-auto"
                 onError={(e) => {
