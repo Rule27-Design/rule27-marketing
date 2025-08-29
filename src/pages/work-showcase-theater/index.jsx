@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
+import Footer from '../../components/ui/Footer';
 import HeroSection from './components/HeroSection';
 import FilterBar from './components/FilterBar';
 import CaseStudyCard from './components/CaseStudyCard';
@@ -19,6 +20,11 @@ const WorkShowcaseTheater = () => {
     serviceType: [],
     businessStage: []
   });
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // Mock case studies data
   const caseStudies = [
@@ -59,7 +65,7 @@ const WorkShowcaseTheater = () => {
         name: "Sarah Chen",
         position: "CEO & Founder",
         avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-        quote: "Rule27 Design didn\'t just redesign our brand - they transformed our entire business trajectory. The results exceeded every expectation we had."
+        quote: "Rule27 Design didn't just redesign our brand - they transformed our entire business trajectory. The results exceeded every expectation we had."
       },
       gallery: [
         "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop",
@@ -284,7 +290,7 @@ const WorkShowcaseTheater = () => {
         name: "Dr. Lisa Park",
         position: "Chief Academic Officer",
         avatar: "https://randomuser.me/api/portraits/women/55.jpg",
-        quote: "Rule27 Design\'s platform has revolutionized how our students learn. The personalized approach and engaging interface have dramatically improved learning outcomes."
+        quote: "Rule27 Design's platform has revolutionized how our students learn. The personalized approach and engaging interface have dramatically improved learning outcomes."
       },
       gallery: [
         "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop",
@@ -389,6 +395,7 @@ const WorkShowcaseTheater = () => {
         <meta property="og:type" content="website" />
         <link rel="canonical" href="/work-showcase-theater" />
       </Helmet>
+      
       <div className="min-h-screen bg-background">
         <Header />
 
@@ -411,21 +418,21 @@ const WorkShowcaseTheater = () => {
         />
 
         {/* Case Studies Grid */}
-        <section className="py-16 bg-background">
+        <section className="py-12 sm:py-16 bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Results Header */}
-            <div className="flex items-center justify-between mb-8">
+            {/* Results Header - Mobile Responsive */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
               <div>
-                <h2 className="text-2xl font-bold text-primary">
+                <h2 className="text-xl sm:text-2xl font-bold text-primary">
                   {filteredCaseStudies?.length} Case Stud{filteredCaseStudies?.length !== 1 ? 'ies' : 'y'}
                 </h2>
-                <p className="text-text-secondary">
+                <p className="text-sm sm:text-base text-text-secondary">
                   Transformation stories with measurable impact
                 </p>
               </div>
               
-              {/* View Toggle */}
-              <div className="flex items-center space-x-2">
+              {/* View Toggle - Hidden on Mobile */}
+              <div className="hidden sm:flex items-center space-x-2">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -443,9 +450,9 @@ const WorkShowcaseTheater = () => {
               </div>
             </div>
 
-            {/* Case Studies Grid */}
+            {/* Case Studies Grid - Mobile Responsive */}
             {filteredCaseStudies?.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 {filteredCaseStudies?.map((caseStudy) => (
                   <CaseStudyCard
                     key={caseStudy?.id}
@@ -455,20 +462,20 @@ const WorkShowcaseTheater = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-16">
-                <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Icon name="Search" size={32} className="text-text-secondary" />
+              <div className="text-center py-12 sm:py-16">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <Icon name="Search" size={28} className="text-text-secondary sm:w-8 sm:h-8" />
                 </div>
-                <h3 className="text-xl font-semibold text-primary mb-2">
+                <h3 className="text-lg sm:text-xl font-semibold text-primary mb-2">
                   No case studies found
                 </h3>
-                <p className="text-text-secondary mb-6">
+                <p className="text-sm sm:text-base text-text-secondary mb-4 sm:mb-6">
                   Try adjusting your filters or search terms
                 </p>
                 <Button
                   variant="outline"
                   onClick={handleClearFilters}
-                  className="border-accent text-accent hover:bg-accent hover:text-white"
+                  className="border-accent text-accent hover:bg-accent hover:text-white text-sm sm:text-base"
                 >
                   Clear All Filters
                 </Button>
@@ -480,22 +487,22 @@ const WorkShowcaseTheater = () => {
         {/* Metrics Visualization */}
         <MetricsVisualization caseStudies={caseStudies} />
 
-        {/* CTA Section */}
-        <section className="py-16 bg-primary text-white">
+        {/* CTA Section - Mobile Responsive */}
+        <section className="py-12 sm:py-16 bg-primary text-white">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">
               Ready to Create Your Success Story?
             </h2>
-            <p className="text-xl text-white/90 mb-8">
+            <p className="text-base sm:text-xl text-white/90 mb-6 sm:mb-8 px-4 sm:px-0">
               Join the ranks of industry leaders who've transformed their businesses with Rule27 Design. 
               Let's discuss how we can deliver similar results for your organization.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <Button
                 variant="default"
-                size="lg"
+                size="default"
                 onClick={() => window.location.href = '/contact-consultation-portal'}
-                className="bg-accent hover:bg-accent/90 text-white"
+                className="bg-accent hover:bg-accent/90 text-white w-full sm:w-auto text-sm sm:text-base px-6 py-3"
                 iconName="Calendar"
                 iconPosition="left"
               >
@@ -503,9 +510,9 @@ const WorkShowcaseTheater = () => {
               </Button>
               <Button
                 variant="outline"
-                size="lg"
+                size="default"
                 onClick={() => window.location.href = '/capability-universe'}
-                className="border-white text-white hover:bg-white hover:text-primary"
+                className="border-white text-white hover:bg-white hover:text-primary w-full sm:w-auto text-sm sm:text-base px-6 py-3"
                 iconName="Zap"
                 iconPosition="left"
               >
@@ -521,6 +528,9 @@ const WorkShowcaseTheater = () => {
           isOpen={isModalOpen}
           onClose={handleCloseModal}
         />
+
+        {/* Footer */}
+        <Footer />
       </div>
     </>
   );

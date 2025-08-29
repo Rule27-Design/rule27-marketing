@@ -58,155 +58,169 @@ const MetricsVisualization = ({ caseStudies }) => {
     }, 0) / caseStudies?.length
   );
 
+  // Custom mobile-friendly tooltip
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2 sm:p-3 rounded-lg shadow-lg border border-gray-200">
+          <p className="text-xs sm:text-sm font-medium text-gray-900">{label}</p>
+          {payload.map((entry, index) => (
+            <p key={index} className="text-xs sm:text-sm" style={{ color: entry.color }}>
+              {entry.name}: {entry.name === 'revenue' ? `$${(entry.value / 1000).toFixed(0)}K` : entry.value}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Mobile responsive label formatter for pie chart
+  const renderCustomLabel = ({ service, percent }) => {
+    if (window.innerWidth < 640) {
+      return `${(percent * 100).toFixed(0)}%`;
+    }
+    return `${service} ${(percent * 100).toFixed(0)}%`;
+  };
+
   return (
-    <section className="py-16 bg-muted">
+    <section className="py-12 sm:py-16 bg-muted">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
+        {/* Header - Mobile Responsive */}
+        <div className="text-center mb-8 sm:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-3 sm:mb-4">
             Our Impact in Numbers
           </h2>
-          <p className="text-xl text-text-secondary max-w-3xl mx-auto">
+          <p className="text-base sm:text-xl text-text-secondary max-w-3xl mx-auto px-4 sm:px-0">
             Data-driven results across industries, showcasing measurable transformations 
             and sustainable growth for our clients.
           </p>
         </div>
 
-        {/* Key Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-          <div className="bg-white rounded-2xl p-6 text-center brand-shadow">
-            <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Icon name="Briefcase" size={24} className="text-accent" />
+        {/* Key Stats - Mobile Responsive Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-8 sm:mb-12">
+          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center brand-shadow">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+              <Icon name="Briefcase" size={20} className="text-accent sm:w-6 sm:h-6" />
             </div>
-            <div className="text-3xl font-bold text-primary mb-2">{totalProjects}+</div>
-            <div className="text-text-secondary">Projects Completed</div>
+            <div className="text-2xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2">{totalProjects}+</div>
+            <div className="text-xs sm:text-base text-text-secondary">Projects Completed</div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 text-center brand-shadow">
-            <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Icon name="DollarSign" size={24} className="text-accent" />
+          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center brand-shadow">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+              <Icon name="DollarSign" size={20} className="text-accent sm:w-6 sm:h-6" />
             </div>
-            <div className="text-3xl font-bold text-primary mb-2">
+            <div className="text-2xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2">
               ${(totalRevenue / 1000000)?.toFixed(1)}M+
             </div>
-            <div className="text-text-secondary">Revenue Generated</div>
+            <div className="text-xs sm:text-base text-text-secondary">Revenue Generated</div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 text-center brand-shadow">
-            <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Icon name="TrendingUp" size={24} className="text-accent" />
+          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center brand-shadow">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+              <Icon name="TrendingUp" size={20} className="text-accent sm:w-6 sm:h-6" />
             </div>
-            <div className="text-3xl font-bold text-primary mb-2">{avgGrowth}%</div>
-            <div className="text-text-secondary">Average Growth</div>
+            <div className="text-2xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2">{avgGrowth}%</div>
+            <div className="text-xs sm:text-base text-text-secondary">Average Growth</div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 text-center brand-shadow">
-            <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Icon name="Users" size={24} className="text-accent" />
+          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center brand-shadow">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+              <Icon name="Users" size={20} className="text-accent sm:w-6 sm:h-6" />
             </div>
-            <div className="text-3xl font-bold text-primary mb-2">98%</div>
-            <div className="text-text-secondary">Client Satisfaction</div>
+            <div className="text-2xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2">98%</div>
+            <div className="text-xs sm:text-base text-text-secondary">Client Satisfaction</div>
           </div>
         </div>
 
-        {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          {/* Industry Performance */}
-          <div className="bg-white rounded-2xl p-6 brand-shadow">
-            <h3 className="text-xl font-bold text-primary mb-6">Performance by Industry</h3>
-            <div className="h-64">
+        {/* Charts Grid - Mobile Responsive */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-8 sm:mb-12">
+          {/* Industry Performance - Mobile Optimized */}
+          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 brand-shadow">
+            <h3 className="text-lg sm:text-xl font-bold text-primary mb-4 sm:mb-6">Performance by Industry</h3>
+            <div className="h-48 sm:h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={industryData}>
+                <BarChart data={industryData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
                   <XAxis 
                     dataKey="industry" 
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 10 }}
                     stroke="#6B7280"
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
                   />
                   <YAxis 
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 10 }}
                     stroke="#6B7280"
                   />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #E5E7EB',
-                      borderRadius: '8px'
-                    }}
-                  />
+                  <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="avgGrowth" fill="#E53E3E" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Service Distribution */}
-          <div className="bg-white rounded-2xl p-6 brand-shadow">
-            <h3 className="text-xl font-bold text-primary mb-6">Service Distribution</h3>
-            <div className="h-64">
+          {/* Service Distribution - Mobile Optimized */}
+          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 brand-shadow">
+            <h3 className="text-lg sm:text-xl font-bold text-primary mb-4 sm:mb-6">Service Distribution</h3>
+            <div className="h-48 sm:h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={serviceTypeData}
                     cx="50%"
                     cy="50%"
-                    outerRadius={80}
+                    outerRadius={window.innerWidth < 640 ? 60 : 80}
                     dataKey="projects"
-                    label={({ service, percent }) => `${service} ${(percent * 100)?.toFixed(0)}%`}
+                    label={renderCustomLabel}
+                    labelLine={false}
                   >
                     {serviceTypeData?.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS?.[index % COLORS?.length]} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip content={<CustomTooltip />} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
           </div>
         </div>
 
-        {/* Timeline Chart */}
-        <div className="bg-white rounded-2xl p-6 brand-shadow">
-          <h3 className="text-xl font-bold text-primary mb-6">Growth Timeline (2024)</h3>
-          <div className="h-80">
+        {/* Timeline Chart - Mobile Optimized */}
+        <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 brand-shadow">
+          <h3 className="text-lg sm:text-xl font-bold text-primary mb-4 sm:mb-6">Growth Timeline (2024)</h3>
+          <div className="h-64 sm:h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={timelineData}>
+              <LineChart data={timelineData} margin={{ top: 5, right: 5, left: -10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
                 <XAxis 
                   dataKey="month" 
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: 10 }}
                   stroke="#6B7280"
                 />
                 <YAxis 
                   yAxisId="left"
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: 10 }}
                   stroke="#6B7280"
                 />
                 <YAxis 
                   yAxisId="right" 
                   orientation="right"
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: 10 }}
                   stroke="#6B7280"
+                  hide={window.innerWidth < 640}
                 />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #E5E7EB',
-                    borderRadius: '8px'
-                  }}
-                  formatter={(value, name) => [
-                    name === 'revenue' ? `$${(value / 1000)?.toFixed(0)}K` : value,
-                    name === 'revenue' ? 'Revenue' : 'Projects'
-                  ]}
-                />
+                <Tooltip content={<CustomTooltip />} />
                 <Bar yAxisId="left" dataKey="projects" fill="#E53E3E" radius={[4, 4, 0, 0]} />
                 <Line 
                   yAxisId="right" 
                   type="monotone" 
                   dataKey="revenue" 
                   stroke="#000000" 
-                  strokeWidth={3}
-                  dot={{ fill: '#000000', strokeWidth: 2, r: 6 }}
+                  strokeWidth={2}
+                  dot={{ fill: '#000000', strokeWidth: 1, r: 4 }}
                 />
               </LineChart>
             </ResponsiveContainer>

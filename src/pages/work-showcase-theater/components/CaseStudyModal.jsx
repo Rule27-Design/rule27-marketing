@@ -54,16 +54,20 @@ const CaseStudyModal = ({ caseStudy, isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
         onClick={onClose}
       ></div>
-      {/* Modal Content */}
-      <div className="relative w-full max-w-6xl max-h-[90vh] mx-4 bg-white rounded-2xl overflow-hidden brand-shadow-lg">
-        {/* Header */}
-        <div className="relative h-80 overflow-hidden">
+      
+      {/* Modal Content - Mobile Optimized */}
+      <div className="relative w-full sm:max-w-6xl h-[90vh] sm:max-h-[90vh] sm:mx-4 bg-white rounded-t-2xl sm:rounded-2xl overflow-hidden brand-shadow-lg animate-slide-up sm:animate-none">
+        {/* Mobile Drag Handle */}
+        <div className="sm:hidden w-12 h-1 bg-gray-300 rounded-full mx-auto mt-3 mb-2"></div>
+        
+        {/* Header - Mobile Optimized */}
+        <div className="relative h-60 sm:h-80 overflow-hidden">
           <Image
             src={caseStudy?.gallery?.[currentImageIndex]}
             alt={`${caseStudy?.title} gallery image ${currentImageIndex + 1}`}
@@ -71,91 +75,106 @@ const CaseStudyModal = ({ caseStudy, isOpen, onClose }) => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20"></div>
           
-          {/* Close Button */}
+          {/* Close Button - Mobile Optimized */}
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="absolute top-4 right-4 text-white hover:bg-white/20"
+            className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white hover:bg-white/20 w-10 h-10"
           >
-            <Icon name="X" size={24} />
+            <Icon name="X" size={20} className="sm:w-6 sm:h-6" />
           </Button>
 
-          {/* Gallery Navigation */}
+          {/* Gallery Navigation - Mobile Touch Friendly */}
           {caseStudy?.gallery?.length > 1 && (
             <>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={prevImage}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20"
+                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20 w-10 h-10"
               >
-                <Icon name="ChevronLeft" size={24} />
+                <Icon name="ChevronLeft" size={20} className="sm:w-6 sm:h-6" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={nextImage}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20"
+                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20 w-10 h-10"
               >
-                <Icon name="ChevronRight" size={24} />
+                <Icon name="ChevronRight" size={20} className="sm:w-6 sm:h-6" />
               </Button>
+              
+              {/* Image Indicators */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1.5">
+                {caseStudy?.gallery?.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentImageIndex(idx)}
+                    className={`w-1.5 h-1.5 rounded-full transition-all ${
+                      idx === currentImageIndex ? 'bg-white w-4' : 'bg-white/50'
+                    }`}
+                    aria-label={`Go to image ${idx + 1}`}
+                  />
+                ))}
+              </div>
             </>
           )}
 
-          {/* Title Overlay */}
-          <div className="absolute bottom-6 left-6 right-6">
-            <div className="flex items-center space-x-3 mb-2">
-              <span className="px-3 py-1 bg-white/20 backdrop-blur-sm text-xs font-semibold text-white rounded-full">
+          {/* Title Overlay - Mobile Responsive */}
+          <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="px-2 py-1 sm:px-3 sm:py-1 bg-white/20 backdrop-blur-sm text-xs font-semibold text-white rounded-full">
                 {caseStudy?.industry}
               </span>
-              <span className="px-3 py-1 bg-accent/80 backdrop-blur-sm text-xs font-semibold text-white rounded-full">
+              <span className="px-2 py-1 sm:px-3 sm:py-1 bg-accent/80 backdrop-blur-sm text-xs font-semibold text-white rounded-full">
                 {caseStudy?.serviceType}
               </span>
             </div>
-            <h2 className="text-3xl font-bold text-white mb-2">{caseStudy?.title}</h2>
-            <p className="text-white/90">{caseStudy?.client} • {caseStudy?.businessStage}</p>
+            <h2 className="text-xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 line-clamp-2">{caseStudy?.title}</h2>
+            <p className="text-white/90 text-sm sm:text-base">{caseStudy?.client} • {caseStudy?.businessStage}</p>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="border-b border-border">
-          <div className="flex space-x-8 px-6">
+        {/* Tab Navigation - Mobile Scrollable */}
+        <div className="border-b border-border overflow-x-auto">
+          <div className="flex px-4 sm:px-6 min-w-max">
             {tabs?.map((tab) => (
               <button
                 key={tab?.id}
                 onClick={() => setActiveTab(tab?.id)}
-                className={`flex items-center space-x-2 py-4 border-b-2 transition-colors duration-300 ${
+                className={`flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-3 sm:py-4 border-b-2 transition-colors duration-300 text-sm sm:text-base ${
                   activeTab === tab?.id
-                    ? 'border-accent text-accent' :'border-transparent text-text-secondary hover:text-primary'
+                    ? 'border-accent text-accent' 
+                    : 'border-transparent text-text-secondary hover:text-primary'
                 }`}
               >
-                <Icon name={tab?.icon} size={18} />
-                <span className="font-medium">{tab?.label}</span>
+                <Icon name={tab?.icon} size={16} className="sm:w-[18px] sm:h-[18px]" />
+                <span className="font-medium whitespace-nowrap">{tab?.label}</span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Tab Content */}
-        <div className="p-6 max-h-96 overflow-y-auto">
+        {/* Tab Content - Mobile Scrollable */}
+        <div className="p-4 sm:p-6 h-[calc(100%-21rem)] sm:max-h-96 overflow-y-auto">
           {activeTab === 'overview' && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
-                <h3 className="text-xl font-bold text-primary mb-3">Challenge</h3>
-                <p className="text-text-secondary leading-relaxed">{caseStudy?.challenge}</p>
+                <h3 className="text-lg sm:text-xl font-bold text-primary mb-2 sm:mb-3">Challenge</h3>
+                <p className="text-sm sm:text-base text-text-secondary leading-relaxed">{caseStudy?.challenge}</p>
               </div>
               <div>
-                <h3 className="text-xl font-bold text-primary mb-3">Solution</h3>
-                <p className="text-text-secondary leading-relaxed">{caseStudy?.solution}</p>
+                <h3 className="text-lg sm:text-xl font-bold text-primary mb-2 sm:mb-3">Solution</h3>
+                <p className="text-sm sm:text-base text-text-secondary leading-relaxed">{caseStudy?.solution}</p>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {caseStudy?.keyMetrics?.map((metric, index) => (
-                  <div key={index} className="text-center p-4 bg-muted rounded-lg">
-                    <div className="text-2xl font-bold text-accent mb-1">
+                  <div key={index} className="text-center p-3 sm:p-4 bg-muted rounded-lg">
+                    <div className="text-lg sm:text-2xl font-bold text-accent mb-1">
                       {formatMetric(metric?.value, metric?.type)}
                     </div>
-                    <div className="text-sm text-text-secondary">{metric?.label}</div>
+                    <div className="text-xs sm:text-sm text-text-secondary">{metric?.label}</div>
                   </div>
                 ))}
               </div>
@@ -163,17 +182,17 @@ const CaseStudyModal = ({ caseStudy, isOpen, onClose }) => {
           )}
 
           {activeTab === 'process' && (
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-primary mb-4">Our Methodology</h3>
-              <div className="space-y-4">
+            <div className="space-y-4 sm:space-y-6">
+              <h3 className="text-lg sm:text-xl font-bold text-primary mb-3 sm:mb-4">Our Methodology</h3>
+              <div className="space-y-3 sm:space-y-4">
                 {caseStudy?.processSteps?.map((step, index) => (
-                  <div key={index} className="flex space-x-4">
-                    <div className="flex-shrink-0 w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white font-bold text-sm">
+                  <div key={index} className="flex space-x-3 sm:space-x-4">
+                    <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 bg-accent rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm">
                       {index + 1}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-primary mb-1">{step?.title}</h4>
-                      <p className="text-text-secondary text-sm">{step?.description}</p>
+                      <h4 className="font-semibold text-primary mb-1 text-sm sm:text-base">{step?.title}</h4>
+                      <p className="text-text-secondary text-xs sm:text-sm">{step?.description}</p>
                     </div>
                   </div>
                 ))}
@@ -182,18 +201,18 @@ const CaseStudyModal = ({ caseStudy, isOpen, onClose }) => {
           )}
 
           {activeTab === 'results' && (
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-primary mb-4">Measurable Impact</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4 sm:space-y-6">
+              <h3 className="text-lg sm:text-xl font-bold text-primary mb-3 sm:mb-4">Measurable Impact</h3>
+              <div className="grid grid-cols-1 gap-4 sm:gap-6">
                 {caseStudy?.detailedResults?.map((result, index) => (
-                  <div key={index} className="p-4 border border-border rounded-lg">
+                  <div key={index} className="p-3 sm:p-4 border border-border rounded-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-primary">{result?.metric}</span>
-                      <span className="text-2xl font-bold text-accent">
+                      <span className="font-medium text-primary text-sm sm:text-base">{result?.metric}</span>
+                      <span className="text-xl sm:text-2xl font-bold text-accent">
                         {formatMetric(result?.value, result?.type)}
                       </span>
                     </div>
-                    <p className="text-sm text-text-secondary">{result?.description}</p>
+                    <p className="text-xs sm:text-sm text-text-secondary">{result?.description}</p>
                   </div>
                 ))}
               </div>
@@ -201,38 +220,38 @@ const CaseStudyModal = ({ caseStudy, isOpen, onClose }) => {
           )}
 
           {activeTab === 'testimonial' && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div className="text-center">
-                <div className="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-3 sm:mb-4 rounded-full overflow-hidden">
                   <Image
                     src={caseStudy?.testimonial?.avatar}
                     alt={caseStudy?.testimonial?.name}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <blockquote className="text-lg text-primary italic mb-4">
+                <blockquote className="text-base sm:text-lg text-primary italic mb-3 sm:mb-4">
                   "{caseStudy?.testimonial?.quote}"
                 </blockquote>
                 <div>
-                  <div className="font-semibold text-primary">{caseStudy?.testimonial?.name}</div>
-                  <div className="text-sm text-text-secondary">{caseStudy?.testimonial?.position}</div>
-                  <div className="text-sm text-text-secondary">{caseStudy?.client}</div>
+                  <div className="font-semibold text-primary text-sm sm:text-base">{caseStudy?.testimonial?.name}</div>
+                  <div className="text-xs sm:text-sm text-text-secondary">{caseStudy?.testimonial?.position}</div>
+                  <div className="text-xs sm:text-sm text-text-secondary">{caseStudy?.client}</div>
                 </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="border-t border-border p-6">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-text-secondary">
+        {/* Footer - Mobile Optimized */}
+        <div className="border-t border-border p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="text-xs sm:text-sm text-text-secondary">
               Project completed in {caseStudy?.timeline} • {caseStudy?.duration}
             </div>
             <Button
               variant="default"
               onClick={onClose}
-              className="bg-accent hover:bg-accent/90 text-white"
+              className="bg-accent hover:bg-accent/90 text-white w-full sm:w-auto text-sm sm:text-base"
               iconName="ExternalLink"
               iconPosition="right"
             >
@@ -241,6 +260,22 @@ const CaseStudyModal = ({ caseStudy, isOpen, onClose }) => {
           </div>
         </div>
       </div>
+
+      {/* Animation Styles */}
+      <style jsx>{`
+        @keyframes slide-up {
+          from {
+            transform: translateY(100%);
+          }
+          to {
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-slide-up {
+          animation: slide-up 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 };
