@@ -59,7 +59,7 @@ const HeroSection = ({ featuredCaseStudies, onViewCaseStudy }) => {
   };
 
   return (
-    <section className="relative h-screen min-h-[600px] overflow-hidden bg-black">
+    <section className="relative h-screen min-h-[600px] overflow-hidden bg-black pt-16">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
@@ -67,87 +67,89 @@ const HeroSection = ({ featuredCaseStudies, onViewCaseStudy }) => {
           alt={`${currentCase?.title} hero`}
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40 md:via-black/40 md:to-transparent"></div>
       </div>
-      {/* Navigation Arrows */}
+      
+      {/* Navigation Arrows - Mobile Optimized */}
       {featuredCaseStudies?.length > 1 && (
         <>
           <Button
             variant="ghost"
             size="icon"
             onClick={prevSlide}
-            className="absolute left-6 top-1/2 -translate-y-1/2 text-white hover:bg-white/20 z-10"
+            className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 text-white hover:bg-white/20 z-10 w-10 h-10 md:w-12 md:h-12"
           >
-            <Icon name="ChevronLeft" size={32} />
+            <Icon name="ChevronLeft" size={24} className="md:w-8 md:h-8" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={nextSlide}
-            className="absolute right-6 top-1/2 -translate-y-1/2 text-white hover:bg-white/20 z-10"
+            className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 text-white hover:bg-white/20 z-10 w-10 h-10 md:w-12 md:h-12"
           >
-            <Icon name="ChevronRight" size={32} />
+            <Icon name="ChevronRight" size={24} className="md:w-8 md:h-8" />
           </Button>
         </>
       )}
-      {/* Content */}
+      
+      {/* Content - Mobile Optimized */}
       <div className="relative z-10 h-full flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-3xl">
-            {/* Badges */}
-            <div className="flex items-center space-x-3 mb-6">
-              <span className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white text-sm font-semibold rounded-full">
+            {/* Badges - Mobile Responsive */}
+            <div className="flex flex-wrap items-center gap-2 mb-4 md:mb-6">
+              <span className="px-3 py-1.5 md:px-4 md:py-2 bg-white/20 backdrop-blur-sm text-white text-xs md:text-sm font-semibold rounded-full">
                 Featured Case Study
               </span>
-              <span className="px-4 py-2 bg-accent/80 backdrop-blur-sm text-white text-sm font-semibold rounded-full">
+              <span className="px-3 py-1.5 md:px-4 md:py-2 bg-accent/80 backdrop-blur-sm text-white text-xs md:text-sm font-semibold rounded-full">
                 {currentCase?.industry}
               </span>
             </div>
 
-            {/* Client */}
-            <div className="flex items-center space-x-4 mb-4">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                <span className="text-white font-bold">
+            {/* Client - Mobile Responsive */}
+            <div className="flex items-center space-x-3 md:space-x-4 mb-3 md:mb-4">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm md:text-base">
                   {currentCase?.client?.charAt(0)}
                 </span>
               </div>
               <div>
-                <h2 className="text-white text-xl font-bold">{currentCase?.client}</h2>
-                <p className="text-white/80 text-sm">{currentCase?.businessStage}</p>
+                <h2 className="text-white text-lg md:text-xl font-bold">{currentCase?.client}</h2>
+                <p className="text-white/80 text-xs md:text-sm">{currentCase?.businessStage}</p>
               </div>
             </div>
 
-            {/* Title */}
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+            {/* Title - Mobile Responsive */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 md:mb-6 leading-tight">
               {currentCase?.title}
             </h1>
 
-            {/* Description */}
-            <p className="text-xl text-white/90 mb-8 leading-relaxed">
+            {/* Description - Mobile Responsive */}
+            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 md:mb-8 leading-relaxed line-clamp-3 sm:line-clamp-none">
               {currentCase?.description}
             </p>
 
-            {/* Key Metrics */}
-            <div className="grid grid-cols-3 gap-6 mb-8">
+            {/* Key Metrics - Mobile Responsive Grid */}
+            <div className="grid grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8">
               {currentCase?.keyMetrics?.slice(0, 3)?.map((metric, index) => (
                 <div key={index} className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-accent mb-1">
+                  <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-accent mb-1">
                     {formatMetric(metric?.value, metric?.type)}
                   </div>
-                  <div className="text-white/80 text-sm">
+                  <div className="text-white/80 text-xs md:text-sm">
                     {metric?.label}
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
+            {/* CTA Buttons - Mobile Responsive Stack */}
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
               <Button
                 variant="default"
-                size="lg"
+                size="default"
                 onClick={() => onViewCaseStudy(currentCase)}
-                className="bg-accent hover:bg-accent/90 text-white"
+                className="bg-accent hover:bg-accent/90 text-white w-full sm:w-auto text-sm md:text-base px-4 py-3 md:px-6 md:py-4"
                 iconName="Play"
                 iconPosition="left"
               >
@@ -155,9 +157,9 @@ const HeroSection = ({ featuredCaseStudies, onViewCaseStudy }) => {
               </Button>
               <Button
                 variant="outline"
-                size="lg"
+                size="default"
                 onClick={() => window.location.href = '/contact-consultation-portal'}
-                className="border-white text-white hover:bg-white hover:text-primary"
+                className="border-white text-white hover:bg-white hover:text-primary w-full sm:w-auto text-sm md:text-base px-4 py-3 md:px-6 md:py-4"
                 iconName="MessageCircle"
                 iconPosition="left"
               >
@@ -167,24 +169,27 @@ const HeroSection = ({ featuredCaseStudies, onViewCaseStudy }) => {
           </div>
         </div>
       </div>
-      {/* Slide Indicators */}
+      
+      {/* Slide Indicators - Mobile Optimized */}
       {featuredCaseStudies?.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
+        <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
           {featuredCaseStudies?.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              className={`w-2.5 h-2.5 md:w-3 md:h-3 rounded-full transition-all duration-300 ${
                 index === currentSlide
                   ? 'bg-accent scale-125' :'bg-white/40 hover:bg-white/60'
               }`}
+              aria-label={`Go to slide ${index + 1}`}
             />
           ))}
         </div>
       )}
-      {/* Auto-play Indicator */}
+      
+      {/* Auto-play Indicator - Mobile Hidden on Small Screens */}
       {isAutoPlaying && featuredCaseStudies?.length > 1 && (
-        <div className="absolute bottom-20 right-8 flex items-center space-x-2 text-white/60 text-sm z-10">
+        <div className="hidden sm:flex absolute bottom-16 md:bottom-20 right-4 md:right-8 items-center space-x-2 text-white/60 text-xs md:text-sm z-10">
           <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
           <span>Auto-playing</span>
         </div>
