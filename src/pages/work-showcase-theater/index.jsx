@@ -5,6 +5,7 @@ import Footer from '../../components/ui/Footer';
 import HeroSection from './components/HeroSection';
 import FilterBar from './components/FilterBar';
 import CaseStudyCard from './components/CaseStudyCard';
+import CaseStudyListItem from './components/CaseStudyListItem';
 import CaseStudyModal from './components/CaseStudyModal';
 import MetricsVisualization from './components/MetricsVisualization';
 import Icon from '../../components/AppIcon';
@@ -15,15 +16,45 @@ const WorkShowcaseTheater = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('featured');
+  const [viewMode, setViewMode] = useState(() => {
+    // Get saved view mode from localStorage or default to 'grid'
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('caseStudyViewMode') || 'grid';
+    }
+    return 'grid';
+  });
   const [activeFilters, setActiveFilters] = useState({
     industry: [],
     serviceType: [],
     businessStage: []
   });
 
+  // Save view mode preference
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('caseStudyViewMode', viewMode);
+    }
+  }, [viewMode]);
+
   // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, []);
+
+  // Keyboard shortcuts for view switching
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'g' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setViewMode('grid');
+      } else if (e.key === 'l' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setViewMode('list');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
 
   // Mock case studies data
@@ -431,35 +462,57 @@ const WorkShowcaseTheater = () => {
                 </p>
               </div>
               
-              {/* View Toggle - Hidden on Mobile */}
-              <div className="hidden sm:flex items-center space-x-2">
+              {/* View Toggle - Now visible on mobile too */}
+              <div className="flex items-center space-x-2">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-accent"
+                  onClick={() => setViewMode('grid')}
+                  className={viewMode === 'grid' ? 'text-accent bg-accent/10' : 'text-text-secondary hover:text-accent'}
+                  aria-label="Grid view"
+                  title="Grid view (Ctrl+G)"
                 >
                   <Icon name="Grid3X3" size={20} />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-text-secondary"
+                  onClick={() => setViewMode('list')}
+                  className={viewMode === 'list' ? 'text-accent bg-accent/10' : 'text-text-secondary hover:text-accent'}
+                  aria-label="List view"
+                  title="List view (Ctrl+L)"
                 >
                   <Icon name="List" size={20} />
                 </Button>
               </div>
             </div>
 
-            {/* Case Studies Grid - Mobile Responsive */}
+            {/* Case Studies - Grid or List View with Animation */}
             {filteredCaseStudies?.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                {filteredCaseStudies?.map((caseStudy) => (
-                  <CaseStudyCard
-                    key={caseStudy?.id}
-                    caseStudy={caseStudy}
-                    onViewDetails={handleViewCaseStudy}
-                  />
-                ))}
+              <div className="transition-all duration-300 ease-in-out">
+                {viewMode === 'grid' ? (
+                  // Grid View
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 animate-fade-in">
+                    {filteredCaseStudies?.map((caseStudy) => (
+                      <CaseStudyCard
+                        key={caseStudy?.id}
+                        caseStudy={caseStudy}
+                        onViewDetails={handleViewCaseStudy}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  // List View
+                  <div className="space-y-6 animate-fade-in">
+                    {filteredCaseStudies?.map((caseStudy) => (
+                      <CaseStudyListItem
+                        key={caseStudy?.id}
+                        caseStudy={caseStudy}
+                        onViewDetails={handleViewCaseStudy}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-12 sm:py-16">
@@ -532,6 +585,24 @@ const WorkShowcaseTheater = () => {
         {/* Footer */}
         <Footer />
       </div>
+
+      {/* Animation Styles */}
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out;
+        }
+      `}</style>
     </>
   );
 };
