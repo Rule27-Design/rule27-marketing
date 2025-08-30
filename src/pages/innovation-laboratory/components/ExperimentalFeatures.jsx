@@ -102,16 +102,16 @@ const ExperimentalFeatures = () => {
             visibleItems.includes(0) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
-          <div className="inline-flex items-center space-x-2 bg-accent/10 border border-accent/20 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6">
+          <div className="inline-flex items-center justify-center space-x-2 bg-accent/10 border border-accent/20 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6 mx-auto">
             <Icon name="Flask" size={16} className="text-accent" />
             <span className="text-accent font-medium text-xs sm:text-sm">Experimental Features</span>
           </div>
           
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-4 sm:mb-6">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-4 sm:mb-6 text-center">
             Innovation in <span className="text-accent">Action</span>
           </h2>
           
-          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4 text-center">
             Cutting-edge tools and technologies that push the boundaries of what's possible in digital design and development.
           </p>
         </div>

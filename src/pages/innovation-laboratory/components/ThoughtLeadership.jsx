@@ -135,16 +135,16 @@ const ThoughtLeadership = () => {
         <div className={`text-center mb-8 sm:mb-12 md:mb-16 transition-all duration-700 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}>
-          <div className="inline-flex items-center space-x-2 bg-accent/10 border border-accent/20 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6">
+          <div className="inline-flex items-center justify-center space-x-2 bg-accent/10 border border-accent/20 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6 mx-auto">
             <Icon name="BookOpen" size={16} className="text-accent" />
             <span className="text-accent font-medium text-xs sm:text-sm">Thought Leadership</span>
           </div>
           
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-4 sm:mb-6">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-4 sm:mb-6 text-center">
             Industry <span className="text-accent">Insights</span>
           </h2>
           
-          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4 text-center">
             Deep-dive analysis, strategic frameworks, and forward-thinking perspectives that shape the future of digital experiences.
           </p>
         </div>
@@ -153,7 +153,7 @@ const ThoughtLeadership = () => {
         <div className={`flex flex-wrap justify-center mb-8 sm:mb-12 transition-all duration-700 delay-200 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}>
-          <div className="bg-gray-100 rounded-2xl p-1 sm:p-2 inline-flex flex-wrap max-w-full overflow-x-auto">
+          <div className="bg-gray-100 rounded-2xl p-1 sm:p-2 inline-flex flex-wrap max-w-full overflow-x-auto justify-center">
             {categories?.map((category) => (
               <button
                 key={category?.id}
@@ -295,38 +295,6 @@ const ThoughtLeadership = () => {
           >
             Load More Articles
           </Button>
-        </div>
-
-        {/* Newsletter Signup */}
-        <div className={`bg-black rounded-2xl p-6 sm:p-8 md:p-12 mt-12 sm:mt-16 text-center transition-all duration-700 delay-1200 ${
-          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}>
-          <Icon name="Mail" size={36} className="text-accent mx-auto mb-4 sm:hidden" />
-          <Icon name="Mail" size={48} className="text-accent mx-auto mb-6 hidden sm:block" />
-          <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3 sm:mb-4">
-            Stay Ahead of the Curve
-          </h3>
-          <p className="text-gray-300 mb-6 sm:mb-8 max-w-2xl mx-auto text-sm sm:text-base">
-            Get exclusive insights, trend predictions, and strategic frameworks delivered to your inbox. Join 5,000+ industry leaders who rely on our analysis.
-          </p>
-          <div className="flex flex-col sm:flex-row max-w-md mx-auto space-y-3 sm:space-y-0 sm:space-x-4">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-2.5 sm:py-3 rounded-xl border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:border-accent text-sm sm:text-base"
-            />
-            <Button
-              variant="default"
-              className="bg-accent hover:bg-accent/90 text-white px-6"
-              iconName="Send"
-              iconPosition="right"
-            >
-              Subscribe
-            </Button>
-          </div>
-          <p className="text-gray-400 text-xs sm:text-sm mt-3 sm:mt-4">
-            No spam. Unsubscribe anytime. Read our privacy policy.
-          </p>
         </div>
       </div>
     </section>

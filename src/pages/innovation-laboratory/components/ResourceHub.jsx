@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
@@ -170,16 +171,16 @@ const ResourceHub = () => {
         <div className={`text-center mb-8 sm:mb-12 md:mb-16 transition-all duration-700 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}>
-          <div className="inline-flex items-center space-x-2 bg-accent/10 border border-accent/20 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6">
+          <div className="inline-flex items-center justify-center space-x-2 bg-accent/10 border border-accent/20 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6 mx-auto">
             <Icon name="Download" size={16} className="text-accent" />
             <span className="text-accent font-medium text-xs sm:text-sm">Resource Hub</span>
           </div>
           
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-4 sm:mb-6">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-4 sm:mb-6 text-center">
             Strategic <span className="text-accent">Resources</span>
           </h2>
           
-          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4 text-center">
             Downloadable templates, frameworks, and tools that provide immediate value while demonstrating our expertise and approach.
           </p>
         </div>
@@ -226,7 +227,7 @@ const ResourceHub = () => {
           <div className={`mb-12 sm:mb-16 hidden lg:block transition-all duration-700 delay-400 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}>
-            <h3 className="text-xl sm:text-2xl font-bold text-black mb-6 sm:mb-8 flex items-center">
+            <h3 className="text-xl sm:text-2xl font-bold text-black mb-6 sm:mb-8 flex items-center justify-center lg:justify-start">
               <Icon name="Star" size={20} className="text-accent mr-2 sm:hidden" />
               <Icon name="Star" size={24} className="text-accent mr-2 hidden sm:block" />
               Featured Resources
@@ -403,15 +404,17 @@ const ResourceHub = () => {
           <p className="text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto text-sm sm:text-base">
             Can't find what you're looking for? Our team can create custom templates, frameworks, and tools tailored to your specific needs.
           </p>
-          <Button
-            variant="default"
-            size="lg"
-            className="bg-accent hover:bg-accent/90 text-white px-6 sm:px-8"
-            iconName="MessageCircle"
-            iconPosition="left"
-          >
-            Request Custom Resource
-          </Button>
+          <Link to="/contact-consultation-portal">
+            <Button
+              variant="default"
+              size="lg"
+              className="bg-accent hover:bg-accent/90 text-white px-6 sm:px-8"
+              iconName="MessageCircle"
+              iconPosition="left"
+            >
+              Request Custom Resource
+            </Button>
+          </Link>
         </div>
       </div>
     </section>
