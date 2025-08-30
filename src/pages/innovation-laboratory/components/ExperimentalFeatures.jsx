@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
 const ExperimentalFeatures = () => {
   const [activeFeature, setActiveFeature] = useState(0);
+  const [visibleItems, setVisibleItems] = useState([]);
+  const itemsRef = useRef([]);
 
   const features = [
     {
@@ -69,80 +70,83 @@ const ExperimentalFeatures = () => {
     }
   ];
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
+  // Intersection Observer for animation on scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = itemsRef.current.indexOf(entry.target);
+            if (index !== -1 && !visibleItems.includes(index)) {
+              setVisibleItems(prev => [...prev, index]);
+            }
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '50px' }
+    );
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.6
-      }
-    }
-  };
+    itemsRef.current.forEach((item) => {
+      if (item) observer.observe(item);
+    });
+
+    return () => observer.disconnect();
+  }, [visibleItems]);
 
   return (
-    <section className="py-24 bg-gray-50">
+    <section className="py-12 sm:py-16 md:py-24 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="text-center mb-16"
+        <div 
+          ref={el => itemsRef.current[0] = el}
+          className={`text-center mb-8 sm:mb-12 md:mb-16 transition-all duration-700 ${
+            visibleItems.includes(0) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
         >
-          <motion.div variants={itemVariants} className="inline-flex items-center space-x-2 bg-accent/10 border border-accent/20 rounded-full px-4 py-2 mb-6">
+          <div className="inline-flex items-center space-x-2 bg-accent/10 border border-accent/20 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6">
             <Icon name="Flask" size={16} className="text-accent" />
-            <span className="text-accent font-medium text-sm">Experimental Features</span>
-          </motion.div>
+            <span className="text-accent font-medium text-xs sm:text-sm">Experimental Features</span>
+          </div>
           
-          <motion.h2 variants={itemVariants} className="text-4xl md:text-5xl font-bold text-black mb-6">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-4 sm:mb-6">
             Innovation in <span className="text-accent">Action</span>
-          </motion.h2>
+          </h2>
           
-          <motion.p variants={itemVariants} className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
             Cutting-edge tools and technologies that push the boundaries of what's possible in digital design and development.
-          </motion.p>
-        </motion.div>
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12 items-start">
           {/* Feature List */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="space-y-6"
-          >
+          <div className="space-y-4 sm:space-y-6">
             {features?.map((feature, index) => (
-              <motion.div
+              <div
                 key={feature?.id}
-                variants={itemVariants}
-                className={`p-6 rounded-2xl border-2 transition-all duration-300 cursor-pointer ${
+                ref={el => itemsRef.current[index + 1] = el}
+                className={`p-4 sm:p-6 rounded-2xl border-2 transition-all duration-300 cursor-pointer ${
                   activeFeature === index
                     ? 'border-accent bg-white shadow-xl'
                     : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-lg'
+                } ${
+                  visibleItems.includes(index + 1) 
+                    ? 'opacity-100 translate-y-0' 
+                    : 'opacity-0 translate-y-10'
                 }`}
+                style={{
+                  transitionDelay: `${index * 100}ms`
+                }}
                 onClick={() => setActiveFeature(index)}
               >
-                <div className="flex items-start space-x-4">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${feature?.color} flex items-center justify-center flex-shrink-0`}>
-                    <Icon name={feature?.icon} size={24} className="text-white" />
+                <div className="flex flex-col sm:flex-row sm:items-start sm:space-x-4">
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-r ${feature?.color} flex items-center justify-center flex-shrink-0 mb-3 sm:mb-0`}>
+                    <Icon name={feature?.icon} size={20} className="text-white sm:hidden" />
+                    <Icon name={feature?.icon} size={24} className="text-white hidden sm:block" />
                   </div>
                   
                   <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-xl font-bold text-black">{feature?.title}</h3>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                      <h3 className="text-lg sm:text-xl font-bold text-black">{feature?.title}</h3>
+                      <span className={`px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium ${
                         feature?.status === 'Production' ? 'bg-green-100 text-green-800' :
                         feature?.status === 'Live Beta' ? 'bg-blue-100 text-blue-800' :
                         feature?.status === 'Beta'? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800'
@@ -151,54 +155,53 @@ const ExperimentalFeatures = () => {
                       </span>
                     </div>
                     
-                    <p className="text-gray-600 mb-3">{feature?.description}</p>
+                    <p className="text-sm sm:text-base text-gray-600 mb-3">{feature?.description}</p>
                     
-                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
                       <span className="bg-gray-100 px-2 py-1 rounded">{feature?.category}</span>
                       <div className="flex items-center space-x-1">
                         <Icon name="Users" size={14} />
-                        <span>Active Users: {Math.floor(Math.random() * 1000) + 500}</span>
+                        <span>Active: {Math.floor(Math.random() * 1000) + 500}</span>
                       </div>
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
 
           {/* Feature Preview */}
-          <motion.div
-            key={activeFeature}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="sticky top-8"
+          <div
+            className={`sticky top-20 lg:top-8 transition-all duration-500 ${
+              activeFeature !== null ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'
+            }`}
           >
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xl">
               {/* Preview Header */}
               <div className={`h-2 bg-gradient-to-r ${features?.[activeFeature]?.color}`}></div>
               
-              <div className="p-8">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${features?.[activeFeature]?.color} flex items-center justify-center`}>
-                    <Icon name={features?.[activeFeature]?.icon} size={32} className="text-white" />
+              <div className="p-6 sm:p-8">
+                <div className="flex items-center space-x-3 mb-4 sm:mb-6">
+                  <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-r ${features?.[activeFeature]?.color} flex items-center justify-center`}>
+                    <Icon name={features?.[activeFeature]?.icon} size={24} className="text-white sm:hidden" />
+                    <Icon name={features?.[activeFeature]?.icon} size={32} className="text-white hidden sm:block" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-black">{features?.[activeFeature]?.title}</h3>
-                    <p className="text-gray-600">{features?.[activeFeature]?.category}</p>
+                    <h3 className="text-xl sm:text-2xl font-bold text-black">{features?.[activeFeature]?.title}</h3>
+                    <p className="text-sm sm:text-base text-gray-600">{features?.[activeFeature]?.category}</p>
                   </div>
                 </div>
 
-                <p className="text-gray-700 mb-8 text-lg leading-relaxed">
+                <p className="text-sm sm:text-base lg:text-lg text-gray-700 mb-6 sm:mb-8 leading-relaxed">
                   {features?.[activeFeature]?.preview}
                 </p>
 
                 {/* Metrics */}
-                <div className="grid grid-cols-3 gap-4 mb-8">
-                  {Object.entries(features?.[activeFeature]?.metrics)?.map(([key, value]) => (
-                    <div key={key} className="text-center p-4 bg-gray-50 rounded-xl">
-                      <div className="text-2xl font-bold text-accent mb-1">{value}</div>
-                      <div className="text-sm text-gray-600 capitalize">{key}</div>
+                <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
+                  {Object.entries(features?.[activeFeature]?.metrics || {})?.map(([key, value]) => (
+                    <div key={key} className="text-center p-3 sm:p-4 bg-gray-50 rounded-xl">
+                      <div className="text-lg sm:text-2xl font-bold text-accent mb-1">{value}</div>
+                      <div className="text-xs sm:text-sm text-gray-600 capitalize">{key}</div>
                     </div>
                   ))}
                 </div>
@@ -224,7 +227,7 @@ const ExperimentalFeatures = () => {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>
