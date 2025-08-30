@@ -10,6 +10,7 @@ const NAVIGATION_CONFIG = {
     { name: 'Home', path: '/homepage-experience-hub', icon: 'Home' },
     { name: 'Capabilities', path: '/capability-universe', icon: 'Zap' },
     { name: 'Work', path: '/work-showcase-theater', icon: 'Eye' },
+    { name: 'Articles', path: '/articles-hub', icon: 'FileText' },
     { name: 'Innovation', path: '/innovation-laboratory', icon: 'Lightbulb' },
     { name: 'About', path: '/about-process-studio', icon: 'Users' }
   ],

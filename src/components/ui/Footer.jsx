@@ -10,6 +10,7 @@ const Footer = () => {
     explore: [
       { name: 'Capabilities', path: '/capability-universe' },
       { name: 'Work', path: '/work-showcase-theater' },
+      { name: 'Articles', path: '/articles-hub' },
       { name: 'Innovation', path: '/innovation-laboratory' },
       { name: 'About', path: '/about-process-studio' }
     ],
