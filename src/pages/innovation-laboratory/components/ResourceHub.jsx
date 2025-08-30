@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
@@ -7,6 +6,8 @@ import Input from '../../../components/ui/Input';
 const ResourceHub = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
 
   const filters = [
     { id: 'all', label: 'All Resources', count: 47 },
@@ -141,62 +142,55 @@ const ResourceHub = () => {
 
   const featuredResources = resources?.filter(resource => resource?.featured);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
+  // Intersection Observer for animation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.6
-      }
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
     }
-  };
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
 
   return (
-    <section className="py-24 bg-gray-50">
+    <section ref={sectionRef} className="py-12 sm:py-16 md:py-24 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <motion.div variants={itemVariants} className="inline-flex items-center space-x-2 bg-accent/10 border border-accent/20 rounded-full px-4 py-2 mb-6">
+        <div className={`text-center mb-8 sm:mb-12 md:mb-16 transition-all duration-700 ${
+          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}>
+          <div className="inline-flex items-center space-x-2 bg-accent/10 border border-accent/20 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6">
             <Icon name="Download" size={16} className="text-accent" />
-            <span className="text-accent font-medium text-sm">Resource Hub</span>
-          </motion.div>
+            <span className="text-accent font-medium text-xs sm:text-sm">Resource Hub</span>
+          </div>
           
-          <motion.h2 variants={itemVariants} className="text-4xl md:text-5xl font-bold text-black mb-6">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-4 sm:mb-6">
             Strategic <span className="text-accent">Resources</span>
-          </motion.h2>
+          </h2>
           
-          <motion.p variants={itemVariants} className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
             Downloadable templates, frameworks, and tools that provide immediate value while demonstrating our expertise and approach.
-          </motion.p>
-        </motion.div>
+          </p>
+        </div>
 
         {/* Search and Filter */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="mb-12"
-        >
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0">
+        <div className={`mb-8 sm:mb-12 transition-all duration-700 delay-200 ${
+          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 sm:space-y-6 lg:space-y-0">
             {/* Search */}
-            <motion.div variants={itemVariants} className="flex-1 max-w-md">
+            <div className="flex-1 max-w-full lg:max-w-md">
               <div className="relative">
                 <Icon name="Search" size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <Input
@@ -207,15 +201,15 @@ const ResourceHub = () => {
                   className="pl-10"
                 />
               </div>
-            </motion.div>
+            </div>
 
             {/* Filters */}
-            <motion.div variants={itemVariants} className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 justify-center lg:justify-end">
               {filters?.map((filter) => (
                 <button
                   key={filter?.id}
                   onClick={() => setActiveFilter(filter?.id)}
-                  className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
+                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm ${
                     activeFilter === filter?.id
                       ? 'bg-accent text-white' :'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                   }`}
@@ -223,146 +217,154 @@ const ResourceHub = () => {
                   {filter?.label} ({filter?.count})
                 </button>
               ))}
-            </motion.div>
+            </div>
           </div>
-        </motion.div>
+        </div>
 
-        {/* Featured Resources */}
+        {/* Featured Resources - Only show on desktop and when filter is 'all' */}
         {activeFilter === 'all' && (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="mb-16"
-          >
-            <motion.h3 variants={itemVariants} className="text-2xl font-bold text-black mb-8 flex items-center">
-              <Icon name="Star" size={24} className="text-accent mr-2" />
+          <div className={`mb-12 sm:mb-16 hidden lg:block transition-all duration-700 delay-400 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}>
+            <h3 className="text-xl sm:text-2xl font-bold text-black mb-6 sm:mb-8 flex items-center">
+              <Icon name="Star" size={20} className="text-accent mr-2 sm:hidden" />
+              <Icon name="Star" size={24} className="text-accent mr-2 hidden sm:block" />
               Featured Resources
-            </motion.h3>
+            </h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredResources?.map((resource) => (
-                <motion.div
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              {featuredResources?.map((resource, index) => (
+                <div
                   key={resource?.id}
-                  variants={itemVariants}
-                  className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 group"
+                  className={`bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 group ${
+                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                  }`}
+                  style={{
+                    transitionDelay: `${index * 100 + 600}ms`
+                  }}
                 >
                   <div className="relative">
-                    <div className="w-full h-32 bg-gradient-to-br from-accent/10 to-accent/5 flex items-center justify-center">
-                      <Icon name="FileText" size={32} className="text-accent" />
+                    <div className="w-full h-24 sm:h-32 bg-gradient-to-br from-accent/10 to-accent/5 flex items-center justify-center">
+                      <Icon name="FileText" size={24} className="text-accent sm:hidden" />
+                      <Icon name="FileText" size={32} className="text-accent hidden sm:block" />
                     </div>
                     <div className="absolute top-2 right-2">
-                      <span className="bg-accent text-white px-2 py-1 rounded text-xs font-medium">
+                      <span className="bg-accent text-white px-2 py-0.5 sm:py-1 rounded text-xs font-medium">
                         Featured
                       </span>
                     </div>
                   </div>
                   
-                  <div className="p-4">
-                    <h4 className="font-bold text-black mb-2 line-clamp-2">{resource?.title}</h4>
-                    <p className="text-gray-600 text-sm mb-3 line-clamp-2">{resource?.description}</p>
+                  <div className="p-3 sm:p-4">
+                    <h4 className="font-bold text-black mb-2 line-clamp-2 text-sm sm:text-base">{resource?.title}</h4>
+                    <p className="text-gray-600 text-xs sm:text-sm mb-3 line-clamp-2">{resource?.description}</p>
                     
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-lg font-bold text-accent">{resource?.price}</span>
+                      <span className="text-base sm:text-lg font-bold text-accent">{resource?.price}</span>
                       <div className="flex items-center space-x-1">
-                        <Icon name="Star" size={14} className="text-yellow-500" />
-                        <span className="text-sm text-gray-600">{resource?.rating}</span>
+                        <Icon name="Star" size={12} className="text-yellow-500 sm:hidden" />
+                        <Icon name="Star" size={14} className="text-yellow-500 hidden sm:block" />
+                        <span className="text-xs sm:text-sm text-gray-600">{resource?.rating}</span>
                       </div>
                     </div>
                     
                     <Button
                       variant="default"
                       size="sm"
-                      className="w-full bg-accent hover:bg-accent/90 text-white"
+                      className="w-full bg-accent hover:bg-accent/90 text-white text-xs sm:text-sm"
                       iconName="Download"
                       iconPosition="left"
                     >
                       Download
                     </Button>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* All Resources */}
-        <motion.div
-          key={activeFilter}
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-        >
-          {filteredResources?.map((resource) => (
-            <motion.div
+        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 transition-all duration-700 delay-600 ${
+          isVisible ? 'opacity-100' : 'opacity-0'
+        }`}>
+          {filteredResources?.map((resource, index) => (
+            <div
               key={resource?.id}
-              variants={itemVariants}
-              className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 group"
+              className={`bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 group ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+              }`}
+              style={{
+                transitionDelay: `${index * 100 + 800}ms`
+              }}
             >
               {/* Resource Preview */}
               <div className="relative">
-                <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center">
-                  <Icon name="FileText" size={48} className="text-gray-400" />
+                <div className="w-full h-36 sm:h-48 bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center">
+                  <Icon name="FileText" size={36} className="text-gray-400 sm:hidden" />
+                  <Icon name="FileText" size={48} className="text-gray-400 hidden sm:block" />
                 </div>
-                <div className="absolute top-4 left-4">
-                  <span className="bg-black/80 text-white px-3 py-1 rounded-full text-xs font-medium capitalize">
+                <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
+                  <span className="bg-black/80 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-medium capitalize">
                     {resource?.type}
                   </span>
                 </div>
-                <div className="absolute top-4 right-4">
-                  <div className="bg-white/90 backdrop-blur-sm rounded-full p-2">
-                    <Icon name="Heart" size={16} className="text-gray-600" />
+                <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
+                  <div className="bg-white/90 backdrop-blur-sm rounded-full p-1.5 sm:p-2">
+                    <Icon name="Heart" size={14} className="text-gray-600 sm:hidden" />
+                    <Icon name="Heart" size={16} className="text-gray-600 hidden sm:block" />
                   </div>
                 </div>
               </div>
 
               {/* Resource Content */}
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 {/* Title & Description */}
-                <h4 className="text-xl font-bold text-black mb-3 line-clamp-2 group-hover:text-accent transition-colors duration-300">
+                <h4 className="text-base sm:text-xl font-bold text-black mb-2 sm:mb-3 line-clamp-2 group-hover:text-accent transition-colors duration-300">
                   {resource?.title}
                 </h4>
                 
-                <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3">
                   {resource?.description}
                 </p>
 
                 {/* Tags */}
-                <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                   {resource?.tags?.slice(0, 2)?.map((tag) => (
-                    <span key={tag} className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
+                    <span key={tag} className="bg-gray-100 text-gray-600 px-2 py-0.5 sm:py-1 rounded text-xs">
                       {tag}
                     </span>
                   ))}
                 </div>
 
                 {/* Meta Info */}
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                  <div className="flex items-center space-x-4">
+                <div className="flex items-center justify-between text-xs text-gray-500 mb-3 sm:mb-4">
+                  <div className="flex items-center space-x-3 sm:space-x-4">
                     <span className="flex items-center space-x-1">
-                      <Icon name="Download" size={12} />
+                      <Icon name="Download" size={10} className="sm:hidden" />
+                      <Icon name="Download" size={12} className="hidden sm:block" />
                       <span>{resource?.downloads}</span>
                     </span>
                     <span className="flex items-center space-x-1">
-                      <Icon name="File" size={12} />
+                      <Icon name="File" size={10} className="sm:hidden" />
+                      <Icon name="File" size={12} className="hidden sm:block" />
                       <span>{resource?.size}</span>
                     </span>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <Icon name="Star" size={12} className="text-yellow-500" />
+                    <Icon name="Star" size={10} className="text-yellow-500 sm:hidden" />
+                    <Icon name="Star" size={12} className="text-yellow-500 hidden sm:block" />
                     <span>{resource?.rating}</span>
                   </div>
                 </div>
 
                 {/* Price & Download */}
                 <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-accent">{resource?.price}</span>
+                  <span className="text-xl sm:text-2xl font-bold text-accent">{resource?.price}</span>
                   <Button
                     variant="default"
                     size="sm"
-                    className="bg-accent hover:bg-accent/90 text-white"
+                    className="bg-accent hover:bg-accent/90 text-white text-xs sm:text-sm"
                     iconName="Download"
                     iconPosition="left"
                   >
@@ -370,52 +372,47 @@ const ResourceHub = () => {
                   </Button>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
 
         {/* Load More */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mt-12"
-        >
+        <div className={`text-center mt-8 sm:mt-12 transition-all duration-700 delay-1000 ${
+          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}>
           <Button
             variant="outline"
             size="lg"
-            className="border-accent text-accent hover:bg-accent hover:text-white px-8"
+            className="border-accent text-accent hover:bg-accent hover:text-white px-6 sm:px-8"
             iconName="Plus"
             iconPosition="left"
           >
             Load More Resources
           </Button>
-        </motion.div>
+        </div>
 
         {/* Resource Request */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="bg-white rounded-2xl border border-gray-200 p-8 md:p-12 mt-16 text-center"
-        >
-          <Icon name="MessageSquare" size={48} className="text-accent mx-auto mb-6" />
-          <h3 className="text-3xl font-bold text-black mb-4">
+        <div className={`bg-white rounded-2xl border border-gray-200 p-6 sm:p-8 md:p-12 mt-12 sm:mt-16 text-center transition-all duration-700 delay-1200 ${
+          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}>
+          <Icon name="MessageSquare" size={36} className="text-accent mx-auto mb-4 sm:hidden" />
+          <Icon name="MessageSquare" size={48} className="text-accent mx-auto mb-6 hidden sm:block" />
+          <h3 className="text-2xl sm:text-3xl font-bold text-black mb-3 sm:mb-4">
             Need a Custom Resource?
           </h3>
-          <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto text-sm sm:text-base">
             Can't find what you're looking for? Our team can create custom templates, frameworks, and tools tailored to your specific needs.
           </p>
           <Button
             variant="default"
             size="lg"
-            className="bg-accent hover:bg-accent/90 text-white px-8"
+            className="bg-accent hover:bg-accent/90 text-white px-6 sm:px-8"
             iconName="MessageCircle"
             iconPosition="left"
           >
             Request Custom Resource
           </Button>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

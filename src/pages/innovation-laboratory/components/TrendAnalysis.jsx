@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
 const TrendAnalysis = () => {
   const [activeTab, setActiveTab] = useState('design');
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
 
   const trendData = {
     design: {
@@ -72,63 +73,66 @@ const TrendAnalysis = () => {
 
   const currentData = trendData?.[activeTab];
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
+  // Intersection Observer for animation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.6
-      }
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
     }
-  };
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
 
   const renderChart = () => {
     if (activeTab === 'design') {
       return (
-        <ResponsiveContainer width="100%" height={400}>
+        <ResponsiveContainer width="100%" height={300}>
           <LineChart data={currentData?.chart}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis dataKey="month" stroke="#6B7280" />
-            <YAxis stroke="#6B7280" />
+            <XAxis dataKey="month" stroke="#6B7280" tick={{ fontSize: 12 }} />
+            <YAxis stroke="#6B7280" tick={{ fontSize: 12 }} />
             <Tooltip 
               contentStyle={{ 
                 backgroundColor: '#FFFFFF', 
                 border: '1px solid #E5E7EB',
                 borderRadius: '8px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                fontSize: '12px'
               }} 
             />
-            <Line type="monotone" dataKey="minimalism" stroke="#E53E3E" strokeWidth={3} dot={{ fill: '#E53E3E', strokeWidth: 2, r: 6 }} />
-            <Line type="monotone" dataKey="brutalism" stroke="#000000" strokeWidth={3} dot={{ fill: '#000000', strokeWidth: 2, r: 6 }} />
-            <Line type="monotone" dataKey="glassmorphism" stroke="#3B82F6" strokeWidth={3} dot={{ fill: '#3B82F6', strokeWidth: 2, r: 6 }} />
-            <Line type="monotone" dataKey="neumorphism" stroke="#6B7280" strokeWidth={3} dot={{ fill: '#6B7280', strokeWidth: 2, r: 6 }} />
+            <Line type="monotone" dataKey="minimalism" stroke="#E53E3E" strokeWidth={2} dot={{ fill: '#E53E3E', strokeWidth: 1, r: 3 }} />
+            <Line type="monotone" dataKey="brutalism" stroke="#000000" strokeWidth={2} dot={{ fill: '#000000', strokeWidth: 1, r: 3 }} />
+            <Line type="monotone" dataKey="glassmorphism" stroke="#3B82F6" strokeWidth={2} dot={{ fill: '#3B82F6', strokeWidth: 1, r: 3 }} />
+            <Line type="monotone" dataKey="neumorphism" stroke="#6B7280" strokeWidth={2} dot={{ fill: '#6B7280', strokeWidth: 1, r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
       );
     } else if (activeTab === 'technology') {
       return (
-        <ResponsiveContainer width="100%" height={400}>
+        <ResponsiveContainer width="100%" height={300}>
           <BarChart data={currentData?.chart}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis dataKey="category" stroke="#6B7280" />
-            <YAxis stroke="#6B7280" />
+            <XAxis dataKey="category" stroke="#6B7280" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={60} />
+            <YAxis stroke="#6B7280" tick={{ fontSize: 12 }} />
             <Tooltip 
               contentStyle={{ 
                 backgroundColor: '#FFFFFF', 
                 border: '1px solid #E5E7EB',
                 borderRadius: '8px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                fontSize: '12px'
               }} 
             />
             <Bar dataKey="adoption" fill="#E53E3E" radius={[4, 4, 0, 0]} />
@@ -138,17 +142,18 @@ const TrendAnalysis = () => {
       );
     } else {
       return (
-        <ResponsiveContainer width="100%" height={400}>
+        <ResponsiveContainer width="100%" height={300}>
           <BarChart data={currentData?.chart} layout="horizontal">
             <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis type="number" stroke="#6B7280" />
-            <YAxis dataKey="behavior" type="category" stroke="#6B7280" width={120} />
+            <XAxis type="number" stroke="#6B7280" tick={{ fontSize: 12 }} />
+            <YAxis dataKey="behavior" type="category" stroke="#6B7280" width={80} tick={{ fontSize: 10 }} />
             <Tooltip 
               contentStyle={{ 
                 backgroundColor: '#FFFFFF', 
                 border: '1px solid #E5E7EB',
                 borderRadius: '8px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                fontSize: '12px'
               }} 
             />
             <Bar dataKey="percentage" fill="#E53E3E" radius={[0, 4, 4, 0]} />
@@ -159,113 +164,98 @@ const TrendAnalysis = () => {
   };
 
   return (
-    <section className="py-24 bg-white">
+    <section ref={sectionRef} className="py-12 sm:py-16 md:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <motion.div variants={itemVariants} className="inline-flex items-center space-x-2 bg-accent/10 border border-accent/20 rounded-full px-4 py-2 mb-6">
+        <div className={`text-center mb-8 sm:mb-12 md:mb-16 transition-all duration-700 ${
+          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}>
+          <div className="inline-flex items-center space-x-2 bg-accent/10 border border-accent/20 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6">
             <Icon name="TrendingUp" size={16} className="text-accent" />
-            <span className="text-accent font-medium text-sm">Trend Analysis</span>
-          </motion.div>
+            <span className="text-accent font-medium text-xs sm:text-sm">Trend Analysis</span>
+          </div>
           
-          <motion.h2 variants={itemVariants} className="text-4xl md:text-5xl font-bold text-black mb-6">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-4 sm:mb-6">
             Data-Driven <span className="text-accent">Insights</span>
-          </motion.h2>
+          </h2>
           
-          <motion.p variants={itemVariants} className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
             Real-time analysis of industry trends, user behaviors, and emerging technologies to guide strategic decisions.
-          </motion.p>
-        </motion.div>
+          </p>
+        </div>
 
         {/* Tab Navigation */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="flex flex-wrap justify-center mb-12"
-        >
-          <div className="bg-gray-100 rounded-2xl p-2 inline-flex">
+        <div className={`flex justify-center mb-8 sm:mb-12 transition-all duration-700 delay-200 ${
+          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}>
+          <div className="bg-gray-100 rounded-2xl p-1 sm:p-2 inline-flex overflow-x-auto max-w-full">
             {tabs?.map((tab) => (
-              <motion.button
+              <button
                 key={tab?.id}
-                variants={itemVariants}
                 onClick={() => setActiveTab(tab?.id)}
-                className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
+                className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-medium transition-all duration-300 whitespace-nowrap ${
                   activeTab === tab?.id
                     ? 'bg-white text-accent shadow-lg'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                <Icon name={tab?.icon} size={20} />
-                <span>{tab?.label}</span>
-              </motion.button>
+                <Icon name={tab?.icon} size={16} className="sm:hidden" />
+                <Icon name={tab?.icon} size={20} className="hidden sm:block" />
+                <span className="text-xs sm:text-base">{tab?.label}</span>
+              </button>
             ))}
           </div>
-        </motion.div>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 md:gap-12">
           {/* Chart Section */}
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="lg:col-span-2"
-          >
-            <div className="bg-gray-50 rounded-2xl p-8">
-              <div className="mb-8">
-                <h3 className="text-2xl font-bold text-black mb-2">{currentData?.title}</h3>
-                <p className="text-gray-600">{currentData?.subtitle}</p>
+          <div className={`lg:col-span-2 transition-all duration-500 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}>
+            <div className="bg-gray-50 rounded-2xl p-4 sm:p-6 md:p-8">
+              <div className="mb-4 sm:mb-6 md:mb-8">
+                <h3 className="text-xl sm:text-2xl font-bold text-black mb-2">{currentData?.title}</h3>
+                <p className="text-sm sm:text-base text-gray-600">{currentData?.subtitle}</p>
               </div>
               
-              <div className="bg-white rounded-xl p-6">
+              <div className="bg-white rounded-xl p-3 sm:p-4 md:p-6 overflow-x-auto">
                 {renderChart()}
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Insights Panel */}
-          <motion.div
-            key={`insights-${activeTab}`}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="space-y-6"
-          >
-            <div className="bg-black rounded-2xl p-8 text-white">
-              <h4 className="text-xl font-bold mb-6 flex items-center">
-                <Icon name="Zap" size={24} className="text-accent mr-2" />
+          <div className={`space-y-4 sm:space-y-6 transition-all duration-500 delay-200 ${
+            isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'
+          }`}>
+            <div className="bg-black rounded-2xl p-6 sm:p-8 text-white">
+              <h4 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6 flex items-center">
+                <Icon name="Zap" size={20} className="text-accent mr-2 sm:hidden" />
+                <Icon name="Zap" size={24} className="text-accent mr-2 hidden sm:block" />
                 Key Insights
               </h4>
               
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {currentData?.insights?.map((insight, index) => (
-                  <div key={index} className="border-b border-gray-700 pb-4 last:border-b-0 last:pb-0">
+                  <div key={index} className="border-b border-gray-700 pb-3 sm:pb-4 last:border-b-0 last:pb-0">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium">{insight?.trend}</span>
-                      <span className={`text-sm px-2 py-1 rounded ${
+                      <span className="font-medium text-sm sm:text-base">{insight?.trend}</span>
+                      <span className={`text-xs sm:text-sm px-2 py-0.5 sm:py-1 rounded ${
                         insight?.growth?.startsWith('+') ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
                       }`}>
                         {insight?.growth}
                       </span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <div className="flex-1 bg-gray-700 rounded-full h-2">
+                      <div className="flex-1 bg-gray-700 rounded-full h-1.5 sm:h-2">
                         <div 
-                          className="h-2 rounded-full"
+                          className="h-1.5 sm:h-2 rounded-full"
                           style={{ 
                             width: insight?.confidence, 
                             backgroundColor: insight?.color 
                           }}
                         ></div>
                       </div>
-                      <span className="text-sm text-gray-400">{insight?.confidence}</span>
+                      <span className="text-xs sm:text-sm text-gray-400">{insight?.confidence}</span>
                     </div>
                   </div>
                 ))}
@@ -273,7 +263,7 @@ const TrendAnalysis = () => {
               
               <Button
                 variant="outline"
-                className="w-full mt-6 border-accent text-accent hover:bg-accent hover:text-white"
+                className="w-full mt-4 sm:mt-6 border-accent text-accent hover:bg-accent hover:text-white text-sm sm:text-base"
                 iconName="Download"
                 iconPosition="left"
               >
@@ -282,20 +272,21 @@ const TrendAnalysis = () => {
             </div>
 
             {/* Prediction Card */}
-            <div className="bg-gradient-to-br from-accent to-red-600 rounded-2xl p-8 text-white">
-              <h4 className="text-xl font-bold mb-4 flex items-center">
-                <Icon name="Crystal" size={24} className="mr-2" />
+            <div className="bg-gradient-to-br from-accent to-red-600 rounded-2xl p-6 sm:p-8 text-white">
+              <h4 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 flex items-center">
+                <Icon name="Sparkles" size={20} className="mr-2 sm:hidden" />
+                <Icon name="Sparkles" size={24} className="mr-2 hidden sm:block" />
                 AI Prediction
               </h4>
-              <p className="text-sm opacity-90 mb-4">
+              <p className="text-xs sm:text-sm opacity-90 mb-3 sm:mb-4">
                 Based on current data patterns, we predict the next major shift will occur in Q3 2025.
               </p>
-              <div className="bg-white/20 rounded-xl p-4">
-                <div className="text-2xl font-bold mb-1">87%</div>
-                <div className="text-sm opacity-80">Confidence Level</div>
+              <div className="bg-white/20 rounded-xl p-3 sm:p-4">
+                <div className="text-xl sm:text-2xl font-bold mb-1">87%</div>
+                <div className="text-xs sm:text-sm opacity-80">Confidence Level</div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>
