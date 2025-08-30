@@ -19,19 +19,19 @@ const ArticleFilterBar = ({
       key: 'category',
       label: 'Category',
       icon: 'Folder',
-      options: filters?.categories
+      options: filters?.categories || []
     },
     {
       key: 'topic',
       label: 'Topics',
       icon: 'Tag',
-      options: filters?.topics
+      options: filters?.topics || []
     },
     {
       key: 'readTime',
       label: 'Read Time',
       icon: 'Clock',
-      options: filters?.readTimes
+      options: filters?.readTimes || []
     }
   ];
 
@@ -86,25 +86,32 @@ const ArticleFilterBar = ({
                 )}
               </Button>
 
-              {/* Sort Dropdown */}
+              {/* Sort Dropdown - Fixed Overlap */}
               <div className="flex items-center gap-2 flex-1 sm:flex-initial">
                 <Icon name="ArrowUpDown" size={18} className="text-text-secondary hidden sm:block" />
-                <select
-                  value={sortBy}
-                  onChange={(e) => onSortChange(e?.target?.value)}
-                  className="w-full sm:w-auto border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
-                >
-                  {sortOptions?.map((option) => (
-                    <option key={option?.value} value={option?.value}>
-                      {option?.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => onSortChange(e?.target?.value)}
+                    className="appearance-none w-full sm:w-auto border border-border rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base bg-white"
+                  >
+                    {sortOptions?.map((option) => (
+                      <option key={option?.value} value={option?.value}>
+                        {option?.label}
+                      </option>
+                    ))}
+                  </select>
+                  <Icon 
+                    name="ChevronDown" 
+                    size={16} 
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none" 
+                  />
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Desktop Filter Categories */}
+          {/* Desktop Filter Categories - Show All */}
           <div className="hidden md:flex flex-wrap gap-4">
             {filterCategories?.map((category) => (
               <div key={category?.key} className="flex flex-wrap items-center gap-2">
@@ -113,7 +120,7 @@ const ArticleFilterBar = ({
                   <span>{category?.label}:</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {category?.options?.slice(0, category?.key === 'topic' ? 5 : undefined)?.map((option) => {
+                  {category?.options?.map((option) => {
                     const isActive = activeFilters?.[category?.key]?.includes(option);
                     return (
                       <button
@@ -129,36 +136,28 @@ const ArticleFilterBar = ({
                       </button>
                     );
                   })}
-                  {category?.key === 'topic' && category?.options?.length > 5 && (
-                    <button
-                      onClick={() => setMobileFiltersOpen(true)}
-                      className="px-3 py-1 text-sm rounded-full bg-muted text-text-secondary hover:bg-accent/10 hover:text-accent transition-all duration-300"
-                    >
-                      +{category?.options?.length - 5} more
-                    </button>
-                  )}
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Mobile Filter Panel */}
+          {/* Mobile Filter Panel - Compact Design */}
           {mobileFiltersOpen && (
-            <div className="md:hidden bg-gray-50 rounded-lg p-4 space-y-4">
+            <div className="md:hidden bg-gray-50 rounded-lg p-3 space-y-3 max-h-64 overflow-y-auto">
               {filterCategories?.map((category) => (
                 <div key={category?.key}>
-                  <div className="flex items-center space-x-1 text-sm font-medium text-text-secondary mb-2">
-                    <Icon name={category?.icon} size={16} />
+                  <div className="flex items-center space-x-1 text-xs font-medium text-text-secondary mb-1.5">
+                    <Icon name={category?.icon} size={14} />
                     <span>{category?.label}</span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {category?.options?.map((option) => {
                       const isActive = activeFilters?.[category?.key]?.includes(option);
                       return (
                         <button
                           key={option}
                           onClick={() => onFilterChange(category?.key, option)}
-                          className={`px-3 py-1.5 text-xs rounded-full transition-all duration-300 ${
+                          className={`px-2 py-1 text-[11px] rounded-full transition-all duration-300 ${
                             isActive
                               ? 'bg-accent text-white' 
                               : 'bg-white border border-border text-text-secondary hover:bg-accent/10 hover:text-accent'

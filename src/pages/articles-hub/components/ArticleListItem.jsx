@@ -26,8 +26,8 @@ const ArticleListItem = ({ article, onViewDetails }) => {
   return (
     <div className="group relative bg-white rounded-xl overflow-hidden brand-shadow hover:brand-shadow-lg transition-all duration-500">
       <div className="flex flex-col lg:flex-row">
-        {/* Image Section */}
-        <div className="relative lg:w-80 h-48 lg:h-64 overflow-hidden flex-shrink-0">
+        {/* Image Section - Mobile Optimized */}
+        <div className="relative w-full lg:w-80 h-48 lg:h-64 overflow-hidden flex-shrink-0">
           <Image
             src={article?.featuredImage}
             alt={`${article?.title} featured image`}
@@ -36,7 +36,7 @@ const ArticleListItem = ({ article, onViewDetails }) => {
           
           {/* Featured Badge on Image */}
           {article?.featured && (
-            <div className="absolute bottom-4 right-4 z-10">
+            <div className="absolute bottom-3 right-3 z-10">
               <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center shadow-lg border-2 border-white">
                 <Icon name="Star" size={18} className="text-white fill-white" />
               </div>
@@ -44,21 +44,21 @@ const ArticleListItem = ({ article, onViewDetails }) => {
           )}
         </div>
 
-        {/* Content Section */}
-        <div className="flex-1 p-5 lg:p-8">
+        {/* Content Section - Mobile Optimized */}
+        <div className="flex-1 p-4 sm:p-5 lg:p-8">
           <div className="flex flex-col h-full">
-            {/* Header with badges */}
+            {/* Header with badges - Mobile Responsive */}
             <div className="flex flex-wrap items-center gap-2 mb-3">
               {article?.featured && (
-                <span className="px-3 py-1 bg-accent text-white text-xs font-semibold rounded-full flex items-center gap-1">
+                <span className="px-2 sm:px-3 py-1 bg-accent text-white text-xs font-semibold rounded-full flex items-center gap-1">
                   <Icon name="Star" size={12} className="fill-white" />
                   Featured
                 </span>
               )}
-              <span className="px-3 py-1 bg-muted text-xs font-semibold text-primary rounded-full">
+              <span className="px-2 sm:px-3 py-1 bg-muted text-xs font-semibold text-primary rounded-full">
                 {article?.category}
               </span>
-              <span className="px-3 py-1 bg-black/10 text-xs font-medium rounded-full flex items-center gap-1">
+              <span className="px-2 sm:px-3 py-1 bg-black/10 text-xs font-medium rounded-full flex items-center gap-1">
                 <Icon name="Clock" size={12} />
                 {article?.readTime} min read
               </span>
@@ -67,77 +67,79 @@ const ArticleListItem = ({ article, onViewDetails }) => {
               </span>
             </div>
 
-            {/* Title */}
-            <h3 className="text-lg lg:text-2xl font-bold text-primary mb-3 group-hover:text-accent transition-colors duration-300">
+            {/* Title - Mobile Responsive */}
+            <h3 className="text-base sm:text-lg lg:text-2xl font-bold text-primary mb-3 group-hover:text-accent transition-colors duration-300">
               {article?.title}
             </h3>
 
-            {/* Excerpt */}
-            <p className="text-text-secondary text-sm lg:text-base mb-4 line-clamp-2 lg:line-clamp-3">
+            {/* Excerpt - Mobile Responsive */}
+            <p className="text-text-secondary text-xs sm:text-sm lg:text-base mb-4 line-clamp-2 lg:line-clamp-3">
               {article?.excerpt}
             </p>
 
-            {/* Author Info */}
-            <div className="flex items-center space-x-3 mb-4">
+            {/* Author Info - Mobile Responsive */}
+            <div className="flex items-center space-x-2 sm:space-x-3 mb-4">
               <img
                 src={article?.author?.avatar}
                 alt={article?.author?.name}
-                className="w-10 h-10 rounded-full"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full"
               />
               <div>
-                <p className="font-medium text-primary text-sm">
+                <p className="font-medium text-primary text-xs sm:text-sm">
                   {article?.author?.name}
                 </p>
-                <p className="text-xs text-text-secondary">
+                <p className="text-[10px] sm:text-xs text-text-secondary">
                   {article?.author?.role} • {formatDate(article?.publishedDate)}
                 </p>
               </div>
             </div>
 
-            {/* Topics */}
-            <div className="flex flex-wrap gap-2 mb-4">
+            {/* Topics - Mobile Responsive */}
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4">
               {article?.topics?.map((topic, index) => (
                 <span
                   key={index}
-                  className="px-2 py-1 bg-muted text-xs text-text-secondary rounded-full"
+                  className="px-2 py-1 bg-muted text-[10px] sm:text-xs text-text-secondary rounded-full"
                 >
                   {topic}
                 </span>
               ))}
             </div>
 
-            {/* Footer with Stats and CTA */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mt-auto pt-4 border-t border-gray-100">
-              {/* Stats */}
-              <div className="flex items-center gap-4 text-sm text-text-secondary">
+            {/* Footer with Stats and CTA - Mobile Responsive */}
+            <div className="flex flex-col sm:flex-row lg:items-center justify-between gap-3 sm:gap-4 mt-auto pt-3 sm:pt-4 border-t border-gray-100">
+              {/* Stats - Mobile Responsive */}
+              <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-text-secondary">
                 <span className="flex items-center gap-1">
-                  <Icon name="Eye" size={16} />
-                  {article?.views?.toLocaleString()} views
+                  <Icon name="Eye" size={14} className="sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">{article?.views?.toLocaleString()} views</span>
+                  <span className="sm:hidden">{article?.views > 1000 ? `${(article?.views / 1000).toFixed(0)}K` : article?.views}</span>
                 </span>
                 <span className="flex items-center gap-1">
-                  <Icon name="Heart" size={16} />
-                  {article?.likes?.toLocaleString()} likes
+                  <Icon name="Heart" size={14} className="sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">{article?.likes?.toLocaleString()} likes</span>
+                  <span className="sm:hidden">{article?.likes > 1000 ? `${(article?.likes / 1000).toFixed(0)}K` : article?.likes}</span>
                 </span>
                 <span className="flex items-center gap-1">
-                  <Icon name="Share2" size={16} />
+                  <Icon name="Share2" size={14} className="sm:w-4 sm:h-4" />
                   Share
                 </span>
               </div>
 
-              {/* CTA Buttons */}
-              <div className="flex items-center gap-3">
+              {/* CTA Buttons - Mobile Responsive */}
+              <div className="flex items-center gap-2 sm:gap-3">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-text-secondary hover:text-accent"
+                  className="text-text-secondary hover:text-accent text-xs sm:text-sm"
                   iconName="Bookmark"
                 >
-                  Save
+                  <span className="hidden sm:inline">Save</span>
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => onViewDetails(article)}
-                  className="border-accent text-accent hover:bg-accent hover:text-white text-sm lg:text-base"
+                  className="border-accent text-accent hover:bg-accent hover:text-white text-xs sm:text-sm lg:text-base px-3 py-1.5 sm:px-4 sm:py-2"
                   iconName="ArrowRight"
                   iconPosition="right"
                 >

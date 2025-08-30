@@ -55,7 +55,7 @@ const ArticleHeroSection = ({ featuredArticles, onViewArticle }) => {
   };
 
   return (
-    <section className="relative h-[70vh] min-h-[500px] overflow-hidden bg-black pt-16">
+    <section className="relative h-[60vh] sm:h-[70vh] min-h-[400px] sm:min-h-[500px] overflow-hidden bg-black pt-16">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
@@ -63,7 +63,7 @@ const ArticleHeroSection = ({ featuredArticles, onViewArticle }) => {
           alt={`${currentArticle?.title} hero`}
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40 md:via-black/40 md:to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/40 sm:bg-gradient-to-r sm:from-black/80 sm:via-black/60 sm:to-black/40 md:via-black/40 md:to-transparent"></div>
       </div>
       
       {/* Navigation Arrows - Mobile Optimized */}
