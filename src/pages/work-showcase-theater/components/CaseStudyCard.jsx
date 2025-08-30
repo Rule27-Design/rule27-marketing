@@ -41,6 +41,15 @@ const CaseStudyCard = ({ caseStudy, onViewDetails }) => {
             {caseStudy?.serviceType}
           </span>
         </div>
+        
+        {/* Featured Star Badge - Properly Positioned */}
+        {caseStudy?.featured && (
+          <div className="absolute bottom-3 right-3 z-10">
+            <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+              <Icon name="Star" size={18} className="text-white fill-white" />
+            </div>
+          </div>
+        )}
 
         {/* Play Button Overlay - Touch Friendly */}
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -111,15 +120,6 @@ const CaseStudyCard = ({ caseStudy, onViewDetails }) => {
           View Full Story
         </Button>
       </div>
-      
-      {/* Featured Badge - Mobile Size */}
-      {caseStudy?.featured && (
-        <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2">
-          <div className="w-7 h-7 sm:w-8 sm:h-8 bg-accent rounded-full flex items-center justify-center">
-            <Icon name="Star" size={14} color="white" className="sm:w-4 sm:h-4" />
-          </div>
-        </div>
-      )}
     </div>
   );
 };
