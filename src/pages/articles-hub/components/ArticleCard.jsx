@@ -67,15 +67,15 @@ const ArticleCard = ({ article, onViewDetails }) => {
             <img
               src={article?.author?.avatar}
               alt={article?.author?.name}
-              className="w-8 h-8 rounded-full"
+              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full"
             />
             <div className="text-xs sm:text-sm">
-              <p className="font-medium text-primary truncate max-w-[120px] sm:max-w-none">
+              <p className="font-medium text-primary truncate max-w-[100px] sm:max-w-[120px]">
                 {article?.author?.name}
               </p>
             </div>
           </div>
-          <span className="text-xs text-text-secondary">
+          <span className="text-[10px] sm:text-xs text-text-secondary">
             {formatDate(article?.publishedDate)}
           </span>
         </div>
@@ -90,28 +90,35 @@ const ArticleCard = ({ article, onViewDetails }) => {
           {article?.excerpt}
         </p>
 
-        {/* Topics */}
-        <div className="flex flex-wrap gap-1.5 mb-4">
+        {/* Topics - Mobile Optimized */}
+        <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-3 sm:mb-4">
           {article?.topics?.slice(0, 3)?.map((topic, index) => (
             <span
               key={index}
-              className="px-2 py-1 bg-muted text-xs text-text-secondary rounded-full"
+              className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-muted text-[10px] sm:text-xs text-text-secondary rounded-full"
             >
               {topic}
             </span>
           ))}
+          {article?.topics?.length > 3 && (
+            <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-muted text-[10px] sm:text-xs text-text-secondary rounded-full">
+              +{article?.topics?.length - 3}
+            </span>
+          )}
         </div>
 
-        {/* Footer with Stats and CTA */}
-        <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
-          <div className="flex items-center space-x-3 text-xs text-text-secondary">
+        {/* Footer with Stats and CTA - Mobile Optimized */}
+        <div className="flex items-center justify-between mt-auto pt-3 sm:pt-4 border-t border-gray-100">
+          <div className="flex items-center space-x-2 sm:space-x-3 text-xs text-text-secondary">
             <span className="flex items-center gap-1">
-              <Icon name="Eye" size={14} />
-              {article?.views?.toLocaleString()}
+              <Icon name="Eye" size={12} className="sm:w-[14px] sm:h-[14px]" />
+              <span className="hidden sm:inline">{article?.views?.toLocaleString()}</span>
+              <span className="sm:hidden">{article?.views > 1000 ? `${(article?.views / 1000).toFixed(0)}K` : article?.views}</span>
             </span>
             <span className="flex items-center gap-1">
-              <Icon name="Heart" size={14} />
-              {article?.likes?.toLocaleString()}
+              <Icon name="Heart" size={12} className="sm:w-[14px] sm:h-[14px]" />
+              <span className="hidden sm:inline">{article?.likes?.toLocaleString()}</span>
+              <span className="sm:hidden">{article?.likes > 1000 ? `${(article?.likes / 1000).toFixed(0)}K` : article?.likes}</span>
             </span>
           </div>
           <Button
