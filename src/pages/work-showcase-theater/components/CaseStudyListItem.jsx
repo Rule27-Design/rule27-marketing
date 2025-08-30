@@ -42,7 +42,7 @@ const CaseStudyListItem = ({ caseStudy, onViewDetails }) => {
             {/* Header with badges */}
             <div className="flex flex-wrap items-center gap-2 mb-3">
               {caseStudy?.featured && (
-                <span className="px-3 py-1 bg-yellow-500 text-white text-xs font-semibold rounded-full flex items-center gap-1">
+                <span className="px-3 py-1 bg-accent text-white text-xs font-semibold rounded-full flex items-center gap-1">
                   <Icon name="Star" size={12} className="fill-white" />
                   Featured
                 </span>

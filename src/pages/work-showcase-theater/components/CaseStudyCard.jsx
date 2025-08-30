@@ -45,7 +45,7 @@ const CaseStudyCard = ({ caseStudy, onViewDetails }) => {
         {/* Featured Star Badge - Properly Positioned */}
         {caseStudy?.featured && (
           <div className="absolute bottom-3 right-3 z-10">
-            <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+            <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center shadow-lg border-2 border-white">
               <Icon name="Star" size={18} className="text-white fill-white" />
             </div>
           </div>
