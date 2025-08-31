@@ -140,7 +140,7 @@ const CapabilityZones = () => {
           </div>
           <h2 className="text-5xl md:text-6xl lg:text-7xl font-heading-regular text-primary mb-6 uppercase tracking-wider">
             Four Universes of
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-red-400 block mt-2">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-red-400 block mt-2 font-heading-regular uppercase">
               Creative Excellence
             </span>
           </h2>
@@ -222,7 +222,7 @@ const CapabilityZones = () => {
                 {/* Content Section with Progressive Enhancement */}
                 <div className="p-8">
                   <div className="mb-4">
-                    <h3 className="text-3xl font-heading-regular text-primary mb-2 transition-colors duration-300 hover:text-accent uppercase tracking-wide">
+                    <h3 className="text-3xl font-heading-regular text-primary mb-2 uppercase tracking-wide">
                       {capability?.title}
                     </h3>
                     <p className={`text-sm font-heading-regular ${capability?.textColor} uppercase tracking-wider`}>

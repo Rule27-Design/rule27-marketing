@@ -98,7 +98,7 @@ const CaseStudyCarousel = () => {
         <div className="text-center mb-16">
           <h2 className="text-5xl md:text-6xl lg:text-7xl font-heading-regular text-primary mb-6 uppercase tracking-wider">
             Transformation Stories That
-            <span className="text-accent block mt-2">Speak for Themselves</span>
+            <span className="text-accent block mt-2 font-heading-regular uppercase">Speak for Themselves</span>
           </h2>
           <p className="text-xl text-text-secondary max-w-3xl mx-auto font-sans">
             Real results from real partnerships. See how we've helped ambitious brands 
