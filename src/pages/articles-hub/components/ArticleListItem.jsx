@@ -50,30 +50,30 @@ const ArticleListItem = ({ article, onViewDetails }) => {
             {/* Header with badges - Mobile Responsive */}
             <div className="flex flex-wrap items-center gap-2 mb-3">
               {article?.featured && (
-                <span className="px-2 sm:px-3 py-1 bg-accent text-white text-xs font-semibold rounded-full flex items-center gap-1">
+                <span className="px-2 sm:px-3 py-1 bg-accent text-white text-xs font-heading-regular tracking-wider uppercase rounded-full flex items-center gap-1">
                   <Icon name="Star" size={12} className="fill-white" />
                   Featured
                 </span>
               )}
-              <span className="px-2 sm:px-3 py-1 bg-muted text-xs font-semibold text-primary rounded-full">
+              <span className="px-2 sm:px-3 py-1 bg-muted text-xs font-heading-regular tracking-wider uppercase text-primary rounded-full">
                 {article?.category}
               </span>
-              <span className="px-2 sm:px-3 py-1 bg-black/10 text-xs font-medium rounded-full flex items-center gap-1">
+              <span className="px-2 sm:px-3 py-1 bg-black/10 text-xs font-body font-medium rounded-full flex items-center gap-1">
                 <Icon name="Clock" size={12} />
                 {article?.readTime} min read
               </span>
-              <span className="hidden sm:inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+              <span className="hidden sm:inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full font-body">
                 {formatDate(article?.publishedDate)}
               </span>
             </div>
 
             {/* Title - Mobile Responsive */}
-            <h3 className="text-base sm:text-lg lg:text-2xl font-bold text-primary mb-3 group-hover:text-accent transition-colors duration-300">
+            <h3 className="text-base sm:text-lg lg:text-2xl font-heading-bold text-primary mb-3 group-hover:text-accent transition-colors duration-300 tracking-wider uppercase">
               {article?.title}
             </h3>
 
             {/* Excerpt - Mobile Responsive */}
-            <p className="text-text-secondary text-xs sm:text-sm lg:text-base mb-4 line-clamp-2 lg:line-clamp-3">
+            <p className="text-text-secondary text-xs sm:text-sm lg:text-base mb-4 line-clamp-2 lg:line-clamp-3 font-body">
               {article?.excerpt}
             </p>
 
@@ -85,10 +85,10 @@ const ArticleListItem = ({ article, onViewDetails }) => {
                 className="w-8 h-8 sm:w-10 sm:h-10 rounded-full"
               />
               <div>
-                <p className="font-medium text-primary text-xs sm:text-sm">
+                <p className="font-body font-medium text-primary text-xs sm:text-sm">
                   {article?.author?.name}
                 </p>
-                <p className="text-[10px] sm:text-xs text-text-secondary">
+                <p className="text-[10px] sm:text-xs text-text-secondary font-body">
                   {article?.author?.role} • {formatDate(article?.publishedDate)}
                 </p>
               </div>
@@ -99,7 +99,7 @@ const ArticleListItem = ({ article, onViewDetails }) => {
               {article?.topics?.map((topic, index) => (
                 <span
                   key={index}
-                  className="px-2 py-1 bg-muted text-[10px] sm:text-xs text-text-secondary rounded-full"
+                  className="px-2 py-1 bg-muted text-[10px] sm:text-xs text-text-secondary rounded-full font-body"
                 >
                   {topic}
                 </span>
@@ -109,16 +109,18 @@ const ArticleListItem = ({ article, onViewDetails }) => {
             {/* Footer with Stats and CTA - Mobile Responsive */}
             <div className="flex flex-col sm:flex-row lg:items-center justify-between gap-3 sm:gap-4 mt-auto pt-3 sm:pt-4 border-t border-gray-100">
               {/* Stats - Mobile Responsive */}
-              <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-text-secondary">
+              <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-text-secondary font-body">
                 <span className="flex items-center gap-1">
                   <Icon name="Eye" size={14} className="sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">{article?.views?.toLocaleString()} views</span>
-                  <span className="sm:hidden">{article?.views > 1000 ? `${(article?.views / 1000).toFixed(0)}K` : article?.views}</span>
+                  <span className="hidden sm:inline font-heading-regular tracking-wider">{article?.views?.toLocaleString()}</span>
+                  <span className="sm:hidden font-heading-regular tracking-wider">{article?.views > 1000 ? `${(article?.views / 1000).toFixed(0)}K` : article?.views}</span>
+                  <span className="hidden sm:inline">views</span>
                 </span>
                 <span className="flex items-center gap-1">
                   <Icon name="Heart" size={14} className="sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">{article?.likes?.toLocaleString()} likes</span>
-                  <span className="sm:hidden">{article?.likes > 1000 ? `${(article?.likes / 1000).toFixed(0)}K` : article?.likes}</span>
+                  <span className="hidden sm:inline font-heading-regular tracking-wider">{article?.likes?.toLocaleString()}</span>
+                  <span className="sm:hidden font-heading-regular tracking-wider">{article?.likes > 1000 ? `${(article?.likes / 1000).toFixed(0)}K` : article?.likes}</span>
+                  <span className="hidden sm:inline">likes</span>
                 </span>
                 <span className="flex items-center gap-1">
                   <Icon name="Share2" size={14} className="sm:w-4 sm:h-4" />
@@ -134,7 +136,7 @@ const ArticleListItem = ({ article, onViewDetails }) => {
                   className="text-text-secondary hover:text-accent text-xs sm:text-sm"
                   iconName="Bookmark"
                 >
-                  <span className="hidden sm:inline">Save</span>
+                  <span className="hidden sm:inline font-heading-regular tracking-wider uppercase">Save</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -143,7 +145,7 @@ const ArticleListItem = ({ article, onViewDetails }) => {
                   iconName="ArrowRight"
                   iconPosition="right"
                 >
-                  Read Article
+                  <span className="font-heading-regular tracking-wider uppercase">Read Article</span>
                 </Button>
               </div>
             </div>

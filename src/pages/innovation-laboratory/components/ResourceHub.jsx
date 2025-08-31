@@ -173,14 +173,14 @@ const ResourceHub = () => {
         }`}>
           <div className="inline-flex items-center justify-center space-x-2 bg-accent/10 border border-accent/20 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6 mx-auto">
             <Icon name="Download" size={16} className="text-accent" />
-            <span className="text-accent font-medium text-xs sm:text-sm">Resource Hub</span>
+            <span className="text-accent font-body font-medium text-xs sm:text-sm">Resource Hub</span>
           </div>
           
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-4 sm:mb-6 text-center">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading-bold text-black mb-4 sm:mb-6 text-center tracking-wider uppercase">
             Strategic <span className="text-accent">Resources</span>
           </h2>
           
-          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4 text-center">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4 text-center font-body">
             Downloadable templates, frameworks, and tools that provide immediate value while demonstrating our expertise and approach.
           </p>
         </div>
@@ -199,7 +199,7 @@ const ResourceHub = () => {
                   placeholder="Search resources..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e?.target?.value)}
-                  className="pl-10"
+                  className="pl-10 font-body"
                 />
               </div>
             </div>
@@ -210,7 +210,7 @@ const ResourceHub = () => {
                 <button
                   key={filter?.id}
                   onClick={() => setActiveFilter(filter?.id)}
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm ${
+                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-body font-medium transition-all duration-300 text-xs sm:text-sm ${
                     activeFilter === filter?.id
                       ? 'bg-accent text-white' :'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                   }`}
@@ -227,7 +227,7 @@ const ResourceHub = () => {
           <div className={`mb-12 sm:mb-16 hidden lg:block transition-all duration-700 delay-400 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}>
-            <h3 className="text-xl sm:text-2xl font-bold text-black mb-6 sm:mb-8 flex items-center justify-center lg:justify-start">
+            <h3 className="text-xl sm:text-2xl font-heading-bold text-black mb-6 sm:mb-8 flex items-center justify-center lg:justify-start tracking-wider uppercase">
               <Icon name="Star" size={20} className="text-accent mr-2 sm:hidden" />
               <Icon name="Star" size={24} className="text-accent mr-2 hidden sm:block" />
               Featured Resources
@@ -250,22 +250,22 @@ const ResourceHub = () => {
                       <Icon name="FileText" size={32} className="text-accent hidden sm:block" />
                     </div>
                     <div className="absolute top-2 right-2">
-                      <span className="bg-accent text-white px-2 py-0.5 sm:py-1 rounded text-xs font-medium">
+                      <span className="bg-accent text-white px-2 py-0.5 sm:py-1 rounded text-xs font-body font-medium">
                         Featured
                       </span>
                     </div>
                   </div>
                   
                   <div className="p-3 sm:p-4">
-                    <h4 className="font-bold text-black mb-2 line-clamp-2 text-sm sm:text-base">{resource?.title}</h4>
-                    <p className="text-gray-600 text-xs sm:text-sm mb-3 line-clamp-2">{resource?.description}</p>
+                    <h4 className="font-heading-regular text-black mb-2 line-clamp-2 text-sm sm:text-base tracking-wider uppercase">{resource?.title}</h4>
+                    <p className="text-gray-600 text-xs sm:text-sm mb-3 line-clamp-2 font-body">{resource?.description}</p>
                     
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-base sm:text-lg font-bold text-accent">{resource?.price}</span>
+                      <span className="text-base sm:text-lg font-heading-bold text-accent tracking-wider">{resource?.price}</span>
                       <div className="flex items-center space-x-1">
                         <Icon name="Star" size={12} className="text-yellow-500 sm:hidden" />
                         <Icon name="Star" size={14} className="text-yellow-500 hidden sm:block" />
-                        <span className="text-xs sm:text-sm text-gray-600">{resource?.rating}</span>
+                        <span className="text-xs sm:text-sm text-gray-600 font-body">{resource?.rating}</span>
                       </div>
                     </div>
                     
@@ -276,7 +276,7 @@ const ResourceHub = () => {
                       iconName="Download"
                       iconPosition="left"
                     >
-                      Download
+                      <span className="font-heading-regular tracking-wider uppercase">Download</span>
                     </Button>
                   </div>
                 </div>
@@ -306,7 +306,7 @@ const ResourceHub = () => {
                   <Icon name="FileText" size={48} className="text-gray-400 hidden sm:block" />
                 </div>
                 <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
-                  <span className="bg-black/80 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-medium capitalize">
+                  <span className="bg-black/80 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-body font-medium capitalize">
                     {resource?.type}
                   </span>
                 </div>
@@ -321,30 +321,30 @@ const ResourceHub = () => {
               {/* Resource Content */}
               <div className="p-4 sm:p-6">
                 {/* Title & Description */}
-                <h4 className="text-base sm:text-xl font-bold text-black mb-2 sm:mb-3 line-clamp-2 group-hover:text-accent transition-colors duration-300">
+                <h4 className="text-base sm:text-xl font-heading-regular text-black mb-2 sm:mb-3 line-clamp-2 group-hover:text-accent transition-colors duration-300 tracking-wider uppercase">
                   {resource?.title}
                 </h4>
                 
-                <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3">
+                <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3 font-body">
                   {resource?.description}
                 </p>
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                   {resource?.tags?.slice(0, 2)?.map((tag) => (
-                    <span key={tag} className="bg-gray-100 text-gray-600 px-2 py-0.5 sm:py-1 rounded text-xs">
+                    <span key={tag} className="bg-gray-100 text-gray-600 px-2 py-0.5 sm:py-1 rounded text-xs font-body">
                       {tag}
                     </span>
                   ))}
                 </div>
 
                 {/* Meta Info */}
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-3 sm:mb-4">
+                <div className="flex items-center justify-between text-xs text-gray-500 mb-3 sm:mb-4 font-body">
                   <div className="flex items-center space-x-3 sm:space-x-4">
                     <span className="flex items-center space-x-1">
                       <Icon name="Download" size={10} className="sm:hidden" />
                       <Icon name="Download" size={12} className="hidden sm:block" />
-                      <span>{resource?.downloads}</span>
+                      <span className="font-heading-regular tracking-wider">{resource?.downloads}</span>
                     </span>
                     <span className="flex items-center space-x-1">
                       <Icon name="File" size={10} className="sm:hidden" />
@@ -355,13 +355,13 @@ const ResourceHub = () => {
                   <div className="flex items-center space-x-1">
                     <Icon name="Star" size={10} className="text-yellow-500 sm:hidden" />
                     <Icon name="Star" size={12} className="text-yellow-500 hidden sm:block" />
-                    <span>{resource?.rating}</span>
+                    <span className="font-heading-regular tracking-wider">{resource?.rating}</span>
                   </div>
                 </div>
 
                 {/* Price & Download */}
                 <div className="flex items-center justify-between">
-                  <span className="text-xl sm:text-2xl font-bold text-accent">{resource?.price}</span>
+                  <span className="text-xl sm:text-2xl font-heading-bold text-accent tracking-wider">{resource?.price}</span>
                   <Button
                     variant="default"
                     size="sm"
@@ -369,7 +369,9 @@ const ResourceHub = () => {
                     iconName="Download"
                     iconPosition="left"
                   >
-                    {resource?.price === 'Free' ? 'Download' : 'Purchase'}
+                    <span className="font-heading-regular tracking-wider uppercase">
+                      {resource?.price === 'Free' ? 'Download' : 'Purchase'}
+                    </span>
                   </Button>
                 </div>
               </div>
@@ -388,7 +390,7 @@ const ResourceHub = () => {
             iconName="Plus"
             iconPosition="left"
           >
-            Load More Resources
+            <span className="font-heading-regular tracking-wider uppercase">Load More Resources</span>
           </Button>
         </div>
 
@@ -398,10 +400,10 @@ const ResourceHub = () => {
         }`}>
           <Icon name="MessageSquare" size={36} className="text-accent mx-auto mb-4 sm:hidden" />
           <Icon name="MessageSquare" size={48} className="text-accent mx-auto mb-6 hidden sm:block" />
-          <h3 className="text-2xl sm:text-3xl font-bold text-black mb-3 sm:mb-4">
+          <h3 className="text-2xl sm:text-3xl font-heading-bold text-black mb-3 sm:mb-4 tracking-wider uppercase">
             Need a Custom Resource?
           </h3>
-          <p className="text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto text-sm sm:text-base">
+          <p className="text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto text-sm sm:text-base font-body">
             Can't find what you're looking for? Our team can create custom templates, frameworks, and tools tailored to your specific needs.
           </p>
           <Link to="/contact-consultation-portal">
@@ -412,7 +414,7 @@ const ResourceHub = () => {
               iconName="MessageCircle"
               iconPosition="left"
             >
-              Request Custom Resource
+              <span className="font-heading-regular tracking-wider uppercase">Request Custom Resource</span>
             </Button>
           </Link>
         </div>

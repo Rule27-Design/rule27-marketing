@@ -29,12 +29,12 @@ const HeroSection = () => {
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-10'
           }`}>
             <Icon name="Zap" size={20} className="text-accent" />
-            <span className="text-accent font-medium text-sm sm:text-base">Innovation Laboratory</span>
+            <span className="text-accent font-body font-medium text-sm sm:text-base">Innovation Laboratory</span>
             <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
           </div>
 
-          {/* Main Headline */}
-          <h1 className={`text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-4 sm:mb-6 transition-all duration-1000 delay-200 ${
+          {/* Main Headline - Using Steelfish */}
+          <h1 className={`text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-heading-bold text-white mb-4 sm:mb-6 tracking-wider uppercase transition-all duration-1000 delay-200 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}>
             <span className="block">Where</span>
@@ -42,14 +42,14 @@ const HeroSection = () => {
             <span className="block">Begins</span>
           </h1>
 
-          {/* Subheadline */}
-          <p className={`text-lg sm:text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto mb-8 sm:mb-12 leading-relaxed px-4 transition-all duration-1000 delay-400 ${
+          {/* Subheadline - Using Helvetica */}
+          <p className={`text-lg sm:text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto mb-8 sm:mb-12 leading-relaxed px-4 font-body transition-all duration-1000 delay-400 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}>
             Experimental features, emerging technologies, and forward-thinking insights that shape the future of digital experiences. Welcome to Rule27 Design's innovation playground.
           </p>
 
-          {/* CTA Buttons */}
+          {/* CTA Buttons - Mixed fonts */}
           <div className={`flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-12 sm:mb-16 transition-all duration-1000 delay-600 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}>
@@ -60,7 +60,7 @@ const HeroSection = () => {
               iconName="ArrowRight"
               iconPosition="right"
             >
-              Explore Experiments
+              <span className="font-heading-regular tracking-wider uppercase">Explore Experiments</span>
             </Button>
             <Button
               variant="outline"
@@ -69,25 +69,25 @@ const HeroSection = () => {
               iconName="Play"
               iconPosition="left"
             >
-              Watch Demo
+              <span className="font-heading-regular tracking-wider uppercase">Watch Demo</span>
             </Button>
           </div>
 
-          {/* Innovation Stats */}
+          {/* Innovation Stats - Using Steelfish for numbers */}
           <div className={`grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 max-w-4xl mx-auto transition-all duration-1000 delay-800 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}>
             <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-bold text-accent mb-2">27+</div>
-              <div className="text-gray-400 text-sm sm:text-base">Active Experiments</div>
+              <div className="text-3xl sm:text-4xl font-heading-bold text-accent mb-2 tracking-wider">27+</div>
+              <div className="text-gray-400 text-sm sm:text-base font-body">Active Experiments</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-bold text-accent mb-2">150K+</div>
-              <div className="text-gray-400 text-sm sm:text-base">Data Points Analyzed</div>
+              <div className="text-3xl sm:text-4xl font-heading-bold text-accent mb-2 tracking-wider">150K+</div>
+              <div className="text-gray-400 text-sm sm:text-base font-body">Data Points Analyzed</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-bold text-accent mb-2">99.9%</div>
-              <div className="text-gray-400 text-sm sm:text-base">Prediction Accuracy</div>
+              <div className="text-3xl sm:text-4xl font-heading-bold text-accent mb-2 tracking-wider">99.9%</div>
+              <div className="text-gray-400 text-sm sm:text-base font-body">Prediction Accuracy</div>
             </div>
           </div>
         </div>
@@ -98,7 +98,7 @@ const HeroSection = () => {
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
       }`}>
         <div className="flex flex-col items-center space-y-2">
-          <span className="text-gray-400 text-xs sm:text-sm">Scroll to explore</span>
+          <span className="text-gray-400 text-xs sm:text-sm font-body">Scroll to explore</span>
           <div className="animate-bounce">
             <Icon name="ChevronDown" size={24} className="text-accent" />
           </div>

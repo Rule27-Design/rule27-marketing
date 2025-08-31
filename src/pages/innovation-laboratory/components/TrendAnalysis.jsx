@@ -171,14 +171,14 @@ const TrendAnalysis = () => {
         }`}>
           <div className="inline-flex items-center justify-center space-x-2 bg-accent/10 border border-accent/20 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6 mx-auto">
             <Icon name="TrendingUp" size={16} className="text-accent" />
-            <span className="text-accent font-medium text-xs sm:text-sm">Trend Analysis</span>
+            <span className="text-accent font-body font-medium text-xs sm:text-sm">Trend Analysis</span>
           </div>
           
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-4 sm:mb-6 text-center">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading-bold text-black mb-4 sm:mb-6 text-center tracking-wider uppercase">
             Data-Driven <span className="text-accent">Insights</span>
           </h2>
           
-          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4 text-center">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4 text-center font-body">
             Real-time analysis of industry trends, user behaviors, and emerging technologies to guide strategic decisions.
           </p>
         </div>
@@ -192,7 +192,7 @@ const TrendAnalysis = () => {
               <button
                 key={tab?.id}
                 onClick={() => setActiveTab(tab?.id)}
-                className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-medium transition-all duration-300 whitespace-nowrap ${
+                className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-body font-medium transition-all duration-300 whitespace-nowrap ${
                   activeTab === tab?.id
                     ? 'bg-white text-accent shadow-lg'
                     : 'text-gray-600 hover:text-gray-900'
@@ -213,8 +213,8 @@ const TrendAnalysis = () => {
           }`}>
             <div className="bg-gray-50 rounded-2xl p-4 sm:p-6 md:p-8">
               <div className="mb-4 sm:mb-6 md:mb-8">
-                <h3 className="text-xl sm:text-2xl font-bold text-black mb-2">{currentData?.title}</h3>
-                <p className="text-sm sm:text-base text-gray-600">{currentData?.subtitle}</p>
+                <h3 className="text-xl sm:text-2xl font-heading-bold text-black mb-2 tracking-wider uppercase">{currentData?.title}</h3>
+                <p className="text-sm sm:text-base text-gray-600 font-body">{currentData?.subtitle}</p>
               </div>
               
               <div className="bg-white rounded-xl p-3 sm:p-4 md:p-6 overflow-x-auto">
@@ -228,7 +228,7 @@ const TrendAnalysis = () => {
             isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'
           }`}>
             <div className="bg-black rounded-2xl p-6 sm:p-8 text-white">
-              <h4 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6 flex items-center">
+              <h4 className="text-lg sm:text-xl font-heading-bold mb-4 sm:mb-6 flex items-center tracking-wider uppercase">
                 <Icon name="Zap" size={20} className="text-accent mr-2 sm:hidden" />
                 <Icon name="Zap" size={24} className="text-accent mr-2 hidden sm:block" />
                 Key Insights
@@ -238,8 +238,8 @@ const TrendAnalysis = () => {
                 {currentData?.insights?.map((insight, index) => (
                   <div key={index} className="border-b border-gray-700 pb-3 sm:pb-4 last:border-b-0 last:pb-0">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-sm sm:text-base">{insight?.trend}</span>
-                      <span className={`text-xs sm:text-sm px-2 py-0.5 sm:py-1 rounded ${
+                      <span className="font-body font-medium text-sm sm:text-base">{insight?.trend}</span>
+                      <span className={`text-xs sm:text-sm px-2 py-0.5 sm:py-1 rounded font-heading-regular tracking-wider ${
                         insight?.growth?.startsWith('+') ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
                       }`}>
                         {insight?.growth}
@@ -255,7 +255,7 @@ const TrendAnalysis = () => {
                           }}
                         ></div>
                       </div>
-                      <span className="text-xs sm:text-sm text-gray-400">{insight?.confidence}</span>
+                      <span className="text-xs sm:text-sm text-gray-400 font-body">{insight?.confidence}</span>
                     </div>
                   </div>
                 ))}
@@ -267,23 +267,23 @@ const TrendAnalysis = () => {
                 iconName="Download"
                 iconPosition="left"
               >
-                Download Report
+                <span className="font-heading-regular tracking-wider uppercase">Download Report</span>
               </Button>
             </div>
 
             {/* Prediction Card */}
             <div className="bg-gradient-to-br from-accent to-red-600 rounded-2xl p-6 sm:p-8 text-white">
-              <h4 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 flex items-center">
+              <h4 className="text-lg sm:text-xl font-heading-bold mb-3 sm:mb-4 flex items-center tracking-wider uppercase">
                 <Icon name="Sparkles" size={20} className="mr-2 sm:hidden" />
                 <Icon name="Sparkles" size={24} className="mr-2 hidden sm:block" />
                 AI Prediction
               </h4>
-              <p className="text-xs sm:text-sm opacity-90 mb-3 sm:mb-4">
+              <p className="text-xs sm:text-sm opacity-90 mb-3 sm:mb-4 font-body">
                 Based on current data patterns, we predict the next major shift will occur in Q3 2025.
               </p>
               <div className="bg-white/20 rounded-xl p-3 sm:p-4">
-                <div className="text-xl sm:text-2xl font-bold mb-1">87%</div>
-                <div className="text-xs sm:text-sm opacity-80">Confidence Level</div>
+                <div className="text-xl sm:text-2xl font-heading-bold mb-1 tracking-wider">87%</div>
+                <div className="text-xs sm:text-sm opacity-80 font-body">Confidence Level</div>
               </div>
             </div>
           </div>

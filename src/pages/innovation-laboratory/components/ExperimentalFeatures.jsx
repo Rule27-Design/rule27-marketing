@@ -104,14 +104,14 @@ const ExperimentalFeatures = () => {
         >
           <div className="inline-flex items-center justify-center space-x-2 bg-accent/10 border border-accent/20 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6 mx-auto">
             <Icon name="Flask" size={16} className="text-accent" />
-            <span className="text-accent font-medium text-xs sm:text-sm">Experimental Features</span>
+            <span className="text-accent font-body font-medium text-xs sm:text-sm">Experimental Features</span>
           </div>
           
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-4 sm:mb-6 text-center">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading-bold text-black mb-4 sm:mb-6 text-center tracking-wider uppercase">
             Innovation in <span className="text-accent">Action</span>
           </h2>
           
-          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4 text-center">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4 text-center font-body">
             Cutting-edge tools and technologies that push the boundaries of what's possible in digital design and development.
           </p>
         </div>
@@ -145,8 +145,8 @@ const ExperimentalFeatures = () => {
                   
                   <div className="flex-1">
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
-                      <h3 className="text-lg sm:text-xl font-bold text-black">{feature?.title}</h3>
-                      <span className={`px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium ${
+                      <h3 className="text-lg sm:text-xl font-heading-regular text-black tracking-wider uppercase">{feature?.title}</h3>
+                      <span className={`px-2 py-0.5 sm:py-1 rounded-full text-xs font-body font-medium ${
                         feature?.status === 'Production' ? 'bg-green-100 text-green-800' :
                         feature?.status === 'Live Beta' ? 'bg-blue-100 text-blue-800' :
                         feature?.status === 'Beta'? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800'
@@ -155,9 +155,9 @@ const ExperimentalFeatures = () => {
                       </span>
                     </div>
                     
-                    <p className="text-sm sm:text-base text-gray-600 mb-3">{feature?.description}</p>
+                    <p className="text-sm sm:text-base text-gray-600 mb-3 font-body">{feature?.description}</p>
                     
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 font-body">
                       <span className="bg-gray-100 px-2 py-1 rounded">{feature?.category}</span>
                       <div className="flex items-center space-x-1">
                         <Icon name="Users" size={14} />
@@ -187,21 +187,21 @@ const ExperimentalFeatures = () => {
                     <Icon name={features?.[activeFeature]?.icon} size={32} className="text-white hidden sm:block" />
                   </div>
                   <div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-black">{features?.[activeFeature]?.title}</h3>
-                    <p className="text-sm sm:text-base text-gray-600">{features?.[activeFeature]?.category}</p>
+                    <h3 className="text-xl sm:text-2xl font-heading-bold text-black tracking-wider uppercase">{features?.[activeFeature]?.title}</h3>
+                    <p className="text-sm sm:text-base text-gray-600 font-body">{features?.[activeFeature]?.category}</p>
                   </div>
                 </div>
 
-                <p className="text-sm sm:text-base lg:text-lg text-gray-700 mb-6 sm:mb-8 leading-relaxed">
+                <p className="text-sm sm:text-base lg:text-lg text-gray-700 mb-6 sm:mb-8 leading-relaxed font-body">
                   {features?.[activeFeature]?.preview}
                 </p>
 
-                {/* Metrics */}
+                {/* Metrics - Using Steelfish for numbers */}
                 <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
                   {Object.entries(features?.[activeFeature]?.metrics || {})?.map(([key, value]) => (
                     <div key={key} className="text-center p-3 sm:p-4 bg-gray-50 rounded-xl">
-                      <div className="text-lg sm:text-2xl font-bold text-accent mb-1">{value}</div>
-                      <div className="text-xs sm:text-sm text-gray-600 capitalize">{key}</div>
+                      <div className="text-lg sm:text-2xl font-heading-bold text-accent mb-1 tracking-wider">{value}</div>
+                      <div className="text-xs sm:text-sm text-gray-600 capitalize font-body">{key}</div>
                     </div>
                   ))}
                 </div>
@@ -214,7 +214,7 @@ const ExperimentalFeatures = () => {
                     iconName="Play"
                     iconPosition="left"
                   >
-                    Try Demo
+                    <span className="font-heading-regular tracking-wider uppercase">Try Demo</span>
                   </Button>
                   <Button
                     variant="outline"
@@ -222,7 +222,7 @@ const ExperimentalFeatures = () => {
                     iconName="BookOpen"
                     iconPosition="left"
                   >
-                    Learn More
+                    <span className="font-heading-regular tracking-wider uppercase">Learn More</span>
                   </Button>
                 </div>
               </div>

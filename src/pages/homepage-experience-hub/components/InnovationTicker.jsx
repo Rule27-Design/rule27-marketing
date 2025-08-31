@@ -114,15 +114,15 @@ const InnovationTicker = () => {
         <div className="text-center mb-12">
           <div className="flex items-center justify-center space-x-3 mb-4">
             <div className="w-3 h-3 bg-accent rounded-full animate-pulse"></div>
-            <span className="text-accent font-semibold uppercase tracking-wide text-sm">
+            <span className="text-accent font-body font-semibold uppercase tracking-wide text-sm">
               Live Innovation Feed
             </span>
             <div className="w-3 h-3 bg-accent rounded-full animate-pulse delay-500"></div>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-heading-bold text-white mb-4 tracking-wider uppercase">
             Real-Time Excellence Updates
           </h2>
-          <p className="text-gray-300 max-w-2xl mx-auto">
+          <p className="text-gray-300 max-w-2xl mx-auto font-body">
             Stay connected to our latest achievements, innovations, and industry recognition 
             as we continue pushing creative boundaries.
           </p>
@@ -144,17 +144,17 @@ const InnovationTicker = () => {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
-                      <span className={`${innovations?.[currentIndex]?.color} font-semibold text-sm uppercase tracking-wide`}>
+                      <span className={`${innovations?.[currentIndex]?.color} font-body font-semibold text-sm uppercase tracking-wide`}>
                         {innovations?.[currentIndex]?.category}
                       </span>
-                      <span className="text-gray-400 text-sm">
+                      <span className="text-gray-400 text-sm font-body">
                         {formatDate(innovations?.[currentIndex]?.date)}
                       </span>
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2">
+                    <h3 className="text-xl font-heading-bold text-white mb-2 tracking-wider uppercase">
                       {innovations?.[currentIndex]?.title}
                     </h3>
-                    <p className="text-gray-300 leading-relaxed">
+                    <p className="text-gray-300 leading-relaxed font-body">
                       {innovations?.[currentIndex]?.description}
                     </p>
                   </div>
@@ -184,7 +184,7 @@ const InnovationTicker = () => {
               {[...innovations, ...innovations]?.map((item, index) => (
                 <div key={`${item?.id}-${index}`} className="flex items-center space-x-2 whitespace-nowrap">
                   <Icon name={item?.icon} size={16} className="text-accent" />
-                  <span className="text-white font-medium">{item?.title}</span>
+                  <span className="text-white font-body font-medium">{item?.title}</span>
                   <span className="text-gray-400">•</span>
                 </div>
               ))}
@@ -194,29 +194,29 @@ const InnovationTicker = () => {
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 text-center border border-white/10">
-              <div className="text-2xl font-bold text-accent mb-1">25+</div>
-              <div className="text-gray-300 text-sm">Awards Won</div>
+              <div className="text-2xl font-heading-bold text-accent mb-1 tracking-wider">25+</div>
+              <div className="text-gray-300 text-sm font-body">Awards Won</div>
             </div>
             <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 text-center border border-white/10">
-              <div className="text-2xl font-bold text-accent mb-1">500%</div>
-              <div className="text-gray-300 text-sm">Avg Growth</div>
+              <div className="text-2xl font-heading-bold text-accent mb-1 tracking-wider">500%</div>
+              <div className="text-gray-300 text-sm font-body">Avg Growth</div>
             </div>
             <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 text-center border border-white/10">
-              <div className="text-2xl font-bold text-accent mb-1">150+</div>
-              <div className="text-gray-300 text-sm">Projects</div>
+              <div className="text-2xl font-heading-bold text-accent mb-1 tracking-wider">150+</div>
+              <div className="text-gray-300 text-sm font-body">Projects</div>
             </div>
             <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 text-center border border-white/10">
-              <div className="text-2xl font-bold text-accent mb-1">98%</div>
-              <div className="text-gray-300 text-sm">Satisfaction</div>
+              <div className="text-2xl font-heading-bold text-accent mb-1 tracking-wider">98%</div>
+              <div className="text-gray-300 text-sm font-body">Satisfaction</div>
             </div>
           </div>
 
           {/* CTA Section */}
           <div className="text-center">
             <Link to="/innovation-laboratory">
-              <button className="bg-accent hover:bg-accent/90 text-white px-8 py-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 mx-auto">
+              <button className="bg-accent hover:bg-accent/90 text-white px-8 py-4 rounded-lg font-body font-semibold transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 mx-auto">
                 <Icon name="Lightbulb" size={20} />
-                <span>Explore Innovation Lab</span>
+                <span className="font-heading-regular tracking-wider uppercase">Explore Innovation Lab</span>
                 <Icon name="ArrowRight" size={16} />
               </button>
             </Link>

@@ -36,14 +36,14 @@ const ArticleCard = ({ article, onViewDetails }) => {
         
         {/* Category Badge - Mobile Size */}
         <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
-          <span className="px-2 py-1 sm:px-3 sm:py-1 bg-white/90 backdrop-blur-sm text-xs font-semibold text-primary rounded-full">
+          <span className="px-2 py-1 sm:px-3 sm:py-1 bg-white/90 backdrop-blur-sm text-xs font-heading-regular tracking-wider uppercase text-primary rounded-full">
             {article?.category}
           </span>
         </div>
 
         {/* Read Time Badge - Mobile Size */}
         <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
-          <span className="px-2 py-1 sm:px-3 sm:py-1 bg-black/70 backdrop-blur-sm text-xs font-semibold text-white rounded-full flex items-center gap-1">
+          <span className="px-2 py-1 sm:px-3 sm:py-1 bg-black/70 backdrop-blur-sm text-xs font-body font-semibold text-white rounded-full flex items-center gap-1">
             <Icon name="Clock" size={12} />
             {article?.readTime} min
           </span>
@@ -70,23 +70,23 @@ const ArticleCard = ({ article, onViewDetails }) => {
               className="w-6 h-6 sm:w-8 sm:h-8 rounded-full"
             />
             <div className="text-xs sm:text-sm">
-              <p className="font-medium text-primary truncate max-w-[100px] sm:max-w-[120px]">
+              <p className="font-body font-medium text-primary truncate max-w-[100px] sm:max-w-[120px]">
                 {article?.author?.name}
               </p>
             </div>
           </div>
-          <span className="text-[10px] sm:text-xs text-text-secondary">
+          <span className="text-[10px] sm:text-xs text-text-secondary font-body">
             {formatDate(article?.publishedDate)}
           </span>
         </div>
 
         {/* Title - Mobile Text Sizes */}
-        <h3 className="text-base sm:text-lg font-bold text-primary mb-2 group-hover:text-accent transition-colors duration-300 line-clamp-2">
+        <h3 className="text-base sm:text-lg font-heading-regular text-primary mb-2 group-hover:text-accent transition-colors duration-300 line-clamp-2 tracking-wider uppercase">
           {article?.title}
         </h3>
 
         {/* Excerpt */}
-        <p className="text-text-secondary text-xs sm:text-sm mb-4 line-clamp-3 flex-1">
+        <p className="text-text-secondary text-xs sm:text-sm mb-4 line-clamp-3 flex-1 font-body">
           {article?.excerpt}
         </p>
 
@@ -95,13 +95,13 @@ const ArticleCard = ({ article, onViewDetails }) => {
           {article?.topics?.slice(0, 3)?.map((topic, index) => (
             <span
               key={index}
-              className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-muted text-[10px] sm:text-xs text-text-secondary rounded-full"
+              className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-muted text-[10px] sm:text-xs text-text-secondary rounded-full font-body"
             >
               {topic}
             </span>
           ))}
           {article?.topics?.length > 3 && (
-            <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-muted text-[10px] sm:text-xs text-text-secondary rounded-full">
+            <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-muted text-[10px] sm:text-xs text-text-secondary rounded-full font-body">
               +{article?.topics?.length - 3}
             </span>
           )}
@@ -109,16 +109,16 @@ const ArticleCard = ({ article, onViewDetails }) => {
 
         {/* Footer with Stats and CTA - Mobile Optimized */}
         <div className="flex items-center justify-between mt-auto pt-3 sm:pt-4 border-t border-gray-100">
-          <div className="flex items-center space-x-2 sm:space-x-3 text-xs text-text-secondary">
+          <div className="flex items-center space-x-2 sm:space-x-3 text-xs text-text-secondary font-body">
             <span className="flex items-center gap-1">
               <Icon name="Eye" size={12} className="sm:w-[14px] sm:h-[14px]" />
-              <span className="hidden sm:inline">{article?.views?.toLocaleString()}</span>
-              <span className="sm:hidden">{article?.views > 1000 ? `${(article?.views / 1000).toFixed(0)}K` : article?.views}</span>
+              <span className="hidden sm:inline font-heading-regular tracking-wider">{article?.views?.toLocaleString()}</span>
+              <span className="sm:hidden font-heading-regular tracking-wider">{article?.views > 1000 ? `${(article?.views / 1000).toFixed(0)}K` : article?.views}</span>
             </span>
             <span className="flex items-center gap-1">
               <Icon name="Heart" size={12} className="sm:w-[14px] sm:h-[14px]" />
-              <span className="hidden sm:inline">{article?.likes?.toLocaleString()}</span>
-              <span className="sm:hidden">{article?.likes > 1000 ? `${(article?.likes / 1000).toFixed(0)}K` : article?.likes}</span>
+              <span className="hidden sm:inline font-heading-regular tracking-wider">{article?.likes?.toLocaleString()}</span>
+              <span className="sm:hidden font-heading-regular tracking-wider">{article?.likes > 1000 ? `${(article?.likes / 1000).toFixed(0)}K` : article?.likes}</span>
             </span>
           </div>
           <Button
@@ -129,7 +129,7 @@ const ArticleCard = ({ article, onViewDetails }) => {
             iconName="ArrowRight"
             iconPosition="right"
           >
-            Read
+            <span className="font-heading-regular tracking-wider uppercase">Read</span>
           </Button>
         </div>
       </div>

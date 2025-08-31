@@ -138,13 +138,13 @@ const CapabilityZones = () => {
               />
             </div>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-primary mb-6">
+          <h2 className="text-5xl md:text-6xl lg:text-7xl font-heading-bold text-primary mb-6 uppercase tracking-wider">
             Four Universes of
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-red-400 block mt-2">
               Creative Excellence
             </span>
           </h2>
-          <p className="text-xl text-text-secondary max-w-3xl mx-auto">
+          <p className="text-xl text-text-secondary max-w-3xl mx-auto font-sans">
             Each zone represents a mastery domain where we've redefined what's possible. 
             Explore the capabilities that make Rule27 Design the creative partner of choice.
           </p>
@@ -210,8 +210,8 @@ const CapabilityZones = () => {
                                 : 'none'
                             }}
                           >
-                            <div className="font-bold text-lg">{value}</div>
-                            <div className="capitalize opacity-90 text-xs">{key}</div>
+                            <div className="font-heading-bold text-xl uppercase">{value}</div>
+                            <div className="capitalize opacity-90 text-xs font-sans">{key}</div>
                           </div>
                         ))}
                       </div>
@@ -222,15 +222,15 @@ const CapabilityZones = () => {
                 {/* Content Section with Progressive Enhancement */}
                 <div className="p-8">
                   <div className="mb-4">
-                    <h3 className="text-2xl font-bold text-primary mb-2 transition-colors duration-300 hover:text-accent">
+                    <h3 className="text-3xl font-heading-bold text-primary mb-2 transition-colors duration-300 hover:text-accent uppercase tracking-wide">
                       {capability?.title}
                     </h3>
-                    <p className={`text-sm font-semibold ${capability?.textColor} uppercase tracking-wide`}>
+                    <p className={`text-sm font-heading-regular ${capability?.textColor} uppercase tracking-wider`}>
                       {capability?.subtitle}
                     </p>
                   </div>
 
-                  <p className="text-text-secondary mb-6 leading-relaxed">
+                  <p className="text-text-secondary mb-6 leading-relaxed font-sans">
                     {capability?.description}
                   </p>
 
@@ -252,7 +252,7 @@ const CapabilityZones = () => {
                           <div className={`w-2 h-2 rounded-full ${capability?.bgColor} ${
                             hoveredZone === capability?.id ? 'scale-150' : ''
                           } transition-transform duration-300`}></div>
-                          <span className="text-sm text-text-secondary">{feature}</span>
+                          <span className="text-sm text-text-secondary font-sans">{feature}</span>
                         </div>
                       ))}
                     </div>
@@ -264,7 +264,7 @@ const CapabilityZones = () => {
                       ? 'opacity-100 translate-y-0' 
                       : 'opacity-0 translate-y-4 pointer-events-none'
                   }`}>
-                    <div className="flex items-center space-x-2 text-accent font-semibold group">
+                    <div className="flex items-center space-x-2 text-accent font-heading-regular uppercase tracking-wider group">
                       <span className="bg-gradient-to-r from-accent to-red-400 bg-clip-text text-transparent">
                         Explore This Universe
                       </span>
@@ -289,21 +289,21 @@ const CapabilityZones = () => {
           </div>
           
           <div className="relative z-10">
-            <h3 className="text-3xl font-bold mb-4">
+            <h3 className="text-4xl md:text-5xl font-heading-bold mb-4 uppercase tracking-wider">
               Ready to Experience All Four Universes?
             </h3>
-            <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
+            <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto font-sans">
               Let's discuss how our integrated approach can transform your brand's trajectory.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/capability-universe">
-                <button className="bg-white text-primary px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 shadow-xl">
+                <button className="bg-white text-primary px-8 py-4 rounded-lg font-heading-regular uppercase tracking-wider hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 shadow-xl">
                   <Icon name="Compass" size={20} />
                   <span>Explore All Capabilities</span>
                 </button>
               </Link>
               <Link to="/contact-consultation-portal">
-                <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-primary transition-all duration-300 transform hover:scale-105 flex items-center space-x-2">
+                <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-heading-regular uppercase tracking-wider hover:bg-white hover:text-primary transition-all duration-300 transform hover:scale-105 flex items-center space-x-2">
                   <Icon name="MessageCircle" size={20} />
                   <span>Start Consultation</span>
                 </button>
