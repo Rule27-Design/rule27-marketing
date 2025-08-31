@@ -142,7 +142,17 @@ const ContactConsultationPortal = () => {
         
         .section-wrapper {
           position: relative;
-          overflow: visible;
+          overflow: hidden;
+          isolation: isolate;
+        }
+        
+        /* Remove any default margins that could cause gaps */
+        section {
+          margin: 0;
+        }
+        
+        main > * {
+          margin: 0;
         }
         
         .consultation-grid {
@@ -160,12 +170,35 @@ const ContactConsultationPortal = () => {
             position: sticky;
             top: 80px;
             height: fit-content;
+            z-index: 10;
           }
         }
         
         .hero-wrapper {
           position: relative;
           z-index: 1;
+        }
+        
+        /* Proper z-index layering */
+        #trust {
+          position: relative;
+          z-index: 1;
+        }
+        
+        #consultation {
+          position: relative;
+          z-index: 2;
+        }
+        
+        #faq {
+          position: relative;
+          z-index: 1;
+        }
+        
+        /* Contain floating elements */
+        .form-sidebar {
+          position: relative;
+          z-index: 5;
         }
         
         img.loaded {
@@ -211,8 +244,8 @@ const ContactConsultationPortal = () => {
             <HeroSection />
           </section>
           
-          {/* Main Content Grid - Mobile Optimized */}
-          <section id="consultation" className="section-wrapper py-12 sm:py-16 md:py-20 lg:py-24 bg-gradient-to-b from-white to-surface">
+          {/* Main Content Grid - Gradient transition to gray */}
+          <section id="consultation" className="bg-gradient-to-b from-white via-white to-gray-50 py-12 sm:py-16 md:py-20 lg:py-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="consultation-grid grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
                 {/* Left Column - Form with Sticky Container */}
@@ -235,15 +268,11 @@ const ContactConsultationPortal = () => {
             </div>
           </section>
 
-          {/* Trust Indicators */}
-          <section id="trust" className="section-wrapper py-16 sm:py-20 md:py-24">
-            <TrustIndicators />
-          </section>
+          {/* Trust Indicators - Gray background, seamless flow */}
+          <TrustIndicators />
 
-          {/* FAQ Section */}
-          <section id="faq" className="section-wrapper py-12 sm:py-16 md:py-20 lg:py-24">
-            <FAQSection />
-          </section>
+          {/* FAQ Section - Gray background, seamless flow */}
+          <FAQSection />
         </main>
 
         {/* Footer - Same component as homepage and about page */}
