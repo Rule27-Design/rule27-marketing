@@ -10,20 +10,20 @@ import TrustIndicators from './components/TrustIndicators';
 import FAQSection from './components/FAQSection';
 
 const ContactConsultationPortal = () => {
-  const [formStep, setFormStep] = useState(1);
+  const [currentFormStep, setCurrentFormStep] = useState(1);
   const [formData, setFormData] = useState({
     contactInfo: {},
     projectDetails: {},
     preferences: {}
   });
 
-  const handleFormUpdate = (stepData, stepName) => {
-    if (stepName === 'step') {
-      setFormStep(stepData.step);
+  const handleFormUpdate = (data, type) => {
+    if (type === 'step') {
+      setCurrentFormStep(data);
     } else {
       setFormData(prev => ({
         ...prev,
-        [stepName]: { ...prev[stepName], ...stepData }
+        [type]: { ...prev[type], ...data }
       }));
     }
   };
@@ -154,21 +154,12 @@ const ContactConsultationPortal = () => {
           overflow: visible;
         }
         
-        /* Make sidebar scrollable while form stays fixed */
+        /* Sticky form on desktop */
         @media (min-width: 1024px) {
-          .form-column {
-            position: relative;
-          }
-          
-          .form-sticky-wrapper {
+          .sticky-form-container {
             position: sticky;
             top: 80px;
-            max-height: calc(100vh - 100px);
-            overflow-y: auto;
-          }
-          
-          .sidebar-column {
-            position: relative;
+            height: fit-content;
           }
         }
         
@@ -220,36 +211,37 @@ const ContactConsultationPortal = () => {
             <HeroSection />
           </section>
           
-          {/* Main Content Grid - Mobile Optimized with Fixed Form */}
+          {/* Main Content Grid - Mobile Optimized */}
           <section id="consultation" className="section-wrapper py-12 sm:py-16 md:py-20 lg:py-24 bg-gradient-to-b from-white to-surface">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="consultation-grid grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-                {/* Left Column - Form with Sticky Positioning */}
-                <div className="form-column order-1 lg:col-span-2">
-                  <div className="form-sticky-wrapper">
+                {/* Left Column - Form with Sticky Container */}
+                <div className="order-1 lg:col-span-2">
+                  <div className="sticky-form-container">
                     <ConsultationForm 
                       formData={formData}
                       onFormUpdate={handleFormUpdate}
+                      currentStep={currentFormStep}
                     />
                   </div>
                 </div>
                 
-                {/* Right Column - Support Info - Scrollable */}
-                <div className="sidebar-column form-sidebar order-2 space-y-6 sm:space-y-8">
-                  <ProcessTimeline currentStep={formStep} />
+                {/* Right Column - Support Info - Mobile Optimized */}
+                <div className="form-sidebar order-2 space-y-6 sm:space-y-8">
+                  <ProcessTimeline currentStep={currentFormStep} />
                   <ContactOptions />
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Trust Indicators - Reduced top padding */}
-          <section id="trust" className="section-wrapper py-8 sm:py-12 md:py-16 lg:py-20">
+          {/* Trust Indicators */}
+          <section id="trust" className="section-wrapper py-16 sm:py-20 md:py-24">
             <TrustIndicators />
           </section>
 
-          {/* FAQ Section - Reduced top padding */}
-          <section id="faq" className="section-wrapper py-8 sm:py-12 md:py-16 lg:py-20">
+          {/* FAQ Section */}
+          <section id="faq" className="section-wrapper py-12 sm:py-16 md:py-20 lg:py-24">
             <FAQSection />
           </section>
         </main>
