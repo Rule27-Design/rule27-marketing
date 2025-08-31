@@ -1,7 +1,9 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: Inter;
+  font-family: 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
@@ -9,4 +11,22 @@ body {
   line-height: normal;
   font-family: inherit;
   margin: unset;
+}
+
+/* Specific overrides for Steelfish headers */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Steelfish', Impact, sans-serif;
+  text-transform: uppercase;
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+}
+
+/* Ensure buttons and form elements use base font */
+button, input, textarea, select {
+  font-family: 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
+}
+
+/* Code blocks keep mono font */
+code, pre {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
 }

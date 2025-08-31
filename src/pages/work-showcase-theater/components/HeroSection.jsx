@@ -120,7 +120,7 @@ const HeroSection = ({ featuredCaseStudies, onViewCaseStudy }) => {
             </div>
 
             {/* Title - Mobile Responsive */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 md:mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 md:mb-6">
               {currentCase?.title}
             </h1>
 

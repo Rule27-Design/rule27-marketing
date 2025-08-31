@@ -179,7 +179,7 @@ const HeroSection = () => {
 
         {/* Main Headline with Typewriter Effect */}
         <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
             <span className="block mb-2">The 27th Rule:</span>
             <span className="block text-center md:text-left">
               <span className="block md:inline">Where Creative{' '}</span>
