@@ -34,7 +34,7 @@ const HeroSection = () => {
           </div>
 
           {/* Main Headline - Using Steelfish */}
-          <h1 className={`text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-heading-bold text-white mb-4 sm:mb-6 tracking-wider uppercase transition-all duration-1000 delay-200 ${
+          <h1 className={`text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-heading-regular text-white mb-4 sm:mb-6 tracking-wider uppercase transition-all duration-1000 delay-200 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}>
             <span className="block">Where</span>
@@ -78,15 +78,15 @@ const HeroSection = () => {
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}>
             <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-heading-bold text-accent mb-2 tracking-wider">27+</div>
+              <div className="text-3xl sm:text-4xl font-heading-regular text-accent mb-2 tracking-wider">27+</div>
               <div className="text-gray-400 text-sm sm:text-base font-body">Active Experiments</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-heading-bold text-accent mb-2 tracking-wider">150K+</div>
+              <div className="text-3xl sm:text-4xl font-heading-regular text-accent mb-2 tracking-wider">150K+</div>
               <div className="text-gray-400 text-sm sm:text-base font-body">Data Points Analyzed</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-heading-bold text-accent mb-2 tracking-wider">99.9%</div>
+              <div className="text-3xl sm:text-4xl font-heading-regular text-accent mb-2 tracking-wider">99.9%</div>
               <div className="text-gray-400 text-sm sm:text-base font-body">Prediction Accuracy</div>
             </div>
           </div>

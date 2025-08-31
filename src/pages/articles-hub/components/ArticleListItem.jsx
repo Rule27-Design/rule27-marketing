@@ -68,7 +68,7 @@ const ArticleListItem = ({ article, onViewDetails }) => {
             </div>
 
             {/* Title - Mobile Responsive */}
-            <h3 className="text-base sm:text-lg lg:text-2xl font-heading-bold text-primary mb-3 group-hover:text-accent transition-colors duration-300 tracking-wider uppercase">
+            <h3 className="text-base sm:text-lg lg:text-2xl font-heading-regular text-primary mb-3 group-hover:text-accent transition-colors duration-300 tracking-wider uppercase">
               {article?.title}
             </h3>
 

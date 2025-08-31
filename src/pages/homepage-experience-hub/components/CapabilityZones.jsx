@@ -138,7 +138,7 @@ const CapabilityZones = () => {
               />
             </div>
           </div>
-          <h2 className="text-5xl md:text-6xl lg:text-7xl font-heading-bold text-primary mb-6 uppercase tracking-wider">
+          <h2 className="text-5xl md:text-6xl lg:text-7xl font-heading-regular text-primary mb-6 uppercase tracking-wider">
             Four Universes of
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-red-400 block mt-2">
               Creative Excellence
@@ -210,7 +210,7 @@ const CapabilityZones = () => {
                                 : 'none'
                             }}
                           >
-                            <div className="font-heading-bold text-xl uppercase">{value}</div>
+                            <div className="font-heading-regular text-xl uppercase">{value}</div>
                             <div className="capitalize opacity-90 text-xs font-sans">{key}</div>
                           </div>
                         ))}
@@ -222,7 +222,7 @@ const CapabilityZones = () => {
                 {/* Content Section with Progressive Enhancement */}
                 <div className="p-8">
                   <div className="mb-4">
-                    <h3 className="text-3xl font-heading-bold text-primary mb-2 transition-colors duration-300 hover:text-accent uppercase tracking-wide">
+                    <h3 className="text-3xl font-heading-regular text-primary mb-2 transition-colors duration-300 hover:text-accent uppercase tracking-wide">
                       {capability?.title}
                     </h3>
                     <p className={`text-sm font-heading-regular ${capability?.textColor} uppercase tracking-wider`}>
@@ -289,7 +289,7 @@ const CapabilityZones = () => {
           </div>
           
           <div className="relative z-10">
-            <h3 className="text-4xl md:text-5xl font-heading-bold mb-4 uppercase tracking-wider">
+            <h3 className="text-4xl md:text-5xl font-heading-regular mb-4 uppercase tracking-wider">
               Ready to Experience All Four Universes?
             </h3>
             <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto font-sans">

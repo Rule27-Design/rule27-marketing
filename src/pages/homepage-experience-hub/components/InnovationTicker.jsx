@@ -119,7 +119,7 @@ const InnovationTicker = () => {
             </span>
             <div className="w-3 h-3 bg-accent rounded-full animate-pulse delay-500"></div>
           </div>
-          <h2 className="text-3xl md:text-4xl font-heading-bold text-white mb-4 tracking-wider uppercase">
+          <h2 className="text-3xl md:text-4xl font-heading-regular text-white mb-4 tracking-wider uppercase">
             Real-Time Excellence Updates
           </h2>
           <p className="text-gray-300 max-w-2xl mx-auto font-body">
@@ -151,7 +151,7 @@ const InnovationTicker = () => {
                         {formatDate(innovations?.[currentIndex]?.date)}
                       </span>
                     </div>
-                    <h3 className="text-xl font-heading-bold text-white mb-2 tracking-wider uppercase">
+                    <h3 className="text-xl font-heading-regular text-white mb-2 tracking-wider uppercase">
                       {innovations?.[currentIndex]?.title}
                     </h3>
                     <p className="text-gray-300 leading-relaxed font-body">
@@ -194,19 +194,19 @@ const InnovationTicker = () => {
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 text-center border border-white/10">
-              <div className="text-2xl font-heading-bold text-accent mb-1 tracking-wider">25+</div>
+              <div className="text-2xl font-heading-regular text-accent mb-1 tracking-wider">25+</div>
               <div className="text-gray-300 text-sm font-body">Awards Won</div>
             </div>
             <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 text-center border border-white/10">
-              <div className="text-2xl font-heading-bold text-accent mb-1 tracking-wider">500%</div>
+              <div className="text-2xl font-heading-regular text-accent mb-1 tracking-wider">500%</div>
               <div className="text-gray-300 text-sm font-body">Avg Growth</div>
             </div>
             <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 text-center border border-white/10">
-              <div className="text-2xl font-heading-bold text-accent mb-1 tracking-wider">150+</div>
+              <div className="text-2xl font-heading-regular text-accent mb-1 tracking-wider">150+</div>
               <div className="text-gray-300 text-sm font-body">Projects</div>
             </div>
             <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 text-center border border-white/10">
-              <div className="text-2xl font-heading-bold text-accent mb-1 tracking-wider">98%</div>
+              <div className="text-2xl font-heading-regular text-accent mb-1 tracking-wider">98%</div>
               <div className="text-gray-300 text-sm font-body">Satisfaction</div>
             </div>
           </div>

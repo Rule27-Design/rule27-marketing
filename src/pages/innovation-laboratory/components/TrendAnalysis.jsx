@@ -174,7 +174,7 @@ const TrendAnalysis = () => {
             <span className="text-accent font-body font-medium text-xs sm:text-sm">Trend Analysis</span>
           </div>
           
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading-bold text-black mb-4 sm:mb-6 text-center tracking-wider uppercase">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading-regular text-black mb-4 sm:mb-6 text-center tracking-wider uppercase">
             Data-Driven <span className="text-accent">Insights</span>
           </h2>
           
@@ -213,7 +213,7 @@ const TrendAnalysis = () => {
           }`}>
             <div className="bg-gray-50 rounded-2xl p-4 sm:p-6 md:p-8">
               <div className="mb-4 sm:mb-6 md:mb-8">
-                <h3 className="text-xl sm:text-2xl font-heading-bold text-black mb-2 tracking-wider uppercase">{currentData?.title}</h3>
+                <h3 className="text-xl sm:text-2xl font-heading-regular text-black mb-2 tracking-wider uppercase">{currentData?.title}</h3>
                 <p className="text-sm sm:text-base text-gray-600 font-body">{currentData?.subtitle}</p>
               </div>
               
@@ -228,7 +228,7 @@ const TrendAnalysis = () => {
             isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'
           }`}>
             <div className="bg-black rounded-2xl p-6 sm:p-8 text-white">
-              <h4 className="text-lg sm:text-xl font-heading-bold mb-4 sm:mb-6 flex items-center tracking-wider uppercase">
+              <h4 className="text-lg sm:text-xl font-heading-regular mb-4 sm:mb-6 flex items-center tracking-wider uppercase">
                 <Icon name="Zap" size={20} className="text-accent mr-2 sm:hidden" />
                 <Icon name="Zap" size={24} className="text-accent mr-2 hidden sm:block" />
                 Key Insights
@@ -273,7 +273,7 @@ const TrendAnalysis = () => {
 
             {/* Prediction Card */}
             <div className="bg-gradient-to-br from-accent to-red-600 rounded-2xl p-6 sm:p-8 text-white">
-              <h4 className="text-lg sm:text-xl font-heading-bold mb-3 sm:mb-4 flex items-center tracking-wider uppercase">
+              <h4 className="text-lg sm:text-xl font-heading-regular mb-3 sm:mb-4 flex items-center tracking-wider uppercase">
                 <Icon name="Sparkles" size={20} className="mr-2 sm:hidden" />
                 <Icon name="Sparkles" size={24} className="mr-2 hidden sm:block" />
                 AI Prediction
@@ -282,7 +282,7 @@ const TrendAnalysis = () => {
                 Based on current data patterns, we predict the next major shift will occur in Q3 2025.
               </p>
               <div className="bg-white/20 rounded-xl p-3 sm:p-4">
-                <div className="text-xl sm:text-2xl font-heading-bold mb-1 tracking-wider">87%</div>
+                <div className="text-xl sm:text-2xl font-heading-regular mb-1 tracking-wider">87%</div>
                 <div className="text-xs sm:text-sm opacity-80 font-body">Confidence Level</div>
               </div>
             </div>

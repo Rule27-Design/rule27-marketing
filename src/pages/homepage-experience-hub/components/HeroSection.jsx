@@ -210,7 +210,7 @@ const HeroSection = () => {
         <div className={`transition-all duration-1000 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="flex justify-center space-x-8 mb-12 text-white/80">
             <div className="group cursor-pointer">
-              <div className="text-4xl font-heading-bold text-accent group-hover:scale-110 transition-transform duration-300 uppercase">150+</div>
+              <div className="text-4xl font-heading-regular text-accent group-hover:scale-110 transition-transform duration-300 uppercase">150+</div>
               <div className="text-sm font-sans">Projects</div>
             </div>
             <div className="group cursor-pointer">
@@ -218,7 +218,7 @@ const HeroSection = () => {
               <div className="text-sm font-sans">Satisfaction</div>
             </div>
             <div className="group cursor-pointer">
-              <div className="text-4xl font-heading-bold text-accent group-hover:scale-110 transition-transform duration-300 uppercase">500%</div>
+              <div className="text-4xl font-heading-regular text-accent group-hover:scale-110 transition-transform duration-300 uppercase">500%</div>
               <div className="text-sm font-sans">Avg Growth</div>
             </div>
           </div>
