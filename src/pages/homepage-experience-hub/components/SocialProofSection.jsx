@@ -127,9 +127,9 @@ const SocialProofSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-heading-regular text-primary mb-6 tracking-wider uppercase">
+          <h2 className="text-4xl md:text-5xl font-heading-regular text-primary mb-6 uppercase tracking-wider">
             Trusted by Industry
-            <span className="text-accent block mt-2">Leaders Worldwide</span>
+            <span className="text-accent block mt-2 font-heading-regular uppercase">Leaders Worldwide</span>
           </h2>
           <p className="text-xl text-text-secondary max-w-3xl mx-auto font-body">
             Don't just take our word for it. See what visionary leaders say about 
@@ -153,7 +153,7 @@ const SocialProofSection = () => {
                     <Icon name="Quote" size={16} className="text-white" />
                   </div>
                 </div>
-                <h4 className="font-heading-regular text-primary text-lg mb-1 tracking-wider uppercase">
+                <h4 className="font-heading-regular text-primary text-lg mb-1 uppercase tracking-wider">
                   {testimonials?.[currentTestimonial]?.name}
                 </h4>
                 <p className="text-text-secondary text-sm mb-2 font-body">
@@ -177,7 +177,7 @@ const SocialProofSection = () => {
                 </blockquote>
                 <div className="bg-accent/5 rounded-lg p-4 border-l-4 border-accent">
                   <div className="text-sm text-text-secondary mb-1 font-body">Project Impact:</div>
-                  <div className="font-heading-regular text-accent tracking-wider uppercase">
+                  <div className="font-heading-regular text-accent uppercase tracking-wider">
                     {testimonials?.[currentTestimonial]?.projectValue}
                   </div>
                 </div>
@@ -202,7 +202,7 @@ const SocialProofSection = () => {
 
         {/* Awards & Recognition */}
         <div className="mb-16">
-          <h3 className="text-2xl font-heading-regular text-primary text-center mb-8 tracking-wider uppercase">
+          <h3 className="text-2xl font-heading-regular text-primary text-center mb-8 uppercase tracking-wider">
             Industry Recognition & Awards
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -214,7 +214,7 @@ const SocialProofSection = () => {
                 <div className="bg-accent/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Icon name={award?.icon} size={24} className="text-accent" />
                 </div>
-                <h4 className="font-heading-regular text-primary text-sm mb-2 tracking-wider uppercase">
+                <h4 className="font-heading-regular text-primary text-sm mb-2 uppercase tracking-wider">
                   {award?.name}
                 </h4>
                 <p className="text-text-secondary text-xs font-body">
@@ -227,7 +227,7 @@ const SocialProofSection = () => {
 
         {/* Strategic Partnerships */}
         <div className="mb-16">
-          <h3 className="text-2xl font-heading-regular text-primary text-center mb-8 tracking-wider uppercase">
+          <h3 className="text-2xl font-heading-regular text-primary text-center mb-8 uppercase tracking-wider">
             Strategic Technology Partners
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -254,26 +254,26 @@ const SocialProofSection = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
           <div className="text-center">
-            <div className="text-4xl font-heading-regular text-accent mb-2 tracking-wider">98%</div>
+            <div className="text-4xl font-heading-regular text-accent mb-2 uppercase tracking-wider">98%</div>
             <div className="text-text-secondary font-body">Client Satisfaction</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-heading-regular text-accent mb-2 tracking-wider">150+</div>
+            <div className="text-4xl font-heading-regular text-accent mb-2 uppercase tracking-wider">150+</div>
             <div className="text-text-secondary font-body">Projects Completed</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-heading-regular text-accent mb-2 tracking-wider">500%</div>
+            <div className="text-4xl font-heading-regular text-accent mb-2 uppercase tracking-wider">500%</div>
             <div className="text-text-secondary font-body">Average Growth</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-heading-regular text-accent mb-2 tracking-wider">25+</div>
+            <div className="text-4xl font-heading-regular text-accent mb-2 uppercase tracking-wider">25+</div>
             <div className="text-text-secondary font-body">Industry Awards</div>
           </div>
         </div>
 
         {/* CTA Section */}
         <div className="text-center bg-primary rounded-2xl p-12 text-white">
-          <h3 className="text-3xl font-heading-regular mb-4 tracking-wider uppercase">
+          <h3 className="text-3xl font-heading-regular mb-4 uppercase tracking-wider">
             Join the Success Stories
           </h3>
           <p className="text-xl mb-8 opacity-90 font-body">
