@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
@@ -16,7 +16,7 @@ const FAQSection = () => {
     { id: 'support', label: 'Support', icon: 'Headphones', count: 5 }
   ];
 
-  const faqs = {
+  const allFaqs = {
     general: [
       {
         id: 'g1',
@@ -179,35 +179,49 @@ const FAQSection = () => {
     );
   };
 
-  // Filter FAQs based on category and search
+  // Clear search when changing categories
+  useEffect(() => {
+    setSearchTerm('');
+  }, [activeCategory]);
+
+  // Get filtered FAQs based on category and search
   const getFilteredFaqs = () => {
-    let allFaqItems = [];
+    let results = [];
     
     // Determine which categories to include
-    const categoriesToSearch = activeCategory === 'all' 
-      ? Object.keys(faqs) 
-      : [activeCategory];
-    
-    // Collect all FAQ items from selected categories
-    categoriesToSearch.forEach(category => {
-      if (faqs[category]) {
-        const categoryItems = faqs[category].map(item => ({
-          ...item,
-          category: category
-        }));
-        allFaqItems = [...allFaqItems, ...categoryItems];
+    if (activeCategory === 'all') {
+      // Include all categories
+      Object.keys(allFaqs).forEach(categoryKey => {
+        const categoryFaqs = allFaqs[categoryKey];
+        categoryFaqs.forEach(faq => {
+          results.push({
+            ...faq,
+            category: categoryKey
+          });
+        });
+      });
+    } else {
+      // Include only selected category
+      const categoryFaqs = allFaqs[activeCategory];
+      if (categoryFaqs) {
+        categoryFaqs.forEach(faq => {
+          results.push({
+            ...faq,
+            category: activeCategory
+          });
+        });
       }
-    });
+    }
     
     // Apply search filter if there's a search term
-    if (searchTerm) {
-      allFaqItems = allFaqItems.filter(item =>
+    if (searchTerm && searchTerm.trim() !== '') {
+      results = results.filter(item =>
         item.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.answer.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
-    return allFaqItems;
+    return results;
   };
 
   const filteredFaqs = getFilteredFaqs();
@@ -230,7 +244,7 @@ const FAQSection = () => {
   };
 
   return (
-    <section className="bg-gray-50 py-8 sm:py-12 md:py-16">
+    <section className="bg-gray-50 py-12 sm:py-16 md:py-20 lg:py-24">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           variants={containerVariants}
@@ -266,7 +280,7 @@ const FAQSection = () => {
           </div>
         </motion.div>
 
-        {/* Category Tabs - Improved Mobile Scroll */}
+        {/* Category Tabs */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -304,10 +318,10 @@ const FAQSection = () => {
 
         {/* FAQ Items */}
         <motion.div
+          key={activeCategory} // Force re-render when category changes
           variants={containerVariants}
           initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
+          animate="visible"
           className="space-y-3 sm:space-y-4"
         >
           {filteredFaqs.length === 0 ? (
@@ -317,14 +331,15 @@ const FAQSection = () => {
               <p className="text-sm text-gray-500 mt-2">
                 {searchTerm 
                   ? "Try searching for different keywords"
-                  : "Please select a category or search for a topic"}
+                  : "Please try selecting a different category"}
               </p>
             </div>
           ) : (
-            filteredFaqs.map((item) => (
+            filteredFaqs.map((item, index) => (
               <motion.div
                 key={item.id}
                 variants={itemVariants}
+                custom={index}
                 className={`bg-white rounded-lg sm:rounded-xl border overflow-hidden transition-all duration-300 ${
                   item.highlight ? 'border-accent shadow-lg' : 'border-border hover:shadow-md'
                 }`}
