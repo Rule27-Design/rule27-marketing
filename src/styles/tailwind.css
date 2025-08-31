@@ -67,28 +67,21 @@
     @apply border-border;
   }
 
+  /* Fix font rendering during transforms */
+  .font-heading-regular,
+  .font-heading-bold,
+  h1, h2, h3, h4, h5, h6 {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
   body {
     @apply bg-background text-foreground font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-  }
-
-  /* Apply Steelfish to all headings */
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-heading;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    line-height: 0.9;
-  }
-
-  /* Different weights for different heading levels */
-  h1, h2 {
-    font-weight: 700; /* Bold Steelfish */
-  }
-
-  h3, h4, h5, h6 {
-    font-weight: 400; /* Regular Steelfish */
   }
 
   .font-mono {
@@ -192,12 +185,16 @@
     font-family: 'Steelfish', Impact, sans-serif;
     font-weight: 400;
     text-transform: uppercase;
+    line-height: 1.1; /* Adjusted from too tight */
+    letter-spacing: 0.02em;
   }
   
   .font-heading-bold {
     font-family: 'Steelfish', Impact, sans-serif;
     font-weight: 700;
     text-transform: uppercase;
+    line-height: 1.1; /* Adjusted from too tight */
+    letter-spacing: 0.02em;
   }
   
   .font-body {
