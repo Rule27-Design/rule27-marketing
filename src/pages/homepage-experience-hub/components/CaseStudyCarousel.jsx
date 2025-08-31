@@ -96,7 +96,7 @@ const CaseStudyCarousel = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <h2 className="text-5xl md:text-6xl lg:text-7xl font-heading-bold text-primary mb-6 uppercase tracking-wider">
+          <h2 className="text-5xl md:text-6xl lg:text-7xl font-heading-regular text-primary mb-6 uppercase tracking-wider">
             Transformation Stories That
             <span className="text-accent block mt-2">Speak for Themselves</span>
           </h2>
@@ -145,7 +145,7 @@ const CaseStudyCarousel = () => {
                         <span className="text-accent font-heading-regular text-sm uppercase tracking-wider">
                           {study?.category}
                         </span>
-                        <h3 className="text-4xl font-heading-bold text-primary mt-2 mb-4 uppercase tracking-wide">
+                        <h3 className="text-4xl font-heading-regular text-primary mt-2 mb-4 uppercase tracking-wide">
                           {study?.title}
                         </h3>
                         <p className="text-text-secondary text-lg leading-relaxed font-sans">
@@ -157,17 +157,17 @@ const CaseStudyCarousel = () => {
                       <div className="grid grid-cols-2 gap-6 mb-8">
                         <div className="text-center p-4 bg-muted rounded-lg">
                           <div className="text-sm text-text-secondary mb-1 font-sans">Before</div>
-                          <div className="font-heading-bold text-primary uppercase">{study?.beforeMetric}</div>
+                          <div className="font-heading-regular text-primary uppercase">{study?.beforeMetric}</div>
                         </div>
                         <div className="text-center p-4 bg-accent/5 rounded-lg border border-accent/20">
                           <div className="text-sm text-accent mb-1 font-sans">After</div>
-                          <div className="font-heading-bold text-accent uppercase">{study?.afterMetric}</div>
+                          <div className="font-heading-regular text-accent uppercase">{study?.afterMetric}</div>
                         </div>
                       </div>
 
                       {/* Improvement Badge */}
                       <div className="text-center mb-8">
-                        <span className="bg-success text-white px-6 py-3 rounded-full font-heading-bold text-xl uppercase tracking-wider">
+                        <span className="bg-success text-white px-6 py-3 rounded-full font-heading-regular text-xl uppercase tracking-wider">
                           {study?.improvement}
                         </span>
                       </div>

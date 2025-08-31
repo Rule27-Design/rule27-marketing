@@ -190,17 +190,17 @@ const InteractiveTools = () => {
             </Button>
             {brandAnalysis?.results && (
               <div className="bg-gray-50 rounded-xl p-4 sm:p-6 mt-4 sm:mt-6 animate-fade-in-up">
-                <h4 className="text-base sm:text-lg font-heading-bold text-black mb-3 sm:mb-4 tracking-wider uppercase">Analysis Results</h4>
+                <h4 className="text-base sm:text-lg font-heading-regular text-black mb-3 sm:mb-4 tracking-wider uppercase">Analysis Results</h4>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <div className="bg-white rounded-lg p-3 sm:p-4">
-                    <div className="text-xl sm:text-2xl font-heading-bold text-accent mb-1 tracking-wider">
+                    <div className="text-xl sm:text-2xl font-heading-regular text-accent mb-1 tracking-wider">
                       {brandAnalysis?.results?.brandStrength}%
                     </div>
                     <div className="text-xs sm:text-sm text-gray-600 font-body">Brand Strength Score</div>
                   </div>
                   <div className="bg-white rounded-lg p-3 sm:p-4">
-                    <div className="text-base sm:text-lg font-heading-bold text-black mb-1 tracking-wider uppercase">
+                    <div className="text-base sm:text-lg font-heading-regular text-black mb-1 tracking-wider uppercase">
                       {brandAnalysis?.results?.marketPosition}
                     </div>
                     <div className="text-xs sm:text-sm text-gray-600 font-body">Market Position</div>
@@ -275,23 +275,23 @@ const InteractiveTools = () => {
             </Button>
             {roiCalculation?.results && (
               <div className="bg-gray-50 rounded-xl p-4 sm:p-6 mt-4 sm:mt-6 animate-fade-in-up">
-                <h4 className="text-base sm:text-lg font-heading-bold text-black mb-3 sm:mb-4 tracking-wider uppercase">ROI Projection</h4>
+                <h4 className="text-base sm:text-lg font-heading-regular text-black mb-3 sm:mb-4 tracking-wider uppercase">ROI Projection</h4>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <div className="bg-white rounded-lg p-3 sm:p-4">
-                    <div className="text-xl sm:text-2xl font-heading-bold text-accent mb-1 tracking-wider">
+                    <div className="text-xl sm:text-2xl font-heading-regular text-accent mb-1 tracking-wider">
                       {roiCalculation?.results?.currentROI}%
                     </div>
                     <div className="text-xs sm:text-sm text-gray-600 font-body">Projected ROI</div>
                   </div>
                   <div className="bg-white rounded-lg p-3 sm:p-4">
-                    <div className="text-base sm:text-lg font-heading-bold text-black mb-1 tracking-wider">
+                    <div className="text-base sm:text-lg font-heading-regular text-black mb-1 tracking-wider">
                       ${roiCalculation?.results?.projectedRevenue}
                     </div>
                     <div className="text-xs sm:text-sm text-gray-600 font-body">Projected Revenue</div>
                   </div>
                   <div className="bg-white rounded-lg p-3 sm:p-4">
-                    <div className="text-base sm:text-lg font-heading-bold text-black mb-1 tracking-wider">
+                    <div className="text-base sm:text-lg font-heading-regular text-black mb-1 tracking-wider">
                       {roiCalculation?.results?.paybackPeriod} months
                     </div>
                     <div className="text-xs sm:text-sm text-gray-600 font-body">Payback Period</div>
@@ -320,7 +320,7 @@ const InteractiveTools = () => {
           <div className="text-center py-8 sm:py-12">
             <Icon name="Wrench" size={36} className="text-gray-400 mx-auto mb-3 sm:hidden" />
             <Icon name="Wrench" size={48} className="text-gray-400 mx-auto mb-4 hidden sm:block" />
-            <h4 className="text-lg sm:text-xl font-heading-bold text-black mb-2 tracking-wider uppercase">Tool Coming Soon</h4>
+            <h4 className="text-lg sm:text-xl font-heading-regular text-black mb-2 tracking-wider uppercase">Tool Coming Soon</h4>
             <p className="text-sm sm:text-base text-gray-600 font-body">This interactive tool is currently in development.</p>
             <Button
               variant="outline"
@@ -346,7 +346,7 @@ const InteractiveTools = () => {
             <span className="text-accent font-body font-medium text-xs sm:text-sm">Interactive Tools</span>
           </div>
           
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading-bold text-black mb-4 sm:mb-6 text-center tracking-wider uppercase">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading-regular text-black mb-4 sm:mb-6 text-center tracking-wider uppercase">
             Hands-On <span className="text-accent">Innovation</span>
           </h2>
           
@@ -413,7 +413,7 @@ const InteractiveTools = () => {
                     <Icon name={tools?.find(t => t?.id === activeTool)?.icon} size={32} className="text-white hidden sm:block" />
                   </div>
                   <div>
-                    <h3 className="text-xl sm:text-2xl font-heading-bold text-black tracking-wider uppercase">
+                    <h3 className="text-xl sm:text-2xl font-heading-regular text-black tracking-wider uppercase">
                       {tools?.find(t => t?.id === activeTool)?.title}
                     </h3>
                     <p className="text-sm sm:text-base text-gray-600 font-body">

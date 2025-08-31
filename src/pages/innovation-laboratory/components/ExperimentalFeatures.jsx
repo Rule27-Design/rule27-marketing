@@ -107,7 +107,7 @@ const ExperimentalFeatures = () => {
             <span className="text-accent font-body font-medium text-xs sm:text-sm">Experimental Features</span>
           </div>
           
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading-bold text-black mb-4 sm:mb-6 text-center tracking-wider uppercase">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading-regular text-black mb-4 sm:mb-6 text-center tracking-wider uppercase">
             Innovation in <span className="text-accent">Action</span>
           </h2>
           
@@ -187,7 +187,7 @@ const ExperimentalFeatures = () => {
                     <Icon name={features?.[activeFeature]?.icon} size={32} className="text-white hidden sm:block" />
                   </div>
                   <div>
-                    <h3 className="text-xl sm:text-2xl font-heading-bold text-black tracking-wider uppercase">{features?.[activeFeature]?.title}</h3>
+                    <h3 className="text-xl sm:text-2xl font-heading-regular text-black tracking-wider uppercase">{features?.[activeFeature]?.title}</h3>
                     <p className="text-sm sm:text-base text-gray-600 font-body">{features?.[activeFeature]?.category}</p>
                   </div>
                 </div>
@@ -200,7 +200,7 @@ const ExperimentalFeatures = () => {
                 <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
                   {Object.entries(features?.[activeFeature]?.metrics || {})?.map(([key, value]) => (
                     <div key={key} className="text-center p-3 sm:p-4 bg-gray-50 rounded-xl">
-                      <div className="text-lg sm:text-2xl font-heading-bold text-accent mb-1 tracking-wider">{value}</div>
+                      <div className="text-lg sm:text-2xl font-heading-regular text-accent mb-1 tracking-wider">{value}</div>
                       <div className="text-xs sm:text-sm text-gray-600 capitalize font-body">{key}</div>
                     </div>
                   ))}

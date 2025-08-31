@@ -140,7 +140,7 @@ const ThoughtLeadership = () => {
             <span className="text-accent font-body font-medium text-xs sm:text-sm">Thought Leadership</span>
           </div>
           
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading-bold text-black mb-4 sm:mb-6 text-center tracking-wider uppercase">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading-regular text-black mb-4 sm:mb-6 text-center tracking-wider uppercase">
             Industry <span className="text-accent">Insights</span>
           </h2>
           
