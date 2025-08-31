@@ -35,13 +35,13 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
   ];
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-brand-md">
-      <h3 className="text-lg font-bold text-primary mb-4 flex items-center">
-        <Icon name="GitBranch" size={20} className="text-accent mr-2" />
+    <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-brand-md">
+      <h3 className="text-base sm:text-lg font-bold text-primary mb-3 sm:mb-4 flex items-center">
+        <Icon name="GitBranch" size={18} className="text-accent mr-2 sm:w-5 sm:h-5" />
         Your Journey
       </h3>
       
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {steps.map((step, index) => {
           const isCompleted = step.step < currentStep;
           const isCurrent = step.step === currentStep;
@@ -55,19 +55,19 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
               transition={{ delay: index * 0.1 }}
               className="relative"
             >
-              {/* Connection Line */}
+              {/* Connection Line - Hidden on small mobile */}
               {index < steps.length - 1 && (
                 <div
-                  className={`absolute left-6 top-12 w-0.5 h-16 ${
+                  className={`hidden sm:block absolute left-5 sm:left-6 top-10 sm:top-12 w-0.5 h-12 sm:h-16 ${
                     isCompleted ? 'bg-accent' : 'bg-border'
                   }`}
                 />
               )}
 
-              <div className="flex items-start space-x-4">
-                {/* Step Icon */}
+              <div className="flex items-start space-x-3 sm:space-x-4">
+                {/* Step Icon - Mobile Sized */}
                 <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+                  className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
                     isCompleted
                       ? 'bg-accent text-white'
                       : isCurrent
@@ -76,17 +76,17 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
                   }`}
                 >
                   {isCompleted ? (
-                    <Icon name="Check" size={20} />
+                    <Icon name="Check" size={16} className="sm:w-5 sm:h-5" />
                   ) : (
-                    <Icon name={step.icon} size={20} />
+                    <Icon name={step.icon} size={16} className="sm:w-5 sm:h-5" />
                   )}
                 </div>
 
-                {/* Step Content */}
+                {/* Step Content - Mobile Text Sizes */}
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <h4
-                      className={`font-semibold ${
+                      className={`font-semibold text-sm sm:text-base ${
                         isCurrent ? 'text-accent' : isCompleted ? 'text-primary' : 'text-text-secondary'
                       }`}
                     >
@@ -94,13 +94,13 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
                     </h4>
                     <span className="text-xs text-text-secondary">{step.duration}</span>
                   </div>
-                  <p className="text-sm text-text-secondary mt-1">{step.description}</p>
+                  <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">{step.description}</p>
                   
                   {isCurrent && (
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: '100%' }}
-                      className="h-1 bg-accent/20 rounded-full mt-2"
+                      className="h-1 bg-accent/20 rounded-full mt-1.5 sm:mt-2"
                     >
                       <motion.div
                         initial={{ width: 0 }}
@@ -117,9 +117,9 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
         })}
       </div>
 
-      {/* Estimated Time */}
-      <div className="mt-6 pt-4 border-t border-border">
-        <div className="flex items-center justify-between text-sm">
+      {/* Estimated Time - Mobile Optimized */}
+      <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-border">
+        <div className="flex items-center justify-between text-xs sm:text-sm">
           <span className="text-text-secondary">Total time:</span>
           <span className="font-semibold text-primary">~8 minutes</span>
         </div>

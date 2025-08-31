@@ -184,14 +184,14 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
+            className="space-y-4 sm:space-y-6"
           >
             <div>
-              <h3 className="text-2xl font-bold text-primary mb-2">Let's Get Acquainted</h3>
-              <p className="text-text-secondary">Tell us who you are and how we can reach you.</p>
+              <h3 className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">Let's Get Acquainted</h3>
+              <p className="text-text-secondary text-sm sm:text-base">Tell us who you are and how we can reach you.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <Input
                 label="First Name"
                 required
@@ -256,11 +256,11 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
+            className="space-y-4 sm:space-y-6"
           >
             <div>
-              <h3 className="text-2xl font-bold text-primary mb-2">Tell Us About Your Project</h3>
-              <p className="text-text-secondary">Help us understand your vision and requirements.</p>
+              <h3 className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">Tell Us About Your Project</h3>
+              <p className="text-text-secondary text-sm sm:text-base">Help us understand your vision and requirements.</p>
             </div>
 
             <Select
@@ -308,8 +308,8 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
               <textarea
                 value={projectDetails.challenges}
                 onChange={(e) => setProjectDetails({ ...projectDetails, challenges: e.target.value })}
-                className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none"
-                rows={5}
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none text-sm sm:text-base"
+                rows={4}
                 placeholder="Tell us about your current challenges and what you hope to achieve..."
               />
               {errors.challenges && (
@@ -325,18 +325,18 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
+            className="space-y-4 sm:space-y-6"
           >
             <div>
-              <h3 className="text-2xl font-bold text-primary mb-2">Your Preferences</h3>
-              <p className="text-text-secondary">Let us know how we can best serve you.</p>
+              <h3 className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">Your Preferences</h3>
+              <p className="text-text-secondary text-sm sm:text-base">Let us know how we can best serve you.</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-primary mb-3">
+              <label className="block text-sm font-medium text-primary mb-2 sm:mb-3">
                 Services Needed <span className="text-accent">*</span>
               </label>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {serviceOptions.map((service) => (
                   <Checkbox
                     key={service.value}
@@ -389,8 +389,8 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
               <textarea
                 value={preferences.additionalInfo}
                 onChange={(e) => setPreferences({ ...preferences, additionalInfo: e.target.value })}
-                className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none"
-                rows={4}
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none text-sm sm:text-base"
+                rows={3}
                 placeholder="Anything else you'd like us to know?"
               />
             </div>
@@ -403,39 +403,39 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
+            className="space-y-4 sm:space-y-6"
           >
             <div>
-              <h3 className="text-2xl font-bold text-primary mb-2">Almost There!</h3>
-              <p className="text-text-secondary">Review your information and agree to our terms.</p>
+              <h3 className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">Almost There!</h3>
+              <p className="text-text-secondary text-sm sm:text-base">Review your information and agree to our terms.</p>
             </div>
 
-            {/* Summary */}
-            <div className="bg-surface rounded-xl p-6 space-y-4">
-              <h4 className="font-semibold text-primary">Summary</h4>
+            {/* Summary - Mobile Optimized */}
+            <div className="bg-surface rounded-lg sm:rounded-xl p-4 sm:p-6 space-y-3 sm:space-y-4">
+              <h4 className="font-semibold text-primary text-sm sm:text-base">Summary</h4>
               
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
+              <div className="space-y-2 text-xs sm:text-sm">
+                <div className="flex flex-col sm:flex-row sm:justify-between">
                   <span className="text-text-secondary">Name:</span>
                   <span className="text-primary font-medium">{contactInfo.firstName} {contactInfo.lastName}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col sm:flex-row sm:justify-between">
                   <span className="text-text-secondary">Company:</span>
                   <span className="text-primary font-medium">{contactInfo.company}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col sm:flex-row sm:justify-between">
                   <span className="text-text-secondary">Project Type:</span>
                   <span className="text-primary font-medium">
                     {projectTypeOptions.find(opt => opt.value === projectDetails.projectType)?.label}
                   </span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col sm:flex-row sm:justify-between">
                   <span className="text-text-secondary">Budget:</span>
                   <span className="text-primary font-medium">
                     {budgetOptions.find(opt => opt.value === projectDetails.budget)?.label}
                   </span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col sm:flex-row sm:justify-between">
                   <span className="text-text-secondary">Timeline:</span>
                   <span className="text-primary font-medium">
                     {timelineOptions.find(opt => opt.value === projectDetails.timeline)?.label}
@@ -445,7 +445,7 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
             </div>
 
             {/* Agreements */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <Checkbox
                 label="I accept the terms of service and privacy policy"
                 required
@@ -461,13 +461,13 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
               />
             </div>
 
-            {/* What Happens Next */}
-            <div className="bg-accent/5 border border-accent/20 rounded-xl p-6">
-              <h4 className="font-semibold text-primary mb-3 flex items-center">
-                <Icon name="Info" size={20} className="text-accent mr-2" />
+            {/* What Happens Next - Mobile Optimized */}
+            <div className="bg-accent/5 border border-accent/20 rounded-lg sm:rounded-xl p-4 sm:p-6">
+              <h4 className="font-semibold text-primary mb-2 sm:mb-3 flex items-center text-sm sm:text-base">
+                <Icon name="Info" size={18} className="text-accent mr-2 sm:w-5 sm:h-5" />
                 What Happens Next?
               </h4>
-              <ol className="space-y-2 text-sm text-text-secondary">
+              <ol className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-text-secondary">
                 <li className="flex items-start">
                   <span className="text-accent font-semibold mr-2">1.</span>
                   We'll review your submission within 24 hours
@@ -499,28 +499,28 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-2xl shadow-brand-elevation p-12 text-center"
+        className="bg-white rounded-xl sm:rounded-2xl shadow-brand-elevation p-8 sm:p-12 text-center"
       >
-        <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Icon name="CheckCircle" size={40} className="text-success" />
+        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+          <Icon name="CheckCircle" size={32} className="text-success sm:w-10 sm:h-10" />
         </div>
-        <h2 className="text-3xl font-bold text-primary mb-4">
+        <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-3 sm:mb-4">
           Submission Successful!
         </h2>
-        <p className="text-text-secondary mb-8 max-w-md mx-auto">
+        <p className="text-text-secondary mb-6 sm:mb-8 max-w-md mx-auto text-sm sm:text-base px-4">
           Thank you for reaching out to Rule27 Design. We've received your consultation request and will be in touch within 24 hours.
         </p>
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           <Button
             variant="default"
             size="lg"
-            className="bg-accent hover:bg-accent/90 text-white"
+            className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-white text-sm sm:text-base"
             iconName="Calendar"
             iconPosition="left"
           >
             Add to Calendar
           </Button>
-          <p className="text-sm text-text-secondary">
+          <p className="text-xs sm:text-sm text-text-secondary">
             Check your email for confirmation details
           </p>
         </div>
@@ -529,12 +529,12 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
   }
 
   return (
-    <div id="consultation-form" className="bg-white rounded-2xl shadow-brand-elevation overflow-hidden">
-      {/* Progress Bar */}
-      <div className="bg-surface p-6 border-b border-border">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-primary">Start Your Journey</h2>
-          <span className="text-sm text-text-secondary">
+    <div id="consultation-form" className="bg-white rounded-xl sm:rounded-2xl shadow-brand-elevation overflow-hidden">
+      {/* Progress Bar - Mobile Optimized */}
+      <div className="bg-surface p-4 sm:p-6 border-b border-border">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-primary">Start Your Journey</h2>
+          <span className="text-xs sm:text-sm text-text-secondary">
             Step {currentStep} of {totalSteps}
           </span>
         </div>
@@ -548,19 +548,19 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
         </div>
       </div>
 
-      {/* Form Content */}
-      <div className="p-8">
+      {/* Form Content - Mobile Padding */}
+      <div className="p-4 sm:p-6 md:p-8">
         <AnimatePresence mode="wait">
           {renderStepContent()}
         </AnimatePresence>
 
-        {/* Navigation Buttons */}
-        <div className="flex justify-between mt-8">
+        {/* Navigation Buttons - Mobile Stack */}
+        <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 mt-6 sm:mt-8">
           <Button
             variant="outline"
             onClick={handlePrevious}
             disabled={currentStep === 1}
-            className="border-accent text-accent hover:bg-accent hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto order-2 sm:order-1 border-accent text-accent hover:bg-accent hover:text-white disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             iconName="ArrowLeft"
             iconPosition="left"
           >
@@ -571,7 +571,7 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
             <Button
               variant="default"
               onClick={handleNext}
-              className="bg-accent hover:bg-accent/90 text-white"
+              className="w-full sm:w-auto order-1 sm:order-2 bg-accent hover:bg-accent/90 text-white text-sm sm:text-base"
               iconName="ArrowRight"
               iconPosition="right"
             >
@@ -582,11 +582,11 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
               variant="default"
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="bg-accent hover:bg-accent/90 text-white disabled:opacity-50"
+              className="w-full sm:w-auto order-1 sm:order-2 bg-accent hover:bg-accent/90 text-white disabled:opacity-50 text-sm sm:text-base"
               iconName={isSubmitting ? "Loader" : "Send"}
               iconPosition="right"
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Consultation Request'}
+              {isSubmitting ? 'Submitting...' : 'Submit Request'}
             </Button>
           )}
         </div>
