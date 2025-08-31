@@ -8,9 +8,9 @@ const ContactOptions = () => {
     {
       icon: 'Mail',
       title: 'Email Us',
-      value: 'hello@rule27design.com',
+      value: 'hello@rule27.com',
       description: 'For general inquiries',
-      action: 'mailto:hello@rule27design.com',
+      action: 'mailto:hello@rule27.com',
       color: 'text-blue-600'
     },
     {
@@ -18,21 +18,13 @@ const ContactOptions = () => {
       title: 'Call Us',
       value: '+1 (555) RULE-27',
       description: 'Mon-Fri, 9am-6pm PST',
-      action: 'tel:+15557853927',
+      action: 'tel:+15557853277',
       color: 'text-green-600'
-    },
-    {
-      icon: 'MessageCircle',
-      title: 'Live Chat',
-      value: 'Available Now',
-      description: 'Instant responses',
-      action: '#',
-      color: 'text-accent'
     },
     {
       icon: 'MapPin',
       title: 'Visit Us',
-      value: 'Scottsdale, Az',
+      value: 'Scottsdale, AZ',
       description: 'By appointment only',
       action: '#',
       color: 'text-purple-600'
@@ -40,10 +32,10 @@ const ContactOptions = () => {
   ];
 
   const socialLinks = [
-    { icon: 'Linkedin', url: '#', label: 'LinkedIn' },
-    { icon: 'Twitter', url: '#', label: 'Twitter' },
-    { icon: 'Instagram', url: '#', label: 'Instagram' },
-    { icon: 'Github', url: '#', label: 'GitHub' }
+    { icon: 'Linkedin', url: 'https://www.linkedin.com/company/rule27design', label: 'LinkedIn' },
+    { icon: 'Facebook', url: 'https://www.facebook.com/Rule27Design/', label: 'Facebook' },
+    { icon: 'Instagram', url: 'https://www.instagram.com/rule27design', label: 'Instagram' },
+    { icon: 'Github', url: 'https://github.com/rule27', label: 'GitHub' }
   ];
 
   return (
@@ -98,6 +90,8 @@ const ContactOptions = () => {
             <a
               key={social.label}
               href={social.url}
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition-colors duration-300"
               aria-label={social.label}
             >

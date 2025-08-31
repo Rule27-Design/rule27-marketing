@@ -99,7 +99,7 @@ const Select = React.forwardRef(({
     const hasValue = multiple ? value?.length > 0 : value !== undefined && value !== '';
 
     return (
-        <div className={cn("relative", className)}>
+        <div className={cn("relative", className)} style={{ zIndex: isOpen ? 999 : 'auto' }}>
             {label && (
                 <label
                     htmlFor={selectId}
@@ -173,7 +173,7 @@ const Select = React.forwardRef(({
 
                 {/* Dropdown */}
                 {isOpen && (
-                    <div className="absolute z-50 w-full mt-1 bg-white text-black border border-border rounded-md shadow-md">
+                    <div className="absolute z-50 w-full mt-1 bg-white text-black border border-border rounded-md shadow-lg overflow-visible">
                         {searchable && (
                             <div className="p-2 border-b">
                                 <div className="relative">
@@ -199,7 +199,7 @@ const Select = React.forwardRef(({
                                         key={option?.value}
                                         className={cn(
                                             "relative flex cursor-pointer select-none items-center rounded-sm px-3 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
-                                            isSelected(option?.value) && "bg-primary text-primary-foreground",
+                                            isSelected(option?.value) && "bg-accent text-white",
                                             option?.disabled && "pointer-events-none opacity-50"
                                         )}
                                         onClick={() => !option?.disabled && handleOptionSelect(option)}
