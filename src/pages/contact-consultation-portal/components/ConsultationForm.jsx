@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
@@ -11,15 +11,65 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [focusedField, setFocusedField] = useState(null);
+  const formRef = useRef(null);
+  const controls = useAnimation();
 
   const totalSteps = 4;
+
+  // Animated particles for background
+  const FloatingParticles = () => (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {[...Array(10)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-1 h-1 bg-accent/20 rounded-full"
+          initial={{
+            x: Math.random() * 400,
+            y: Math.random() * 600,
+          }}
+          animate={{
+            y: [null, -50, null],
+            x: [null, Math.random() * 100 - 50, null],
+          }}
+          transition={{
+            duration: Math.random() * 20 + 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: Math.random() * 5,
+          }}
+        />
+      ))}
+    </div>
+  );
 
   // Sync with parent's step if it changes
   useEffect(() => {
     if (parentStep && parentStep !== currentStep) {
       setCurrentStep(parentStep);
+      controls.start("visible");
     }
-  }, [parentStep]);
+  }, [parentStep, currentStep, controls]);
+
+  // Mouse tracking for glow effect
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (formRef.current) {
+        const rect = formRef.current.getBoundingClientRect();
+        setMousePosition({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        });
+      }
+    };
+
+    const form = formRef.current;
+    if (form) {
+      form.addEventListener('mousemove', handleMouseMove);
+      return () => form.removeEventListener('mousemove', handleMouseMove);
+    }
+  }, []);
 
   // Form step data
   const [contactInfo, setContactInfo] = useState({
@@ -52,7 +102,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
     newsletterOptIn: false
   });
 
-  // Options for selects
+  // Options for selects (keeping existing options)
   const roleOptions = [
     { value: 'founder', label: 'Founder / CEO' },
     { value: 'cmo', label: 'CMO / Marketing Director' },
@@ -161,6 +211,12 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
         setCurrentStep(newStep);
         onFormUpdate(newStep, 'step');
       }
+    } else {
+      // Shake animation on error
+      controls.start({
+        x: [0, -10, 10, -10, 10, 0],
+        transition: { duration: 0.5 }
+      });
     }
   };
 
@@ -174,15 +230,87 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
   };
 
   const handleSubmit = async () => {
-    if (!validateStep(currentStep)) return;
+    if (!validateStep(currentStep)) {
+      controls.start({
+        x: [0, -10, 10, -10, 10, 0],
+        transition: { duration: 0.5 }
+      });
+      return;
+    }
 
     setIsSubmitting(true);
     
-    // Simulate form submission
+    // Simulate form submission with animation
+    await controls.start({
+      scale: [1, 0.98, 1],
+      transition: { duration: 0.3 }
+    });
+    
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSuccess(true);
     }, 2000);
+  };
+
+  // Enhanced input wrapper with glow effect
+  const GlowInput = ({ children, error }) => (
+    <motion.div
+      className="relative"
+      whileHover={{ scale: 1.01 }}
+      transition={{ type: "spring", stiffness: 300 }}
+    >
+      <motion.div
+        className={`absolute inset-0 bg-gradient-to-r from-accent/20 to-primary/20 rounded-lg blur-xl opacity-0 ${
+          focusedField ? 'opacity-100' : ''
+        }`}
+        animate={{
+          opacity: focusedField ? 0.3 : 0
+        }}
+        transition={{ duration: 0.3 }}
+      />
+      <div className="relative">
+        {children}
+      </div>
+    </motion.div>
+  );
+
+  const stepVariants = {
+    hidden: { 
+      opacity: 0, 
+      x: 50,
+      scale: 0.95
+    },
+    visible: {
+      opacity: 1,
+      x: 0,
+      scale: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15,
+        staggerChildren: 0.1
+      }
+    },
+    exit: {
+      opacity: 0,
+      x: -50,
+      scale: 0.95,
+      transition: {
+        duration: 0.3
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100
+      }
+    }
   };
 
   const renderStepContent = () => {
@@ -190,311 +318,500 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
       case 1:
         return (
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
+            variants={stepVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             className="space-y-4 sm:space-y-6"
           >
-            <div>
+            <motion.div variants={itemVariants}>
               <h3 className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">Let's Get Acquainted</h3>
               <p className="text-text-secondary text-sm sm:text-base">Tell us who you are and how we can reach you.</p>
-            </div>
+            </motion.div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <Input
-                label="First Name"
-                required
-                value={contactInfo.firstName}
-                onChange={(e) => setContactInfo({ ...contactInfo, firstName: e.target.value })}
-                error={errors.firstName}
-                placeholder="John"
-              />
-              <Input
-                label="Last Name"
-                required
-                value={contactInfo.lastName}
-                onChange={(e) => setContactInfo({ ...contactInfo, lastName: e.target.value })}
-                error={errors.lastName}
-                placeholder="Doe"
-              />
-            </div>
+            <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <GlowInput>
+                <Input
+                  label="First Name"
+                  required
+                  value={contactInfo.firstName}
+                  onChange={(e) => setContactInfo({ ...contactInfo, firstName: e.target.value })}
+                  onFocus={() => setFocusedField('firstName')}
+                  onBlur={() => setFocusedField(null)}
+                  error={errors.firstName}
+                  placeholder="John"
+                  className="transition-all duration-300 hover:border-accent/50"
+                />
+              </GlowInput>
+              <GlowInput>
+                <Input
+                  label="Last Name"
+                  required
+                  value={contactInfo.lastName}
+                  onChange={(e) => setContactInfo({ ...contactInfo, lastName: e.target.value })}
+                  onFocus={() => setFocusedField('lastName')}
+                  onBlur={() => setFocusedField(null)}
+                  error={errors.lastName}
+                  placeholder="Doe"
+                  className="transition-all duration-300 hover:border-accent/50"
+                />
+              </GlowInput>
+            </motion.div>
 
-            <Input
-              label="Email Address"
-              type="email"
-              required
-              value={contactInfo.email}
-              onChange={(e) => setContactInfo({ ...contactInfo, email: e.target.value })}
-              error={errors.email}
-              placeholder="john@company.com"
-            />
+            <motion.div variants={itemVariants}>
+              <GlowInput>
+                <Input
+                  label="Email Address"
+                  type="email"
+                  required
+                  value={contactInfo.email}
+                  onChange={(e) => setContactInfo({ ...contactInfo, email: e.target.value })}
+                  onFocus={() => setFocusedField('email')}
+                  onBlur={() => setFocusedField(null)}
+                  error={errors.email}
+                  placeholder="john@company.com"
+                  className="transition-all duration-300 hover:border-accent/50"
+                />
+              </GlowInput>
+            </motion.div>
 
-            <Input
-              label="Phone Number"
-              type="tel"
-              required
-              value={contactInfo.phone}
-              onChange={(e) => setContactInfo({ ...contactInfo, phone: e.target.value })}
-              error={errors.phone}
-              placeholder="+1 (555) 123-4567"
-            />
+            <motion.div variants={itemVariants}>
+              <GlowInput>
+                <Input
+                  label="Phone Number"
+                  type="tel"
+                  required
+                  value={contactInfo.phone}
+                  onChange={(e) => setContactInfo({ ...contactInfo, phone: e.target.value })}
+                  onFocus={() => setFocusedField('phone')}
+                  onBlur={() => setFocusedField(null)}
+                  error={errors.phone}
+                  placeholder="+1 (555) 123-4567"
+                  className="transition-all duration-300 hover:border-accent/50"
+                />
+              </GlowInput>
+            </motion.div>
 
-            <Input
-              label="Company Name"
-              required
-              value={contactInfo.company}
-              onChange={(e) => setContactInfo({ ...contactInfo, company: e.target.value })}
-              error={errors.company}
-              placeholder="Awesome Company Inc."
-            />
+            <motion.div variants={itemVariants}>
+              <GlowInput>
+                <Input
+                  label="Company Name"
+                  required
+                  value={contactInfo.company}
+                  onChange={(e) => setContactInfo({ ...contactInfo, company: e.target.value })}
+                  onFocus={() => setFocusedField('company')}
+                  onBlur={() => setFocusedField(null)}
+                  error={errors.company}
+                  placeholder="Awesome Company Inc."
+                  className="transition-all duration-300 hover:border-accent/50"
+                />
+              </GlowInput>
+            </motion.div>
 
-            <Select
-              label="Your Role"
-              placeholder="Select your role"
-              options={roleOptions}
-              value={contactInfo.role}
-              onChange={(value) => setContactInfo({ ...contactInfo, role: value })}
-              error={errors.role}
-            />
+            <motion.div variants={itemVariants}>
+              <GlowInput>
+                <Select
+                  label="Your Role"
+                  placeholder="Select your role"
+                  options={roleOptions}
+                  value={contactInfo.role}
+                  onChange={(value) => setContactInfo({ ...contactInfo, role: value })}
+                  error={errors.role}
+                  className="transition-all duration-300 hover:border-accent/50"
+                />
+              </GlowInput>
+            </motion.div>
           </motion.div>
         );
 
       case 2:
         return (
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
+            variants={stepVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             className="space-y-4 sm:space-y-6"
           >
-            <div>
+            <motion.div variants={itemVariants}>
               <h3 className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">Tell Us About Your Project</h3>
               <p className="text-text-secondary text-sm sm:text-base">Help us understand your vision and requirements.</p>
-            </div>
+            </motion.div>
 
-            <Select
-              label="Project Type"
-              required
-              placeholder="What do you need help with?"
-              options={projectTypeOptions}
-              value={projectDetails.projectType}
-              onChange={(value) => setProjectDetails({ ...projectDetails, projectType: value })}
-              error={errors.projectType}
-            />
+            <motion.div variants={itemVariants}>
+              <GlowInput>
+                <Select
+                  label="Project Type"
+                  required
+                  placeholder="What do you need help with?"
+                  options={projectTypeOptions}
+                  value={projectDetails.projectType}
+                  onChange={(value) => setProjectDetails({ ...projectDetails, projectType: value })}
+                  error={errors.projectType}
+                  className="transition-all duration-300 hover:border-accent/50"
+                />
+              </GlowInput>
+            </motion.div>
 
-            <Select
-              label="Budget Range"
-              required
-              placeholder="Select your budget range"
-              options={budgetOptions}
-              value={projectDetails.budget}
-              onChange={(value) => setProjectDetails({ ...projectDetails, budget: value })}
-              error={errors.budget}
-            />
+            <motion.div variants={itemVariants}>
+              <GlowInput>
+                <Select
+                  label="Budget Range"
+                  required
+                  placeholder="Select your budget range"
+                  options={budgetOptions}
+                  value={projectDetails.budget}
+                  onChange={(value) => setProjectDetails({ ...projectDetails, budget: value })}
+                  error={errors.budget}
+                  className="transition-all duration-300 hover:border-accent/50"
+                />
+              </GlowInput>
+            </motion.div>
 
-            <Select
-              label="Timeline"
-              required
-              placeholder="When do you need this completed?"
-              options={timelineOptions}
-              value={projectDetails.timeline}
-              onChange={(value) => setProjectDetails({ ...projectDetails, timeline: value })}
-              error={errors.timeline}
-            />
+            <motion.div variants={itemVariants}>
+              <GlowInput>
+                <Select
+                  label="Timeline"
+                  required
+                  placeholder="When do you need this completed?"
+                  options={timelineOptions}
+                  value={projectDetails.timeline}
+                  onChange={(value) => setProjectDetails({ ...projectDetails, timeline: value })}
+                  error={errors.timeline}
+                  className="transition-all duration-300 hover:border-accent/50"
+                />
+              </GlowInput>
+            </motion.div>
 
-            <Input
-              label="Current Website (if applicable)"
-              type="url"
-              value={projectDetails.currentWebsite}
-              onChange={(e) => setProjectDetails({ ...projectDetails, currentWebsite: e.target.value })}
-              placeholder="https://yourwebsite.com"
-            />
+            <motion.div variants={itemVariants}>
+              <GlowInput>
+                <Input
+                  label="Current Website (if applicable)"
+                  type="url"
+                  value={projectDetails.currentWebsite}
+                  onChange={(e) => setProjectDetails({ ...projectDetails, currentWebsite: e.target.value })}
+                  onFocus={() => setFocusedField('website')}
+                  onBlur={() => setFocusedField(null)}
+                  placeholder="https://yourwebsite.com"
+                  className="transition-all duration-300 hover:border-accent/50"
+                />
+              </GlowInput>
+            </motion.div>
 
-            <div>
-              <label className="block text-sm font-medium text-primary mb-2">
-                Current Challenges & Goals <span className="text-accent">*</span>
-              </label>
-              <textarea
-                value={projectDetails.challenges}
-                onChange={(e) => setProjectDetails({ ...projectDetails, challenges: e.target.value })}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none text-sm sm:text-base"
-                rows={4}
-                placeholder="Tell us about your current challenges and what you hope to achieve..."
-              />
-              {errors.challenges && (
-                <p className="text-sm text-destructive mt-1">{errors.challenges}</p>
-              )}
-            </div>
+            <motion.div variants={itemVariants}>
+              <GlowInput>
+                <div>
+                  <label className="block text-sm font-medium text-primary mb-2">
+                    Current Challenges & Goals <span className="text-accent">*</span>
+                  </label>
+                  <motion.textarea
+                    value={projectDetails.challenges}
+                    onChange={(e) => setProjectDetails({ ...projectDetails, challenges: e.target.value })}
+                    onFocus={() => setFocusedField('challenges')}
+                    onBlur={() => setFocusedField(null)}
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none text-sm sm:text-base transition-all duration-300 hover:border-accent/50"
+                    rows={4}
+                    placeholder="Tell us about your current challenges and what you hope to achieve..."
+                    whileHover={{ scale: 1.01 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  />
+                  {errors.challenges && (
+                    <motion.p 
+                      className="text-sm text-destructive mt-1"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      {errors.challenges}
+                    </motion.p>
+                  )}
+                </div>
+              </GlowInput>
+            </motion.div>
           </motion.div>
         );
 
       case 3:
         return (
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
+            variants={stepVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             className="space-y-4 sm:space-y-6"
           >
-            <div>
+            <motion.div variants={itemVariants}>
               <h3 className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">Your Preferences</h3>
               <p className="text-text-secondary text-sm sm:text-base">Let us know how we can best serve you.</p>
-            </div>
+            </motion.div>
 
-            <div>
+            <motion.div variants={itemVariants}>
               <label className="block text-sm font-medium text-primary mb-2 sm:mb-3">
                 Services Needed <span className="text-accent">*</span>
               </label>
-              <div className="space-y-2 sm:space-y-3">
-                {serviceOptions.map((service) => (
-                  <Checkbox
+              <motion.div className="space-y-2 sm:space-y-3">
+                {serviceOptions.map((service, index) => (
+                  <motion.div
                     key={service.value}
-                    label={service.label}
-                    checked={preferences.services.includes(service.value)}
-                    onChange={(e) => {
-                      const newServices = e.target.checked
-                        ? [...preferences.services, service.value]
-                        : preferences.services.filter(s => s !== service.value);
-                      setPreferences({ ...preferences, services: newServices });
-                    }}
-                  />
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ x: 5 }}
+                    className="relative"
+                  >
+                    <Checkbox
+                      label={service.label}
+                      checked={preferences.services.includes(service.value)}
+                      onChange={(e) => {
+                        const newServices = e.target.checked
+                          ? [...preferences.services, service.value]
+                          : preferences.services.filter(s => s !== service.value);
+                        setPreferences({ ...preferences, services: newServices });
+                      }}
+                      className="transition-all duration-300 hover:scale-105"
+                    />
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
               {errors.services && (
-                <p className="text-sm text-destructive mt-2">{errors.services}</p>
+                <motion.p 
+                  className="text-sm text-destructive mt-2"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  {errors.services}
+                </motion.p>
               )}
-            </div>
+            </motion.div>
 
-            <Select
-              label="Preferred Communication Method"
-              required
-              placeholder="How should we contact you?"
-              options={communicationOptions}
-              value={preferences.communicationPreference}
-              onChange={(value) => setPreferences({ ...preferences, communicationPreference: value })}
-              error={errors.communicationPreference}
-            />
+            <motion.div variants={itemVariants}>
+              <GlowInput>
+                <Select
+                  label="Preferred Communication Method"
+                  required
+                  placeholder="How should we contact you?"
+                  options={communicationOptions}
+                  value={preferences.communicationPreference}
+                  onChange={(value) => setPreferences({ ...preferences, communicationPreference: value })}
+                  error={errors.communicationPreference}
+                  className="transition-all duration-300 hover:border-accent/50"
+                />
+              </GlowInput>
+            </motion.div>
 
-            <Select
-              label="Best Time to Call"
-              placeholder="When are you available?"
-              options={timeSlotOptions}
-              value={preferences.bestTimeToCall}
-              onChange={(value) => setPreferences({ ...preferences, bestTimeToCall: value })}
-            />
+            <motion.div variants={itemVariants}>
+              <GlowInput>
+                <Select
+                  label="Best Time to Call"
+                  placeholder="When are you available?"
+                  options={timeSlotOptions}
+                  value={preferences.bestTimeToCall}
+                  onChange={(value) => setPreferences({ ...preferences, bestTimeToCall: value })}
+                  className="transition-all duration-300 hover:border-accent/50"
+                />
+              </GlowInput>
+            </motion.div>
 
-            <Select
-              label="How Did You Hear About Us?"
-              placeholder="Select an option"
-              options={referralOptions}
-              value={preferences.referralSource}
-              onChange={(value) => setPreferences({ ...preferences, referralSource: value })}
-            />
+            <motion.div variants={itemVariants}>
+              <GlowInput>
+                <Select
+                  label="How Did You Hear About Us?"
+                  placeholder="Select an option"
+                  options={referralOptions}
+                  value={preferences.referralSource}
+                  onChange={(value) => setPreferences({ ...preferences, referralSource: value })}
+                  className="transition-all duration-300 hover:border-accent/50"
+                />
+              </GlowInput>
+            </motion.div>
 
-            <div>
-              <label className="block text-sm font-medium text-primary mb-2">
-                Additional Information
-              </label>
-              <textarea
-                value={preferences.additionalInfo}
-                onChange={(e) => setPreferences({ ...preferences, additionalInfo: e.target.value })}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none text-sm sm:text-base"
-                rows={3}
-                placeholder="Anything else you'd like us to know?"
-              />
-            </div>
+            <motion.div variants={itemVariants}>
+              <GlowInput>
+                <div>
+                  <label className="block text-sm font-medium text-primary mb-2">
+                    Additional Information
+                  </label>
+                  <motion.textarea
+                    value={preferences.additionalInfo}
+                    onChange={(e) => setPreferences({ ...preferences, additionalInfo: e.target.value })}
+                    onFocus={() => setFocusedField('additional')}
+                    onBlur={() => setFocusedField(null)}
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none text-sm sm:text-base transition-all duration-300 hover:border-accent/50"
+                    rows={3}
+                    placeholder="Anything else you'd like us to know?"
+                    whileHover={{ scale: 1.01 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  />
+                </div>
+              </GlowInput>
+            </motion.div>
           </motion.div>
         );
 
       case 4:
         return (
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
+            variants={stepVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             className="space-y-4 sm:space-y-6"
           >
-            <div>
+            <motion.div variants={itemVariants}>
               <h3 className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">Almost There!</h3>
               <p className="text-text-secondary text-sm sm:text-base">Review your information and agree to our terms.</p>
-            </div>
+            </motion.div>
 
-            {/* Summary - Mobile Optimized */}
-            <div className="bg-surface rounded-lg sm:rounded-xl p-4 sm:p-6 space-y-3 sm:space-y-4">
-              <h4 className="font-semibold text-primary text-sm sm:text-base">Summary</h4>
+            {/* Enhanced Summary with animations */}
+            <motion.div 
+              variants={itemVariants}
+              className="bg-gradient-to-br from-surface to-white rounded-lg sm:rounded-xl p-4 sm:p-6 space-y-3 sm:space-y-4 relative overflow-hidden"
+              whileHover={{ scale: 1.01 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-br from-accent/5 to-primary/5"
+                animate={{
+                  opacity: [0, 0.1, 0],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+              <h4 className="font-semibold text-primary text-sm sm:text-base relative z-10">Summary</h4>
               
-              <div className="space-y-2 text-xs sm:text-sm">
-                <div className="flex flex-col sm:flex-row sm:justify-between">
+              <div className="space-y-2 text-xs sm:text-sm relative z-10">
+                <motion.div 
+                  className="flex flex-col sm:flex-row sm:justify-between"
+                  whileHover={{ x: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
                   <span className="text-text-secondary">Name:</span>
                   <span className="text-primary font-medium">{contactInfo.firstName} {contactInfo.lastName}</span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between">
+                </motion.div>
+                <motion.div 
+                  className="flex flex-col sm:flex-row sm:justify-between"
+                  whileHover={{ x: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
                   <span className="text-text-secondary">Company:</span>
                   <span className="text-primary font-medium">{contactInfo.company}</span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between">
+                </motion.div>
+                <motion.div 
+                  className="flex flex-col sm:flex-row sm:justify-between"
+                  whileHover={{ x: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
                   <span className="text-text-secondary">Project Type:</span>
                   <span className="text-primary font-medium">
                     {projectTypeOptions.find(opt => opt.value === projectDetails.projectType)?.label}
                   </span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between">
+                </motion.div>
+                <motion.div 
+                  className="flex flex-col sm:flex-row sm:justify-between"
+                  whileHover={{ x: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
                   <span className="text-text-secondary">Budget:</span>
                   <span className="text-primary font-medium">
                     {budgetOptions.find(opt => opt.value === projectDetails.budget)?.label}
                   </span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between">
+                </motion.div>
+                <motion.div 
+                  className="flex flex-col sm:flex-row sm:justify-between"
+                  whileHover={{ x: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
                   <span className="text-text-secondary">Timeline:</span>
                   <span className="text-primary font-medium">
                     {timelineOptions.find(opt => opt.value === projectDetails.timeline)?.label}
                   </span>
-                </div>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Agreements */}
-            <div className="space-y-3 sm:space-y-4">
-              <Checkbox
-                label="I accept the terms of service and privacy policy"
-                required
-                checked={agreement.termsAccepted}
-                onChange={(e) => setAgreement({ ...agreement, termsAccepted: e.target.checked })}
-                error={errors.termsAccepted}
-              />
+            {/* Enhanced Agreements */}
+            <motion.div variants={itemVariants} className="space-y-3 sm:space-y-4">
+              <motion.div
+                whileHover={{ x: 5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                <Checkbox
+                  label="I accept the terms of service and privacy policy"
+                  required
+                  checked={agreement.termsAccepted}
+                  onChange={(e) => setAgreement({ ...agreement, termsAccepted: e.target.checked })}
+                  error={errors.termsAccepted}
+                />
+              </motion.div>
               
-              <Checkbox
-                label="Send me occasional updates about Rule27 Design's innovations and insights"
-                checked={agreement.newsletterOptIn}
-                onChange={(e) => setAgreement({ ...agreement, newsletterOptIn: e.target.checked })}
-              />
-            </div>
+              <motion.div
+                whileHover={{ x: 5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                <Checkbox
+                  label="Send me occasional updates about Rule27 Design's innovations and insights"
+                  checked={agreement.newsletterOptIn}
+                  onChange={(e) => setAgreement({ ...agreement, newsletterOptIn: e.target.checked })}
+                />
+              </motion.div>
+            </motion.div>
 
-            {/* What Happens Next - Mobile Optimized */}
-            <div className="bg-accent/5 border border-accent/20 rounded-lg sm:rounded-xl p-4 sm:p-6">
-              <h4 className="font-semibold text-primary mb-2 sm:mb-3 flex items-center text-sm sm:text-base">
+            {/* Enhanced What Happens Next */}
+            <motion.div 
+              variants={itemVariants}
+              className="bg-gradient-to-r from-accent/5 to-primary/5 border border-accent/20 rounded-lg sm:rounded-xl p-4 sm:p-6 relative overflow-hidden"
+              whileHover={{ scale: 1.01 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-accent/10 to-transparent"
+                animate={{
+                  x: ["-100%", "100%"],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+              />
+              <h4 className="font-semibold text-primary mb-2 sm:mb-3 flex items-center text-sm sm:text-base relative z-10">
                 <Icon name="Info" size={18} className="text-accent mr-2 sm:w-5 sm:h-5" />
                 What Happens Next?
               </h4>
-              <ol className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-text-secondary">
-                <li className="flex items-start">
-                  <span className="text-accent font-semibold mr-2">1.</span>
-                  We'll review your submission within 24 hours
-                </li>
-                <li className="flex items-start">
-                  <span className="text-accent font-semibold mr-2">2.</span>
-                  A strategy expert will reach out to schedule your consultation
-                </li>
-                <li className="flex items-start">
-                  <span className="text-accent font-semibold mr-2">3.</span>
-                  We'll prepare a custom proposal based on your needs
-                </li>
-                <li className="flex items-start">
-                  <span className="text-accent font-semibold mr-2">4.</span>
-                  Your transformation journey begins!
-                </li>
+              <ol className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-text-secondary relative z-10">
+                {[
+                  "We'll review your submission within 24 hours",
+                  "A strategy expert will reach out to schedule your consultation",
+                  "We'll prepare a custom proposal based on your needs",
+                  "Your transformation journey begins!"
+                ].map((step, index) => (
+                  <motion.li 
+                    key={index}
+                    className="flex items-start"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 + index * 0.1 }}
+                  >
+                    <motion.span 
+                      className="text-accent font-semibold mr-2"
+                      animate={{
+                        scale: [1, 1.2, 1],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        delay: index * 0.2,
+                      }}
+                    >
+                      {index + 1}.
+                    </motion.span>
+                    {step}
+                  </motion.li>
+                ))}
               </ol>
-            </div>
+            </motion.div>
           </motion.div>
         );
 
@@ -508,99 +825,265 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-xl sm:rounded-2xl shadow-brand-elevation p-8 sm:p-12 text-center"
+        className="bg-white rounded-xl sm:rounded-2xl shadow-brand-elevation p-8 sm:p-12 text-center relative overflow-hidden"
       >
-        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-          <Icon name="CheckCircle" size={32} className="text-success sm:w-10 sm:h-10" />
-        </div>
-        <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-3 sm:mb-4">
-          Submission Successful!
-        </h2>
-        <p className="text-text-secondary mb-6 sm:mb-8 max-w-md mx-auto text-sm sm:text-base px-4">
-          Thank you for reaching out to Rule27 Design. We've received your consultation request and will be in touch within 24 hours.
-        </p>
-        <div className="space-y-3 sm:space-y-4">
-          <Button
-            variant="default"
-            size="lg"
-            className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-white text-sm sm:text-base"
-            iconName="Calendar"
-            iconPosition="left"
+        {/* Success animation background */}
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-br from-success/10 to-accent/10"
+          animate={{
+            backgroundPosition: ["0% 0%", "100% 100%"],
+          }}
+          transition={{
+            duration: 5,
+            repeat: Infinity,
+            repeatType: "reverse",
+          }}
+        />
+        
+        <motion.div 
+          className="w-16 h-16 sm:w-20 sm:h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 relative z-10"
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 100 }}
+        >
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
           >
-            Add to Calendar
-          </Button>
+            <Icon name="CheckCircle" size={32} className="text-success sm:w-10 sm:h-10" />
+          </motion.div>
+        </motion.div>
+        <motion.h2 
+          className="text-2xl sm:text-3xl font-bold text-primary mb-3 sm:mb-4 relative z-10"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          Submission Successful!
+        </motion.h2>
+        <motion.p 
+          className="text-text-secondary mb-6 sm:mb-8 max-w-md mx-auto text-sm sm:text-base px-4 relative z-10"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          Thank you for reaching out to Rule27 Design. We've received your consultation request and will be in touch within 24 hours.
+        </motion.p>
+        <motion.div 
+          className="space-y-3 sm:space-y-4 relative z-10"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+        >
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              variant="default"
+              size="lg"
+              className="w-full sm:w-auto bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300"
+              iconName="Calendar"
+              iconPosition="left"
+            >
+              Add to Calendar
+            </Button>
+          </motion.div>
           <p className="text-xs sm:text-sm text-text-secondary">
             Check your email for confirmation details
           </p>
-        </div>
+        </motion.div>
       </motion.div>
     );
   }
 
   return (
-    <div id="consultation-form" className="bg-white rounded-xl sm:rounded-2xl shadow-brand-elevation overflow-visible relative z-10">
-      {/* Progress Bar - Mobile Optimized */}
-      <div className="bg-surface p-4 sm:p-6 border-b border-border">
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-          <h2 className="text-xl sm:text-2xl font-bold text-primary">Start Your Journey</h2>
-          <span className="text-xs sm:text-sm text-text-secondary">
+    <motion.div 
+      ref={formRef}
+      id="consultation-form" 
+      className="bg-white rounded-xl sm:rounded-2xl shadow-brand-elevation overflow-visible relative"
+      animate={controls}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6 }}
+    >
+      {/* Mouse follower glow effect */}
+      <motion.div 
+        className="pointer-events-none absolute inset-0 z-0 opacity-0 sm:opacity-100 rounded-xl sm:rounded-2xl"
+        animate={{
+          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(229, 62, 62, 0.03), transparent 40%)`,
+        }}
+        transition={{ type: "spring", damping: 25 }}
+      />
+
+      {/* Floating particles background */}
+      <FloatingParticles />
+
+      {/* Enhanced Progress Bar */}
+      <div className="bg-gradient-to-r from-surface to-white p-4 sm:p-6 border-b border-border relative overflow-hidden">
+        {/* Animated background pattern */}
+        <motion.div
+          className="absolute inset-0 opacity-5"
+          style={{
+            backgroundImage: `
+              linear-gradient(45deg, #E53E3E 25%, transparent 25%),
+              linear-gradient(-45deg, #E53E3E 25%, transparent 25%),
+              linear-gradient(45deg, transparent 75%, #E53E3E 75%),
+              linear-gradient(-45deg, transparent 75%, #E53E3E 75%)
+            `,
+            backgroundSize: '20px 20px',
+            backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px',
+          }}
+          animate={{
+            backgroundPosition: ['0 0, 0 10px, 10px -10px, -10px 0px', '20px 20px, 20px 30px, 30px 10px, 10px 20px'],
+          }}
+          transition={{
+            duration: 5,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+        
+        <div className="flex items-center justify-between mb-3 sm:mb-4 relative z-10">
+          <motion.h2 
+            className="text-xl sm:text-2xl font-bold text-primary"
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            Start Your Journey
+          </motion.h2>
+          <motion.span 
+            className="text-xs sm:text-sm text-text-secondary"
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
             Step {currentStep} of {totalSteps}
-          </span>
+          </motion.span>
         </div>
-        <div className="w-full bg-muted rounded-full h-2">
+        <div className="w-full bg-muted rounded-full h-2 overflow-hidden relative z-10">
           <motion.div
-            className="bg-accent h-2 rounded-full"
+            className="bg-gradient-to-r from-accent to-red-500 h-2 rounded-full relative"
             initial={{ width: 0 }}
             animate={{ width: `${(currentStep / totalSteps) * 100}%` }}
-            transition={{ duration: 0.3 }}
-          />
+            transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
+          >
+            {/* Animated shine effect */}
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+              animate={{
+                x: ["-100%", "200%"],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+            />
+          </motion.div>
+        </div>
+        
+        {/* Step indicators */}
+        <div className="flex justify-between mt-3 relative z-10">
+          {[...Array(totalSteps)].map((_, index) => (
+            <motion.div
+              key={index}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                index < currentStep ? 'bg-accent' : 'bg-muted'
+              }`}
+              initial={{ scale: 0 }}
+              animate={{ scale: index < currentStep ? 1.2 : 1 }}
+              transition={{ delay: index * 0.1 }}
+            />
+          ))}
         </div>
       </div>
 
-      {/* Form Content - Mobile Padding */}
-      <div className="p-4 sm:p-6 md:p-8">
+      {/* Form Content with AnimatePresence */}
+      <div className="p-4 sm:p-6 md:p-8 relative z-10">
         <AnimatePresence mode="wait">
           {renderStepContent()}
         </AnimatePresence>
 
-        {/* Navigation Buttons - Mobile Stack */}
-        <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 mt-6 sm:mt-8">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentStep === 1}
-            className="w-full sm:w-auto order-2 sm:order-1 border-accent text-accent hover:bg-accent hover:text-white disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
-            iconName="ArrowLeft"
-            iconPosition="left"
-          >
-            Previous
-          </Button>
+        {/* Enhanced Navigation Buttons */}
+        <motion.div 
+          className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 mt-6 sm:mt-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentStep === 1}
+              className="w-full sm:w-auto order-2 sm:order-1 border-2 border-accent text-accent hover:bg-accent hover:text-white disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base transition-all duration-300 relative overflow-hidden group"
+              iconName="ArrowLeft"
+              iconPosition="left"
+            >
+              <span className="relative z-10">Previous</span>
+              <motion.div 
+                className="absolute inset-0 bg-accent"
+                initial={{ x: "-100%" }}
+                whileHover={{ x: 0 }}
+                transition={{ duration: 0.3 }}
+              />
+            </Button>
+          </motion.div>
 
           {currentStep < totalSteps ? (
-            <Button
-              variant="default"
-              onClick={handleNext}
-              className="w-full sm:w-auto order-1 sm:order-2 bg-accent hover:bg-accent/90 text-white text-sm sm:text-base"
-              iconName="ArrowRight"
-              iconPosition="right"
-            >
-              Next Step
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="default"
+                onClick={handleNext}
+                className="w-full sm:w-auto order-1 sm:order-2 bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden"
+                iconName="ArrowRight"
+                iconPosition="right"
+              >
+                <span className="relative z-10">Next Step</span>
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-r from-red-600 to-accent"
+                  initial={{ x: "100%" }}
+                  whileHover={{ x: 0 }}
+                  transition={{ duration: 0.3 }}
+                />
+              </Button>
+            </motion.div>
           ) : (
-            <Button
-              variant="default"
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="w-full sm:w-auto order-1 sm:order-2 bg-accent hover:bg-accent/90 text-white disabled:opacity-50 text-sm sm:text-base"
-              iconName={isSubmitting ? "Loader" : "Send"}
-              iconPosition="right"
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit Request'}
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="default"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="w-full sm:w-auto order-1 sm:order-2 bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white disabled:opacity-50 text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden"
+                iconName={isSubmitting ? "Loader" : "Send"}
+                iconPosition="right"
+              >
+                <span className="relative z-10">{isSubmitting ? 'Submitting...' : 'Submit Request'}</span>
+                {isSubmitting && (
+                  <motion.div 
+                    className="absolute inset-0 bg-gradient-to-r from-accent/50 to-red-500/50"
+                    animate={{
+                      x: ["-100%", "100%"],
+                    }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  />
+                )}
+              </Button>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
