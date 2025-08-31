@@ -4,7 +4,7 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
 const FAQSection = () => {
-  const [activeCategory, setActiveCategory] = useState('general');
+  const [activeCategory, setActiveCategory] = useState('all');
   const [openItems, setOpenItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -146,7 +146,7 @@ const FAQSection = () => {
       {
         id: 's1',
         question: "What kind of support do you provide?",
-        answer: "We offer comprehensive support: 24/7 emergency hotline for critical issues, Business hours support via phone/email/chat, Dedicated account managers for retainer clients, Technical documentation and training, Ongoing optimization and maintenance packages."
+        answer: "We offer comprehensive support: Business hours support via phone/email/chat, Dedicated account managers for retainer clients, Technical documentation and training, Ongoing optimization and maintenance packages."
       },
       {
         id: 's2',
@@ -156,7 +156,7 @@ const FAQSection = () => {
       {
         id: 's3',
         question: "What if something breaks after launch?",
-        answer: "All projects include 30-day warranty covering any defects or issues. Our 24/7 emergency hotline ensures critical issues are addressed immediately. We maintain 99.9% uptime for managed services and respond to critical issues within 15 minutes."
+        answer: "All projects include 30-day warranty covering any defects or issues. We respond to critical issues immediately and maintain 99.9% uptime for managed services."
       },
       {
         id: 's4',
@@ -256,9 +256,9 @@ const FAQSection = () => {
         >
           <div className="flex space-x-2 pb-2 min-w-max sm:flex-wrap sm:justify-center sm:min-w-0">
             <button
-              onClick={() => setActiveCategory('general')}
+              onClick={() => setActiveCategory('all')}
               className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-300 text-sm sm:text-base whitespace-nowrap ${
-                activeCategory === 'general'
+                activeCategory === 'all'
                   ? 'bg-accent text-white'
                   : 'bg-white text-gray-600 hover:bg-gray-100'
               }`}

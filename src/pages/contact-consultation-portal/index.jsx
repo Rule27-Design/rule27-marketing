@@ -8,7 +8,6 @@ import ProcessTimeline from './components/ProcessTimeline';
 import ContactOptions from './components/ContactOptions';
 import TrustIndicators from './components/TrustIndicators';
 import FAQSection from './components/FAQSection';
-import EmergencyContact from './components/EmergencyContact';
 
 const ContactConsultationPortal = () => {
   const [formData, setFormData] = useState({
@@ -142,6 +141,15 @@ const ContactConsultationPortal = () => {
           overflow: visible;
         }
         
+        .consultation-grid {
+          position: relative;
+        }
+        
+        /* Ensure dropdowns are visible */
+        .consultation-grid > * {
+          overflow: visible;
+        }
+        
         .hero-wrapper {
           position: relative;
           z-index: 1;
@@ -194,19 +202,20 @@ const ContactConsultationPortal = () => {
           <section id="consultation" className="section-wrapper py-12 sm:py-16 md:py-20 lg:py-24 bg-gradient-to-b from-white to-surface">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="consultation-grid grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-                {/* Left Column - Form */}
+                {/* Left Column - Form with Sticky Positioning */}
                 <div className="order-1 lg:col-span-2">
-                  <ConsultationForm 
-                    formData={formData}
-                    onFormUpdate={handleFormUpdate}
-                  />
+                  <div className="lg:sticky lg:top-20">
+                    <ConsultationForm 
+                      formData={formData}
+                      onFormUpdate={handleFormUpdate}
+                    />
+                  </div>
                 </div>
                 
                 {/* Right Column - Support Info - Mobile Optimized */}
                 <div className="form-sidebar order-2 space-y-6 sm:space-y-8">
                   <ProcessTimeline currentStep={formData.step} />
                   <ContactOptions />
-                  <EmergencyContact />
                 </div>
               </div>
             </div>

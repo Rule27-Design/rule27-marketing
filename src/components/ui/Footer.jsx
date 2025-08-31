@@ -17,7 +17,7 @@ const Footer = () => {
     connect: [
       { name: 'Start Consultation', path: '/contact-consultation-portal' },
       { name: 'hello@rule27.com', href: 'mailto:hello@rule27.com', external: true },
-      { name: '+1 (555) RULE-27', href: 'tel:+1-555-785-3277', external: true }
+      { name: '+1 (555) RULE-27', href: 'tel:+15557853277', external: true }
     ],
     legal: [
       { name: 'Privacy Policy', path: '/privacy' },

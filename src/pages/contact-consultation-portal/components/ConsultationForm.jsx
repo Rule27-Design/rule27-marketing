@@ -529,7 +529,7 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
   }
 
   return (
-    <div id="consultation-form" className="bg-white rounded-xl sm:rounded-2xl shadow-brand-elevation overflow-hidden">
+    <div id="consultation-form" className="bg-white rounded-xl sm:rounded-2xl shadow-brand-elevation overflow-visible relative z-10">
       {/* Progress Bar - Mobile Optimized */}
       <div className="bg-surface p-4 sm:p-6 border-b border-border">
         <div className="flex items-center justify-between mb-3 sm:mb-4">
