@@ -96,11 +96,11 @@ const CaseStudyCarousel = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-primary mb-6">
+          <h2 className="text-5xl md:text-6xl lg:text-7xl font-heading-bold text-primary mb-6 uppercase tracking-wider">
             Transformation Stories That
             <span className="text-accent block mt-2">Speak for Themselves</span>
           </h2>
-          <p className="text-xl text-text-secondary max-w-3xl mx-auto">
+          <p className="text-xl text-text-secondary max-w-3xl mx-auto font-sans">
             Real results from real partnerships. See how we've helped ambitious brands 
             break through their limitations and achieve extraordinary outcomes.
           </p>
@@ -133,7 +133,7 @@ const CaseStudyCarousel = () => {
 
                       {/* Industry Badge */}
                       <div className="absolute top-6 left-6">
-                        <span className="bg-accent text-white px-4 py-2 rounded-full text-sm font-semibold">
+                        <span className="bg-accent text-white px-4 py-2 rounded-full text-sm font-heading-regular uppercase tracking-wider">
                           {study?.industry}
                         </span>
                       </div>
@@ -142,13 +142,13 @@ const CaseStudyCarousel = () => {
                     {/* Content Section */}
                     <div className="bg-white p-8 lg:p-12 flex flex-col justify-center">
                       <div className="mb-6">
-                        <span className="text-accent font-semibold text-sm uppercase tracking-wide">
+                        <span className="text-accent font-heading-regular text-sm uppercase tracking-wider">
                           {study?.category}
                         </span>
-                        <h3 className="text-3xl font-bold text-primary mt-2 mb-4">
+                        <h3 className="text-4xl font-heading-bold text-primary mt-2 mb-4 uppercase tracking-wide">
                           {study?.title}
                         </h3>
-                        <p className="text-text-secondary text-lg leading-relaxed">
+                        <p className="text-text-secondary text-lg leading-relaxed font-sans">
                           {study?.description}
                         </p>
                       </div>
@@ -156,18 +156,18 @@ const CaseStudyCarousel = () => {
                       {/* Metrics */}
                       <div className="grid grid-cols-2 gap-6 mb-8">
                         <div className="text-center p-4 bg-muted rounded-lg">
-                          <div className="text-sm text-text-secondary mb-1">Before</div>
-                          <div className="font-bold text-primary">{study?.beforeMetric}</div>
+                          <div className="text-sm text-text-secondary mb-1 font-sans">Before</div>
+                          <div className="font-heading-bold text-primary uppercase">{study?.beforeMetric}</div>
                         </div>
                         <div className="text-center p-4 bg-accent/5 rounded-lg border border-accent/20">
-                          <div className="text-sm text-accent mb-1">After</div>
-                          <div className="font-bold text-accent">{study?.afterMetric}</div>
+                          <div className="text-sm text-accent mb-1 font-sans">After</div>
+                          <div className="font-heading-bold text-accent uppercase">{study?.afterMetric}</div>
                         </div>
                       </div>
 
                       {/* Improvement Badge */}
                       <div className="text-center mb-8">
-                        <span className="bg-success text-white px-6 py-3 rounded-full font-bold text-lg">
+                        <span className="bg-success text-white px-6 py-3 rounded-full font-heading-bold text-xl uppercase tracking-wider">
                           {study?.improvement}
                         </span>
                       </div>
@@ -177,7 +177,7 @@ const CaseStudyCarousel = () => {
                         {study?.tags?.map((tag, tagIndex) => (
                           <span
                             key={tagIndex}
-                            className="bg-primary/5 text-primary px-3 py-1 rounded-full text-sm font-medium"
+                            className="bg-primary/5 text-primary px-3 py-1 rounded-full text-sm font-sans"
                           >
                             {tag}
                           </span>
@@ -185,7 +185,7 @@ const CaseStudyCarousel = () => {
                       </div>
 
                       {/* Timeline */}
-                      <div className="flex items-center text-text-secondary mb-8">
+                      <div className="flex items-center text-text-secondary mb-8 font-sans">
                         <Icon name="Clock" size={16} className="mr-2" />
                         <span className="text-sm">Completed in {study?.timeline}</span>
                       </div>
@@ -194,7 +194,7 @@ const CaseStudyCarousel = () => {
                       <Link to="/work-showcase-theater">
                         <Button
                           variant="outline"
-                          className="border-accent text-accent hover:bg-accent hover:text-white w-full"
+                          className="border-accent text-accent hover:bg-accent hover:text-white w-full font-heading-regular uppercase tracking-wider"
                           iconName="ArrowRight"
                           iconPosition="right"
                         >
@@ -243,7 +243,7 @@ const CaseStudyCarousel = () => {
             <Button
               variant="default"
               size="lg"
-              className="bg-primary hover:bg-primary/90 text-white px-8 py-4"
+              className="bg-primary hover:bg-primary/90 text-white px-8 py-4 font-heading-regular uppercase tracking-wider"
               iconName="Eye"
               iconPosition="left"
             >

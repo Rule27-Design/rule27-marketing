@@ -127,11 +127,11 @@ const SocialProofSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-primary mb-6">
+          <h2 className="text-4xl md:text-5xl font-heading-bold text-primary mb-6 tracking-wider uppercase">
             Trusted by Industry
             <span className="text-accent block mt-2">Leaders Worldwide</span>
           </h2>
-          <p className="text-xl text-text-secondary max-w-3xl mx-auto">
+          <p className="text-xl text-text-secondary max-w-3xl mx-auto font-body">
             Don't just take our word for it. See what visionary leaders say about 
             their transformation journey with Rule27 Design.
           </p>
@@ -153,31 +153,31 @@ const SocialProofSection = () => {
                     <Icon name="Quote" size={16} className="text-white" />
                   </div>
                 </div>
-                <h4 className="font-bold text-primary text-lg mb-1">
+                <h4 className="font-heading-bold text-primary text-lg mb-1 tracking-wider uppercase">
                   {testimonials?.[currentTestimonial]?.name}
                 </h4>
-                <p className="text-text-secondary text-sm mb-2">
+                <p className="text-text-secondary text-sm mb-2 font-body">
                   {testimonials?.[currentTestimonial]?.title}
                 </p>
-                <p className="text-accent font-semibold text-sm mb-3">
+                <p className="text-accent font-body font-semibold text-sm mb-3">
                   {testimonials?.[currentTestimonial]?.company}
                 </p>
                 <div className="flex justify-center md:justify-start space-x-1 mb-3">
                   {renderStars(testimonials?.[currentTestimonial]?.rating)}
                 </div>
-                <div className="text-xs text-text-secondary">
+                <div className="text-xs text-text-secondary font-body">
                   {testimonials?.[currentTestimonial]?.industry}
                 </div>
               </div>
 
               {/* Testimonial Content */}
               <div className="md:col-span-2">
-                <blockquote className="text-lg md:text-xl text-primary leading-relaxed mb-6 italic">
+                <blockquote className="text-lg md:text-xl text-primary leading-relaxed mb-6 italic font-body">
                   "{testimonials?.[currentTestimonial]?.quote}"
                 </blockquote>
                 <div className="bg-accent/5 rounded-lg p-4 border-l-4 border-accent">
-                  <div className="text-sm text-text-secondary mb-1">Project Impact:</div>
-                  <div className="font-bold text-accent">
+                  <div className="text-sm text-text-secondary mb-1 font-body">Project Impact:</div>
+                  <div className="font-heading-bold text-accent tracking-wider uppercase">
                     {testimonials?.[currentTestimonial]?.projectValue}
                   </div>
                 </div>
@@ -202,7 +202,7 @@ const SocialProofSection = () => {
 
         {/* Awards & Recognition */}
         <div className="mb-16">
-          <h3 className="text-2xl font-bold text-primary text-center mb-8">
+          <h3 className="text-2xl font-heading-bold text-primary text-center mb-8 tracking-wider uppercase">
             Industry Recognition & Awards
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -214,10 +214,10 @@ const SocialProofSection = () => {
                 <div className="bg-accent/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Icon name={award?.icon} size={24} className="text-accent" />
                 </div>
-                <h4 className="font-bold text-primary text-sm mb-2">
+                <h4 className="font-heading-regular text-primary text-sm mb-2 tracking-wider uppercase">
                   {award?.name}
                 </h4>
-                <p className="text-text-secondary text-xs">
+                <p className="text-text-secondary text-xs font-body">
                   {award?.organization}
                 </p>
               </div>
@@ -227,7 +227,7 @@ const SocialProofSection = () => {
 
         {/* Strategic Partnerships */}
         <div className="mb-16">
-          <h3 className="text-2xl font-bold text-primary text-center mb-8">
+          <h3 className="text-2xl font-heading-bold text-primary text-center mb-8 tracking-wider uppercase">
             Strategic Technology Partners
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -242,7 +242,7 @@ const SocialProofSection = () => {
                     alt={partner?.name}
                     className="w-16 h-16 object-contain mx-auto mb-3 grayscale hover:grayscale-0 transition-all duration-300"
                   />
-                  <p className="text-xs text-text-secondary font-medium">
+                  <p className="text-xs text-text-secondary font-body font-medium">
                     {partner?.name}
                   </p>
                 </div>
@@ -254,42 +254,42 @@ const SocialProofSection = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
           <div className="text-center">
-            <div className="text-4xl font-bold text-accent mb-2">98%</div>
-            <div className="text-text-secondary">Client Satisfaction</div>
+            <div className="text-4xl font-heading-bold text-accent mb-2 tracking-wider">98%</div>
+            <div className="text-text-secondary font-body">Client Satisfaction</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-bold text-accent mb-2">150+</div>
-            <div className="text-text-secondary">Projects Completed</div>
+            <div className="text-4xl font-heading-bold text-accent mb-2 tracking-wider">150+</div>
+            <div className="text-text-secondary font-body">Projects Completed</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-bold text-accent mb-2">500%</div>
-            <div className="text-text-secondary">Average Growth</div>
+            <div className="text-4xl font-heading-bold text-accent mb-2 tracking-wider">500%</div>
+            <div className="text-text-secondary font-body">Average Growth</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-bold text-accent mb-2">25+</div>
-            <div className="text-text-secondary">Industry Awards</div>
+            <div className="text-4xl font-heading-bold text-accent mb-2 tracking-wider">25+</div>
+            <div className="text-text-secondary font-body">Industry Awards</div>
           </div>
         </div>
 
         {/* CTA Section */}
         <div className="text-center bg-primary rounded-2xl p-12 text-white">
-          <h3 className="text-3xl font-bold mb-4">
+          <h3 className="text-3xl font-heading-bold mb-4 tracking-wider uppercase">
             Join the Success Stories
           </h3>
-          <p className="text-xl mb-8 opacity-90">
+          <p className="text-xl mb-8 opacity-90 font-body">
             Ready to become our next transformation success story?
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/work-showcase-theater">
-              <button className="bg-white text-primary px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-300 flex items-center space-x-2">
+              <button className="bg-white text-primary px-8 py-4 rounded-lg font-body font-semibold hover:bg-gray-100 transition-colors duration-300 flex items-center space-x-2">
                 <Icon name="Eye" size={20} />
-                <span>View All Case Studies</span>
+                <span className="font-heading-regular tracking-wider uppercase">View All Case Studies</span>
               </button>
             </Link>
             <Link to="/contact-consultation-portal">
-              <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-primary transition-all duration-300 flex items-center space-x-2">
+              <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-body font-semibold hover:bg-white hover:text-primary transition-all duration-300 flex items-center space-x-2">
                 <Icon name="MessageCircle" size={20} />
-                <span>Start Your Journey</span>
+                <span className="font-heading-regular tracking-wider uppercase">Start Your Journey</span>
               </button>
             </Link>
           </div>

@@ -177,14 +177,14 @@ const HeroSection = () => {
           </div>
         </div>
 
-        {/* Main Headline with Typewriter Effect */}
+        {/* Main Headline with Typewriter Effect - Using Steelfish */}
         <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading-bold text-white mb-6 uppercase tracking-wider">
             <span className="block mb-2">The 27th Rule:</span>
             <span className="block text-center md:text-left">
               <span className="block md:inline">Where Creative{' '}</span>
-              <span className="relative inline-block min-w-[200px] md:min-w-[280px] text-center md:text-left">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent via-red-400 to-accent bg-300% animate-gradient">
+              <span className="relative inline-block min-w-[200px] md:min-w-[320px] text-center md:text-left">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent via-red-400 to-accent bg-300% animate-gradient font-heading-bold uppercase">
                   {currentText}
                 </span>
                 <span className={`${showCursor ? 'opacity-100' : 'opacity-0'} text-accent transition-opacity duration-100`}>
@@ -197,41 +197,41 @@ const HeroSection = () => {
           </h1>
         </div>
 
-        {/* Subheading with Stagger Animation */}
+        {/* Subheading with Stagger Animation - Using Helvetica */}
         <div className={`transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed">
+          <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed font-sans">
             We don't just follow design trends, we create them. We don't just solve problems, we reimagine possibilities. 
             <span className="text-accent font-semibold bg-gradient-to-r from-accent to-red-400 bg-clip-text text-transparent"> Break conventional boundaries</span> and discover the creative partner 
             that makes other agencies look ordinary.
           </p>
         </div>
 
-        {/* Interactive Stats Bar */}
+        {/* Interactive Stats Bar - Using Steelfish for numbers */}
         <div className={`transition-all duration-1000 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="flex justify-center space-x-8 mb-12 text-white/80">
             <div className="group cursor-pointer">
-              <div className="text-3xl font-bold text-accent group-hover:scale-110 transition-transform duration-300">150+</div>
-              <div className="text-sm">Projects</div>
+              <div className="text-4xl font-heading-bold text-accent group-hover:scale-110 transition-transform duration-300 uppercase">150+</div>
+              <div className="text-sm font-sans">Projects</div>
             </div>
             <div className="group cursor-pointer">
-              <div className="text-3xl font-bold text-accent group-hover:scale-110 transition-transform duration-300">98%</div>
-              <div className="text-sm">Satisfaction</div>
+              <div className="text-4xl font-heading-bold text-accent group-hover:scale-110 transition-transform duration-300 uppercase">98%</div>
+              <div className="text-sm font-sans">Satisfaction</div>
             </div>
             <div className="group cursor-pointer">
-              <div className="text-3xl font-bold text-accent group-hover:scale-110 transition-transform duration-300">500%</div>
-              <div className="text-sm">Avg Growth</div>
+              <div className="text-4xl font-heading-bold text-accent group-hover:scale-110 transition-transform duration-300 uppercase">500%</div>
+              <div className="text-sm font-sans">Avg Growth</div>
             </div>
           </div>
         </div>
 
-        {/* CTA Buttons with Enhanced Hover Effects */}
+        {/* CTA Buttons with Enhanced Hover Effects - Using Steelfish for impact */}
         <div className={`transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
             <Link to="/contact-consultation-portal">
               <Button
                 variant="default"
                 size="lg"
-                className="bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white px-8 py-4 text-lg font-semibold transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-accent/50"
+                className="bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white px-8 py-4 text-lg font-heading-regular uppercase tracking-wider transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-accent/50"
                 iconName="ArrowRight"
                 iconPosition="right"
               >
@@ -242,7 +242,7 @@ const HeroSection = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="border-2 border-white/50 text-white hover:bg-white hover:text-black backdrop-blur-sm px-8 py-4 text-lg font-semibold transform hover:scale-105 transition-all duration-300"
+                className="border-2 border-white/50 text-white hover:bg-white hover:text-black backdrop-blur-sm px-8 py-4 text-lg font-heading-regular uppercase tracking-wider transform hover:scale-105 transition-all duration-300"
                 iconName="Compass"
                 iconPosition="left"
               >
@@ -255,7 +255,7 @@ const HeroSection = () => {
         {/* Enhanced Scroll Indicator */}
         <div className={`transition-all duration-1000 delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="flex flex-col items-center text-gray-400 group cursor-pointer">
-            <span className="text-sm mb-2 tracking-wide group-hover:text-accent transition-colors duration-300">
+            <span className="text-sm mb-2 tracking-wide group-hover:text-accent transition-colors duration-300 font-sans">
               Discover More
             </span>
             <div className="relative">

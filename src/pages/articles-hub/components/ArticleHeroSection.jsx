@@ -94,28 +94,28 @@ const ArticleHeroSection = ({ featuredArticles, onViewArticle }) => {
           <div className="max-w-3xl">
             {/* Category & Meta - Mobile Responsive */}
             <div className="flex flex-wrap items-center gap-3 mb-4 md:mb-6">
-              <span className="px-3 py-1.5 md:px-4 md:py-2 bg-accent/80 backdrop-blur-sm text-white text-xs md:text-sm font-semibold rounded-full">
+              <span className="px-3 py-1.5 md:px-4 md:py-2 bg-accent/80 backdrop-blur-sm text-white text-xs md:text-sm font-heading-regular tracking-wider uppercase rounded-full">
                 {currentArticle?.category}
               </span>
-              <div className="flex items-center space-x-4 text-white/80 text-xs md:text-sm">
+              <div className="flex items-center space-x-4 text-white/80 text-xs md:text-sm font-body">
                 <span className="flex items-center gap-1">
                   <Icon name="Clock" size={14} />
                   {currentArticle?.readTime} min read
                 </span>
                 <span className="flex items-center gap-1">
                   <Icon name="Eye" size={14} />
-                  {currentArticle?.views?.toLocaleString()} views
+                  <span className="font-heading-regular tracking-wider">{currentArticle?.views?.toLocaleString()}</span> views
                 </span>
               </div>
             </div>
 
             {/* Title - Mobile Responsive */}
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 md:mb-6">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-heading-bold text-white mb-4 md:mb-6 tracking-wider uppercase">
               {currentArticle?.title}
             </h1>
 
             {/* Excerpt - Mobile Responsive */}
-            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 md:mb-8 leading-relaxed line-clamp-3 sm:line-clamp-none">
+            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 md:mb-8 leading-relaxed line-clamp-3 sm:line-clamp-none font-body">
               {currentArticle?.excerpt}
             </p>
 
@@ -127,10 +127,10 @@ const ArticleHeroSection = ({ featuredArticles, onViewArticle }) => {
                 className="w-12 h-12 md:w-14 md:h-14 rounded-full border-2 border-white/20"
               />
               <div>
-                <p className="text-white font-semibold text-sm md:text-base">
+                <p className="text-white font-body font-semibold text-sm md:text-base">
                   {currentArticle?.author?.name}
                 </p>
-                <p className="text-white/70 text-xs md:text-sm">
+                <p className="text-white/70 text-xs md:text-sm font-body">
                   {currentArticle?.author?.role} • {formatDate(currentArticle?.publishedDate)}
                 </p>
               </div>
@@ -146,7 +146,7 @@ const ArticleHeroSection = ({ featuredArticles, onViewArticle }) => {
                 iconName="BookOpen"
                 iconPosition="left"
               >
-                Read Full Article
+                <span className="font-heading-regular tracking-wider uppercase">Read Full Article</span>
               </Button>
               <Button
                 variant="outline"
@@ -155,7 +155,7 @@ const ArticleHeroSection = ({ featuredArticles, onViewArticle }) => {
                 iconName="Bookmark"
                 iconPosition="left"
               >
-                Save for Later
+                <span className="font-heading-regular tracking-wider uppercase">Save for Later</span>
               </Button>
             </div>
           </div>

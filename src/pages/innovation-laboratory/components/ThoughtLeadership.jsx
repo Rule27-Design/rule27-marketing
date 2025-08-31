@@ -137,14 +137,14 @@ const ThoughtLeadership = () => {
         }`}>
           <div className="inline-flex items-center justify-center space-x-2 bg-accent/10 border border-accent/20 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6 mx-auto">
             <Icon name="BookOpen" size={16} className="text-accent" />
-            <span className="text-accent font-medium text-xs sm:text-sm">Thought Leadership</span>
+            <span className="text-accent font-body font-medium text-xs sm:text-sm">Thought Leadership</span>
           </div>
           
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-4 sm:mb-6 text-center">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading-bold text-black mb-4 sm:mb-6 text-center tracking-wider uppercase">
             Industry <span className="text-accent">Insights</span>
           </h2>
           
-          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4 text-center">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4 text-center font-body">
             Deep-dive analysis, strategic frameworks, and forward-thinking perspectives that shape the future of digital experiences.
           </p>
         </div>
@@ -158,7 +158,7 @@ const ThoughtLeadership = () => {
               <button
                 key={category?.id}
                 onClick={() => setActiveCategory(category?.id)}
-                className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 rounded-xl font-medium transition-all duration-300 m-0.5 sm:m-1 whitespace-nowrap ${
+                className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 rounded-xl font-body font-medium transition-all duration-300 m-0.5 sm:m-1 whitespace-nowrap ${
                   activeCategory === category?.id
                     ? 'bg-white text-accent shadow-lg'
                     : 'text-gray-600 hover:text-gray-900'
@@ -194,7 +194,7 @@ const ThoughtLeadership = () => {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
-                  <span className="bg-black/80 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-medium">
+                  <span className="bg-black/80 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-body font-medium">
                     {item?.type}
                   </span>
                 </div>
@@ -211,19 +211,19 @@ const ThoughtLeadership = () => {
                 {/* Tags */}
                 <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3">
                   {item?.tags?.slice(0, 2)?.map((tag) => (
-                    <span key={tag} className="bg-gray-100 text-gray-600 px-2 py-0.5 sm:py-1 rounded text-xs">
+                    <span key={tag} className="bg-gray-100 text-gray-600 px-2 py-0.5 sm:py-1 rounded text-xs font-body">
                       {tag}
                     </span>
                   ))}
                 </div>
 
                 {/* Title */}
-                <h3 className="text-base sm:text-xl font-bold text-black mb-3 line-clamp-2 group-hover:text-accent transition-colors duration-300">
+                <h3 className="text-base sm:text-xl font-heading-regular text-black mb-3 line-clamp-2 group-hover:text-accent transition-colors duration-300 tracking-wider uppercase">
                   {item?.title}
                 </h3>
 
                 {/* Excerpt */}
-                <p className="text-gray-600 text-xs sm:text-sm mb-4 line-clamp-3">
+                <p className="text-gray-600 text-xs sm:text-sm mb-4 line-clamp-3 font-body">
                   {item?.excerpt?.split('\n')?.[0]}
                 </p>
 
@@ -231,37 +231,37 @@ const ThoughtLeadership = () => {
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <div className="flex items-center space-x-2 sm:space-x-3">
                     <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-accent to-red-600 rounded-full flex items-center justify-center">
-                      <span className="text-white text-[10px] sm:text-xs font-bold">
+                      <span className="text-white text-[10px] sm:text-xs font-heading-regular">
                         {item?.author?.split(' ')?.map(n => n?.[0])?.join('')}
                       </span>
                     </div>
                     <div>
-                      <div className="text-xs sm:text-sm font-medium text-black">{item?.author}</div>
-                      <div className="text-[10px] sm:text-xs text-gray-500">{item?.role}</div>
+                      <div className="text-xs sm:text-sm font-body font-medium text-black">{item?.author}</div>
+                      <div className="text-[10px] sm:text-xs text-gray-500 font-body">{item?.role}</div>
                     </div>
                   </div>
-                  <div className="text-[10px] sm:text-xs text-gray-500">
+                  <div className="text-[10px] sm:text-xs text-gray-500 font-body">
                     {item?.readTime}
                   </div>
                 </div>
 
                 {/* Engagement Stats */}
-                <div className="flex items-center justify-between text-[10px] sm:text-xs text-gray-500 mb-3 sm:mb-4">
+                <div className="flex items-center justify-between text-[10px] sm:text-xs text-gray-500 mb-3 sm:mb-4 font-body">
                   <div className="flex items-center space-x-2 sm:space-x-4">
                     <span className="flex items-center space-x-1">
                       <Icon name="Eye" size={10} className="sm:hidden" />
                       <Icon name="Eye" size={12} className="hidden sm:block" />
-                      <span>{item?.engagement?.views}</span>
+                      <span className="font-heading-regular tracking-wider">{item?.engagement?.views}</span>
                     </span>
                     <span className="flex items-center space-x-1">
                       <Icon name="Share" size={10} className="sm:hidden" />
                       <Icon name="Share" size={12} className="hidden sm:block" />
-                      <span>{item?.engagement?.shares}</span>
+                      <span className="font-heading-regular tracking-wider">{item?.engagement?.shares}</span>
                     </span>
                     <span className="flex items-center space-x-1">
                       <Icon name="MessageCircle" size={10} className="sm:hidden" />
                       <Icon name="MessageCircle" size={12} className="hidden sm:block" />
-                      <span>{item?.engagement?.comments}</span>
+                      <span className="font-heading-regular tracking-wider">{item?.engagement?.comments}</span>
                     </span>
                   </div>
                   <span>{new Date(item.publishDate)?.toLocaleDateString()}</span>
@@ -275,7 +275,7 @@ const ThoughtLeadership = () => {
                   iconName="ArrowRight"
                   iconPosition="right"
                 >
-                  Read Full Article
+                  <span className="font-heading-regular tracking-wider uppercase">Read Full Article</span>
                 </Button>
               </div>
             </article>
@@ -293,7 +293,7 @@ const ThoughtLeadership = () => {
             iconName="Plus"
             iconPosition="left"
           >
-            Load More Articles
+            <span className="font-heading-regular tracking-wider uppercase">Load More Articles</span>
           </Button>
         </div>
       </div>
