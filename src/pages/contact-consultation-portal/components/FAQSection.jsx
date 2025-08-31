@@ -179,33 +179,33 @@ const FAQSection = () => {
     );
   };
 
-  // Get filtered FAQs based on activeCategory and searchTerm
+  // Filter FAQs based on category and search
   const getFilteredFaqs = () => {
     let filtered = {};
     
     if (activeCategory === 'all') {
-      // Show all categories
-      Object.entries(faqs).forEach(([category, items]) => {
-        const filteredItems = items.filter(item => 
-          searchTerm === '' || 
+      // Show all categories when 'all' is selected
+      Object.keys(faqs).forEach(category => {
+        const items = faqs[category].filter(item =>
+          searchTerm === '' ||
           item.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
           item.answer.toLowerCase().includes(searchTerm.toLowerCase())
         );
-        if (filteredItems.length > 0) {
-          filtered[category] = filteredItems;
+        if (items.length > 0) {
+          filtered[category] = items;
         }
       });
     } else {
       // Show only selected category
       const categoryFaqs = faqs[activeCategory];
       if (categoryFaqs) {
-        const filteredItems = categoryFaqs.filter(item => 
-          searchTerm === '' || 
+        const items = categoryFaqs.filter(item =>
+          searchTerm === '' ||
           item.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
           item.answer.toLowerCase().includes(searchTerm.toLowerCase())
         );
-        if (filteredItems.length > 0) {
-          filtered[activeCategory] = filteredItems;
+        if (items.length > 0) {
+          filtered[activeCategory] = items;
         }
       }
     }
@@ -321,7 +321,7 @@ const FAQSection = () => {
             </div>
           ) : (
             Object.entries(filteredFaqs).map(([category, items]) => (
-              <div key={category} className="space-y-3 sm:space-y-4">
+              <React.Fragment key={category}>
                 {items.map((item) => (
                   <motion.div
                     key={item.id}
@@ -370,7 +370,7 @@ const FAQSection = () => {
                     </AnimatePresence>
                   </motion.div>
                 ))}
-              </div>
+              </React.Fragment>
             ))
           )}
         </motion.div>

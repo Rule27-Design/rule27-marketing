@@ -6,18 +6,20 @@ import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import { Checkbox } from '../../../components/ui/Checkbox';
 
-const ConsultationForm = ({ formData, onFormUpdate }) => {
-  const [currentStep, setCurrentStep] = useState(1);
+const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) => {
+  const [currentStep, setCurrentStep] = useState(parentStep || 1);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
   const totalSteps = 4;
 
-  // Update parent component whenever currentStep changes
+  // Sync with parent's step if it changes
   useEffect(() => {
-    onFormUpdate({ step: currentStep }, 'step');
-  }, [currentStep, onFormUpdate]);
+    if (parentStep && parentStep !== currentStep) {
+      setCurrentStep(parentStep);
+    }
+  }, [parentStep]);
 
   // Form step data
   const [contactInfo, setContactInfo] = useState({
@@ -155,14 +157,18 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
   const handleNext = () => {
     if (validateStep(currentStep)) {
       if (currentStep < totalSteps) {
-        setCurrentStep(currentStep + 1);
+        const newStep = currentStep + 1;
+        setCurrentStep(newStep);
+        onFormUpdate(newStep, 'step');
       }
     }
   };
 
   const handlePrevious = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+      const newStep = currentStep - 1;
+      setCurrentStep(newStep);
+      onFormUpdate(newStep, 'step');
       setErrors({});
     }
   };
