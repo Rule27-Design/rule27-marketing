@@ -85,7 +85,7 @@ const ContactConsultationPortal = () => {
         <link rel="canonical" href="https://Rule27Design.com/contact-consultation-portal" />
       </Helmet>
 
-      {/* Global Performance Styles */}
+      {/* Global Performance Styles with enhanced sticky form */}
       <style>{`
         /* Faster animations on mobile */
         @media (max-width: 768px) {
@@ -155,6 +155,12 @@ const ContactConsultationPortal = () => {
           margin: 0;
         }
         
+        /* Consultation grid container */
+        .consultation-section {
+          position: relative;
+          min-height: 100vh;
+        }
+        
         .consultation-grid {
           position: relative;
         }
@@ -164,13 +170,58 @@ const ContactConsultationPortal = () => {
           overflow: visible;
         }
         
-        /* Sticky form on desktop */
+        /* Sticky form container - Desktop */
         @media (min-width: 1024px) {
+          .sticky-form-wrapper {
+            height: 100%;
+          }
+          
           .sticky-form-container {
             position: sticky;
-            top: 80px;
-            height: fit-content;
+            top: 80px; /* Account for header */
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            padding-right: 1rem;
             z-index: 10;
+          }
+          
+          /* Custom scrollbar for form container */
+          .sticky-form-container::-webkit-scrollbar {
+            width: 4px;
+          }
+          
+          .sticky-form-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+          }
+          
+          .sticky-form-container::-webkit-scrollbar-thumb {
+            background: #E53E3E;
+            border-radius: 4px;
+          }
+          
+          .sticky-form-container::-webkit-scrollbar-thumb:hover {
+            background: #c53030;
+          }
+          
+          /* Sidebar should scroll independently */
+          .form-sidebar-wrapper {
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+            padding-left: 1rem;
+          }
+        }
+        
+        /* Mobile - Normal stacking */
+        @media (max-width: 1023px) {
+          .sticky-form-container {
+            position: relative;
+            height: auto;
+          }
+          
+          .form-sidebar-wrapper {
+            position: relative;
+            height: auto;
           }
         }
         
@@ -244,25 +295,85 @@ const ContactConsultationPortal = () => {
             <HeroSection />
           </section>
           
-          {/* Main Content Grid - Gradient transition to gray */}
-          <section id="consultation" className="bg-gradient-to-b from-white via-white to-gray-50 py-12 sm:py-16 md:py-20 lg:py-24">
+          {/* Main Content Grid with Sticky Form - Enhanced structure */}
+          <section id="consultation" className="consultation-section bg-gradient-to-b from-white via-white to-gray-50 py-12 sm:py-16 md:py-20 lg:py-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="consultation-grid grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-                {/* Left Column - Form with Sticky Container */}
+                {/* Left Column - Form with Enhanced Sticky Container */}
                 <div className="order-1 lg:col-span-2">
-                  <div className="sticky-form-container">
-                    <ConsultationForm 
-                      formData={formData}
-                      onFormUpdate={handleFormUpdate}
-                      currentStep={currentFormStep}
-                    />
+                  <div className="sticky-form-wrapper">
+                    <div className="sticky-form-container">
+                      <ConsultationForm 
+                        formData={formData}
+                        onFormUpdate={handleFormUpdate}
+                        currentStep={currentFormStep}
+                      />
+                    </div>
                   </div>
                 </div>
                 
-                {/* Right Column - Support Info - Mobile Optimized */}
-                <div className="form-sidebar order-2 space-y-6 sm:space-y-8">
-                  <ProcessTimeline currentStep={currentFormStep} />
-                  <ContactOptions />
+                {/* Right Column - Support Info with Independent Scroll */}
+                <div className="form-sidebar order-2">
+                  <div className="form-sidebar-wrapper space-y-6 sm:space-y-8">
+                    <ProcessTimeline currentStep={currentFormStep} />
+                    <ContactOptions />
+                    
+                    {/* Additional Information Cards for desktop to add scroll content */}
+                    <div className="hidden lg:block space-y-6">
+                      {/* Response Time Card */}
+                      <div className="bg-white rounded-2xl p-6 shadow-brand-md">
+                        <h3 className="text-lg font-bold text-primary mb-4 flex items-center">
+                          <Icon name="Zap" size={18} className="text-accent mr-2" />
+                          Quick Response
+                        </h3>
+                        <p className="text-sm text-text-secondary mb-4">
+                          We typically respond to consultation requests within 24 hours. For urgent projects, select ASAP in the timeline question.
+                        </p>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+                          <span className="text-xs text-success font-medium">Team available now</span>
+                        </div>
+                      </div>
+                      
+                      {/* What to Expect Card */}
+                      <div className="bg-accent/5 border border-accent/20 rounded-2xl p-6">
+                        <h3 className="text-lg font-bold text-primary mb-4">What to Expect</h3>
+                        <ul className="space-y-2 text-sm text-text-secondary">
+                          <li className="flex items-start space-x-2">
+                            <span className="text-accent font-bold">1.</span>
+                            <span>Complete the assessment form</span>
+                          </li>
+                          <li className="flex items-start space-x-2">
+                            <span className="text-accent font-bold">2.</span>
+                            <span>Receive confirmation email</span>
+                          </li>
+                          <li className="flex items-start space-x-2">
+                            <span className="text-accent font-bold">3.</span>
+                            <span>Strategy expert reaches out</span>
+                          </li>
+                          <li className="flex items-start space-x-2">
+                            <span className="text-accent font-bold">4.</span>
+                            <span>Schedule your consultation</span>
+                          </li>
+                        </ul>
+                      </div>
+                      
+                      {/* Privacy & Security Card */}
+                      <div className="bg-white rounded-2xl p-6 shadow-brand-md">
+                        <h3 className="text-lg font-bold text-primary mb-4 flex items-center">
+                          <Icon name="Shield" size={18} className="text-accent mr-2" />
+                          Your Privacy Matters
+                        </h3>
+                        <p className="text-sm text-text-secondary mb-4">
+                          All information shared is strictly confidential and protected by our privacy policy. We never share your data with third parties.
+                        </p>
+                        <a href="/privacy" className="text-accent hover:text-accent/80 text-sm font-medium inline-flex items-center">
+                          View Privacy Policy
+                          <Icon name="ArrowRight" size={14} className="ml-1" />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
