@@ -51,7 +51,7 @@ const MobileNavItem = ({ item, isActive, onClick }) => (
     aria-current={isActive ? 'page' : undefined}
   >
     <Icon name={item.icon} size={20} aria-hidden="true" />
-    <span className="font-medium">{item.name}</span>
+    <span className="font-heading-regular text-lg tracking-wide uppercase">{item.name}</span>
   </Link>
 );
 
@@ -179,11 +179,11 @@ const Header = () => {
     closeMenu();
   };
 
-  // Desktop Nav Item Component - Always dark text
+  // Desktop Nav Item Component - Using Steelfish for navigation
   const DesktopNavItem = ({ item, isActive }) => (
     <Link
       to={item.path}
-      className={`relative px-3 py-2 text-sm font-medium transition-all duration-300 group ${
+      className={`relative px-3 py-2 font-heading-regular text-base tracking-wider uppercase transition-all duration-300 group ${
         isActive 
           ? 'text-accent' 
           : 'text-gray-700 hover:text-accent'
@@ -214,7 +214,7 @@ const Header = () => {
               />
             </div>
 
-            {/* Desktop Navigation - Always dark text */}
+            {/* Desktop Navigation - Steelfish font for impact */}
             <nav 
               className="hidden lg:flex items-center space-x-8"
               role="navigation"
@@ -229,13 +229,13 @@ const Header = () => {
               ))}
             </nav>
 
-            {/* Desktop CTA - Red background with white hover */}
+            {/* Desktop CTA - Using Steelfish for button text */}
             <div className="hidden lg:flex items-center space-x-4">
               <Button
                 variant="default"
                 size="sm"
                 onClick={() => handleNavigation('/contact-consultation-portal')}
-                className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent transition-all duration-300"
+                className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent transition-all duration-300 font-heading-regular tracking-wider uppercase"
                 aria-label="Start consultation"
               >
                 Start Consultation
@@ -305,7 +305,7 @@ const Header = () => {
                   variant="default"
                   fullWidth
                   onClick={() => handleNavigation('/contact-consultation-portal')}
-                  className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent transition-all duration-300"
+                  className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent transition-all duration-300 font-heading-regular tracking-wider uppercase text-lg"
                   aria-label="Start your transformation"
                 >
                   Start Your Transformation
@@ -329,7 +329,7 @@ const Header = () => {
           variant="default"
           size="lg"
           onClick={() => handleNavigation('/contact-consultation-portal')}
-          className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent shadow-xl transition-all animate-pulse"
+          className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent shadow-xl transition-all animate-pulse font-heading-regular tracking-wider uppercase"
           iconName="ArrowRight"
           iconPosition="right"
           aria-label="Book consultation"
