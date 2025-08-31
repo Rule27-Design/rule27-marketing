@@ -39,7 +39,7 @@ const CaseStudyCarousel = () => {
     },
     {
       id: 3,
-      title: "FinanceForward",
+      title: "Finance Forward",
       category: "Fintech Innovation",
       description: "Revolutionary financial planning app that simplified complex investment strategies for millennials.",
       beforeMetric: "12K App Downloads",

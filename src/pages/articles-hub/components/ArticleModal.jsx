@@ -69,7 +69,7 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
               >
                 <Icon name="X" size={20} />
               </Button>
-              <span className="text-sm text-text-secondary">
+              <span className="text-sm text-text-secondary font-body">
                 {article?.readTime} min read
               </span>
             </div>
@@ -117,7 +117,7 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
             
             {/* Category Badge */}
             <div className="absolute bottom-4 left-4">
-              <span className="px-3 py-1 bg-accent text-white text-sm font-semibold rounded-full">
+              <span className="px-3 py-1 bg-accent text-white text-sm font-heading-regular tracking-wider uppercase rounded-full">
                 {article?.category}
               </span>
             </div>
@@ -125,8 +125,8 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
 
           {/* Article Body */}
           <div className="px-4 sm:px-8 lg:px-12 py-6 sm:py-8 max-w-3xl mx-auto">
-            {/* Title */}
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-4">
+            {/* Title - Using Steelfish */}
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading-regular text-primary mb-4 tracking-wider uppercase">
               {article?.title}
             </h1>
 
@@ -139,41 +139,41 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
                   className="w-12 h-12 rounded-full"
                 />
                 <div>
-                  <p className="font-semibold text-primary">
+                  <p className="font-body font-semibold text-primary">
                     {article?.author?.name}
                   </p>
-                  <p className="text-sm text-text-secondary">
+                  <p className="text-sm text-text-secondary font-body">
                     {article?.author?.role} • {formatDate(article?.publishedDate)}
                   </p>
                 </div>
               </div>
               
-              {/* Stats */}
+              {/* Stats - Using Steelfish for numbers */}
               <div className="hidden sm:flex items-center space-x-4 text-sm text-text-secondary">
                 <span className="flex items-center gap-1">
                   <Icon name="Eye" size={16} />
-                  {article?.views?.toLocaleString()}
+                  <span className="font-heading-regular tracking-wider">{article?.views?.toLocaleString()}</span>
                 </span>
                 <span className="flex items-center gap-1">
                   <Icon name="Heart" size={16} />
-                  {article?.likes?.toLocaleString()}
+                  <span className="font-heading-regular tracking-wider">{article?.likes?.toLocaleString()}</span>
                 </span>
               </div>
             </div>
 
-            {/* Article Excerpt */}
-            <p className="text-lg text-text-secondary mb-8 leading-relaxed font-medium">
+            {/* Article Excerpt - Using Helvetica */}
+            <p className="text-lg text-text-secondary mb-8 leading-relaxed font-body font-medium">
               {article?.excerpt}
             </p>
 
-            {/* Main Content */}
+            {/* Main Content - Using Helvetica */}
             <div className="prose prose-lg max-w-none mb-8">
-              <p className="text-text-primary leading-relaxed mb-6">
+              <p className="text-text-primary leading-relaxed mb-6 font-body">
                 {article?.content}
               </p>
               
               {/* Add more content sections as needed */}
-              <p className="text-text-primary leading-relaxed mb-6">
+              <p className="text-text-primary leading-relaxed mb-6 font-body">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
               </p>
             </div>
@@ -181,7 +181,7 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
             {/* Key Takeaways */}
             {article?.keyTakeaways && (
               <div className="bg-accent/5 border-l-4 border-accent p-6 rounded-lg mb-8">
-                <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
+                <h3 className="text-lg font-heading-regular text-primary mb-4 flex items-center gap-2 tracking-wider uppercase">
                   <Icon name="Lightbulb" size={20} className="text-accent" />
                   Key Takeaways
                 </h3>
@@ -189,7 +189,7 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
                   {article?.keyTakeaways?.map((takeaway, index) => (
                     <li key={index} className="flex items-start gap-2">
                       <Icon name="Check" size={16} className="text-accent mt-1 flex-shrink-0" />
-                      <span className="text-text-secondary">{takeaway}</span>
+                      <span className="text-text-secondary font-body">{takeaway}</span>
                     </li>
                   ))}
                 </ul>
@@ -198,12 +198,12 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
 
             {/* Topics */}
             <div className="mb-8">
-              <h3 className="text-sm font-semibold text-text-secondary mb-3">Topics</h3>
+              <h3 className="text-sm font-heading-regular text-text-secondary mb-3 tracking-wider uppercase">Topics</h3>
               <div className="flex flex-wrap gap-2">
                 {article?.topics?.map((topic, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-muted text-sm text-text-secondary rounded-full hover:bg-accent/10 hover:text-accent cursor-pointer transition-colors"
+                    className="px-3 py-1 bg-muted text-sm text-text-secondary rounded-full hover:bg-accent/10 hover:text-accent cursor-pointer transition-colors font-body"
                   >
                     {topic}
                   </span>
@@ -220,13 +220,13 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
                   className="w-16 h-16 rounded-full"
                 />
                 <div className="flex-1">
-                  <h3 className="font-semibold text-primary mb-1">
+                  <h3 className="font-heading-regular text-primary mb-1 tracking-wider uppercase">
                     About {article?.author?.name}
                   </h3>
-                  <p className="text-sm text-text-secondary mb-3">
+                  <p className="text-sm text-text-secondary mb-3 font-body">
                     {article?.author?.role} at Rule27 Design
                   </p>
-                  <p className="text-sm text-text-secondary">
+                  <p className="text-sm text-text-secondary font-body">
                     With over 10 years of experience in digital design and strategy, {article?.author?.name} leads our creative initiatives and helps brands discover their authentic voice in the digital landscape.
                   </p>
                 </div>
@@ -237,7 +237,7 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
             <div className="border-t border-gray-200 pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-text-secondary mb-2">Share this article</p>
+                  <p className="text-sm text-text-secondary mb-2 font-body">Share this article</p>
                   <div className="flex items-center space-x-2">
                     <Button
                       variant="ghost"
@@ -276,7 +276,7 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
                 
                 <Button
                   variant="default"
-                  className="bg-accent hover:bg-accent/90 text-white"
+                  className="bg-accent hover:bg-accent/90 text-white font-heading-regular tracking-wider uppercase"
                   iconName="Mail"
                   iconPosition="left"
                 >

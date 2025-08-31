@@ -415,10 +415,10 @@ const ArticlesHub = () => {
             {/* Results Header - Mobile Responsive */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 md:mb-8">
               <div>
-                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-primary">
-                  {filteredArticles?.length} Article{filteredArticles?.length !== 1 ? 's' : ''}
+                <h2 className="text-lg sm:text-xl md:text-2xl font-heading-regular text-primary tracking-wider uppercase">
+                  <span className="font-heading-regular">{filteredArticles?.length}</span> Article{filteredArticles?.length !== 1 ? 's' : ''}
                 </h2>
-                <p className="text-xs sm:text-sm md:text-base text-text-secondary">
+                <p className="text-xs sm:text-sm md:text-base text-text-secondary font-body">
                   Insights and expertise from our team
                 </p>
               </div>
@@ -478,16 +478,16 @@ const ArticlesHub = () => {
                 <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 md:mb-6">
                   <Icon name="FileText" size={24} className="text-text-secondary sm:w-7 sm:h-7 md:w-8 md:h-8" />
                 </div>
-                <h3 className="text-base sm:text-lg md:text-xl font-semibold text-primary mb-2">
+                <h3 className="text-base sm:text-lg md:text-xl font-heading-regular text-primary mb-2 tracking-wider uppercase">
                   No articles found
                 </h3>
-                <p className="text-xs sm:text-sm md:text-base text-text-secondary mb-3 sm:mb-4 md:mb-6">
+                <p className="text-xs sm:text-sm md:text-base text-text-secondary mb-3 sm:mb-4 md:mb-6 font-body">
                   Try adjusting your filters or search terms
                 </p>
                 <Button
                   variant="outline"
                   onClick={handleClearFilters}
-                  className="border-accent text-accent hover:bg-accent hover:text-white text-xs sm:text-sm md:text-base px-3 py-2"
+                  className="border-accent text-accent hover:bg-accent hover:text-white text-xs sm:text-sm md:text-base px-3 py-2 font-heading-regular tracking-wider uppercase"
                 >
                   Clear All Filters
                 </Button>
