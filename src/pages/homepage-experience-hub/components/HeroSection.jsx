@@ -179,12 +179,12 @@ const HeroSection = () => {
 
         {/* Main Headline with Typewriter Effect - Using Steelfish */}
         <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading-bold text-white mb-6 uppercase tracking-wider">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading-regular text-white mb-6 uppercase tracking-wider">
             <span className="block mb-2">The 27th Rule:</span>
             <span className="block text-center md:text-left">
               <span className="block md:inline">Where Creative{' '}</span>
               <span className="relative inline-block min-w-[200px] md:min-w-[320px] text-center md:text-left">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent via-red-400 to-accent bg-300% animate-gradient font-heading-bold uppercase">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent via-red-400 to-accent bg-300% animate-gradient font-heading-regular uppercase">
                   {currentText}
                 </span>
                 <span className={`${showCursor ? 'opacity-100' : 'opacity-0'} text-accent transition-opacity duration-100`}>
@@ -214,7 +214,7 @@ const HeroSection = () => {
               <div className="text-sm font-sans">Projects</div>
             </div>
             <div className="group cursor-pointer">
-              <div className="text-4xl font-heading-bold text-accent group-hover:scale-110 transition-transform duration-300 uppercase">98%</div>
+              <div className="text-4xl font-heading-regular text-accent group-hover:scale-110 transition-transform duration-300 uppercase">98%</div>
               <div className="text-sm font-sans">Satisfaction</div>
             </div>
             <div className="group cursor-pointer">
