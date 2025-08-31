@@ -74,18 +74,12 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Apply Steelfish to all headings with GLOBAL CENTERING FIX */
+  /* Apply Steelfish to all headings */
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading;
     text-transform: uppercase;
     letter-spacing: 0.02em;
-    /* GLOBAL STEELFISH VERTICAL CENTERING FIX */
-    line-height: 1 !important;
-    padding-top: 0.15em;
-    padding-bottom: 0.1em;
-    position: relative;
-    top: 0.05em;
-    margin-top: -0.05em;
+    line-height: 0.9;
   }
 
   /* Different weights for different heading levels */
@@ -193,33 +187,17 @@
 }
 
 @layer utilities {
-  /* Font Utilities with GLOBAL CENTERING FIX */
+  /* Font Utilities */
   .font-heading-regular {
     font-family: 'Steelfish', Impact, sans-serif;
     font-weight: 400;
     text-transform: uppercase;
-    /* GLOBAL STEELFISH VERTICAL CENTERING FIX */
-    line-height: 1 !important;
-    padding-top: 0.15em;
-    padding-bottom: 0.1em;
-    display: inline-block;
-    vertical-align: middle;
-    position: relative;
-    top: 0.05em;
   }
   
   .font-heading-bold {
     font-family: 'Steelfish', Impact, sans-serif;
     font-weight: 700;
     text-transform: uppercase;
-    /* GLOBAL STEELFISH VERTICAL CENTERING FIX */
-    line-height: 1 !important;
-    padding-top: 0.15em;
-    padding-bottom: 0.1em;
-    display: inline-block;
-    vertical-align: middle;
-    position: relative;
-    top: 0.05em;
   }
   
   .font-body {

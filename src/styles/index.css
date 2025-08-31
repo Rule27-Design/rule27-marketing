@@ -13,18 +13,12 @@ body {
   margin: unset;
 }
 
-/* Specific overrides for Steelfish headers with GLOBAL CENTERING FIX */
+/* Specific overrides for Steelfish headers */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Steelfish', Impact, sans-serif;
   text-transform: uppercase;
+  line-height: 0.9;
   letter-spacing: 0.02em;
-  /* GLOBAL STEELFISH VERTICAL CENTERING FIX */
-  line-height: 1 !important;
-  padding-top: 0.15em;
-  padding-bottom: 0.1em;
-  position: relative;
-  top: 0.05em;
-  margin-top: -0.05em; /* Compensate for position shift */
 }
 
 /* Ensure buttons and form elements use base font */
