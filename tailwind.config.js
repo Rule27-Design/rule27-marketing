@@ -59,9 +59,31 @@ export default {
         'text-secondary': 'var(--color-text-secondary)', // gray-500
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        // Base font - Helvetica with comprehensive fallbacks
+        sans: [
+          'Helvetica Neue',
+          'Helvetica',
+          'Arial',
+          'system-ui',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Roboto',
+          'sans-serif'
+        ],
+        // Header font - Steelfish
+        heading: [
+          'Steelfish',
+          'Impact',
+          'Haettenschweiler',
+          'Franklin Gothic Bold',
+          'Arial Black',
+          'sans-serif'
+        ],
+        // Keep mono for code blocks
+        mono: ['JetBrains Mono', 'Courier New', 'monospace'],
+        // Legacy Inter - keep for specific components if needed during transition
         inter: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
       },
       fontSize: {
         'brand-xs': ['0.75rem', { lineHeight: '1rem' }], // 12px
@@ -74,12 +96,29 @@ export default {
         'brand-4xl': ['2.25rem', { lineHeight: '2.5rem' }], // 36px
         'brand-5xl': ['3rem', { lineHeight: '1' }], // 48px
         'brand-6xl': ['3.75rem', { lineHeight: '1' }], // 60px
+        // Adjusted sizes for Steelfish headers
+        'heading-xs': ['1rem', { lineHeight: '0.9' }], // 16px
+        'heading-sm': ['1.25rem', { lineHeight: '0.9' }], // 20px
+        'heading-base': ['1.5rem', { lineHeight: '0.9' }], // 24px
+        'heading-lg': ['2rem', { lineHeight: '0.9' }], // 32px
+        'heading-xl': ['2.5rem', { lineHeight: '0.9' }], // 40px
+        'heading-2xl': ['3rem', { lineHeight: '0.9' }], // 48px
+        'heading-3xl': ['3.5rem', { lineHeight: '0.9' }], // 56px
+        'heading-4xl': ['4rem', { lineHeight: '0.9' }], // 64px
+        'heading-5xl': ['5rem', { lineHeight: '0.9' }], // 80px
+        'heading-6xl': ['6rem', { lineHeight: '0.9' }], // 96px
       },
       fontWeight: {
         'brand-normal': '400',
         'brand-medium': '500',
         'brand-semibold': '600',
         'brand-bold': '700',
+      },
+      letterSpacing: {
+        'heading-tight': '-0.02em',
+        'heading-normal': '0.02em',
+        'heading-wide': '0.08em',
+        'heading-wider': '0.12em',
       },
       spacing: {
         'brand-xs': '0.5rem', // 8px

@@ -110,7 +110,7 @@ const ArticleHeroSection = ({ featuredArticles, onViewArticle }) => {
             </div>
 
             {/* Title - Mobile Responsive */}
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 md:mb-6 leading-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 md:mb-6">
               {currentArticle?.title}
             </h1>
 
