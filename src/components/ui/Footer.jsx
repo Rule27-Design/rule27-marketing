@@ -53,7 +53,7 @@ const Footer = () => {
                 }}
               />
             </div>
-            <p className="text-gray-300 mb-6 max-w-md mx-auto md:mx-0">
+            <p className="text-gray-300 mb-6 max-w-md mx-auto md:mx-0 font-body">
               The creative partner that breaks conventional boundaries and makes 
               other agencies look ordinary. Where creative audacity meets technical precision.
             </p>
@@ -73,15 +73,15 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Quick Links - Using Steelfish for headers */}
           <div className="text-center md:text-left">
-            <h4 className="font-bold mb-4 text-lg">Explore</h4>
+            <h4 className="font-heading-regular mb-4 text-lg tracking-wider uppercase">Explore</h4>
             <ul className="space-y-2 text-gray-300">
               {footerLinks.explore.map((link) => (
                 <li key={link.path}>
                   <Link
                     to={link.path}
-                    className="hover:text-accent transition-colors duration-300 inline-flex items-center justify-center md:justify-start group"
+                    className="hover:text-accent transition-colors duration-300 inline-flex items-center justify-center md:justify-start group font-body"
                   >
                     <span>{link.name}</span>
                     <Icon 
@@ -95,16 +95,16 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* Contact - Using Steelfish for header */}
           <div className="text-center md:text-left">
-            <h4 className="font-bold mb-4 text-lg">Connect</h4>
+            <h4 className="font-heading-regular mb-4 text-lg tracking-wider uppercase">Connect</h4>
             <ul className="space-y-2 text-gray-300">
               {footerLinks.connect.map((link) => (
                 <li key={link.path || link.href}>
                   {link.external ? (
                     <a
                       href={link.href}
-                      className="hover:text-accent transition-colors duration-300 inline-flex items-center justify-center md:justify-start group"
+                      className="hover:text-accent transition-colors duration-300 inline-flex items-center justify-center md:justify-start group font-body"
                     >
                       <span>{link.name}</span>
                       <Icon 
@@ -116,7 +116,7 @@ const Footer = () => {
                   ) : (
                     <Link
                       to={link.path}
-                      className="hover:text-accent transition-colors duration-300 inline-flex items-center justify-center md:justify-start group"
+                      className="hover:text-accent transition-colors duration-300 inline-flex items-center justify-center md:justify-start group font-body"
                     >
                       <span>{link.name}</span>
                       <Icon 
@@ -134,8 +134,8 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="border-t border-white/10 pt-8 mt-12 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-300 text-sm mb-4 md:mb-0 text-center md:text-left">
-            © {currentYear} Rule27 Digital Powerhouse. All rights reserved.
+          <p className="text-gray-300 text-sm mb-4 md:mb-0 text-center md:text-left font-body">
+            © <span className="font-heading-regular tracking-wider">{currentYear}</span> Rule27 Digital Powerhouse. All rights reserved.
           </p>
           <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
             <div className="flex space-x-6 text-sm text-gray-300">
@@ -143,7 +143,7 @@ const Footer = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className="hover:text-accent transition-colors duration-300"
+                  className="hover:text-accent transition-colors duration-300 font-body"
                 >
                   {link.name}
                 </Link>
@@ -152,7 +152,7 @@ const Footer = () => {
             {/* Status Indicator */}
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-xs text-gray-400">All systems operational</span>
+              <span className="text-xs text-gray-400 font-body">All systems operational</span>
             </div>
           </div>
         </div>
