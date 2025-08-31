@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
@@ -13,6 +13,11 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
   const [isSuccess, setIsSuccess] = useState(false);
 
   const totalSteps = 4;
+
+  // Update parent component whenever currentStep changes
+  useEffect(() => {
+    onFormUpdate({ step: currentStep }, 'step');
+  }, [currentStep, onFormUpdate]);
 
   // Form step data
   const [contactInfo, setContactInfo] = useState({
@@ -151,7 +156,6 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
     if (validateStep(currentStep)) {
       if (currentStep < totalSteps) {
         setCurrentStep(currentStep + 1);
-        onFormUpdate({ step: currentStep + 1 }, 'form');
       }
     }
   };
@@ -159,7 +163,6 @@ const ConsultationForm = ({ formData, onFormUpdate }) => {
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
-      onFormUpdate({ step: currentStep - 1 }, 'form');
       setErrors({});
     }
   };
