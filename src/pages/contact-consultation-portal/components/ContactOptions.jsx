@@ -101,13 +101,13 @@ const ContactOptions = () => {
         </div>
       </motion.div>
 
-      {/* Office Hours - Mobile Optimized */}
+      {/* Office Hours - Mobile Optimized with overflow containment */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.3 }}
-        className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6"
+        className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 relative overflow-hidden"
       >
         <h3 className="text-base sm:text-lg font-bold text-primary mb-3 sm:mb-4 flex items-center">
           <Icon name="Clock" size={18} className="text-accent mr-2 sm:w-5 sm:h-5" />
