@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
+import { motion, AnimatePresence } from 'framer-motion';
 import Header from '../../components/ui/Header';
 import Footer from '../../components/ui/Footer';
 import HeroSection from './components/HeroSection';
-import ConsultationForm from './components/ConsultationForm.jsx';
+import ConsultationForm from './components/ConsultationForm';
 import ProcessTimeline from './components/ProcessTimeline';
 import ContactOptions from './components/ContactOptions';
 import TrustIndicators from './components/TrustIndicators';
@@ -16,6 +16,7 @@ const ContactConsultationPortal = () => {
     projectDetails: {},
     preferences: {}
   });
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const handleFormUpdate = (data, type) => {
     if (type === 'step') {
@@ -29,11 +30,13 @@ const ContactConsultationPortal = () => {
   };
 
   useEffect(() => {
+    // Enhanced loading animation
+    setIsLoaded(true);
+    
     // Reduce motion for mobile devices
     const isMobile = window.innerWidth < 768;
     
     if (isMobile) {
-      // Add a class to body for conditional CSS
       document.body.classList.add('mobile-device');
     }
     
@@ -71,22 +74,83 @@ const ContactConsultationPortal = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Contact & Consultation Portal - Rule27 Design Digital Powerhouse</title>
-        <meta 
-          name="description" 
-          content="Start your transformation journey with Rule27 Design. Book a strategic consultation, explore our process, and discover how we turn ambitious brands into industry leaders. No ordinary meetings, just game-changing conversations." 
-        />
-        <meta name="keywords" content="consultation, strategy session, contact Rule27 Design, digital transformation consultation, brand strategy meeting, creative agency consultation" />
-        <meta property="og:title" content="Start Your Transformation - Rule27 Design Consultation Portal" />
-        <meta property="og:description" content="Ready to break conventional boundaries? Book your strategic consultation with Rule27 Design's rebel innovators." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://Rule27Design.com/contact-consultation-portal" />
-        <link rel="canonical" href="https://Rule27Design.com/contact-consultation-portal" />
-      </Helmet>
-
       {/* Global Performance Styles */}
       <style>{`
+        /* Enhanced animations and effects */
+        @keyframes float-up {
+          from {
+            transform: translateY(100vh) scale(0);
+            opacity: 0;
+          }
+          10% {
+            opacity: 1;
+          }
+          to {
+            transform: translateY(-100vh) scale(1);
+            opacity: 0;
+          }
+        }
+
+        @keyframes glow-pulse {
+          0%, 100% {
+            opacity: 0.3;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.6;
+            transform: scale(1.1);
+          }
+        }
+
+        @keyframes orbit {
+          from {
+            transform: rotate(0deg) translateX(100px) rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg) translateX(100px) rotate(-360deg);
+          }
+        }
+
+        @keyframes gradient-flow {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
+        }
+
+        .floating-particle {
+          position: absolute;
+          pointer-events: none;
+          animation: float-up 10s linear infinite;
+        }
+
+        .glow-effect {
+          filter: drop-shadow(0 0 20px rgba(229, 62, 62, 0.3));
+        }
+
+        .gradient-animation {
+          background-size: 200% 200%;
+          animation: gradient-flow 4s ease infinite;
+        }
+
+        /* Mouse follower glow */
+        .mouse-glow {
+          pointer-events: none;
+          position: fixed;
+          width: 400px;
+          height: 400px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(229, 62, 62, 0.15), transparent 40%);
+          transform: translate(-50%, -50%);
+          transition: opacity 0.3s ease;
+          z-index: 0;
+        }
+
         /* Faster animations on mobile */
         @media (max-width: 768px) {
           * {
@@ -94,10 +158,12 @@ const ContactConsultationPortal = () => {
             transition-duration: 0.2s !important;
           }
           
-          /* Disable complex animations on mobile for performance */
-          .animate-pulse {
-            animation: none;
-            opacity: 0.3;
+          .floating-particle {
+            display: none;
+          }
+          
+          .mouse-glow {
+            display: none;
           }
           
           /* Immediate visibility for hero content */
@@ -144,6 +210,22 @@ const ContactConsultationPortal = () => {
           position: relative;
           overflow: hidden;
           isolation: isolate;
+        }
+        
+        /* Enhanced section transitions */
+        .section-transition {
+          position: relative;
+        }
+        
+        .section-transition::before {
+          content: '';
+          position: absolute;
+          top: -50px;
+          left: 0;
+          right: 0;
+          height: 100px;
+          background: linear-gradient(to bottom, transparent, rgba(229, 62, 62, 0.02));
+          pointer-events: none;
         }
         
         /* Remove any default margins that could cause gaps */
@@ -216,6 +298,18 @@ const ContactConsultationPortal = () => {
           }
         }
         
+        /* Enhanced scroll animations */
+        .scroll-animate {
+          opacity: 0;
+          transform: translateY(30px);
+          transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .scroll-animate.visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        
         /* Mobile-specific optimizations for contact page */
         @media (max-width: 768px) {
           .consultation-grid {
@@ -234,72 +328,122 @@ const ContactConsultationPortal = () => {
         }
       `}</style>
 
-      <div className="min-h-screen bg-background overflow-x-hidden">
-        {/* Header - Same component as homepage and about page */}
-        <Header />
-        
-        <main className="pt-16">
-          {/* Hero Section */}
-          <section id="hero" className="hero-wrapper">
-            <HeroSection />
-          </section>
-          
-          {/* Main Content Grid - Gradient transition to gray */}
-          <section id="consultation" className="bg-gradient-to-b from-white via-white to-gray-50 py-12 sm:py-16 md:py-20 lg:py-24">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="consultation-grid grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-                {/* Left Column - Form with Sticky Container */}
-                <div className="order-1 lg:col-span-2">
-                  <div className="sticky-form-container">
-                    <ConsultationForm 
-                      formData={formData}
-                      onFormUpdate={handleFormUpdate}
-                      currentStep={currentFormStep}
-                    />
+      <AnimatePresence>
+        {isLoaded && (
+          <motion.div 
+            className="min-h-screen bg-background overflow-x-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            {/* Header - Same component as homepage and about page */}
+            <Header />
+            
+            <main className="pt-16">
+              {/* Hero Section with Enhanced Features */}
+              <motion.section 
+                id="hero" 
+                className="hero-wrapper"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8 }}
+              >
+                <HeroSection />
+              </motion.section>
+              
+              {/* Main Content Grid - Enhanced gradient transition */}
+              <motion.section 
+                id="consultation" 
+                className="section-transition bg-gradient-to-b from-white via-white to-gray-50 py-12 sm:py-16 md:py-20 lg:py-24"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+              >
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="consultation-grid grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+                    {/* Left Column - Form with Sticky Container */}
+                    <motion.div 
+                      className="order-1 lg:col-span-2"
+                      initial={{ opacity: 0, x: -30 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.6, delay: 0.2 }}
+                    >
+                      <div className="sticky-form-container">
+                        <ConsultationForm 
+                          formData={formData}
+                          onFormUpdate={handleFormUpdate}
+                          currentStep={currentFormStep}
+                        />
+                      </div>
+                    </motion.div>
+                    
+                    {/* Right Column - Support Info - Mobile Optimized */}
+                    <motion.div 
+                      className="form-sidebar order-2 space-y-6 sm:space-y-8"
+                      initial={{ opacity: 0, x: 30 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.6, delay: 0.3 }}
+                    >
+                      <ProcessTimeline currentStep={currentFormStep} />
+                      <ContactOptions />
+                    </motion.div>
                   </div>
                 </div>
-                
-                {/* Right Column - Support Info - Mobile Optimized */}
-                <div className="form-sidebar order-2 space-y-6 sm:space-y-8">
-                  <ProcessTimeline currentStep={currentFormStep} />
-                  <ContactOptions />
-                </div>
-              </div>
-            </div>
-          </section>
+              </motion.section>
 
-          {/* Trust Indicators - Gray background, seamless flow */}
-          <TrustIndicators />
+              {/* Trust Indicators - Enhanced animations */}
+              <motion.section
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+              >
+                <TrustIndicators />
+              </motion.section>
 
-          {/* FAQ Section - Gray background, seamless flow */}
-          <FAQSection />
-        </main>
+              {/* FAQ Section - Enhanced animations */}
+              <motion.section
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+              >
+                <FAQSection />
+              </motion.section>
+            </main>
 
-        {/* Footer - Same component as homepage and about page */}
-        <Footer />
+            {/* Footer - Same component as homepage and about page */}
+            <Footer />
 
-        {/* Back to Top Button - Same as homepage and about page */}
-        <BackToTop />
-      </div>
+            {/* Back to Top Button - Enhanced */}
+            <BackToTop />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };
 
-// Back to Top Component - Same as homepage and about page
+// Enhanced Back to Top Component
 const BackToTop = () => {
   const [isVisible, setIsVisible] = React.useState(false);
+  const [scrollPercentage, setScrollPercentage] = React.useState(0);
 
   React.useEffect(() => {
-    const toggleVisibility = () => {
-      if (window.pageYOffset > 500) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
-      }
+    const handleScroll = () => {
+      const scrollTop = window.pageYOffset;
+      const docHeight = document.body.scrollHeight - window.innerHeight;
+      const scrolled = (scrollTop / docHeight) * 100;
+      
+      setScrollPercentage(scrolled);
+      setIsVisible(scrollTop > 500);
     };
 
-    window.addEventListener('scroll', toggleVisibility);
-    return () => window.removeEventListener('scroll', toggleVisibility);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const scrollToTop = () => {
@@ -310,17 +454,42 @@ const BackToTop = () => {
   };
 
   return (
-    <button
+    <motion.button
       onClick={scrollToTop}
-      className={`fixed bottom-6 left-6 z-40 bg-primary hover:bg-accent text-white p-3 rounded-full shadow-lg transition-all duration-500 ${
+      className={`fixed bottom-6 left-6 z-40 bg-primary hover:bg-accent text-white p-3 rounded-full shadow-lg transition-all duration-500 group ${
         isVisible 
           ? 'opacity-100 translate-y-0 scale-100' 
           : 'opacity-0 translate-y-10 scale-95 pointer-events-none'
       }`}
       aria-label="Back to top"
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.9 }}
     >
+      {/* Progress ring */}
+      <svg className="absolute inset-0 w-full h-full -rotate-90">
+        <circle
+          cx="50%"
+          cy="50%"
+          r="45%"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          opacity="0.2"
+        />
+        <circle
+          cx="50%"
+          cy="50%"
+          r="45%"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeDasharray={`${scrollPercentage * 1.5} 150`}
+          className="text-accent transition-all duration-300"
+        />
+      </svg>
+      
       <svg 
-        className="w-5 h-5" 
+        className="w-5 h-5 relative z-10 group-hover:animate-pulse" 
         fill="none" 
         stroke="currentColor" 
         viewBox="0 0 24 24"
@@ -332,7 +501,7 @@ const BackToTop = () => {
           d="M5 10l7-7m0 0l7 7m-7-7v18" 
         />
       </svg>
-    </button>
+    </motion.button>
   );
 };
 
