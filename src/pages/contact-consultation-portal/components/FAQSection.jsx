@@ -179,19 +179,41 @@ const FAQSection = () => {
     );
   };
 
-  const filteredFaqs = Object.entries(faqs).reduce((acc, [category, items]) => {
-    if (activeCategory === 'all' || activeCategory === category) {
-      const filtered = items.filter(item => 
-        searchTerm === '' || 
-        item.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.answer.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      if (filtered.length > 0) {
-        acc[category] = filtered;
+  // Get filtered FAQs based on activeCategory and searchTerm
+  const getFilteredFaqs = () => {
+    let filtered = {};
+    
+    if (activeCategory === 'all') {
+      // Show all categories
+      Object.entries(faqs).forEach(([category, items]) => {
+        const filteredItems = items.filter(item => 
+          searchTerm === '' || 
+          item.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.answer.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        if (filteredItems.length > 0) {
+          filtered[category] = filteredItems;
+        }
+      });
+    } else {
+      // Show only selected category
+      const categoryFaqs = faqs[activeCategory];
+      if (categoryFaqs) {
+        const filteredItems = categoryFaqs.filter(item => 
+          searchTerm === '' || 
+          item.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.answer.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        if (filteredItems.length > 0) {
+          filtered[activeCategory] = filteredItems;
+        }
       }
     }
-    return acc;
-  }, {});
+    
+    return filtered;
+  };
+
+  const filteredFaqs = getFilteredFaqs();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -211,7 +233,7 @@ const FAQSection = () => {
   };
 
   return (
-    <section className="py-12 sm:py-16 md:py-20 lg:py-24 bg-gray-50">
+    <section className="bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           variants={containerVariants}
@@ -291,58 +313,66 @@ const FAQSection = () => {
           viewport={{ once: true }}
           className="space-y-3 sm:space-y-4"
         >
-          {Object.entries(filteredFaqs).map(([category, items]) => (
-            <div key={category} className="space-y-3 sm:space-y-4">
-              {items.map((item) => (
-                <motion.div
-                  key={item.id}
-                  variants={itemVariants}
-                  className={`bg-white rounded-lg sm:rounded-xl border overflow-hidden transition-all duration-300 ${
-                    item.highlight ? 'border-accent shadow-lg' : 'border-border hover:shadow-md'
-                  }`}
-                >
-                  <button
-                    onClick={() => toggleItem(item.id)}
-                    className="w-full px-4 sm:px-6 py-3 sm:py-4 text-left flex items-center justify-between group"
-                  >
-                    <div className="flex-1 pr-3 sm:pr-4">
-                      <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-primary group-hover:text-accent transition-colors duration-300">
-                        {item.question}
-                      </h3>
-                      {item.highlight && (
-                        <span className="inline-block mt-1 sm:mt-2 px-2 py-0.5 sm:py-1 bg-accent/10 text-accent text-xs font-medium rounded">
-                          Most Asked
-                        </span>
-                      )}
-                    </div>
-                    <div className={`transform transition-transform duration-300 flex-shrink-0 ${
-                      openItems.includes(item.id) ? 'rotate-180' : ''
-                    }`}>
-                      <Icon name="ChevronDown" size={18} className="text-gray-400 sm:w-5 sm:h-5" />
-                    </div>
-                  </button>
-                  
-                  <AnimatePresence>
-                    {openItems.includes(item.id) && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="px-4 sm:px-6 pb-3 sm:pb-4">
-                          <p className="text-text-secondary leading-relaxed text-sm sm:text-base">
-                            {item.answer}
-                          </p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              ))}
+          {Object.keys(filteredFaqs).length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-xl border border-border">
+              <Icon name="Search" size={48} className="text-gray-300 mx-auto mb-4" />
+              <p className="text-lg font-medium text-gray-600">No questions found</p>
+              <p className="text-sm text-gray-500 mt-2">Try searching for different keywords or selecting a different category</p>
             </div>
-          ))}
+          ) : (
+            Object.entries(filteredFaqs).map(([category, items]) => (
+              <div key={category} className="space-y-3 sm:space-y-4">
+                {items.map((item) => (
+                  <motion.div
+                    key={item.id}
+                    variants={itemVariants}
+                    className={`bg-white rounded-lg sm:rounded-xl border overflow-hidden transition-all duration-300 ${
+                      item.highlight ? 'border-accent shadow-lg' : 'border-border hover:shadow-md'
+                    }`}
+                  >
+                    <button
+                      onClick={() => toggleItem(item.id)}
+                      className="w-full px-4 sm:px-6 py-3 sm:py-4 text-left flex items-center justify-between group"
+                    >
+                      <div className="flex-1 pr-3 sm:pr-4">
+                        <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-primary group-hover:text-accent transition-colors duration-300">
+                          {item.question}
+                        </h3>
+                        {item.highlight && (
+                          <span className="inline-block mt-1 sm:mt-2 px-2 py-0.5 sm:py-1 bg-accent/10 text-accent text-xs font-medium rounded">
+                            Most Asked
+                          </span>
+                        )}
+                      </div>
+                      <div className={`transform transition-transform duration-300 flex-shrink-0 ${
+                        openItems.includes(item.id) ? 'rotate-180' : ''
+                      }`}>
+                        <Icon name="ChevronDown" size={18} className="text-gray-400 sm:w-5 sm:h-5" />
+                      </div>
+                    </button>
+                    
+                    <AnimatePresence>
+                      {openItems.includes(item.id) && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-4 sm:px-6 pb-3 sm:pb-4">
+                            <p className="text-text-secondary leading-relaxed text-sm sm:text-base">
+                              {item.answer}
+                            </p>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                ))}
+              </div>
+            ))
+          )}
         </motion.div>
 
         {/* Still Have Questions CTA - Mobile Optimized */}
