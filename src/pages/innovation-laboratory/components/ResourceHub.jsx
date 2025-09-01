@@ -414,7 +414,7 @@ const ResourceHub = () => {
               iconName="MessageCircle"
               iconPosition="left"
             >
-              <span className="font-heading-regular tracking-wider uppercase">Request Custom Resource</span>
+              <span className="font-heading-regular tracking-wider uppercase ">Request Custom Resource</span>
             </Button>
           </Link>
         </div>

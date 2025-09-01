@@ -1211,7 +1211,7 @@ const CapabilityUniverse = () => {
   return (
     <>
       <Helmet>
-        <title>Capabilities | Rule27 - Full-Stack Digital Services</title>
+        <title>Capabilities | Rule27 Design - Full-Stack Digital Services</title>
         <meta 
           name="description" 
           content="From brand strategy to development, discover our comprehensive digital services. Creative studio, marketing command, development lab, and executive advisory." 
@@ -1219,20 +1219,20 @@ const CapabilityUniverse = () => {
         <meta name="keywords" content="digital agency services, creative studio, marketing command, development lab, executive advisory, capability assessment, full-stack services, digital transformation" />
         
         {/* Open Graph */}
-        <meta property="og:title" content="Capabilities | Rule27 - Full-Stack Digital Services" />
+        <meta property="og:title" content="Capabilities | Rule27 Design  - Full-Stack Digital Services" />
         <meta property="og:description" content="From brand strategy to development, discover our comprehensive digital services. Creative studio, marketing command, development lab, and executive advisory." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://rule27.com/capabilities" />
+        <meta property="og:url" content="https://rule27design.com/capabilities" />
         <meta property="og:image" content="/assets/og-image.jpg" />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Capabilities | Rule27 - Full-Stack Digital Services" />
+        <meta name="twitter:title" content="Capabilities | Rule27 Design  - Full-Stack Digital Services" />
         <meta name="twitter:description" content="From brand strategy to development, discover our comprehensive digital services. Creative studio, marketing command, development lab, and executive advisory." />
         <meta name="twitter:image" content="/assets/og-image.jpg" />
         
         {/* Canonical */}
-        <link rel="canonical" href="https://rule27.com/capabilities" />
+        <link rel="canonical" href="https://rule27design.com/capabilities" />
       </Helmet>
       
       <div className="min-h-screen bg-background">

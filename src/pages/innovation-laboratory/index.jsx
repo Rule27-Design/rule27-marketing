@@ -48,7 +48,7 @@ const InnovationLaboratory = () => {
   return (
     <>
       <Helmet>
-        <title>Innovation Lab | Rule27 - Where Tomorrow Begins</title>
+        <title>Innovation Lab | Rule27 Design - Where Tomorrow Begins</title>
         <meta 
           name="description" 
           content="Explore cutting-edge tools, AI experiments, and trend analysis. Interactive demos and resources that push the boundaries of digital design." 
@@ -56,20 +56,20 @@ const InnovationLaboratory = () => {
         <meta name="keywords" content="innovation lab, experimental features, AI tools, trend analysis, design trends, technology predictions, interactive tools, thought leadership" />
         
         {/* Open Graph */}
-        <meta property="og:title" content="Innovation Lab | Rule27 - Where Tomorrow Begins" />
+        <meta property="og:title" content="Innovation Lab | Rule27 Design - Where Tomorrow Begins" />
         <meta property="og:description" content="Explore cutting-edge tools, AI experiments, and trend analysis. Interactive demos and resources that push the boundaries of digital design." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://rule27.com/innovation" />
+        <meta property="og:url" content="https://rule27design.com/innovation" />
         <meta property="og:image" content="/assets/og-image.jpg" />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Innovation Lab | Rule27 - Where Tomorrow Begins" />
+        <meta name="twitter:title" content="Innovation Lab | Rule27 Design - Where Tomorrow Begins" />
         <meta name="twitter:description" content="Explore cutting-edge tools, AI experiments, and trend analysis. Interactive demos and resources that push the boundaries of digital design." />
         <meta name="twitter:image" content="/assets/og-image.jpg" />
         
         {/* Canonical */}
-        <link rel="canonical" href="https://rule27.com/innovation" />
+        <link rel="canonical" href="https://rule27design.com/innovation" />
         
         {/* Preload critical resources */}
         <link rel="preload" href="/assets/logo/rule27-color.svg" as="image" />

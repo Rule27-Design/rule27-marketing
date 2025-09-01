@@ -55,28 +55,28 @@ const AboutProcessStudio = () => {
   return (
     <>
       <Helmet>
-        <title>About | Rule27 - The Rebels Behind Digital Innovation</title>
+        <title>About | Rule27 Design - The Rebels Behind Digital Innovation</title>
         <meta 
           name="description" 
-          content="Meet the certified experts, discover our methodology, and explore the culture that makes Rule27 the digital powerhouse where excellence thrives." 
+          content="Meet the certified experts, discover our methodology, and explore the culture that makes Rule27 Design the digital powerhouse where excellence thrives." 
         />
-        <meta name="keywords" content="about rule27, digital agency team, creative methodology, company culture, design process, certified experts, digital innovation" />
+        <meta name="keywords" content="about rule27 design, digital agency team, creative methodology, company culture, design process, certified experts, digital innovation" />
         
         {/* Open Graph */}
         <meta property="og:title" content="About | Rule27 - The Rebels Behind Digital Innovation" />
-        <meta property="og:description" content="Meet the certified experts, discover our methodology, and explore the culture that makes Rule27 the digital powerhouse where excellence thrives." />
+        <meta property="og:description" content="Meet the certified experts, discover our methodology, and explore the culture that makes Rule27 Design the digital powerhouse where excellence thrives." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://rule27.com/about" />
+        <meta property="og:url" content="https://rule27design.com/about" />
         <meta property="og:image" content="/assets/og-image.jpg" />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="About | Rule27 - The Rebels Behind Digital Innovation" />
-        <meta name="twitter:description" content="Meet the certified experts, discover our methodology, and explore the culture that makes Rule27 the digital powerhouse where excellence thrives." />
+        <meta name="twitter:title" content="About | Rule27 Design- The Rebels Behind Digital Innovation" />
+        <meta name="twitter:description" content="Meet the certified experts, discover our methodology, and explore the culture that makes Rule27 Design the digital powerhouse where excellence thrives." />
         <meta name="twitter:image" content="/assets/og-image.jpg" />
         
         {/* Canonical */}
-        <link rel="canonical" href="https://rule27.com/about" />
+        <link rel="canonical" href="https://rule27design.com/about" />
       </Helmet>
 
       {/* Global Performance Styles */}

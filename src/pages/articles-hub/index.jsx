@@ -380,10 +380,10 @@ const ArticlesHub = () => {
     <>
       <Helmet>
         <title>Articles & Insights - Rule27 Design Digital Powerhouse</title>
-        <meta name="description" content="Expert insights on design, development, and digital marketing. Learn from Rule27's team about the latest trends, strategies, and techniques driving digital success." />
+        <meta name="description" content="Expert insights on design, development, and digital marketing. Learn from Rule27 Design's team about the latest trends, strategies, and techniques driving digital success." />
         <meta name="keywords" content="design articles, development tutorials, marketing insights, digital strategy, UX design, brand strategy, web development" />
         <meta property="og:title" content="Articles & Insights - Rule27 Design Digital Powerhouse" />
-        <meta property="og:description" content="Expert insights and thought leadership from Rule27's team of digital innovators." />
+        <meta property="og:description" content="Expert insights and thought leadership from Rule27 Design's team of digital innovators." />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="/articles" />
       </Helmet>

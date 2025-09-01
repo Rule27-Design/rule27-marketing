@@ -220,7 +220,7 @@ const AwardsRecognition = () => {
         organization: 'Forbes Magazine',
         year: '2024',
         category: 'Industry Feature',
-        description: 'Featured story on how Rule27 combines marketing excellence with technical innovation.',
+        description: 'Featured story on how Rule27 Design combines marketing excellence with technical innovation.',
         icon: 'FileText',
         color: 'from-indigo-500 to-purple-600'
       },

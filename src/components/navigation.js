@@ -51,14 +51,14 @@ export const NAVIGATION_CONFIG = {
       text: 'Start Consultation',
       path: '/contact',
       icon: 'ArrowRight',
-      ariaLabel: 'Start your consultation with Rule27'
+      ariaLabel: 'Start your consultation with Rule27 Design'
     },
     sticky: {
       text: 'Book Consultation',
       path: '/contact',
       icon: 'ArrowRight',
       showAfterScroll: 500, // pixels
-      ariaLabel: 'Book a consultation with Rule27'
+      ariaLabel: 'Book a consultation with Rule27 Design'
     }
   },
   mobile: {
@@ -73,44 +73,44 @@ export const NAVIGATION_CONFIG = {
 // Social links configuration
 export const SOCIAL_LINKS = {
   linkedin: {
-    url: 'https://linkedin.com/company/rule27',
+    url: 'https://linkedin.com/company/rule27Design',
     icon: 'Linkedin',
-    ariaLabel: 'Visit Rule27 on LinkedIn'
+    ariaLabel: 'Visit Rule27 Design on LinkedIn'
   },
   twitter: {
-    url: 'https://twitter.com/rule27digital',
+    url: 'https://twitter.com/rule27design',
     icon: 'Twitter',
-    ariaLabel: 'Follow Rule27 on Twitter'
+    ariaLabel: 'Follow Rule27 Design on Twitter'
   },
   instagram: {
-    url: 'https://instagram.com/rule27',
+    url: 'https://instagram.com/rule27Design',
     icon: 'Instagram',
-    ariaLabel: 'Follow Rule27 on Instagram'
+    ariaLabel: 'Follow Rule27 Design on Instagram'
   },
   github: {
-    url: 'https://github.com/rule27',
+    url: 'https://github.com/rule27Design',
     icon: 'Github',
-    ariaLabel: 'View Rule27 on GitHub'
+    ariaLabel: 'View Rule27 Design on GitHub'
   }
 };
 
 // Contact information
 export const CONTACT_INFO = {
-  email: 'hello@rule27.com',
+  email: 'hello@rule27design.com',
   phone: '+1 (555) RULE-27',
   phoneDisplay: '+1 (555) 785-3277',
   address: {
-    street: '123 Creative Boulevard',
-    city: 'San Francisco',
-    state: 'CA',
-    zip: '94105',
+    street: '10869 N Scottsdale Rd',
+    city: 'Scottsdale',
+    state: 'AZ',
+    zip: '85254',
     country: 'USA'
   }
 };
 
 // Brand configuration
 export const BRAND_CONFIG = {
-  name: 'Rule27',
+  name: 'Rule27 Design',
   tagline: 'Design',
   description: 'Where Creative Excellence Meets Strategic Innovation',
   logo: {
@@ -185,9 +185,9 @@ export const A11Y_CONFIG = {
 // SEO configuration
 export const SEO_CONFIG = {
   defaultMeta: {
-    title: 'Rule27 Digital Powerhouse',
-    titleTemplate: '%s | Rule27',
-    description: 'Rule27 is the apex creative and development partner for ambitious brands. We don\'t just follow design trends—we create them.',
+    title: 'Rule27 Design Digital Powerhouse',
+    titleTemplate: '%s | Rule27 Design',
+    description: 'Rule27 Design is the apex creative and development partner for ambitious brands. We don\'t just follow design trends—we create them.',
     keywords: [
       'creative agency',
       'digital marketing',
@@ -196,20 +196,20 @@ export const SEO_CONFIG = {
       'Rule27',
       'premium creative services'
     ],
-    author: 'Rule27 Digital',
+    author: 'Rule27 Deisgn',
     viewport: 'width=device-width, initial-scale=1',
     themeColor: '#E53E3E'
   },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    site_name: 'Rule27 Digital Powerhouse',
+    site_name: 'Rule27 Design Digital Powerhouse',
     images: [
       {
         url: '/assets/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Rule27 Digital Powerhouse'
+        alt: 'Rule27 Design Digital Powerhouse'
       }
     ]
   },
