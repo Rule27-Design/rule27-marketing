@@ -183,7 +183,7 @@ const Header = () => {
   const DesktopNavItem = ({ item, isActive }) => (
     <Link
       to={item.path}
-      className={`relative px-3 py-2 font-heading-regular text-heading-sm tracking-wider uppercase transition-all duration-300 group ${
+      className={`relative px-3 py-2 font-heading-regular text-heading-base tracking-wider uppercase transition-all duration-300 group ${
         isActive 
           ? 'text-accent' 
           : 'text-gray-700 hover:text-accent'
@@ -235,7 +235,7 @@ const Header = () => {
                 variant="default"
                 size="sm"
                 onClick={() => handleNavigation('/contact')}
-                className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent transition-all duration-300 font-heading-regular tracking-wider uppercase"
+                className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent transition-all duration-300 font-heading-regular tracking-wider uppercase text-heading-base"
                 aria-label="Start consultation"
               >
                 Start Consultation
@@ -329,7 +329,7 @@ const Header = () => {
           variant="default"
           size="lg"
           onClick={() => handleNavigation('/contact')}
-          className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent shadow-xl transition-all animate-pulse font-heading-regular tracking-wider uppercase"
+          className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent shadow-xl transition-all animate-pulse font-heading-regular tracking-wider uppercase text-base lg:text-heading-base"
           iconName="ArrowRight"
           iconPosition="right"
           aria-label="Book consultation"
