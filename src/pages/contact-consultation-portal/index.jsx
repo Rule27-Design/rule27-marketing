@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '../../components/ui/Header';
 import Footer from '../../components/ui/Footer';
