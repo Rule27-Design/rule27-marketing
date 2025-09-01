@@ -3,35 +3,35 @@ export const NAVIGATION_CONFIG = {
   primary: [
     {
       name: 'Home',
-      path: '/homepage-experience-hub',
+      path: '/',
       icon: 'Home',
       description: 'Return to homepage',
       keywords: ['home', 'main', 'start']
     },
     {
       name: 'Capabilities',
-      path: '/capability-universe',
+      path: '/capabilities',
       icon: 'Zap',
       description: 'Explore our services and expertise',
       keywords: ['services', 'skills', 'expertise', 'offerings']
     },
     {
       name: 'Work',
-      path: '/work-showcase-theater',
+      path: '/work',
       icon: 'Eye',
       description: 'View our portfolio and case studies',
       keywords: ['portfolio', 'projects', 'case studies', 'examples']
     },
     {
       name: 'Innovation',
-      path: '/innovation-laboratory',
+      path: '/innovation',
       icon: 'Lightbulb',
       description: 'Discover our latest innovations and insights',
       keywords: ['innovation', 'research', 'insights', 'future']
     },
     {
       name: 'About',
-      path: '/about-process-studio',
+      path: '/about',
       icon: 'Users',
       description: 'Learn about our team and process',
       keywords: ['about', 'team', 'process', 'company']
@@ -40,7 +40,7 @@ export const NAVIGATION_CONFIG = {
   secondary: [
     {
       name: 'Contact',
-      path: '/contact-consultation-portal',
+      path: '/contact',
       icon: 'MessageCircle',
       description: 'Get in touch for a consultation',
       keywords: ['contact', 'consultation', 'inquire', 'reach out']
@@ -49,13 +49,13 @@ export const NAVIGATION_CONFIG = {
   cta: {
     primary: {
       text: 'Start Consultation',
-      path: '/contact-consultation-portal',
+      path: '/contact',
       icon: 'ArrowRight',
       ariaLabel: 'Start your consultation with Rule27'
     },
     sticky: {
       text: 'Book Consultation',
-      path: '/contact-consultation-portal',
+      path: '/contact',
       icon: 'ArrowRight',
       showAfterScroll: 500, // pixels
       ariaLabel: 'Book a consultation with Rule27'

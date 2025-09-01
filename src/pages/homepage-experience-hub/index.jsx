@@ -47,24 +47,24 @@ const HomepageExperienceHub = () => {
   return (
     <>
       <Helmet>
-        <title>Rule27 Digital Powerhouse - Where Creative Audacity Meets Technical Precision</title>
+        <title>Rule27 - Digital Powerhouse | Creative + Technical Excellence</title>
         <meta 
           name="description" 
-          content="Rule27 Design is the apex creative and development partner for ambitious brands. We don't just follow design trends—we create them. Break conventional boundaries with the creative partner that makes other agencies look ordinary." 
+          content="Break conventional boundaries with Rule27. We combine creative audacity with technical precision to transform ambitious brands into industry leaders." 
         />
         <meta name="keywords" content="creative agency, digital marketing, web development, brand design, Rule27, premium creative services, innovation, digital transformation" />
         
         {/* Open Graph */}
-        <meta property="og:title" content="Rule27 Digital Powerhouse - Creative Excellence Redefined" />
-        <meta property="og:description" content="The 27th rule that breaks conventional boundaries. Discover the creative partner that transforms ambitious brands into industry leaders." />
+        <meta property="og:title" content="Rule27 - Digital Powerhouse | Creative + Technical Excellence" />
+        <meta property="og:description" content="Break conventional boundaries with Rule27. We combine creative audacity with technical precision to transform ambitious brands into industry leaders." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://rule27.com" />
         <meta property="og:image" content="/assets/og-image.jpg" />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Rule27 Digital Powerhouse" />
-        <meta name="twitter:description" content="Where creative audacity meets technical precision" />
+        <meta name="twitter:title" content="Rule27 - Digital Powerhouse | Creative + Technical Excellence" />
+        <meta name="twitter:description" content="Break conventional boundaries with Rule27. We combine creative audacity with technical precision to transform ambitious brands into industry leaders." />
         <meta name="twitter:image" content="/assets/og-image.jpg" />
         
         {/* Canonical */}

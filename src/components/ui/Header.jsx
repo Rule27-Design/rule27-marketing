@@ -7,15 +7,15 @@ import Logo from './Logo';
 // Navigation configuration
 const NAVIGATION_CONFIG = {
   primary: [
-    { name: 'Home', path: '/homepage-experience-hub', icon: 'Home' },
-    { name: 'Capabilities', path: '/capability-universe', icon: 'Zap' },
-    { name: 'Work', path: '/work-showcase-theater', icon: 'Eye' },
-    { name: 'Articles', path: '/articles-hub', icon: 'FileText' },
-    { name: 'Innovation', path: '/innovation-laboratory', icon: 'Lightbulb' },
-    { name: 'About', path: '/about-process-studio', icon: 'Users' }
+    { name: 'Home', path: '/', icon: 'Home' },
+    { name: 'Capabilities', path: '/capabilities', icon: 'Zap' },
+    { name: 'Work', path: '/work', icon: 'Eye' },
+    { name: 'Articles', path: '/articles', icon: 'FileText' },
+    { name: 'Innovation', path: '/innovation', icon: 'Lightbulb' },
+    { name: 'About', path: '/about', icon: 'Users' }
   ],
   secondary: [
-    { name: 'Contact', path: '/contact-consultation-portal', icon: 'MessageCircle' }
+    { name: 'Contact', path: '/contact', icon: 'MessageCircle' }
   ]
 };
 
@@ -234,7 +234,7 @@ const Header = () => {
               <Button
                 variant="default"
                 size="sm"
-                onClick={() => handleNavigation('/contact-consultation-portal')}
+                onClick={() => handleNavigation('/contact')}
                 className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent transition-all duration-300 font-heading-regular tracking-wider uppercase"
                 aria-label="Start consultation"
               >
@@ -304,7 +304,7 @@ const Header = () => {
                 <Button
                   variant="default"
                   fullWidth
-                  onClick={() => handleNavigation('/contact-consultation-portal')}
+                  onClick={() => handleNavigation('/contact')}
                   className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent transition-all duration-300 font-heading-regular tracking-wider uppercase text-lg"
                   aria-label="Start your transformation"
                 >
@@ -328,7 +328,7 @@ const Header = () => {
         <Button
           variant="default"
           size="lg"
-          onClick={() => handleNavigation('/contact-consultation-portal')}
+          onClick={() => handleNavigation('/contact')}
           className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent shadow-xl transition-all animate-pulse font-heading-regular tracking-wider uppercase"
           iconName="ArrowRight"
           iconPosition="right"

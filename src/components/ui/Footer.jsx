@@ -8,15 +8,15 @@ const Footer = () => {
 
   const footerLinks = {
     explore: [
-      { name: 'Capabilities', path: '/capability-universe' },
-      { name: 'Work', path: '/work-showcase-theater' },
-      { name: 'Articles', path: '/articles-hub' },
-      { name: 'Innovation', path: '/innovation-laboratory' },
-      { name: 'About', path: '/about-process-studio' }
+      { name: 'Capabilities', path: '/capabilities' },
+      { name: 'Work', path: '/work' },
+      { name: 'Articles', path: '/articles' },
+      { name: 'Innovation', path: '/innovation' },
+      { name: 'About', path: '/about' }
     ],
     connect: [
-      { name: 'Start Consultation', path: '/contact-consultation-portal' },
-      { name: 'hello@rule27.com', href: 'mailto:hello@rule27.com', external: true },
+      { name: 'Start Consultation', path: '/contact' },
+      { name: 'hello@rule27design.com', href: 'mailto:hello@rule27design.com', external: true },
       { name: '+1 (555) RULE-27', href: 'tel:+15557853277', external: true }
     ],
     legal: [

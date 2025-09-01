@@ -17,15 +17,13 @@ const Routes = () => {
       <ErrorBoundary>
       <ScrollToTop />
       <RouterRoutes>
-        {/* Define your route here */}
         <Route path="/" element={<HomepageExperienceHub />} />
-        <Route path="/homepage-experience-hub" element={<HomepageExperienceHub />} />
-        <Route path="/capability-universe" element={<CapabilityUniverse />} />
-        <Route path="/innovation-laboratory" element={<InnovationLaboratory />} />
-        <Route path="/work-showcase-theater" element={<WorkShowcaseTheater />} />
-        <Route path="/articles-hub" element={<ArticlesHub />} />
-        <Route path="/about-process-studio" element={<AboutProcessStudio />} />
-        <Route path="/contact-consultation-portal" element={<ContactConsultationPortal />} />
+        <Route path="/capabilities" element={<CapabilityUniverse />} />
+        <Route path="/innovation" element={<InnovationLaboratory />} />
+        <Route path="/work" element={<WorkShowcaseTheater />} />
+        <Route path="/articles" element={<ArticlesHub />} />
+        <Route path="/about" element={<AboutProcessStudio />} />
+        <Route path="/contact" element={<ContactConsultationPortal />} />
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
       </ErrorBoundary>

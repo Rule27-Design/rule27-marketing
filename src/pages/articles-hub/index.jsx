@@ -385,7 +385,7 @@ const ArticlesHub = () => {
         <meta property="og:title" content="Articles & Insights - Rule27 Design Digital Powerhouse" />
         <meta property="og:description" content="Expert insights and thought leadership from Rule27's team of digital innovators." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="/articles-hub" />
+        <link rel="canonical" href="/articles" />
       </Helmet>
       
       <div className="min-h-screen bg-background">

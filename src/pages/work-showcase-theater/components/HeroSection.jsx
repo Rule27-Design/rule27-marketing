@@ -158,7 +158,7 @@ const HeroSection = ({ featuredCaseStudies, onViewCaseStudy }) => {
               <Button
                 variant="outline"
                 size="default"
-                onClick={() => window.location.href = '/contact-consultation-portal'}
+                onClick={() => window.location.href = '/contact'}
                 className="border-white text-white hover:bg-white hover:text-primary w-full sm:w-auto text-sm md:text-base px-4 py-3 md:px-6 md:py-4"
                 iconName="MessageCircle"
                 iconPosition="left"

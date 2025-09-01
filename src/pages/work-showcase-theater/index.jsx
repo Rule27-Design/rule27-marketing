@@ -418,13 +418,28 @@ const WorkShowcaseTheater = () => {
   return (
     <>
       <Helmet>
-        <title>Work Showcase Theater - Rule27 Design Digital Powerhouse</title>
-        <meta name="description" content="Explore Rule27 Design's portfolio of transformative case studies. See how we've delivered measurable results across industries through strategic design, development, and marketing excellence." />
-        <meta name="keywords" content="case studies, portfolio, digital transformation, brand strategy, web development, marketing results, client success stories" />
-        <meta property="og:title" content="Work Showcase Theater - Rule27 Design Digital Powerhouse" />
-        <meta property="og:description" content="Cinematic case study presentations showcasing Rule27 Design's transformation ability through detailed success stories with measurable outcomes." />
+        <title>Our Work | Rule27 - Transformational Case Studies</title>
+        <meta 
+          name="description" 
+          content="Explore success stories with 500%+ growth. See how we transform brands through strategic creativity and technical excellence." 
+        />
+        <meta name="keywords" content="case studies, portfolio, digital transformation, brand strategy, web development, marketing results, client success stories, 500% growth" />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content="Our Work | Rule27 - Transformational Case Studies" />
+        <meta property="og:description" content="Explore success stories with 500%+ growth. See how we transform brands through strategic creativity and technical excellence." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="/work-showcase-theater" />
+        <meta property="og:url" content="https://rule27.com/work" />
+        <meta property="og:image" content="/assets/og-image.jpg" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Our Work | Rule27 - Transformational Case Studies" />
+        <meta name="twitter:description" content="Explore success stories with 500%+ growth. See how we transform brands through strategic creativity and technical excellence." />
+        <meta name="twitter:image" content="/assets/og-image.jpg" />
+        
+        {/* Canonical */}
+        <link rel="canonical" href="https://rule27.com/work" />
       </Helmet>
       
       <div className="min-h-screen bg-background">
@@ -554,7 +569,7 @@ const WorkShowcaseTheater = () => {
               <Button
                 variant="default"
                 size="default"
-                onClick={() => window.location.href = '/contact-consultation-portal'}
+                onClick={() => window.location.href = '/contact'}
                 className="bg-accent hover:bg-accent/90 text-white w-full sm:w-auto text-sm sm:text-base px-6 py-3"
                 iconName="Calendar"
                 iconPosition="left"
@@ -564,7 +579,7 @@ const WorkShowcaseTheater = () => {
               <Button
                 variant="outline"
                 size="default"
-                onClick={() => window.location.href = '/capability-universe'}
+                onClick={() => window.location.href = '/capabilities'}
                 className="border-white text-white hover:bg-white hover:text-primary w-full sm:w-auto text-sm sm:text-base px-6 py-3"
                 iconName="Zap"
                 iconPosition="left"

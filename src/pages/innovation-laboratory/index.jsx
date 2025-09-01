@@ -48,28 +48,28 @@ const InnovationLaboratory = () => {
   return (
     <>
       <Helmet>
-        <title>Innovation Laboratory - Rule27 Design Digital Powerhouse</title>
+        <title>Innovation Lab | Rule27 - Where Tomorrow Begins</title>
         <meta 
           name="description" 
-          content="Explore cutting-edge experimental features, emerging technology demonstrations, and forward-thinking insights at Rule27 Design's Innovation Laboratory. Interactive tools, trend analysis, and thought leadership content." 
+          content="Explore cutting-edge tools, AI experiments, and trend analysis. Interactive demos and resources that push the boundaries of digital design." 
         />
         <meta name="keywords" content="innovation lab, experimental features, AI tools, trend analysis, design trends, technology predictions, interactive tools, thought leadership" />
         
         {/* Open Graph */}
-        <meta property="og:title" content="Innovation Laboratory - Rule27 Design Digital Powerhouse" />
-        <meta property="og:description" content="Where tomorrow begins. Experimental features, emerging technologies, and forward-thinking insights that shape the future of digital experiences." />
+        <meta property="og:title" content="Innovation Lab | Rule27 - Where Tomorrow Begins" />
+        <meta property="og:description" content="Explore cutting-edge tools, AI experiments, and trend analysis. Interactive demos and resources that push the boundaries of digital design." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://rule27.com/innovation-laboratory" />
+        <meta property="og:url" content="https://rule27.com/innovation" />
         <meta property="og:image" content="/assets/og-image.jpg" />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Innovation Laboratory - Rule27 Design Digital Powerhouse" />
-        <meta name="twitter:description" content="Cutting-edge tools and technologies that push the boundaries of what's possible in digital design and development." />
+        <meta name="twitter:title" content="Innovation Lab | Rule27 - Where Tomorrow Begins" />
+        <meta name="twitter:description" content="Explore cutting-edge tools, AI experiments, and trend analysis. Interactive demos and resources that push the boundaries of digital design." />
         <meta name="twitter:image" content="/assets/og-image.jpg" />
         
         {/* Canonical */}
-        <link rel="canonical" href="https://rule27.com/innovation-laboratory" />
+        <link rel="canonical" href="https://rule27.com/innovation" />
         
         {/* Preload critical resources */}
         <link rel="preload" href="/assets/logo/rule27-color.svg" as="image" />

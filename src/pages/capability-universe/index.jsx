@@ -1202,7 +1202,7 @@ const CapabilityUniverse = () => {
   // Handler for quick actions
   const handleQuickAction = useCallback((action) => {
     // All quick actions go to consultation page for now
-    navigate('/contact-consultation-portal');
+    navigate('/contact');
   }, [navigate]);
 
   // Rest of the component remains the same as before...
@@ -1211,9 +1211,28 @@ const CapabilityUniverse = () => {
   return (
     <>
       <Helmet>
-        <title>Capability Universe - Rule27 Design Digital Powerhouse</title>
-        <meta name="description" content="Explore Rule27 Design's comprehensive service capabilities across Creative Studio, Digital Marketing Command, Development Lab, and Executive Advisory. Interactive demonstrations and personalized assessments." />
-        <meta name="keywords" content="digital agency services, creative studio, marketing command, development lab, executive advisory, capability assessment" />
+        <title>Capabilities | Rule27 - Full-Stack Digital Services</title>
+        <meta 
+          name="description" 
+          content="From brand strategy to development, discover our comprehensive digital services. Creative studio, marketing command, development lab, and executive advisory." 
+        />
+        <meta name="keywords" content="digital agency services, creative studio, marketing command, development lab, executive advisory, capability assessment, full-stack services, digital transformation" />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content="Capabilities | Rule27 - Full-Stack Digital Services" />
+        <meta property="og:description" content="From brand strategy to development, discover our comprehensive digital services. Creative studio, marketing command, development lab, and executive advisory." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://rule27.com/capabilities" />
+        <meta property="og:image" content="/assets/og-image.jpg" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Capabilities | Rule27 - Full-Stack Digital Services" />
+        <meta name="twitter:description" content="From brand strategy to development, discover our comprehensive digital services. Creative studio, marketing command, development lab, and executive advisory." />
+        <meta name="twitter:image" content="/assets/og-image.jpg" />
+        
+        {/* Canonical */}
+        <link rel="canonical" href="https://rule27.com/capabilities" />
       </Helmet>
       
       <div className="min-h-screen bg-background">
@@ -1424,7 +1443,7 @@ const CapabilityUniverse = () => {
                   iconName="Calendar"
                   iconPosition="left"
                   className="bg-white text-primary hover:bg-white/90 w-full sm:w-auto"
-                  onClick={() => navigate('/contact-consultation-portal')}
+                  onClick={() => navigate('/contact')}
                 >
                   Schedule Strategy Call
                 </Button>
@@ -1434,7 +1453,7 @@ const CapabilityUniverse = () => {
                   iconName="MessageCircle"
                   iconPosition="left"
                   className="border-white text-white hover:bg-white hover:text-primary w-full sm:w-auto"
-                  onClick={() => navigate('/contact-consultation-portal')}
+                  onClick={() => navigate('/contact')}
                 >
                   Start Conversation
                 </Button>

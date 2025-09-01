@@ -406,7 +406,7 @@ const ResourceHub = () => {
           <p className="text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto text-sm sm:text-base font-body">
             Can't find what you're looking for? Our team can create custom templates, frameworks, and tools tailored to your specific needs.
           </p>
-          <Link to="/contact-consultation-portal">
+          <Link to="/contact">
             <Button
               variant="default"
               size="lg"

@@ -296,13 +296,13 @@ const CapabilityZones = () => {
               Let's discuss how our integrated approach can transform your brand's trajectory.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/capability-universe">
+              <Link to="/capabilities">
                 <button className="bg-white text-primary px-8 py-4 rounded-lg font-heading-regular uppercase tracking-wider hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 shadow-xl">
                   <Icon name="Compass" size={20} />
                   <span>Explore All Capabilities</span>
                 </button>
               </Link>
-              <Link to="/contact-consultation-portal">
+              <Link to="/contact">
                 <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-heading-regular uppercase tracking-wider hover:bg-white hover:text-primary transition-all duration-300 transform hover:scale-105 flex items-center space-x-2">
                   <Icon name="MessageCircle" size={20} />
                   <span>Start Consultation</span>
