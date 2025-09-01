@@ -213,7 +213,7 @@ const InnovationTicker = () => {
 
           {/* CTA Section */}
           <div className="text-center">
-            <Link to="/innovation-laboratory">
+            <Link to="/innovation">
               <button className="bg-accent hover:bg-accent/90 text-white px-8 py-4 rounded-lg font-body font-semibold transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 mx-auto">
                 <Icon name="Lightbulb" size={20} />
                 <span className="font-heading-regular tracking-wider uppercase">Explore Innovation Lab</span>

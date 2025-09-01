@@ -227,7 +227,7 @@ const HeroSection = () => {
         {/* CTA Buttons with Enhanced Hover Effects - Using Steelfish for impact */}
         <div className={`transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
-            <Link to="/contact-consultation-portal">
+            <Link to="/contact">
               <Button
                 variant="default"
                 size="lg"
@@ -238,7 +238,7 @@ const HeroSection = () => {
                 Start Your Transformation
               </Button>
             </Link>
-            <Link to="/capability-universe">
+            <Link to="/capabilities">
               <Button
                 variant="outline"
                 size="lg"

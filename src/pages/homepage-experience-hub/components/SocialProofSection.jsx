@@ -286,7 +286,7 @@ const SocialProofSection = () => {
                 <span className="font-heading-regular tracking-wider uppercase">View All Case Studies</span>
               </button>
             </Link>
-            <Link to="/contact-consultation-portal">
+            <Link to="/contact">
               <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-body font-semibold hover:bg-white hover:text-primary transition-all duration-300 flex items-center space-x-2">
                 <Icon name="MessageCircle" size={20} />
                 <span className="font-heading-regular tracking-wider uppercase">Start Your Journey</span>

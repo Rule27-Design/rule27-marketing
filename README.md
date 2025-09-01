@@ -60,8 +60,8 @@ To add new routes to the application, update the `Routes.jsx` file:
 
 ```jsx
 import { useRoutes } from "react-router-dom";
-import HomePage from "pages/HomePage";
-import AboutPage from "pages/AboutPage";
+import HomePage from "pages/";
+import AboutPage from "pages/about";
 
 const ProjectRoutes = () => {
   let element = useRoutes([

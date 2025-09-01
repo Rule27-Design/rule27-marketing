@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 const Logo = ({ 
   variant = 'horizontal', // 'full', 'icon', 'text', 'horizontal'
   colorScheme = 'default', // 'default', 'white', 'black'
-  linkTo = '/homepage-experience-hub',
+  linkTo = '/',
   className = '',
   showTagline = true,
   size = 'default' // 'small', 'default', 'large'
