@@ -235,7 +235,7 @@ const Header = () => {
                 variant="default"
                 size="sm"
                 onClick={() => handleNavigation('/contact')}
-                className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent transition-all duration-300 text-heading-base tracking-wider uppercase "
+                className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent transition-all duration-300 text-heading-base tracking-wider uppercase text-heading-base"
                 aria-label="Start consultation"
               >
                 Start Consultation
