@@ -75,30 +75,30 @@ const ContactConsultationPortal = () => {
   return (
     <>
     <Helmet>
-        <title>Contact | Rule27 - Start Your Transformation</title>
+        <title>Contact | Rule27 Design - Start Your Transformation</title>
         <meta 
           name="description" 
-          content="Ready to break conventional boundaries? Schedule a consultation with Rule27's expert team and discover how we can transform your digital presence." 
+          content="Ready to break conventional boundaries? Schedule a consultation with Rule27 Design's expert team and discover how we can transform your digital presence." 
         />
         <meta name="keywords" content="contact rule27, schedule consultation, digital transformation, creative agency contact, start project, expert consultation, digital strategy" />
         
         {/* Open Graph */}
-        <meta property="og:title" content="Contact | Rule27 - Start Your Transformation" />
-        <meta property="og:description" content="Ready to break conventional boundaries? Schedule a consultation with Rule27's expert team and discover how we can transform your digital presence." />
+        <meta property="og:title" content="Contact | Rule27 Design - Start Your Transformation" />
+        <meta property="og:description" content="Ready to break conventional boundaries? Schedule a consultation with Rule27 Design's expert team and discover how we can transform your digital presence." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://rule27.com/contact" />
+        <meta property="og:url" content="https://rule27design.com/contact" />
         <meta property="og:image" content="/assets/og-image.jpg" />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Contact | Rule27 - Start Your Transformation" />
-        <meta name="twitter:description" content="Ready to break conventional boundaries? Schedule a consultation with Rule27's expert team and discover how we can transform your digital presence." />
+        <meta name="twitter:title" content="Contact | Rule27 Design - Start Your Transformation" />
+        <meta name="twitter:description" content="Ready to break conventional boundaries? Schedule a consultation with Rule27 Design's expert team and discover how we can transform your digital presence." />
         <meta name="twitter:image" content="/assets/og-image.jpg" />
         
         {/* Canonical */}
-        <link rel="canonical" href="https://rule27.com/contact" />
+        <link rel="canonical" href="https://rule27design.com/contact" />
       </Helmet>
-      
+
       {/* Global Performance Styles */}
       <style>{`
         /* Enhanced animations and effects */

@@ -418,7 +418,7 @@ const WorkShowcaseTheater = () => {
   return (
     <>
       <Helmet>
-        <title>Our Work | Rule27 - Transformational Case Studies</title>
+        <title>Our Work | Rule27 Design - Transformational Case Studies</title>
         <meta 
           name="description" 
           content="Explore success stories with 500%+ growth. See how we transform brands through strategic creativity and technical excellence." 
@@ -426,20 +426,20 @@ const WorkShowcaseTheater = () => {
         <meta name="keywords" content="case studies, portfolio, digital transformation, brand strategy, web development, marketing results, client success stories, 500% growth" />
         
         {/* Open Graph */}
-        <meta property="og:title" content="Our Work | Rule27 - Transformational Case Studies" />
+        <meta property="og:title" content="Our Work | Rule27 Design - Transformational Case Studies" />
         <meta property="og:description" content="Explore success stories with 500%+ growth. See how we transform brands through strategic creativity and technical excellence." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://rule27.com/work" />
+        <meta property="og:url" content="https://rule27design.com/work" />
         <meta property="og:image" content="/assets/og-image.jpg" />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Our Work | Rule27 - Transformational Case Studies" />
+        <meta name="twitter:title" content="Our Work | Rule27 Design - Transformational Case Studies" />
         <meta name="twitter:description" content="Explore success stories with 500%+ growth. See how we transform brands through strategic creativity and technical excellence." />
         <meta name="twitter:image" content="/assets/og-image.jpg" />
         
         {/* Canonical */}
-        <link rel="canonical" href="https://rule27.com/work" />
+        <link rel="canonical" href="https://rule27design.com/work" />
       </Helmet>
       
       <div className="min-h-screen bg-background">

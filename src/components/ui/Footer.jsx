@@ -65,7 +65,7 @@ const Footer = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-white/10 hover:bg-white/20 p-3 rounded-full transition-all duration-300 hover:scale-110"
-                  aria-label={`Visit Rule27 on ${social.name}`}
+                  aria-label={`Visit Rule27 Design on ${social.name}`}
                 >
                   <Icon name={social.icon} size={20} className="text-white" />
                 </a>
@@ -135,7 +135,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-white/10 pt-8 mt-12 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-300 text-sm mb-4 md:mb-0 text-center md:text-left font-body">
-            © <span className="font-heading-regular tracking-wider">{currentYear}</span> Rule27 Digital Powerhouse. All rights reserved.
+            © <span className="font-heading-regular tracking-wider">{currentYear}</span> Rule27 Design - Digital Powerhouse. All rights reserved.
           </p>
           <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
             <div className="flex space-x-6 text-sm text-gray-300">
