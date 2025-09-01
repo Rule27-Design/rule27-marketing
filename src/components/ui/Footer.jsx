@@ -134,7 +134,7 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="border-t border-white/10 pt-8 mt-12 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-300 text-sm mb-4 md:mb-0 text-center md:text-left font-body">
+          <p className="text-gray-300 text-sm mb-4 md:mb-0 text-center md:text-left font-heading-regular">
             © <span className="font-heading-regular tracking-wider">{currentYear}</span> Rule27 Design - Digital Powerhouse. All rights reserved.
           </p>
           <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
@@ -143,7 +143,7 @@ const Footer = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className="hover:text-accent transition-colors duration-300 font-body"
+                  className="hover:text-accent transition-colors duration-300 font-heading-regular"
                 >
                   {link.name}
                 </Link>
@@ -152,7 +152,7 @@ const Footer = () => {
             {/* Status Indicator */}
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-xs text-gray-400 font-body">All systems operational</span>
+              <span className="text-xs text-gray-400 font-heading-regular">All systems operational</span>
             </div>
           </div>
         </div>

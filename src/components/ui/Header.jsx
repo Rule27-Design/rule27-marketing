@@ -183,7 +183,7 @@ const Header = () => {
   const DesktopNavItem = ({ item, isActive }) => (
     <Link
       to={item.path}
-      className={`relative px-3 py-2 font-heading-regular text-heading-base tracking-wider uppercase transition-all duration-300 group ${
+      className={`relative px-3 py-2 font-heading-regular text-heading-sm tracking-wider uppercase transition-all duration-300 group ${
         isActive 
           ? 'text-accent' 
           : 'text-gray-700 hover:text-accent'
