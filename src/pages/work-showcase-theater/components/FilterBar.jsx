@@ -90,42 +90,39 @@ const FilterBar = React.memo(({
                 )}
               </Button>
 
-              {/* Sort Dropdown - Fixed to hide native arrow */}
-              <div className="flex items-center gap-2 flex-1 sm:flex-initial">
-                <Icon name="ArrowUpDown" size={18} className="text-text-secondary hidden sm:block" />
-                <div className="relative">
-                  <select
-                    value={sortBy}
-                    onChange={(e) => onSortChange(e?.target?.value)}
-                    className="appearance-none w-full sm:w-auto border border-border rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base bg-white font-sans cursor-pointer"
-                    style={{
-                      WebkitAppearance: 'none',
-                      MozAppearance: 'none',
-                      appearance: 'none'
-                    }}
-                  >
-                    {sortOptions?.map((option) => (
-                      <option key={option?.value} value={option?.value}>
-                        {option?.label}
-                      </option>
-                    ))}
-                  </select>
-                  {/* Custom arrow icon */}
-                  <Icon 
-                    name="ChevronDown" 
-                    size={16} 
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none" 
-                  />
-                </div>
+              {/* Sort Dropdown - Removed redundant icon */}
+              <div className="relative flex-1 sm:flex-initial">
+                <select
+                  value={sortBy}
+                  onChange={(e) => onSortChange(e?.target?.value)}
+                  className="appearance-none w-full sm:w-auto border border-border rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base bg-white font-sans cursor-pointer"
+                  style={{
+                    WebkitAppearance: 'none',
+                    MozAppearance: 'none',
+                    appearance: 'none'
+                  }}
+                >
+                  {sortOptions?.map((option) => (
+                    <option key={option?.value} value={option?.value}>
+                      {option?.label}
+                    </option>
+                  ))}
+                </select>
+                {/* Custom arrow icon */}
+                <Icon 
+                  name="ChevronDown" 
+                  size={16} 
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none" 
+                />
               </div>
             </div>
           </div>
 
-          {/* Desktop Filter Categories - Steelfish for Labels */}
-          <div className="hidden md:flex flex-wrap gap-4">
+          {/* Desktop Filter Categories - Each on its own line */}
+          <div className="hidden md:flex flex-col gap-3">
             {filterCategories?.map((category) => (
-              <div key={category?.key} className="flex flex-wrap items-center gap-2">
-                <div className="flex items-center space-x-1 text-sm font-heading-regular text-text-secondary tracking-wider uppercase">
+              <div key={category?.key} className="flex items-center gap-3">
+                <div className="flex items-center space-x-1 text-sm font-heading-regular text-text-secondary tracking-wider uppercase min-w-[140px]">
                   <Icon name={category?.icon} size={16} />
                   <span>{category?.label}:</span>
                 </div>

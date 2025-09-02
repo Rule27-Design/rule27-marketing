@@ -220,14 +220,14 @@ const HeroSection = () => {
         className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2"
       >
         <div
-          className="text-center cursor-pointer"
+          className="text-center cursor-pointer group"
           onClick={() => document.getElementById('consultation')?.scrollIntoView({ behavior: 'smooth' })}
         >
-          <div className="mb-2 text-xs text-accent opacity-70 font-heading-regular uppercase tracking-wider">
+          <div className="mb-2 text-sm text-white/90 font-heading-regular uppercase tracking-wider group-hover:text-accent transition-colors duration-300">
             Discover More
           </div>
-          <div className="animate-bounce">
-            <Icon name="ChevronDown" size={20} className="text-accent sm:w-6 sm:h-6" />
+          <div className="animate-bounce flex justify-center">
+            <Icon name="ChevronDown" size={24} className="text-white/90 group-hover:text-accent transition-colors duration-300 sm:w-6 sm:h-6" />
           </div>
         </div>
       </motion.div>
