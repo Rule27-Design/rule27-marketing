@@ -252,9 +252,9 @@ const CultureShowcase = () => {
             transition={{ type: "spring", stiffness: 300 }}
           >
             <AppIcon name="Heart" size={16} className="text-accent" />
-            <span className="text-accent font-semibold text-xs sm:text-sm">Our Culture</span>
+            <span className="text-accent font-semibold text-xs sm:text-sm font-sans">Our Culture</span>
           </motion.div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4 sm:mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-heading-regular text-primary mb-4 sm:mb-6 uppercase tracking-wider">
             Where <motion.span 
               className="text-accent"
               initial={{ opacity: 0, x: -20 }}
@@ -263,7 +263,7 @@ const CultureShowcase = () => {
             >Excellence</motion.span> Thrives
           </h2>
           <motion.p 
-            className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4"
+            className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4 font-sans"
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ delay: 0.3, duration: 0.4 }}
@@ -291,7 +291,7 @@ const CultureShowcase = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setActiveValue(index)}
-                className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-semibold transition-all duration-300 text-sm sm:text-base relative overflow-hidden ${
+                className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-heading-regular uppercase tracking-wider transition-all duration-300 text-sm sm:text-base relative overflow-hidden ${
                   activeValue === index
                     ? `bg-gradient-to-r ${value?.color} text-white shadow-lg transform scale-105`
                     : 'bg-surface text-text-secondary hover:bg-accent/5 hover:text-accent'
@@ -361,13 +361,13 @@ const CultureShowcase = () => {
                     >
                       <AppIcon name={coreValues?.[activeValue]?.icon} size={24} className="text-white" />
                     </motion.div>
-                    <h4 className="text-2xl sm:text-3xl font-bold text-primary">{coreValues?.[activeValue]?.title}</h4>
+                    <h4 className="text-2xl sm:text-3xl font-heading-regular text-primary uppercase tracking-wider">{coreValues?.[activeValue]?.title}</h4>
                   </div>
-                  <p className="text-base sm:text-lg md:text-xl text-text-secondary leading-relaxed mb-4 sm:mb-6">
+                  <p className="text-base sm:text-lg md:text-xl text-text-secondary leading-relaxed mb-4 sm:mb-6 font-sans">
                     {coreValues?.[activeValue]?.description}
                   </p>
                   <div>
-                    <h5 className="font-bold text-primary mb-3 sm:mb-4">How We Live This:</h5>
+                    <h5 className="font-heading-regular text-primary mb-3 sm:mb-4 uppercase tracking-wider">How We Live This:</h5>
                     <ul className="space-y-2 sm:space-y-3">
                       {coreValues?.[activeValue]?.examples?.map((example, index) => (
                         <motion.li 
@@ -389,7 +389,7 @@ const CultureShowcase = () => {
                           >
                             <AppIcon name="CheckCircle" size={20} className="text-accent mt-0.5 flex-shrink-0" />
                           </motion.div>
-                          <span className="text-text-secondary text-sm sm:text-base">{example}</span>
+                          <span className="text-text-secondary text-sm sm:text-base font-sans">{example}</span>
                         </motion.li>
                       ))}
                     </ul>
@@ -428,7 +428,7 @@ const CultureShowcase = () => {
                       >
                         <AppIcon name={coreValues?.[activeValue]?.icon} size={40} className="text-white" />
                       </motion.div>
-                      <p className="text-text-secondary font-medium text-sm sm:text-base">Value in Action</p>
+                      <p className="text-text-secondary font-medium text-sm sm:text-base font-sans">Value in Action</p>
                     </div>
                   </div>
                 </motion.div>
@@ -445,7 +445,7 @@ const CultureShowcase = () => {
           transition={{ duration: 0.4, delay: 0.3 }}
           className="mb-12 sm:mb-16 lg:mb-20"
         >
-          <h3 className="text-2xl sm:text-3xl font-bold text-center text-primary mb-8 sm:mb-12">Behind the Scenes</h3>
+          <h3 className="text-2xl sm:text-3xl font-heading-regular text-center text-primary mb-8 sm:mb-12 uppercase tracking-wider">Behind the Scenes</h3>
           <motion.div 
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
             variants={{
@@ -503,7 +503,7 @@ const CultureShowcase = () => {
                         />
                       </motion.div>
                       <motion.span 
-                        className="bg-white/20 backdrop-blur-sm text-white px-2 sm:px-3 py-1 rounded-full text-xs font-medium"
+                        className="bg-white/20 backdrop-blur-sm text-white px-2 sm:px-3 py-1 rounded-full text-xs font-medium font-heading-regular uppercase tracking-wider"
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 + 0.2 }}
@@ -515,7 +515,7 @@ const CultureShowcase = () => {
                     {/* Bottom Section */}
                     <div className="text-white">
                       <motion.h4 
-                        className="font-bold text-base sm:text-lg mb-1 sm:mb-2"
+                        className="font-heading-regular text-base sm:text-lg mb-1 sm:mb-2 uppercase tracking-wider"
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: index * 0.1 + 0.3 }}
@@ -523,7 +523,7 @@ const CultureShowcase = () => {
                         {media?.title}
                       </motion.h4>
                       <motion.p 
-                        className="text-white/90 text-xs sm:text-sm line-clamp-2"
+                        className="text-white/90 text-xs sm:text-sm line-clamp-2 font-sans"
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: index * 0.1 + 0.4 }}
@@ -537,7 +537,7 @@ const CultureShowcase = () => {
                         initial={{ x: -20 }}
                         whileHover={{ x: 0 }}
                       >
-                        <span className="text-xs font-medium">View Details</span>
+                        <span className="text-xs font-medium font-sans">View Details</span>
                         <AppIcon name="ArrowRight" size={14} className="text-white" />
                       </motion.div>
                     </div>
@@ -554,7 +554,7 @@ const CultureShowcase = () => {
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.4, delay: 0.4 }}
         >
-          <h3 className="text-2xl sm:text-3xl font-bold text-center text-primary mb-8 sm:mb-12">Why We Love Working Here</h3>
+          <h3 className="text-2xl sm:text-3xl font-heading-regular text-center text-primary mb-8 sm:mb-12 uppercase tracking-wider">Why We Love Working Here</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {officePerks?.map((perk, index) => (
               <motion.div
@@ -587,9 +587,9 @@ const CultureShowcase = () => {
                     >
                       <AppIcon name={perk?.icon} size={20} className="text-accent group-hover:text-white" />
                     </motion.div>
-                    <h4 className="font-bold text-primary text-sm sm:text-base">{perk?.title}</h4>
+                    <h4 className="font-heading-regular text-primary text-sm sm:text-base uppercase tracking-wider">{perk?.title}</h4>
                   </div>
-                  <p className="text-text-secondary text-xs sm:text-sm">{perk?.description}</p>
+                  <p className="text-text-secondary text-xs sm:text-sm font-sans">{perk?.description}</p>
                 </div>
               </motion.div>
             ))}
@@ -646,7 +646,7 @@ const CultureShowcase = () => {
                       <AppIcon name={selectedMedia?.icon} size={28} className="text-white" />
                     </motion.div>
                     <motion.h3 
-                      className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2"
+                      className="text-2xl sm:text-3xl lg:text-4xl font-heading-regular text-white mb-2 uppercase tracking-wider"
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.3 }}
@@ -654,7 +654,7 @@ const CultureShowcase = () => {
                       {selectedMedia?.title}
                     </motion.h3>
                     <motion.span 
-                      className="inline-block bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium"
+                      className="inline-block bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium font-heading-regular uppercase tracking-wider"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 200, delay: 0.4 }}
@@ -671,8 +671,8 @@ const CultureShowcase = () => {
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.5 }}
                   >
-                    <h4 className="text-xl sm:text-2xl font-bold text-primary mb-4">Overview</h4>
-                    <p className="text-text-secondary leading-relaxed mb-6">
+                    <h4 className="text-xl sm:text-2xl font-heading-regular text-primary mb-4 uppercase tracking-wider">Overview</h4>
+                    <p className="text-text-secondary leading-relaxed mb-6 font-sans">
                       {selectedMedia?.description}
                     </p>
                   </motion.div>
@@ -682,8 +682,8 @@ const CultureShowcase = () => {
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.6 }}
                   >
-                    <h4 className="text-xl sm:text-2xl font-bold text-primary mb-4">Details</h4>
-                    <p className="text-text-secondary leading-relaxed mb-6">
+                    <h4 className="text-xl sm:text-2xl font-heading-regular text-primary mb-4 uppercase tracking-wider">Details</h4>
+                    <p className="text-text-secondary leading-relaxed mb-6 font-sans">
                       {selectedMedia?.details}
                     </p>
                   </motion.div>
@@ -698,7 +698,7 @@ const CultureShowcase = () => {
                     <Button
                       variant="default"
                       size="lg"
-                      className="flex-1"
+                      className="flex-1 font-heading-regular uppercase tracking-wider"
                       onClick={() => setSelectedMedia(null)}
                     >
                       <AppIcon name="ArrowLeft" size={20} className="mr-2" />
@@ -707,7 +707,7 @@ const CultureShowcase = () => {
                     <Button
                       variant="outline"
                       size="lg"
-                      className="flex-1"
+                      className="flex-1 font-heading-regular uppercase tracking-wider"
                     >
                       <AppIcon name="Share2" size={20} className="mr-2" />
                       Share This
