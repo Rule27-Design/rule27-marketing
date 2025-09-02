@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
 import Footer from '../../components/ui/Footer';
@@ -39,8 +39,8 @@ const ArticlesHub = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Sample articles data
-  const articles = [
+  // Sample articles data - memoized to prevent recreation
+  const articles = useMemo(() => [
     {
       id: 1,
       title: "The Psychology of Color in Brand Design: What Your Palette Says About You",
@@ -65,10 +65,6 @@ const ArticlesHub = () => {
         "Blue builds trust and reliability—ideal for financial and healthcare",
         "Green signals growth and wellness—great for eco and health brands",
         "Black conveys luxury and sophistication—premium brand essential"
-      ],
-      relatedLinks: [
-        { title: "Color Theory Fundamentals", url: "#" },
-        { title: "Brand Identity Guidelines", url: "#" }
       ]
     },
     {
@@ -95,9 +91,7 @@ const ArticlesHub = () => {
         "Hover effects increase click-through rates by 23%",
         "Success animations boost user satisfaction scores",
         "Subtle transitions create seamless user flow"
-      ],
-      codeSnippets: true,
-      demoLink: "https://codepen.io/example"
+      ]
     },
     {
       id: 3,
@@ -117,17 +111,7 @@ const ArticlesHub = () => {
       readTime: 10,
       featured: true,
       views: 18920,
-      likes: 1205,
-      statistics: {
-        avgROIIncrease: "340%",
-        timesSaved: "65%",
-        accuracyImprovement: "89%"
-      },
-      caseStudies: [
-        "E-commerce personalization increasing conversions 45%",
-        "Predictive analytics reducing ad spend by 30%",
-        "Chatbots handling 80% of customer inquiries"
-      ]
+      likes: 1205
     },
     {
       id: 4,
@@ -147,13 +131,7 @@ const ArticlesHub = () => {
       readTime: 7,
       featured: false,
       views: 9840,
-      likes: 567,
-      keyTakeaways: [
-        "Start with 320px viewport and scale up",
-        "Prioritize thumb-friendly navigation zones",
-        "Optimize for one-handed operation",
-        "Performance is a design feature, not an afterthought"
-      ]
+      likes: 567
     },
     {
       id: 5,
@@ -173,14 +151,7 @@ const ArticlesHub = () => {
       readTime: 12,
       featured: false,
       views: 22100,
-      likes: 1876,
-      conversionTips: [
-        "Headlines that speak to pain points convert 2.5x better",
-        "Social proof above the fold increases trust by 40%",
-        "Single CTA buttons outperform multiple by 67%",
-        "Video backgrounds decrease conversions by 23%"
-      ],
-      templates: true
+      likes: 1876
     },
     {
       id: 6,
@@ -200,12 +171,7 @@ const ArticlesHub = () => {
       readTime: 15,
       featured: false,
       views: 8920,
-      likes: 445,
-      resources: [
-        "Component documentation template",
-        "Token naming convention guide",
-        "Figma to code workflow automation"
-      ]
+      likes: 445
     },
     {
       id: 7,
@@ -225,13 +191,7 @@ const ArticlesHub = () => {
       readTime: 5,
       featured: false,
       views: 7650,
-      likes: 423,
-      photographyTips: [
-        "Behind-the-scenes shots build trust",
-        "Real employees over models increase relatability",
-        "Imperfect moments feel more genuine",
-        "User-generated content outperforms professional shoots"
-      ]
+      likes: 423
     },
     {
       id: 8,
@@ -251,12 +211,7 @@ const ArticlesHub = () => {
       readTime: 9,
       featured: false,
       views: 16800,
-      likes: 998,
-      adMetrics: {
-        avgCPCReduction: "45%",
-        ROASImprovement: "280%",
-        conversionRateUplift: "156%"
-      }
+      likes: 998
     },
     {
       id: 9,
@@ -276,105 +231,111 @@ const ArticlesHub = () => {
       readTime: 6,
       featured: false,
       views: 11200,
-      likes: 667,
-      fontPairings: [
-        { heading: "Playfair Display", body: "Source Sans Pro", vibe: "Editorial elegance" },
-        { heading: "Montserrat", body: "Open Sans", vibe: "Modern tech" },
-        { heading: "Bebas Neue", body: "Roboto", vibe: "Bold impact" }
-      ]
+      likes: 667
     }
-  ];
+  ], []);
 
-  // Filter options
-  const filters = {
+  // Filter options - memoized
+  const filters = useMemo(() => ({
     categories: [...new Set(articles.map(article => article.category))],
     topics: [...new Set(articles.flatMap(article => article.topics))],
     readTimes: ['< 5 min', '5-10 min', '> 10 min']
-  };
+  }), [articles]);
 
-  // Featured articles for hero section
-  const featuredArticles = articles?.filter(article => article?.featured);
+  // Featured articles for hero section - memoized
+  const featuredArticles = useMemo(() => 
+    articles.filter(article => article.featured),
+  [articles]);
 
-  // Filter and sort articles
-  const filteredArticles = articles?.filter(article => {
+  // Filter and sort articles - memoized with dependencies
+  const filteredArticles = useMemo(() => {
+    let filtered = [...articles];
+
     // Search filter
     if (searchQuery) {
-      const searchLower = searchQuery?.toLowerCase();
-      const matchesSearch = 
-        article?.title?.toLowerCase()?.includes(searchLower) ||
-        article?.excerpt?.toLowerCase()?.includes(searchLower) ||
-        article?.category?.toLowerCase()?.includes(searchLower) ||
-        article?.topics?.some(topic => topic?.toLowerCase()?.includes(searchLower)) ||
-        article?.author?.name?.toLowerCase()?.includes(searchLower);
-      
-      if (!matchesSearch) return false;
+      const searchLower = searchQuery.toLowerCase();
+      filtered = filtered.filter(article => 
+        article.title.toLowerCase().includes(searchLower) ||
+        article.excerpt.toLowerCase().includes(searchLower) ||
+        article.category.toLowerCase().includes(searchLower) ||
+        article.topics.some(topic => topic.toLowerCase().includes(searchLower)) ||
+        article.author.name.toLowerCase().includes(searchLower)
+      );
     }
 
     // Category filters
-    if (activeFilters?.category?.length > 0 && !activeFilters?.category?.includes(article?.category)) {
-      return false;
+    if (activeFilters.category.length > 0) {
+      filtered = filtered.filter(article => 
+        activeFilters.category.includes(article.category)
+      );
     }
     
     // Topic filters
-    if (activeFilters?.topic?.length > 0) {
-      const hasMatchingTopic = article?.topics?.some(topic => activeFilters?.topic?.includes(topic));
-      if (!hasMatchingTopic) return false;
+    if (activeFilters.topic.length > 0) {
+      filtered = filtered.filter(article =>
+        article.topics.some(topic => activeFilters.topic.includes(topic))
+      );
     }
     
     // Read time filters
-    if (activeFilters?.readTime?.length > 0) {
-      const readTimeMatch = activeFilters?.readTime?.some(filter => {
-        if (filter === '< 5 min') return article?.readTime < 5;
-        if (filter === '5-10 min') return article?.readTime >= 5 && article?.readTime <= 10;
-        if (filter === '> 10 min') return article?.readTime > 10;
-        return false;
+    if (activeFilters.readTime.length > 0) {
+      filtered = filtered.filter(article => {
+        return activeFilters.readTime.some(filter => {
+          if (filter === '< 5 min') return article.readTime < 5;
+          if (filter === '5-10 min') return article.readTime >= 5 && article.readTime <= 10;
+          if (filter === '> 10 min') return article.readTime > 10;
+          return false;
+        });
       });
-      if (!readTimeMatch) return false;
     }
 
-    return true;
-  })?.sort((a, b) => {
-    switch (sortBy) {
-      case 'newest':
-        return new Date(b?.publishedDate) - new Date(a?.publishedDate);
-      case 'oldest':
-        return new Date(a?.publishedDate) - new Date(b?.publishedDate);
-      case 'popular':
-        return b?.views - a?.views;
-      case 'readTime':
-        return a?.readTime - b?.readTime;
-      default:
-        return 0;
-    }
-  });
+    // Sort
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.publishedDate) - new Date(a.publishedDate);
+        case 'oldest':
+          return new Date(a.publishedDate) - new Date(b.publishedDate);
+        case 'popular':
+          return b.views - a.views;
+        case 'readTime':
+          return a.readTime - b.readTime;
+        default:
+          return 0;
+      }
+    });
 
-  const handleFilterChange = (category, value) => {
+    return filtered;
+  }, [articles, searchQuery, activeFilters, sortBy]);
+
+  // Memoized callbacks
+  const handleFilterChange = useCallback((category, value) => {
     setActiveFilters(prev => ({
       ...prev,
-      [category]: prev?.[category]?.includes(value)
-        ? prev?.[category]?.filter(item => item !== value)
-        : [...prev?.[category], value]
+      [category]: prev[category].includes(value)
+        ? prev[category].filter(item => item !== value)
+        : [...prev[category], value]
     }));
-  };
+  }, []);
 
-  const handleClearFilters = () => {
+  const handleClearFilters = useCallback(() => {
     setActiveFilters({
       category: [],
       topic: [],
       readTime: []
     });
     setSearchQuery('');
-  };
+  }, []);
 
-  const handleViewArticle = (article) => {
+  const handleViewArticle = useCallback((article) => {
     setSelectedArticle(article);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
     setSelectedArticle(null);
-  };
+  }, []);
 
   return (
     <>
@@ -409,21 +370,21 @@ const ArticlesHub = () => {
           onSortChange={setSortBy}
         />
 
-        {/* Articles Grid - Mobile Optimized */}
+        {/* Articles Grid */}
         <section className="py-8 sm:py-12 md:py-16 bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Results Header - Mobile Responsive */}
+            {/* Results Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 md:mb-8">
               <div>
                 <h2 className="text-lg sm:text-xl md:text-2xl font-heading-regular text-primary tracking-wider uppercase">
-                  <span className="font-heading-regular">{filteredArticles?.length}</span> Article{filteredArticles?.length !== 1 ? 's' : ''}
+                  <span className="font-heading-regular">{filteredArticles.length}</span> Article{filteredArticles.length !== 1 ? 's' : ''}
                 </h2>
-                <p className="text-xs sm:text-sm md:text-base text-text-secondary font-body">
+                <p className="text-xs sm:text-sm md:text-base text-text-secondary font-sans">
                   Insights and expertise from our team
                 </p>
               </div>
               
-              {/* View Toggle - Mobile Visible */}
+              {/* View Toggle */}
               <div className="flex items-center space-x-2">
                 <Button
                   variant="ghost"
@@ -446,26 +407,24 @@ const ArticlesHub = () => {
               </div>
             </div>
 
-            {/* Articles - Grid or List View with Responsive Spacing */}
-            {filteredArticles?.length > 0 ? (
+            {/* Articles Display */}
+            {filteredArticles.length > 0 ? (
               <div className="transition-all duration-300 ease-in-out">
                 {viewMode === 'grid' ? (
-                  // Grid View - Mobile Optimized
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 animate-fade-in">
-                    {filteredArticles?.map((article) => (
+                    {filteredArticles.map((article) => (
                       <ArticleCard
-                        key={article?.id}
+                        key={article.id}
                         article={article}
                         onViewDetails={handleViewArticle}
                       />
                     ))}
                   </div>
                 ) : (
-                  // List View - Mobile Optimized
                   <div className="space-y-4 sm:space-y-6 animate-fade-in">
-                    {filteredArticles?.map((article) => (
+                    {filteredArticles.map((article) => (
                       <ArticleListItem
-                        key={article?.id}
+                        key={article.id}
                         article={article}
                         onViewDetails={handleViewArticle}
                       />
@@ -481,7 +440,7 @@ const ArticlesHub = () => {
                 <h3 className="text-base sm:text-lg md:text-xl font-heading-regular text-primary mb-2 tracking-wider uppercase">
                   No articles found
                 </h3>
-                <p className="text-xs sm:text-sm md:text-base text-text-secondary mb-3 sm:mb-4 md:mb-6 font-body">
+                <p className="text-xs sm:text-sm md:text-base text-text-secondary mb-3 sm:mb-4 md:mb-6 font-sans">
                   Try adjusting your filters or search terms
                 </p>
                 <Button

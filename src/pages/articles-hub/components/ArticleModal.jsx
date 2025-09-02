@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from '../../../components/AppImage';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
-const ArticleModal = ({ article, isOpen, onClose }) => {
+const ArticleModal = React.memo(({ article, isOpen, onClose }) => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
@@ -19,18 +19,16 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
     };
   }, [isOpen]);
 
-  if (!isOpen || !article) return null;
-
-  const formatDate = (dateString) => {
+  const formatDate = useCallback((dateString) => {
     const date = new Date(dateString);
     return date?.toLocaleDateString('en-US', { 
       month: 'long', 
       day: 'numeric',
       year: 'numeric'
     });
-  };
+  }, []);
 
-  const handleShare = () => {
+  const handleShare = useCallback(() => {
     if (navigator.share) {
       navigator.share({
         title: article?.title,
@@ -42,7 +40,9 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
       navigator.clipboard.writeText(window.location.href);
       alert('Link copied to clipboard!');
     }
-  };
+  }, [article]);
+
+  if (!isOpen || !article) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -52,7 +52,7 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
         onClick={onClose}
       ></div>
       
-      {/* Modal Content - Mobile Optimized */}
+      {/* Modal Content */}
       <div className="relative w-full max-w-4xl h-[90vh] mx-4 bg-white rounded-t-2xl sm:rounded-2xl overflow-hidden brand-shadow-lg">
         {/* Mobile Drag Handle */}
         <div className="sm:hidden w-12 h-1 bg-gray-300 rounded-full mx-auto mt-3 mb-2"></div>
@@ -69,7 +69,7 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
               >
                 <Icon name="X" size={20} />
               </Button>
-              <span className="text-sm text-text-secondary font-body">
+              <span className="text-sm text-text-secondary font-sans">
                 {article?.readTime} min read
               </span>
             </div>
@@ -115,7 +115,7 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
             
-            {/* Category Badge */}
+            {/* Category Badge - Steelfish */}
             <div className="absolute bottom-4 left-4">
               <span className="px-3 py-1 bg-accent text-white text-sm font-heading-regular tracking-wider uppercase rounded-full">
                 {article?.category}
@@ -125,12 +125,12 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
 
           {/* Article Body */}
           <div className="px-4 sm:px-8 lg:px-12 py-6 sm:py-8 max-w-3xl mx-auto">
-            {/* Title - Using Steelfish */}
+            {/* Title - Steelfish */}
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading-regular text-primary mb-4 tracking-wider uppercase">
               {article?.title}
             </h1>
 
-            {/* Author Info */}
+            {/* Author Info - Helvetica */}
             <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-200">
               <div className="flex items-center space-x-3">
                 <img
@@ -139,16 +139,16 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
                   className="w-12 h-12 rounded-full"
                 />
                 <div>
-                  <p className="font-body font-semibold text-primary">
+                  <p className="font-sans font-semibold text-primary">
                     {article?.author?.name}
                   </p>
-                  <p className="text-sm text-text-secondary font-body">
+                  <p className="text-sm text-text-secondary font-sans">
                     {article?.author?.role} • {formatDate(article?.publishedDate)}
                   </p>
                 </div>
               </div>
               
-              {/* Stats - Using Steelfish for numbers */}
+              {/* Stats - Steelfish for numbers */}
               <div className="hidden sm:flex items-center space-x-4 text-sm text-text-secondary">
                 <span className="flex items-center gap-1">
                   <Icon name="Eye" size={16} />
@@ -161,24 +161,23 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
               </div>
             </div>
 
-            {/* Article Excerpt - Using Helvetica */}
-            <p className="text-lg text-text-secondary mb-8 leading-relaxed font-body font-medium">
+            {/* Article Excerpt - Helvetica */}
+            <p className="text-lg text-text-secondary mb-8 leading-relaxed font-sans font-medium">
               {article?.excerpt}
             </p>
 
-            {/* Main Content - Using Helvetica */}
+            {/* Main Content - Helvetica */}
             <div className="prose prose-lg max-w-none mb-8">
-              <p className="text-text-primary leading-relaxed mb-6 font-body">
+              <p className="text-text-primary leading-relaxed mb-6 font-sans">
                 {article?.content}
               </p>
               
-              {/* Add more content sections as needed */}
-              <p className="text-text-primary leading-relaxed mb-6 font-body">
+              <p className="text-text-primary leading-relaxed mb-6 font-sans">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
               </p>
             </div>
 
-            {/* Key Takeaways */}
+            {/* Key Takeaways - Mixed Typography */}
             {article?.keyTakeaways && (
               <div className="bg-accent/5 border-l-4 border-accent p-6 rounded-lg mb-8">
                 <h3 className="text-lg font-heading-regular text-primary mb-4 flex items-center gap-2 tracking-wider uppercase">
@@ -189,21 +188,21 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
                   {article?.keyTakeaways?.map((takeaway, index) => (
                     <li key={index} className="flex items-start gap-2">
                       <Icon name="Check" size={16} className="text-accent mt-1 flex-shrink-0" />
-                      <span className="text-text-secondary font-body">{takeaway}</span>
+                      <span className="text-text-secondary font-sans">{takeaway}</span>
                     </li>
                   ))}
                 </ul>
               </div>
             )}
 
-            {/* Topics */}
+            {/* Topics - Helvetica */}
             <div className="mb-8">
               <h3 className="text-sm font-heading-regular text-text-secondary mb-3 tracking-wider uppercase">Topics</h3>
               <div className="flex flex-wrap gap-2">
                 {article?.topics?.map((topic, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-muted text-sm text-text-secondary rounded-full hover:bg-accent/10 hover:text-accent cursor-pointer transition-colors font-body"
+                    className="px-3 py-1 bg-muted text-sm text-text-secondary rounded-full hover:bg-accent/10 hover:text-accent cursor-pointer transition-colors font-sans"
                   >
                     {topic}
                   </span>
@@ -211,7 +210,7 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
               </div>
             </div>
 
-            {/* Author Bio */}
+            {/* Author Bio - Mixed Typography */}
             <div className="bg-gray-50 rounded-lg p-6 mb-8">
               <div className="flex items-start space-x-4">
                 <img
@@ -223,10 +222,10 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
                   <h3 className="font-heading-regular text-primary mb-1 tracking-wider uppercase">
                     About {article?.author?.name}
                   </h3>
-                  <p className="text-sm text-text-secondary mb-3 font-body">
+                  <p className="text-sm text-text-secondary mb-3 font-sans">
                     {article?.author?.role} at Rule27 Design
                   </p>
-                  <p className="text-sm text-text-secondary font-body">
+                  <p className="text-sm text-text-secondary font-sans">
                     With over 10 years of experience in digital design and strategy, {article?.author?.name} leads our creative initiatives and helps brands discover their authentic voice in the digital landscape.
                   </p>
                 </div>
@@ -237,7 +236,7 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
             <div className="border-t border-gray-200 pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-text-secondary mb-2 font-body">Share this article</p>
+                  <p className="text-sm text-text-secondary mb-2 font-sans">Share this article</p>
                   <div className="flex items-center space-x-2">
                     <Button
                       variant="ghost"
@@ -289,6 +288,8 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
       </div>
     </div>
   );
-};
+});
+
+ArticleModal.displayName = 'ArticleModal';
 
 export default ArticleModal;

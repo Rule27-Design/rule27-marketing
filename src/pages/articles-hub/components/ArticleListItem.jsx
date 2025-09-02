@@ -3,7 +3,7 @@ import Image from '../../../components/AppImage';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
-const ArticleListItem = ({ article, onViewDetails }) => {
+const ArticleListItem = React.memo(({ article, onViewDetails }) => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -26,12 +26,13 @@ const ArticleListItem = ({ article, onViewDetails }) => {
   return (
     <div className="group relative bg-white rounded-xl overflow-hidden brand-shadow hover:brand-shadow-lg transition-all duration-500">
       <div className="flex flex-col lg:flex-row">
-        {/* Image Section - Mobile Optimized */}
-        <div className="relative w-full lg:w-80 h-48 lg:h-64 overflow-hidden flex-shrink-0">
+        {/* Image Section with Lazy Loading */}
+        <div className="relative w-full lg:w-80 h-48 lg:h-64 overflow-hidden flex-shrink-0 bg-gray-100">
           <Image
             src={article?.featuredImage}
             alt={`${article?.title} featured image`}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            loading="lazy"
           />
           
           {/* Featured Badge on Image */}
@@ -44,10 +45,10 @@ const ArticleListItem = ({ article, onViewDetails }) => {
           )}
         </div>
 
-        {/* Content Section - Mobile Optimized */}
+        {/* Content Section */}
         <div className="flex-1 p-4 sm:p-5 lg:p-8">
           <div className="flex flex-col h-full">
-            {/* Header with badges - Mobile Responsive */}
+            {/* Header with badges - Mixed Typography */}
             <div className="flex flex-wrap items-center gap-2 mb-3">
               {article?.featured && (
                 <span className="px-2 sm:px-3 py-1 bg-accent text-white text-xs font-heading-regular tracking-wider uppercase rounded-full flex items-center gap-1">
@@ -58,77 +59,84 @@ const ArticleListItem = ({ article, onViewDetails }) => {
               <span className="px-2 sm:px-3 py-1 bg-muted text-xs font-heading-regular tracking-wider uppercase text-primary rounded-full">
                 {article?.category}
               </span>
-              <span className="px-2 sm:px-3 py-1 bg-black/10 text-xs font-body font-medium rounded-full flex items-center gap-1">
+              <span className="px-2 sm:px-3 py-1 bg-black/10 text-xs font-sans font-medium rounded-full flex items-center gap-1">
                 <Icon name="Clock" size={12} />
                 {article?.readTime} min read
               </span>
-              <span className="hidden sm:inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full font-body">
+              <span className="hidden sm:inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full font-sans">
                 {formatDate(article?.publishedDate)}
               </span>
             </div>
 
-            {/* Title - Mobile Responsive */}
+            {/* Title - Steelfish */}
             <h3 className="text-base sm:text-lg lg:text-2xl font-heading-regular text-primary mb-3 group-hover:text-accent transition-colors duration-300 tracking-wider uppercase">
               {article?.title}
             </h3>
 
-            {/* Excerpt - Mobile Responsive */}
-            <p className="text-text-secondary text-xs sm:text-sm lg:text-base mb-4 line-clamp-2 lg:line-clamp-3 font-body">
+            {/* Excerpt - Helvetica */}
+            <p className="text-text-secondary text-xs sm:text-sm lg:text-base mb-4 line-clamp-2 lg:line-clamp-3 font-sans">
               {article?.excerpt}
             </p>
 
-            {/* Author Info - Mobile Responsive */}
+            {/* Author Info - Helvetica */}
             <div className="flex items-center space-x-2 sm:space-x-3 mb-4">
               <img
                 src={article?.author?.avatar}
                 alt={article?.author?.name}
                 className="w-8 h-8 sm:w-10 sm:h-10 rounded-full"
+                loading="lazy"
               />
               <div>
-                <p className="font-body font-medium text-primary text-xs sm:text-sm">
+                <p className="font-sans font-medium text-primary text-xs sm:text-sm">
                   {article?.author?.name}
                 </p>
-                <p className="text-[10px] sm:text-xs text-text-secondary font-body">
+                <p className="text-[10px] sm:text-xs text-text-secondary font-sans">
                   {article?.author?.role} • {formatDate(article?.publishedDate)}
                 </p>
               </div>
             </div>
 
-            {/* Topics - Mobile Responsive */}
+            {/* Topics - Helvetica */}
             <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4">
               {article?.topics?.map((topic, index) => (
                 <span
                   key={index}
-                  className="px-2 py-1 bg-muted text-[10px] sm:text-xs text-text-secondary rounded-full font-body"
+                  className="px-2 py-1 bg-muted text-[10px] sm:text-xs text-text-secondary rounded-full font-sans"
                 >
                   {topic}
                 </span>
               ))}
             </div>
 
-            {/* Footer with Stats and CTA - Mobile Responsive */}
+            {/* Footer with Stats and CTA */}
             <div className="flex flex-col sm:flex-row lg:items-center justify-between gap-3 sm:gap-4 mt-auto pt-3 sm:pt-4 border-t border-gray-100">
-              {/* Stats - Mobile Responsive */}
-              <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-text-secondary font-body">
+              {/* Stats - Mixed Typography */}
+              <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-text-secondary">
                 <span className="flex items-center gap-1">
                   <Icon name="Eye" size={14} className="sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline font-heading-regular tracking-wider">{article?.views?.toLocaleString()}</span>
-                  <span className="sm:hidden font-heading-regular tracking-wider">{article?.views > 1000 ? `${(article?.views / 1000).toFixed(0)}K` : article?.views}</span>
-                  <span className="hidden sm:inline">views</span>
+                  <span className="font-heading-regular tracking-wider">
+                    {article?.views > 1000 ? 
+                      (window.innerWidth < 640 ? `${(article?.views / 1000).toFixed(0)}K` : article?.views?.toLocaleString()) : 
+                      article?.views}
+                  </span>
+                  <span className="hidden sm:inline font-sans">views</span>
                 </span>
                 <span className="flex items-center gap-1">
                   <Icon name="Heart" size={14} className="sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline font-heading-regular tracking-wider">{article?.likes?.toLocaleString()}</span>
-                  <span className="sm:hidden font-heading-regular tracking-wider">{article?.likes > 1000 ? `${(article?.likes / 1000).toFixed(0)}K` : article?.likes}</span>
-                  <span className="hidden sm:inline">likes</span>
+                  <span className="font-heading-regular tracking-wider">
+                    {article?.likes > 1000 ? 
+                      (window.innerWidth < 640 ? `${(article?.likes / 1000).toFixed(0)}K` : article?.likes?.toLocaleString()) : 
+                      article?.likes}
+                  </span>
+                  <span className="hidden sm:inline font-sans">likes</span>
                 </span>
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1 font-sans">
                   <Icon name="Share2" size={14} className="sm:w-4 sm:h-4" />
                   Share
                 </span>
               </div>
 
-              {/* CTA Buttons - Mobile Responsive */}
+              {/* CTA Buttons - Steelfish */}
               <div className="flex items-center gap-2 sm:gap-3">
                 <Button
                   variant="ghost"
@@ -154,6 +162,8 @@ const ArticleListItem = ({ article, onViewDetails }) => {
       </div>
     </div>
   );
-};
+});
+
+ArticleListItem.displayName = 'ArticleListItem';
 
 export default ArticleListItem;
