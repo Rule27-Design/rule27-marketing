@@ -6,7 +6,6 @@ import Button from '../../../components/ui/Button';
 const ServiceZoneCard = memo(({ zone, isActive, onActivate, onExplore }) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  // Memoize handlers
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
   
@@ -29,20 +28,19 @@ const ServiceZoneCard = memo(({ zone, isActive, onActivate, onExplore }) => {
     >
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5 pointer-events-none">
-        <div className="absolute top-0 right-0 w-24 md:w-32 h-24 md:h-32 bg-accent rounded-full -translate-y-12 md:-translate-y-16 translate-x-12 md:translate-x-16"></div>
-        <div className="absolute bottom-0 left-0 w-20 md:w-24 h-20 md:h-24 bg-primary rounded-full translate-y-10 md:translate-y-12 -translate-x-10 md:-translate-x-12"></div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-accent rounded-full -translate-y-16 translate-x-16"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-primary rounded-full translate-y-12 -translate-x-12"></div>
       </div>
       
-      <div className="relative p-6 md:p-8">
+      <div className="relative p-8">
         {/* Header */}
-        <div className="flex items-start justify-between mb-4 md:mb-6">
-          <div className={`p-3 md:p-4 rounded-xl transition-colors duration-300 ${
+        <div className="flex items-start justify-between mb-6">
+          <div className={`p-4 rounded-xl transition-colors duration-300 ${
             isActive ? 'bg-accent text-white' : 'bg-muted text-primary'
           }`}>
-            <Icon name={zone?.icon} size={24} className="md:hidden" />
-            <Icon name={zone?.icon} size={32} className="hidden md:block" />
+            <Icon name={zone?.icon} size={32} />
           </div>
-          <div className={`text-xs md:text-sm font-medium px-2 md:px-3 py-1 rounded-full transition-colors duration-300 ${
+          <div className={`text-sm font-heading-regular px-3 py-1 rounded-full transition-colors duration-300 uppercase tracking-wider ${
             isActive 
               ? 'bg-accent/20 text-accent' 
               : 'bg-muted text-text-secondary'
@@ -52,23 +50,23 @@ const ServiceZoneCard = memo(({ zone, isActive, onActivate, onExplore }) => {
         </div>
 
         {/* Content */}
-        <div className="space-y-3 md:space-y-4">
-          <h3 className={`text-xl md:text-2xl font-bold transition-colors duration-300 ${
+        <div className="space-y-4">
+          <h3 className={`text-2xl font-heading-regular transition-colors duration-300 uppercase tracking-wider ${
             isActive ? 'text-accent' : 'text-primary'
           }`}>
             {zone?.title}
           </h3>
           
-          <p className="text-sm md:text-base text-text-secondary leading-relaxed line-clamp-3 md:line-clamp-none">
+          <p className="text-text-secondary leading-relaxed font-body">
             {zone?.description}
           </p>
 
           {/* Key Services */}
-          <div className="flex flex-wrap gap-1.5 md:gap-2">
+          <div className="flex flex-wrap gap-2">
             {zone?.keyServices?.slice(0, 3)?.map((service, index) => (
               <span
                 key={index}
-                className={`text-xs px-2 md:px-3 py-1 rounded-full transition-colors duration-300 ${
+                className={`text-xs px-3 py-1 rounded-full transition-colors duration-300 font-body ${
                   isActive 
                     ? 'bg-accent/10 text-accent border border-accent/20' 
                     : 'bg-muted text-text-secondary'
@@ -78,48 +76,48 @@ const ServiceZoneCard = memo(({ zone, isActive, onActivate, onExplore }) => {
               </span>
             ))}
             {zone?.keyServices?.length > 3 && (
-              <span className="text-xs px-2 md:px-3 py-1 rounded-full bg-muted text-text-secondary">
+              <span className="text-xs px-3 py-1 rounded-full bg-muted text-text-secondary font-body">
                 +{zone?.keyServices?.length - 3} more
               </span>
             )}
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 gap-3 md:gap-4 pt-3 md:pt-4 border-t border-border">
+          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
             <div>
-              <div className={`text-xl md:text-2xl font-bold transition-colors duration-300 ${
+              <div className={`text-2xl font-heading-regular transition-colors duration-300 uppercase tracking-wider ${
                 isActive ? 'text-accent' : 'text-primary'
               }`}>
                 {zone?.stats?.projects}+
               </div>
-              <div className="text-xs text-text-secondary">Projects</div>
+              <div className="text-xs text-text-secondary font-body">Projects</div>
             </div>
             <div>
-              <div className={`text-xl md:text-2xl font-bold transition-colors duration-300 ${
+              <div className={`text-2xl font-heading-regular transition-colors duration-300 uppercase tracking-wider ${
                 isActive ? 'text-accent' : 'text-primary'
               }`}>
                 {zone?.stats?.satisfaction}%
               </div>
-              <div className="text-xs text-text-secondary">Satisfaction</div>
+              <div className="text-xs text-text-secondary font-body">Satisfaction</div>
             </div>
           </div>
         </div>
 
         {/* Action Button */}
-        <div className="mt-4 md:mt-6">
+        <div className="mt-6">
           <Button
             variant={isActive ? "default" : "outline"}
             fullWidth
             onClick={handleExplore}
-            className={isActive 
-              ? "bg-accent hover:bg-accent/90 text-sm md:text-base" 
-              : "border-accent text-accent hover:bg-accent hover:text-white text-sm md:text-base"
-            }
+            className={`font-heading-regular uppercase tracking-wider ${
+              isActive 
+                ? "bg-accent hover:bg-accent/90" 
+                : "border-accent text-accent hover:bg-accent hover:text-white"
+            }`}
             iconName="ArrowRight"
             iconPosition="right"
           >
-            <span className="hidden sm:inline">Explore {zone?.title}</span>
-            <span className="sm:hidden">Explore</span>
+            Explore {zone?.title}
           </Button>
         </div>
       </div>
