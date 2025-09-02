@@ -112,27 +112,26 @@ const InteractiveDemo = memo(({ activeZone }) => {
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden">
       {/* Header */}
-      <div className="p-4 md:p-6 border-b border-border bg-gradient-to-r from-accent/5 to-transparent">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="p-6 border-b border-border bg-gradient-to-r from-accent/5 to-transparent">
+        <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg md:text-xl font-bold text-primary">{currentDemo?.title}</h3>
-            <p className="text-sm md:text-base text-text-secondary">{currentDemo?.description}</p>
+            <h3 className="text-xl font-heading-regular text-primary uppercase tracking-wider">{currentDemo?.title}</h3>
+            <p className="text-text-secondary font-body">{currentDemo?.description}</p>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-2 md:w-3 h-2 md:h-3 bg-accent rounded-full animate-pulse"></div>
-            <span className="text-xs md:text-sm text-accent font-medium">Live Demo</span>
+            <div className="w-3 h-3 bg-accent rounded-full animate-pulse"></div>
+            <span className="text-sm text-accent font-heading-regular uppercase tracking-wider">Live Demo</span>
           </div>
         </div>
       </div>
 
-      {/* Demo Tabs - Scrollable on mobile */}
-      <div className="flex border-b border-border bg-muted/30 overflow-x-auto scrollbar-hide">
+      {/* Demo Tabs */}
+      <div className="flex border-b border-border bg-muted/30">
         {currentDemo?.demos?.map((demo, index) => (
           <button
             key={index}
             onClick={() => handleDemoChange(index)}
-            className={`flex-1 min-w-[120px] px-3 md:px-4 py-2.5 md:py-3 text-xs md:text-sm font-medium 
-                     transition-all duration-300 whitespace-nowrap ${
+            className={`flex-1 px-4 py-3 text-sm font-body transition-all duration-300 ${
               activeDemo === index
                 ? 'text-accent border-b-2 border-accent bg-background' 
                 : 'text-text-secondary hover:text-primary hover:bg-muted/50'
@@ -144,29 +143,30 @@ const InteractiveDemo = memo(({ activeZone }) => {
       </div>
 
       {/* Demo Content */}
-      <div className="p-4 md:p-6">
+      <div className="p-6">
         <motion.div
           key={activeDemo}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="space-y-4 md:space-y-6"
+          className="space-y-6"
         >
           {/* Demo Preview */}
           <div className="relative bg-muted rounded-xl overflow-hidden">
             <img
               src={currentDemo?.demos?.[activeDemo]?.preview}
               alt={currentDemo?.demos?.[activeDemo]?.title}
-              className="w-full h-48 md:h-64 object-cover"
+              className="w-full h-64 object-cover"
               loading="lazy"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end">
-              <div className="p-4 md:p-6 text-white">
-                <h4 className="font-bold text-base md:text-lg">{currentDemo?.demos?.[activeDemo]?.title}</h4>
-                <p className="text-white/80 text-xs md:text-sm mt-1">
-                  {currentDemo?.demos?.[activeDemo]?.content}
-                </p>
-              </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            
+            {/* Info Overlay */}
+            <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+              <h4 className="font-heading-regular text-lg uppercase tracking-wider">{currentDemo?.demos?.[activeDemo]?.title}</h4>
+              <p className="text-white/80 text-sm mt-1 font-body">
+                {currentDemo?.demos?.[activeDemo]?.content}
+              </p>
             </div>
             
             {/* Play Button Overlay */}
@@ -175,28 +175,27 @@ const InteractiveDemo = memo(({ activeZone }) => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handlePlayClick}
-                className="w-12 h-12 md:w-16 md:h-16 bg-accent text-white rounded-full 
+                className="w-16 h-16 bg-accent text-white rounded-full 
                          flex items-center justify-center shadow-2xl transition-all duration-300"
                 aria-label="Play demo"
               >
-                <Icon name={isPlaying ? "Pause" : "Play"} size={20} className="md:hidden" />
-                <Icon name={isPlaying ? "Pause" : "Play"} size={24} className="hidden md:block" />
+                <Icon name={isPlaying ? "Pause" : "Play"} size={24} />
               </motion.button>
             </div>
           </div>
 
           {/* Interactive Controls */}
-          <div className="grid sm:grid-cols-2 gap-4 md:gap-6">
-            <div className="space-y-3 md:space-y-4">
-              <h5 className="font-semibold text-primary text-sm md:text-base">Try It Yourself</h5>
-              <div className="space-y-2 md:space-y-3">
-                <div className="flex items-center justify-between p-2.5 md:p-3 bg-muted rounded-lg">
-                  <span className="text-xs md:text-sm text-text-secondary">Complexity Level</span>
+          <div className="grid sm:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <h5 className="font-heading-regular text-primary uppercase tracking-wider">Try It Yourself</h5>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <span className="text-sm text-text-secondary font-body">Complexity Level</span>
                   <div className="flex space-x-1">
                     {[1, 2, 3, 4, 5]?.map((level) => (
                       <div
                         key={level}
-                        className={`w-2 md:w-3 h-2 md:h-3 rounded-full transition-colors duration-300 ${
+                        className={`w-3 h-3 rounded-full transition-colors duration-300 ${
                           level <= 3 ? 'bg-accent' : 'bg-border'
                         }`}
                       />
@@ -204,46 +203,41 @@ const InteractiveDemo = memo(({ activeZone }) => {
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-between p-2.5 md:p-3 bg-muted rounded-lg">
-                  <span className="text-xs md:text-sm text-text-secondary">Customization</span>
+                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <span className="text-sm text-text-secondary font-body">Customization</span>
                   <div className="flex items-center space-x-2">
-                    <div className="w-10 md:w-12 h-5 md:h-6 bg-accent rounded-full relative">
-                      <div className="w-4 md:w-5 h-4 md:h-5 bg-white rounded-full absolute 
+                    <div className="w-12 h-6 bg-accent rounded-full relative">
+                      <div className="w-5 h-5 bg-white rounded-full absolute 
                                     top-0.5 right-0.5 transition-transform duration-300"></div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-between p-2.5 md:p-3 bg-muted rounded-lg">
-                  <span className="text-xs md:text-sm text-text-secondary">Real-time Updates</span>
-                  <Icon name="Check" size={14} className="text-accent md:hidden" />
-                  <Icon name="Check" size={16} className="text-accent hidden md:block" />
+                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <span className="text-sm text-text-secondary font-body">Real-time Updates</span>
+                  <Icon name="Check" size={16} className="text-accent" />
                 </div>
               </div>
             </div>
 
-            <div className="space-y-3 md:space-y-4">
-              <h5 className="font-semibold text-primary text-sm md:text-base">Features</h5>
+            <div className="space-y-4">
+              <h5 className="font-heading-regular text-primary uppercase tracking-wider">Features</h5>
               <ul className="space-y-2">
                 <li className="flex items-center space-x-2">
-                  <Icon name="Zap" size={14} className="text-accent flex-shrink-0 md:hidden" />
-                  <Icon name="Zap" size={16} className="text-accent flex-shrink-0 hidden md:block" />
-                  <span className="text-xs md:text-sm text-text-secondary">Instant preview</span>
+                  <Icon name="Zap" size={16} className="text-accent flex-shrink-0" />
+                  <span className="text-sm text-text-secondary font-body">Instant preview</span>
                 </li>
                 <li className="flex items-center space-x-2">
-                  <Icon name="Download" size={14} className="text-accent flex-shrink-0 md:hidden" />
-                  <Icon name="Download" size={16} className="text-accent flex-shrink-0 hidden md:block" />
-                  <span className="text-xs md:text-sm text-text-secondary">Export results</span>
+                  <Icon name="Download" size={16} className="text-accent flex-shrink-0" />
+                  <span className="text-sm text-text-secondary font-body">Export results</span>
                 </li>
                 <li className="flex items-center space-x-2">
-                  <Icon name="Share" size={14} className="text-accent flex-shrink-0 md:hidden" />
-                  <Icon name="Share" size={16} className="text-accent flex-shrink-0 hidden md:block" />
-                  <span className="text-xs md:text-sm text-text-secondary">Share with team</span>
+                  <Icon name="Share" size={16} className="text-accent flex-shrink-0" />
+                  <span className="text-sm text-text-secondary font-body">Share with team</span>
                 </li>
                 <li className="flex items-center space-x-2">
-                  <Icon name="History" size={14} className="text-accent flex-shrink-0 md:hidden" />
-                  <Icon name="History" size={16} className="text-accent flex-shrink-0 hidden md:block" />
-                  <span className="text-xs md:text-sm text-text-secondary">Version history</span>
+                  <Icon name="History" size={16} className="text-accent flex-shrink-0" />
+                  <span className="text-sm text-text-secondary font-body">Version history</span>
                 </li>
               </ul>
             </div>
@@ -253,27 +247,25 @@ const InteractiveDemo = memo(({ activeZone }) => {
           <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
             <Button
               variant="default"
-              className="bg-accent hover:bg-accent/90 text-sm md:text-base"
+              className="bg-accent hover:bg-accent/90 font-heading-regular uppercase tracking-wider"
               iconName="Play"
               iconPosition="left"
               fullWidth
             >
-              <span className="hidden sm:inline">Launch Full Demo</span>
-              <span className="sm:hidden">Full Demo</span>
+              Launch Full Demo
             </Button>
             <Button
               variant="outline"
-              className="border-accent text-accent hover:bg-accent hover:text-white text-sm md:text-base"
+              className="border-accent text-accent hover:bg-accent hover:text-white font-heading-regular uppercase tracking-wider"
               iconName="Calendar"
               iconPosition="left"
               fullWidth
             >
-              <span className="hidden sm:inline">Schedule Demo Call</span>
-              <span className="sm:hidden">Schedule Call</span>
+              Schedule Demo Call
             </Button>
             <Button
               variant="ghost"
-              className="text-accent hover:bg-accent/10 text-sm md:text-base hidden sm:flex"
+              className="text-accent hover:bg-accent/10 font-body hidden sm:flex"
               iconName="ExternalLink"
               iconPosition="right"
             >
@@ -289,12 +281,3 @@ const InteractiveDemo = memo(({ activeZone }) => {
 InteractiveDemo.displayName = 'InteractiveDemo';
 
 export default InteractiveDemo;
-
-// Add this CSS to your global styles or tailwind config
-// .scrollbar-hide {
-//   -ms-overflow-style: none;
-//   scrollbar-width: none;
-// }
-// .scrollbar-hide::-webkit-scrollbar {
-//   display: none;
-// }

@@ -26,7 +26,7 @@ const CapabilityUniverse = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Complete detailed services data with all 30 services
+  // Complete detailed services data - Memoized for performance
   const detailedServices = useMemo(() => [
     // CREATIVE STUDIO SERVICES (5 services)
     {
@@ -1091,20 +1091,15 @@ const CapabilityUniverse = () => {
     }
   ], []);
 
-  // Memoize service zones with correct counts
+  // Service zones with optimized data structure
   const serviceZones = useMemo(() => {
-    const creativeCount = detailedServices.filter(s => s.category === 'Creative Studio').length;
-    const marketingCount = detailedServices.filter(s => s.category === 'Digital Marketing Command').length;
-    const developmentCount = detailedServices.filter(s => s.category === 'Development Lab').length;
-    const advisoryCount = detailedServices.filter(s => s.category === 'Executive Advisory').length;
-
-    return [
+    const zones = [
       {
         id: 'creative-studio',
         title: 'Creative Studio',
         icon: 'Palette',
         description: 'Transform your brand identity with cutting-edge creative solutions that captivate audiences and drive engagement across all touchpoints.',
-        serviceCount: creativeCount,
+        serviceCount: 5,
         keyServices: ['Graphic Design', 'Motion Graphics', 'Videography', 'Photography', 'Content Writing'],
         stats: { projects: 150, satisfaction: 98 }
       },
@@ -1113,7 +1108,7 @@ const CapabilityUniverse = () => {
         title: 'Digital Marketing Command',
         icon: 'Target',
         description: 'Data-driven marketing strategies that deliver measurable results through performance optimization and strategic channel management.',
-        serviceCount: marketingCount,
+        serviceCount: 8,
         keyServices: ['SEO', 'SEM', 'Social Media Marketing', 'Email Marketing', 'PPC'],
         stats: { projects: 200, satisfaction: 96 }
       },
@@ -1122,7 +1117,7 @@ const CapabilityUniverse = () => {
         title: 'Development Lab',
         icon: 'Code',
         description: 'Custom technical solutions built with modern technologies to solve complex business challenges and enhance operational efficiency.',
-        serviceCount: developmentCount,
+        serviceCount: 11,
         keyServices: ['Web Development', 'Mobile Apps', 'CRM Implementation', 'Cloud Solutions', 'Integrations'],
         stats: { projects: 120, satisfaction: 99 }
       },
@@ -1131,21 +1126,22 @@ const CapabilityUniverse = () => {
         title: 'Executive Advisory',
         icon: 'Users',
         description: 'Strategic leadership and fractional executive services to guide business growth and navigate complex market challenges.',
-        serviceCount: advisoryCount,
+        serviceCount: 7,
         keyServices: ['Business Consulting', 'Fractional CTO', 'Fractional CMO', 'Fractional COO', 'Operation Disruption'],
         stats: { projects: 80, satisfaction: 100 }
       }
     ];
-  }, [detailedServices]);
+    return zones;
+  }, []);
 
-  // Memoize filter categories with correct counts
+  // Filter categories with accurate counts
   const filterCategories = useMemo(() => [
-    { id: 'all', name: 'All Services', icon: 'Grid', count: detailedServices.length },
-    { id: 'Creative Studio', name: 'Creative Studio', icon: 'Palette', count: detailedServices.filter(s => s.category === 'Creative Studio').length },
-    { id: 'Digital Marketing Command', name: 'Marketing Command', icon: 'Target', count: detailedServices.filter(s => s.category === 'Digital Marketing Command').length },
-    { id: 'Development Lab', name: 'Development Lab', icon: 'Code', count: detailedServices.filter(s => s.category === 'Development Lab').length },
-    { id: 'Executive Advisory', name: 'Executive Advisory', icon: 'Users', count: detailedServices.filter(s => s.category === 'Executive Advisory').length }
-  ], [detailedServices]);
+    { id: 'all', name: 'All Services', icon: 'Grid', count: 31 },
+    { id: 'Creative Studio', name: 'Creative Studio', icon: 'Palette', count: 5 },
+    { id: 'Digital Marketing Command', name: 'Marketing Command', icon: 'Target', count: 8 },
+    { id: 'Development Lab', name: 'Development Lab', icon: 'Code', count: 11 },
+    { id: 'Executive Advisory', name: 'Executive Advisory', icon: 'Users', count: 7 }
+  ], []);
 
   // Optimize filtering with useMemo
   useEffect(() => {
@@ -1167,14 +1163,13 @@ const CapabilityUniverse = () => {
     setFilteredServices(filtered);
   }, [activeCategory, searchTerm, detailedServices]);
 
-  // Memoize handlers
+  // Memoized callbacks for performance
   const handleZoneActivate = useCallback((zoneId) => {
     setActiveZone(zoneId);
   }, []);
 
   const handleZoneExplore = useCallback((zone) => {
     setActiveZone(zone.id);
-    // Smooth scroll with fallback
     const element = document.getElementById('services-section');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1199,14 +1194,9 @@ const CapabilityUniverse = () => {
     setSelectedService(null);
   }, []);
 
-  // Handler for quick actions
   const handleQuickAction = useCallback((action) => {
-    // All quick actions go to consultation page for now
     navigate('/contact');
   }, [navigate]);
-
-  // Rest of the component remains the same as before...
-  // (Hero, Service Zones, Interactive Demo, Services Grid, Assessment, CTA sections)
 
   return (
     <>
@@ -1217,21 +1207,10 @@ const CapabilityUniverse = () => {
           content="From brand strategy to development, discover our comprehensive digital services. Creative studio, marketing command, development lab, and executive advisory." 
         />
         <meta name="keywords" content="digital agency services, creative studio, marketing command, development lab, executive advisory, capability assessment, full-stack services, digital transformation" />
-        
-        {/* Open Graph */}
-        <meta property="og:title" content="Capabilities | Rule27 Design  - Full-Stack Digital Services" />
-        <meta property="og:description" content="From brand strategy to development, discover our comprehensive digital services. Creative studio, marketing command, development lab, and executive advisory." />
+        <meta property="og:title" content="Capabilities | Rule27 Design - Full-Stack Digital Services" />
+        <meta property="og:description" content="From brand strategy to development, discover our comprehensive digital services." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://rule27design.com/capabilities" />
-        <meta property="og:image" content="/assets/og-image.jpg" />
-        
-        {/* Twitter Card */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Capabilities | Rule27 Design  - Full-Stack Digital Services" />
-        <meta name="twitter:description" content="From brand strategy to development, discover our comprehensive digital services. Creative studio, marketing command, development lab, and executive advisory." />
-        <meta name="twitter:image" content="/assets/og-image.jpg" />
-        
-        {/* Canonical */}
         <link rel="canonical" href="https://rule27design.com/capabilities" />
       </Helmet>
       
@@ -1239,35 +1218,28 @@ const CapabilityUniverse = () => {
         <Header />
         
         <main className="pt-16">
-          {/* Hero Section */}
-          <section className="py-12 md:py-16 lg:py-24 bg-gradient-to-br from-background via-muted/30 to-background">
+          {/* Hero Section - Optimized Typography */}
+          <section className="py-16 md:py-24 bg-gradient-to-br from-background via-muted/30 to-background">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center space-y-6 md:space-y-8">
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8 }}
-                  className="space-y-4"
-                >
-                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary">
-                    Capability <span className="text-accent">Universe</span>
-                  </h1>
-                  <p className="text-lg md:text-xl text-text-secondary max-w-3xl mx-auto leading-relaxed px-4">
-                    Four distinct experience zones showcase Rule27 Design's comprehensive service mastery through immersive, 
-                    interactive presentations. Discover the perfect solution for your business transformation.
-                  </p>
-                </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="text-center space-y-6"
+              >
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-heading-regular text-primary uppercase tracking-wider">
+                  Capability <span className="text-accent">Universe</span>
+                </h1>
+                <p className="text-lg md:text-xl text-text-secondary max-w-3xl mx-auto font-body">
+                  Four distinct experience zones showcase Rule27 Design's comprehensive service mastery through immersive, 
+                  interactive presentations. Discover the perfect solution for your business transformation.
+                </p>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
-                  className="flex flex-col sm:flex-row gap-4 justify-center px-4"
-                >
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button
                     variant="default"
                     size="lg"
-                    className="bg-accent hover:bg-accent/90 w-full sm:w-auto"
+                    className="bg-accent hover:bg-accent/90 font-heading-regular uppercase tracking-wider"
                     iconName="Zap"
                     iconPosition="left"
                     onClick={() => document.getElementById('zones-section')?.scrollIntoView({ behavior: 'smooth' })}
@@ -1277,31 +1249,31 @@ const CapabilityUniverse = () => {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="border-accent text-accent hover:bg-accent hover:text-white w-full sm:w-auto"
+                    className="border-accent text-accent hover:bg-accent hover:text-white font-heading-regular uppercase tracking-wider"
                     iconName="Calculator"
                     iconPosition="left"
                     onClick={() => document.getElementById('assessment-section')?.scrollIntoView({ behavior: 'smooth' })}
                   >
                     Take Assessment
                   </Button>
-                </motion.div>
-              </div>
+                </div>
+              </motion.div>
             </div>
           </section>
 
           {/* Service Zones Section */}
-          <section id="zones-section" className="py-12 md:py-16 bg-muted/20">
+          <section id="zones-section" className="py-16 md:py-20 bg-muted/20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-8 md:mb-12">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-4">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading-regular text-primary mb-4 uppercase tracking-wider">
                   Service Experience Zones
                 </h2>
-                <p className="text-base md:text-lg text-text-secondary max-w-2xl mx-auto px-4">
+                <p className="text-lg text-text-secondary max-w-2xl mx-auto font-body">
                   Each zone represents a core competency area with specialized expertise and proven methodologies
                 </p>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+              <div className="grid md:grid-cols-2 gap-8">
                 {serviceZones.map((zone) => (
                   <ServiceZoneCard
                     key={zone.id}
@@ -1316,13 +1288,13 @@ const CapabilityUniverse = () => {
           </section>
 
           {/* Interactive Demo Section */}
-          <section className="py-12 md:py-16 bg-background">
+          <section className="py-16 md:py-20 bg-background">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-8 md:mb-12">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-4">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading-regular text-primary mb-4 uppercase tracking-wider">
                   Interactive Demonstrations
                 </h2>
-                <p className="text-base md:text-lg text-text-secondary max-w-2xl mx-auto px-4">
+                <p className="text-lg text-text-secondary max-w-2xl mx-auto font-body">
                   Experience our capabilities through live, interactive demonstrations
                 </p>
               </div>
@@ -1332,19 +1304,19 @@ const CapabilityUniverse = () => {
           </section>
 
           {/* Detailed Services Section */}
-          <section id="services-section" className="py-12 md:py-16 bg-muted/20">
+          <section id="services-section" className="py-16 md:py-20 bg-muted/20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-8 md:mb-12">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-4">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading-regular text-primary mb-4 uppercase tracking-wider">
                   Detailed Service Catalog
                 </h2>
-                <p className="text-base md:text-lg text-text-secondary max-w-2xl mx-auto px-4">
+                <p className="text-lg text-text-secondary max-w-2xl mx-auto font-body">
                   Explore our comprehensive service offerings with detailed information and case studies
                 </p>
               </div>
 
-              <div className="grid lg:grid-cols-4 gap-6 md:gap-8">
-                {/* Filter Sidebar - Pass the quick action handler */}
+              <div className="grid lg:grid-cols-4 gap-8">
+                {/* Filter Sidebar */}
                 <div className="lg:col-span-1">
                   <div className="sticky top-20">
                     <CapabilityFilter
@@ -1360,40 +1332,44 @@ const CapabilityUniverse = () => {
 
                 {/* Services Grid */}
                 <div className="lg:col-span-3">
-                  <div className="grid sm:grid-cols-2 gap-4 md:gap-6">
+                  <div className="grid sm:grid-cols-2 gap-6">
                     {filteredServices.map((service) => (
                       <motion.div
                         key={service.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
-                        className="bg-card border border-border rounded-2xl p-4 md:p-6 hover:shadow-lg transition-all duration-300 cursor-pointer"
+                        className="bg-card border border-border rounded-2xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer group"
                         onClick={() => handleServiceSelect(service)}
                       >
                         <div className="flex items-start justify-between mb-4">
-                          <div className="p-3 bg-accent/10 rounded-xl">
+                          <div className="p-3 bg-accent/10 rounded-xl group-hover:bg-accent/20 transition-colors">
                             <Icon name={service.icon} size={24} className="text-accent" />
                           </div>
-                          <span className="text-xs px-2 py-1 bg-muted text-text-secondary rounded-full">
+                          <span className="text-xs px-3 py-1 bg-muted text-text-secondary rounded-full font-body">
                             {service.category}
                           </span>
                         </div>
 
-                        <h3 className="text-lg md:text-xl font-bold text-primary mb-2">{service.title}</h3>
-                        <p className="text-sm md:text-base text-text-secondary mb-4 line-clamp-2">{service.description}</p>
+                        <h3 className="text-xl font-heading-regular text-primary mb-2 group-hover:text-accent transition-colors uppercase tracking-wider">
+                          {service.title}
+                        </h3>
+                        <p className="text-text-secondary mb-4 line-clamp-2 font-body">
+                          {service.description}
+                        </p>
 
                         <div className="flex items-center justify-between">
                           <div className="flex flex-wrap gap-2">
                             {service.features?.slice(0, 2).map((feature, index) => (
                               <span
                                 key={index}
-                                className="text-xs px-2 py-1 bg-muted text-text-secondary rounded-full"
+                                className="text-xs px-2 py-1 bg-muted text-text-secondary rounded-full font-body"
                               >
                                 {feature.length > 20 ? feature.substring(0, 20) + '...' : feature}
                               </span>
                             ))}
                           </div>
-                          <Icon name="ArrowRight" size={16} className="text-accent flex-shrink-0" />
+                          <Icon name="ArrowRight" size={16} className="text-accent opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                       </motion.div>
                     ))}
@@ -1402,8 +1378,8 @@ const CapabilityUniverse = () => {
                   {filteredServices.length === 0 && (
                     <div className="text-center py-12">
                       <Icon name="Search" size={48} className="text-text-secondary mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold text-primary mb-2">No services found</h3>
-                      <p className="text-text-secondary">Try adjusting your search or filter criteria</p>
+                      <h3 className="text-xl font-heading-regular text-primary mb-2 uppercase tracking-wider">No services found</h3>
+                      <p className="text-text-secondary font-body">Try adjusting your search or filter criteria</p>
                     </div>
                   )}
                 </div>
@@ -1412,13 +1388,13 @@ const CapabilityUniverse = () => {
           </section>
 
           {/* Capability Assessment Section */}
-          <section id="assessment-section" className="py-12 md:py-16 bg-background">
+          <section id="assessment-section" className="py-16 md:py-20 bg-background">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-8 md:mb-12">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-4">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading-regular text-primary mb-4 uppercase tracking-wider">
                   Capability Assessment
                 </h2>
-                <p className="text-base md:text-lg text-text-secondary max-w-2xl mx-auto px-4">
+                <p className="text-lg text-text-secondary max-w-2xl mx-auto font-body">
                   Get personalized service recommendations based on your business needs and goals
                 </p>
               </div>
@@ -1427,13 +1403,13 @@ const CapabilityUniverse = () => {
             </div>
           </section>
 
-          {/* CTA Section */}
-          <section className="py-12 md:py-16 bg-gradient-to-r from-primary to-accent text-white">
+          {/* CTA Section - Optimized Typography */}
+          <section className="py-16 md:py-20 bg-gradient-to-r from-primary to-accent text-white">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading-regular mb-4 uppercase tracking-wider">
                 Ready to Transform Your Business?
               </h2>
-              <p className="text-lg md:text-xl mb-8 opacity-90">
+              <p className="text-xl mb-8 opacity-90 font-body">
                 Let's discuss how our capabilities can drive your success
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -1442,7 +1418,7 @@ const CapabilityUniverse = () => {
                   size="lg"
                   iconName="Calendar"
                   iconPosition="left"
-                  className="bg-white text-primary hover:bg-white/90 w-full sm:w-auto"
+                  className="bg-white text-primary hover:bg-white/90 font-heading-regular uppercase tracking-wider"
                   onClick={() => navigate('/contact')}
                 >
                   Schedule Strategy Call
@@ -1452,7 +1428,7 @@ const CapabilityUniverse = () => {
                   size="lg"
                   iconName="MessageCircle"
                   iconPosition="left"
-                  className="border-white text-white hover:bg-white hover:text-primary w-full sm:w-auto"
+                  className="border-white text-white hover:bg-white hover:text-primary font-heading-regular uppercase tracking-wider"
                   onClick={() => navigate('/contact')}
                 >
                   Start Conversation
