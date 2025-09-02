@@ -26,7 +26,7 @@ const AnimatedCounter = ({ value, duration = 2, suffix = "", prefix = "" }) => {
   }, [isInView, numericValue, duration]);
 
   return (
-    <span ref={ref}>
+    <span ref={ref} className="font-heading-regular uppercase">
       {prefix}{count}{suffix}
     </span>
   );
@@ -363,9 +363,9 @@ const AwardsRecognition = () => {
             transition={{ type: "spring", stiffness: 300 }}
           >
             <AppIcon name="Trophy" size={16} className="text-accent" />
-            <span className="text-accent font-semibold text-xs sm:text-sm">Recognition</span>
+            <span className="text-accent font-semibold text-xs sm:text-sm font-sans">Recognition</span>
           </motion.div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4 sm:mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-heading-regular text-primary mb-4 sm:mb-6 uppercase tracking-wider">
             Industry <motion.span 
               className="text-accent"
               initial={{ opacity: 0, x: -20 }}
@@ -374,12 +374,12 @@ const AwardsRecognition = () => {
             >Recognition</motion.span>
           </h2>
           <motion.p 
-            className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4"
+            className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4 font-sans"
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ delay: 0.3, duration: 0.4 }}
           >
-            With <span className="font-bold text-accent"><AnimatedCounter value={totalCertifications} /></span>+ certifications across 9 major platforms, we're not just certified—we're 
+            With <span className="font-heading-regular text-accent uppercase"><AnimatedCounter value={totalCertifications} /></span>+ certifications across 9 major platforms, we're not just certified—we're 
             comprehensively equipped to handle every aspect of your digital transformation.
           </motion.p>
         </motion.div>
@@ -400,7 +400,7 @@ const AwardsRecognition = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setActiveCategory(category?.id)}
-              className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-semibold transition-all duration-300 text-sm sm:text-base ${
+              className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-heading-regular uppercase tracking-wider transition-all duration-300 text-sm sm:text-base ${
                 activeCategory === category?.id
                   ? 'bg-gradient-to-r from-accent to-primary text-white shadow-lg transform scale-105'
                   : 'bg-white text-text-secondary hover:bg-accent/5 hover:text-accent shadow-md'
@@ -409,7 +409,7 @@ const AwardsRecognition = () => {
               <AppIcon name={category?.icon} size={16} className="flex-shrink-0" />
               <span>{category?.label}</span>
               <motion.span 
-                className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
+                className={`ml-2 px-2 py-0.5 rounded-full text-xs font-heading-regular uppercase ${
                   activeCategory === category?.id 
                     ? 'bg-white/20 text-white' 
                     : 'bg-accent/10 text-accent'
@@ -469,10 +469,10 @@ const AwardsRecognition = () => {
                           <AppIcon name={platform?.icon} size={24} className="text-white" />
                         </motion.div>
                         <div>
-                          <h3 className="text-lg sm:text-xl font-bold text-primary group-hover:text-accent transition-colors duration-300">
+                          <h3 className="text-lg sm:text-xl font-heading-regular text-primary group-hover:text-accent transition-colors duration-300 uppercase tracking-wider">
                             {platform?.platform}
                           </h3>
-                          <p className="text-accent font-semibold text-sm">
+                          <p className="text-accent font-heading-regular text-sm uppercase tracking-wider">
                             <AnimatedCounter value={platform?.count} duration={1.5} /> Certifications
                           </p>
                         </div>
@@ -520,12 +520,12 @@ const AwardsRecognition = () => {
                           >
                             <AppIcon name="CheckCircle" size={14} className="text-accent flex-shrink-0" />
                           </motion.div>
-                          <span className="text-text-secondary text-sm">{cert}</span>
+                          <span className="text-text-secondary text-sm font-sans">{cert}</span>
                         </motion.div>
                       ))}
                       {!expandedCertCategory && platform?.certifications.length > 3 && (
                         <motion.p 
-                          className="text-accent text-sm font-medium mt-2"
+                          className="text-accent text-sm font-medium mt-2 font-sans"
                           animate={{ opacity: [0.5, 1, 0.5] }}
                           transition={{ duration: 2, repeat: Infinity }}
                         >
@@ -583,7 +583,7 @@ const AwardsRecognition = () => {
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.2 }}
                       >
-                        <span className="inline-block px-2 sm:px-3 py-1 bg-accent/10 text-accent rounded-full text-xs sm:text-sm font-semibold">
+                        <span className="inline-block px-2 sm:px-3 py-1 bg-accent/10 text-accent rounded-full text-xs sm:text-sm font-heading-regular uppercase tracking-wider">
                           {item?.year}
                         </span>
                       </motion.div>
@@ -596,12 +596,12 @@ const AwardsRecognition = () => {
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.1 }}
                     >
-                      <h3 className="text-lg sm:text-xl font-bold text-primary mb-1 sm:mb-2 group-hover:text-accent transition-colors duration-300">
+                      <h3 className="text-lg sm:text-xl font-heading-regular text-primary mb-1 sm:mb-2 group-hover:text-accent transition-colors duration-300 uppercase tracking-wider">
                         {item?.title}
                       </h3>
-                      <p className="text-accent font-semibold mb-1 sm:mb-2 text-sm sm:text-base">{item?.organization}</p>
+                      <p className="text-accent font-semibold mb-1 sm:mb-2 text-sm sm:text-base font-sans">{item?.organization}</p>
                       <motion.span 
-                        className="inline-block px-2 sm:px-3 py-1 bg-surface text-text-secondary rounded-full text-xs sm:text-sm"
+                        className="inline-block px-2 sm:px-3 py-1 bg-surface text-text-secondary rounded-full text-xs sm:text-sm font-sans"
                         whileHover={{ scale: 1.05 }}
                       >
                         {item?.category}
@@ -609,7 +609,7 @@ const AwardsRecognition = () => {
                     </motion.div>
 
                     <motion.p 
-                      className="text-text-secondary leading-relaxed group-hover:text-primary transition-colors duration-300 text-sm sm:text-base relative z-10"
+                      className="text-text-secondary leading-relaxed group-hover:text-primary transition-colors duration-300 text-sm sm:text-base relative z-10 font-sans"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.2 }}
@@ -654,7 +654,7 @@ const AwardsRecognition = () => {
           </div>
 
           <motion.h3 
-            className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 relative z-10"
+            className="text-2xl sm:text-3xl font-heading-regular mb-6 sm:mb-8 relative z-10 uppercase tracking-wider"
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.5 }}
@@ -695,7 +695,7 @@ const AwardsRecognition = () => {
                   <AppIcon name={stat?.icon} size={24} className="text-white" />
                 </motion.div>
                 <motion.div 
-                  className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2"
+                  className="text-2xl sm:text-3xl lg:text-4xl font-heading-regular mb-1 sm:mb-2 uppercase tracking-wider"
                   animate={hoveredStat === index ? {
                     scale: [1, 1.1, 1],
                   } : {}}
@@ -703,7 +703,7 @@ const AwardsRecognition = () => {
                 >
                   <AnimatedCounter value={stat?.number} duration={2} suffix={stat?.suffix} />
                 </motion.div>
-                <div className="text-white/80 text-xs sm:text-sm">{stat?.label}</div>
+                <div className="text-white/80 text-xs sm:text-sm font-sans">{stat?.label}</div>
               </motion.div>
             ))}
           </motion.div>
@@ -716,7 +716,7 @@ const AwardsRecognition = () => {
             transition={{ delay: 0.8 }}
           >
             <motion.p 
-              className="text-base sm:text-lg md:text-xl opacity-90"
+              className="text-base sm:text-lg md:text-xl opacity-90 font-sans"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1, duration: 1 }}
@@ -736,11 +736,11 @@ const AwardsRecognition = () => {
                 whileHover={{ scale: 1.1, rotate: 360 }}
                 transition={{ duration: 0.5 }}
               >
-                <span className="font-bold text-base sm:text-lg">27</span>
+                <span className="font-heading-bold text-base sm:text-lg uppercase">27</span>
               </motion.div>
               <div className="text-left">
-                <div className="font-semibold text-sm sm:text-base">Rule27 Leadership Team</div>
-                <div className="text-xs sm:text-sm opacity-70">Certified Across Every Platform</div>
+                <div className="font-heading-regular text-sm sm:text-base uppercase tracking-wider">Rule27 Leadership Team</div>
+                <div className="text-xs sm:text-sm opacity-70 font-sans">Certified Across Every Platform</div>
               </div>
             </motion.div>
           </motion.div>

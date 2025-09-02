@@ -166,9 +166,9 @@ const OriginStory = () => {
             transition={{ type: "spring", stiffness: 300 }}
           >
             <AppIcon name="BookOpen" size={16} className="text-accent" />
-            <span className="text-accent font-semibold text-xs sm:text-sm">Our Origin Story</span>
+            <span className="text-accent font-semibold text-xs sm:text-sm font-sans">Our Origin Story</span>
           </motion.div>
-          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-3 sm:mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-heading-regular text-primary mb-3 sm:mb-4 uppercase tracking-wider">
             From <motion.span 
               className="text-accent"
               initial={{ opacity: 0, x: -20 }}
@@ -177,7 +177,7 @@ const OriginStory = () => {
             >Rebellious Startup</motion.span> to Digital Powerhouse
           </h2>
           <motion.p 
-            className="text-sm sm:text-base md:text-lg text-text-secondary max-w-3xl mx-auto leading-relaxed px-4"
+            className="text-sm sm:text-base md:text-lg text-text-secondary max-w-3xl mx-auto leading-relaxed px-4 font-sans"
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ delay: 0.3, duration: 0.4 }}
@@ -248,7 +248,7 @@ const OriginStory = () => {
                           <AppIcon name={milestone?.icon} size={16} className="text-white" />
                         </motion.div>
                         <motion.div 
-                          className="text-lg sm:text-xl font-bold text-accent"
+                          className="text-lg sm:text-xl font-heading-regular text-accent uppercase tracking-wider"
                           animate={activeTimeline === index ? {
                             x: [0, 5, 0],
                           } : {}}
@@ -257,10 +257,10 @@ const OriginStory = () => {
                           {milestone?.year}
                         </motion.div>
                       </div>
-                      <h3 className="text-lg sm:text-xl font-bold text-primary mb-2 group-hover:text-accent transition-colors duration-300">
+                      <h3 className="text-lg sm:text-xl font-heading-regular text-primary mb-2 group-hover:text-accent transition-colors duration-300 uppercase tracking-wider">
                         {milestone?.title}
                       </h3>
-                      <p className="text-sm sm:text-base text-text-secondary leading-relaxed group-hover:text-primary transition-colors duration-300">
+                      <p className="text-sm sm:text-base text-text-secondary leading-relaxed group-hover:text-primary transition-colors duration-300 font-sans">
                         {milestone?.description}
                       </p>
                     </div>
@@ -323,7 +323,7 @@ const OriginStory = () => {
               <AppIcon name="Quote" size={28} className="mx-auto mb-3 sm:mb-4 opacity-70" />
             </motion.div>
             <motion.h3 
-              className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4"
+              className="text-xl sm:text-2xl font-heading-regular mb-3 sm:mb-4 uppercase tracking-wider"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.6 }}
@@ -331,7 +331,7 @@ const OriginStory = () => {
               The 27th Rule Philosophy
             </motion.h3>
             <motion.p 
-              className="text-sm sm:text-base md:text-lg leading-relaxed opacity-90 relative z-10"
+              className="text-sm sm:text-base md:text-lg leading-relaxed opacity-90 relative z-10 font-sans"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.7 }}
@@ -353,11 +353,11 @@ const OriginStory = () => {
                   whileHover={{ scale: 1.1, rotate: 360 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <span className="font-bold text-sm sm:text-base">27</span>
+                  <span className="font-heading-bold text-sm sm:text-base uppercase">27</span>
                 </motion.div>
                 <div className="text-left">
-                  <div className="font-semibold text-xs sm:text-sm">Rule27 Design Founders</div>
-                  <div className="text-xs opacity-70">Digital Innovators</div>
+                  <div className="font-heading-regular text-xs sm:text-sm uppercase tracking-wider">Rule27 Design Founders</div>
+                  <div className="text-xs opacity-70 font-sans">Digital Innovators</div>
                 </div>
               </div>
             </motion.div>

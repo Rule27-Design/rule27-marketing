@@ -171,7 +171,7 @@ const HeroSection = () => {
         <ParticlesBackground />
       </div>
 
-      {/* Animated Orbiting Elements (Alternative to Globe) */}
+      {/* Animated Orbiting Elements */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/3 h-[600px] opacity-20 lg:opacity-30 hidden lg:block">
         <div className="relative w-full h-full">
           {[...Array(3)].map((_, i) => (
@@ -265,7 +265,7 @@ const HeroSection = () => {
               }}
               whileTap={{ scale: 0.95 }}
             >
-              <span className="text-black font-bold text-2xl sm:text-3xl group-hover:text-white transition-colors duration-300">27</span>
+              <span className="text-primary font-heading-bold text-2xl sm:text-3xl group-hover:text-white transition-colors duration-300 uppercase">27</span>
             </motion.div>
             <motion.div 
               className="absolute -inset-4 bg-gradient-to-r from-accent to-white rounded-full opacity-0 group-hover:opacity-30 transition-opacity duration-500 blur-lg"
@@ -287,7 +287,7 @@ const HeroSection = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
         >
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-6 sm:mb-8">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-heading-regular text-white mb-6 sm:mb-8 uppercase tracking-wider">
             <motion.span 
               className="block mb-2"
               initial={{ x: -100, opacity: 0 }}
@@ -313,7 +313,7 @@ const HeroSection = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
         >
-          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed px-4">
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed px-4 font-sans">
             Born from <span className="text-accent font-semibold">rebellious innovation</span> and crafted with{' '}
             <span className="relative inline-block min-w-[200px] md:min-w-[320px] text-center">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-300 to-white bg-300% animate-gradient font-semibold">
@@ -365,7 +365,7 @@ const HeroSection = () => {
               }}
             >
               <motion.div 
-                className="text-2xl sm:text-3xl md:text-4xl font-bold text-accent mb-1 sm:mb-2 group-hover:text-white transition-colors duration-300"
+                className="text-2xl sm:text-3xl md:text-4xl font-heading-regular text-accent mb-1 sm:mb-2 group-hover:text-white transition-colors duration-300 uppercase tracking-wider"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ 
@@ -376,7 +376,7 @@ const HeroSection = () => {
               >
                 {stat?.number}
               </motion.div>
-              <div className="text-xs sm:text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
+              <div className="text-xs sm:text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300 font-sans">
                 {stat?.label}
               </div>
             </motion.div>
@@ -397,7 +397,7 @@ const HeroSection = () => {
             <Button
               variant="default"
               size="lg"
-              className="w-full sm:w-auto bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold transform transition-all duration-300 shadow-2xl hover:shadow-accent/50 min-h-[48px] relative overflow-hidden group"
+              className="w-full sm:w-auto bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-heading-regular uppercase tracking-wider transform transition-all duration-300 shadow-2xl hover:shadow-accent/50 min-h-[48px] relative overflow-hidden group"
               onClick={() => document.getElementById('origin-story')?.scrollIntoView({ behavior: 'smooth' })}
             >
               <span className="relative z-10 flex items-center">
@@ -419,7 +419,7 @@ const HeroSection = () => {
             <Button
               variant="outline"
               size="lg"
-              className="w-full sm:w-auto border-2 border-white/50 text-white hover:bg-white hover:text-black backdrop-blur-sm px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold transform transition-all duration-300 min-h-[48px] relative overflow-hidden group"
+              className="w-full sm:w-auto border-2 border-white/50 text-white hover:bg-white hover:text-primary backdrop-blur-sm px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-heading-regular uppercase tracking-wider transform transition-all duration-300 min-h-[48px] relative overflow-hidden group"
               onClick={() => document.getElementById('team')?.scrollIntoView({ behavior: 'smooth' })}
             >
               <span className="relative z-10 flex items-center">
@@ -446,7 +446,7 @@ const HeroSection = () => {
         >
           <div className="flex flex-col items-center text-gray-400 group cursor-pointer">
             <motion.span 
-              className="text-sm mb-2 tracking-wide group-hover:text-accent transition-colors duration-300"
+              className="text-sm mb-2 tracking-wide group-hover:text-accent transition-colors duration-300 font-sans"
               animate={{
                 opacity: [0.5, 1, 0.5],
               }}

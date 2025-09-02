@@ -219,9 +219,9 @@ const MethodologySection = () => {
             transition={{ type: "spring", stiffness: 300 }}
           >
             <AppIcon name="Cog" size={16} className="text-accent" />
-            <span className="text-accent font-semibold text-xs sm:text-sm">Our Methodology</span>
+            <span className="text-accent font-semibold text-xs sm:text-sm font-sans">Our Methodology</span>
           </motion.div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4 sm:mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-heading-regular text-primary mb-4 sm:mb-6 uppercase tracking-wider">
             The <motion.span 
               className="text-accent"
               initial={{ opacity: 0, x: -20 }}
@@ -230,7 +230,7 @@ const MethodologySection = () => {
             >Integrated Approach</motion.span>
           </h2>
           <motion.p 
-            className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4"
+            className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4 font-sans"
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ delay: 0.3, duration: 0.4 }}
@@ -258,7 +258,7 @@ const MethodologySection = () => {
               onClick={() => setActivePhase(index)}
               onMouseEnter={() => setHoveredPhase(index)}
               onMouseLeave={() => setHoveredPhase(null)}
-              className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-semibold transition-all duration-300 text-sm sm:text-base relative overflow-hidden ${
+              className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-heading-regular uppercase tracking-wider transition-all duration-300 text-sm sm:text-base relative overflow-hidden ${
                 activePhase === index
                   ? 'bg-gradient-to-r from-accent to-primary text-white shadow-lg transform scale-105'
                   : 'bg-white text-text-secondary hover:bg-accent/5 hover:text-accent shadow-md'
@@ -340,7 +340,7 @@ const MethodologySection = () => {
                   </motion.div>
                   <div>
                     <motion.h3 
-                      className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2"
+                      className="text-2xl sm:text-3xl font-heading-regular mb-1 sm:mb-2 uppercase tracking-wider"
                       initial={{ y: -20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.1 }}
@@ -348,7 +348,7 @@ const MethodologySection = () => {
                       {activeMethodology?.phase}
                     </motion.h3>
                     <motion.p 
-                      className="text-base sm:text-xl opacity-90"
+                      className="text-base sm:text-xl opacity-90 font-sans"
                       initial={{ y: -20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.2 }}
@@ -363,8 +363,8 @@ const MethodologySection = () => {
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 200, delay: 0.3 }}
                 >
-                  <div className="text-xs sm:text-sm opacity-75">Duration</div>
-                  <div className="text-base sm:text-lg font-semibold">{activeMethodology?.duration}</div>
+                  <div className="text-xs sm:text-sm opacity-75 font-sans">Duration</div>
+                  <div className="text-base sm:text-lg font-heading-regular uppercase tracking-wider">{activeMethodology?.duration}</div>
                 </motion.div>
               </div>
             </div>
@@ -378,7 +378,7 @@ const MethodologySection = () => {
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.3 }}
                 >
-                  <h4 className="text-xl sm:text-2xl font-bold text-primary mb-4 sm:mb-6">Process Steps</h4>
+                  <h4 className="text-xl sm:text-2xl font-heading-regular text-primary mb-4 sm:mb-6 uppercase tracking-wider">Process Steps</h4>
                   <div className="space-y-3 sm:space-y-4">
                     {activeMethodology?.steps?.map((step, stepIndex) => (
                       <motion.div
@@ -405,9 +405,9 @@ const MethodologySection = () => {
                               } : {}}
                               transition={{ duration: 0.5 }}
                             >
-                              <span className="text-accent font-semibold text-xs sm:text-sm">{stepIndex + 1}</span>
+                              <span className="text-accent font-heading-regular text-xs sm:text-sm uppercase">{stepIndex + 1}</span>
                             </motion.div>
-                            <h5 className="font-bold text-primary text-sm sm:text-base">{step?.title}</h5>
+                            <h5 className="font-heading-regular text-primary text-sm sm:text-base uppercase tracking-wider">{step?.title}</h5>
                           </div>
                           <motion.div
                             animate={{ rotate: expandedStep === stepIndex ? 180 : 0 }}
@@ -430,9 +430,9 @@ const MethodologySection = () => {
                               className="overflow-hidden"
                             >
                               <div className="px-4 sm:px-6 pb-4 sm:pb-6">
-                                <p className="text-text-secondary mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base">{step?.description}</p>
+                                <p className="text-text-secondary mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base font-sans">{step?.description}</p>
                                 <div>
-                                  <h6 className="font-semibold text-primary mb-2 text-sm sm:text-base">Tools & Methods:</h6>
+                                  <h6 className="font-heading-regular text-primary mb-2 text-sm sm:text-base uppercase tracking-wider">Tools & Methods:</h6>
                                   <div className="flex flex-wrap gap-1.5 sm:gap-2">
                                     {step?.tools?.map((tool, toolIndex) => (
                                       <motion.span
@@ -445,7 +445,7 @@ const MethodologySection = () => {
                                           delay: toolIndex * 0.05 
                                         }}
                                         whileHover={{ scale: 1.05 }}
-                                        className="px-2 sm:px-3 py-1 bg-accent/10 text-accent text-xs sm:text-sm font-medium rounded-full"
+                                        className="px-2 sm:px-3 py-1 bg-accent/10 text-accent text-xs sm:text-sm font-medium rounded-full font-sans"
                                       >
                                         {tool}
                                       </motion.span>
@@ -470,7 +470,7 @@ const MethodologySection = () => {
                 >
                   {/* Deliverables */}
                   <div className="mb-6 sm:mb-8">
-                    <h4 className="text-xl sm:text-2xl font-bold text-primary mb-4 sm:mb-6">Key Deliverables</h4>
+                    <h4 className="text-xl sm:text-2xl font-heading-regular text-primary mb-4 sm:mb-6 uppercase tracking-wider">Key Deliverables</h4>
                     <motion.div 
                       className="bg-surface rounded-lg sm:rounded-xl lg:rounded-2xl p-4 sm:p-6"
                       whileHover={{ scale: 1.02 }}
@@ -497,7 +497,7 @@ const MethodologySection = () => {
                             >
                               <AppIcon name="CheckCircle" size={20} className="text-accent flex-shrink-0" />
                             </motion.div>
-                            <span className="text-text-secondary font-medium text-sm sm:text-base">{deliverable}</span>
+                            <span className="text-text-secondary font-medium text-sm sm:text-base font-sans">{deliverable}</span>
                           </motion.li>
                         ))}
                       </ul>
@@ -506,7 +506,7 @@ const MethodologySection = () => {
 
                   {/* Collaboration */}
                   <div>
-                    <h4 className="text-xl sm:text-2xl font-bold text-primary mb-4 sm:mb-6">Client Collaboration</h4>
+                    <h4 className="text-xl sm:text-2xl font-heading-regular text-primary mb-4 sm:mb-6 uppercase tracking-wider">Client Collaboration</h4>
                     <motion.div 
                       className="bg-gradient-to-r from-accent/5 to-primary/5 rounded-lg sm:rounded-xl lg:rounded-2xl p-4 sm:p-6"
                       whileHover={{ scale: 1.02 }}
@@ -525,7 +525,7 @@ const MethodologySection = () => {
                         >
                           <AppIcon name="Users" size={24} className="text-accent mt-1 flex-shrink-0" />
                         </motion.div>
-                        <p className="text-text-secondary leading-relaxed text-sm sm:text-base">
+                        <p className="text-text-secondary leading-relaxed text-sm sm:text-base font-sans">
                           {activeMethodology?.collaboration}
                         </p>
                       </div>
@@ -545,7 +545,7 @@ const MethodologySection = () => {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="mt-8 sm:mt-12 lg:mt-16"
         >
-          <h3 className="text-xl sm:text-2xl font-bold text-center text-primary mb-6 sm:mb-8">End-to-End Digital Journey</h3>
+          <h3 className="text-xl sm:text-2xl font-heading-regular text-center text-primary mb-6 sm:mb-8 uppercase tracking-wider">End-to-End Digital Journey</h3>
           <div className="flex justify-center">
             <div className="flex items-center space-x-2 sm:space-x-4 overflow-x-auto pb-4">
               {methodology?.map((phase, index) => (

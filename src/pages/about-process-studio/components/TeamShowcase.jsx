@@ -188,9 +188,9 @@ const TeamShowcase = () => {
             transition={{ type: "spring", stiffness: 300 }}
           >
             <AppIcon name="Users" size={16} className="text-accent" />
-            <span className="text-accent font-semibold text-xs sm:text-sm">Meet Our Team</span>
+            <span className="text-accent font-semibold text-xs sm:text-sm font-sans">Meet Our Team</span>
           </motion.div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4 sm:mb-6">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-heading-regular text-primary mb-4 sm:mb-6 uppercase tracking-wider">
             The <motion.span 
               className="text-accent"
               initial={{ opacity: 0, x: -20 }}
@@ -199,7 +199,7 @@ const TeamShowcase = () => {
             >Certified Experts</motion.span>
           </h2>
           <motion.p 
-            className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4"
+            className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4 font-sans"
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ delay: 0.3, duration: 0.4 }}
@@ -225,7 +225,7 @@ const TeamShowcase = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setActiveCategory(category?.id)}
-              className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-semibold transition-all duration-300 text-sm sm:text-base ${
+              className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-heading-regular uppercase tracking-wider transition-all duration-300 text-sm sm:text-base ${
                 activeCategory === category?.id
                   ? 'bg-accent text-white shadow-lg transform scale-105'
                   : 'bg-surface text-text-secondary hover:bg-accent/10 hover:text-accent'
@@ -286,7 +286,7 @@ const TeamShowcase = () => {
                           transition: { duration: 0.3 }
                         }}
                       >
-                        <span className="text-3xl sm:text-4xl font-bold text-primary">{member?.name?.charAt(0)}</span>
+                        <span className="text-3xl sm:text-4xl font-heading-bold text-primary uppercase">{member?.name?.charAt(0)}</span>
                       </motion.div>
                     </motion.div>
                     
@@ -317,7 +317,7 @@ const TeamShowcase = () => {
                   {/* Member Info */}
                   <div className="p-4 sm:p-5 lg:p-6">
                     <motion.h3 
-                      className="text-lg sm:text-xl font-bold text-primary mb-1 group-hover:text-accent transition-colors duration-300"
+                      className="text-lg sm:text-xl font-heading-regular text-primary mb-1 group-hover:text-accent transition-colors duration-300 uppercase tracking-wider"
                       animate={{
                         x: hoveredCard === member.id ? 5 : 0
                       }}
@@ -325,9 +325,9 @@ const TeamShowcase = () => {
                     >
                       {member?.name}
                     </motion.h3>
-                    <p className="text-text-secondary text-xs sm:text-sm mb-3 sm:mb-4">{member?.role}</p>
+                    <p className="text-text-secondary text-xs sm:text-sm mb-3 sm:mb-4 font-sans">{member?.role}</p>
                     
-                    {/* FIXED: Expertise Tags - Always Visible */}
+                    {/* Expertise Tags - Always Visible */}
                     <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                       {member?.expertise?.slice(0, 2)?.map((skill, skillIndex) => (
                         <motion.span
@@ -342,7 +342,7 @@ const TeamShowcase = () => {
                             scale: 1.05,
                             backgroundColor: "rgba(229, 62, 62, 0.15)"
                           }}
-                          className="px-2 sm:px-3 py-1 bg-accent/10 text-accent text-xs font-medium rounded-full transition-all duration-200"
+                          className="px-2 sm:px-3 py-1 bg-accent/10 text-accent text-xs font-medium rounded-full transition-all duration-200 font-sans"
                         >
                           {skill}
                         </motion.span>
@@ -353,7 +353,7 @@ const TeamShowcase = () => {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.2, duration: 0.3 }}
                           whileHover={{ scale: 1.05 }}
-                          className="px-2 sm:px-3 py-1 bg-gray-100 text-text-secondary text-xs font-medium rounded-full transition-all duration-200"
+                          className="px-2 sm:px-3 py-1 bg-gray-100 text-text-secondary text-xs font-medium rounded-full transition-all duration-200 font-sans"
                         >
                           +{member?.expertise?.length - 2} more
                         </motion.span>
@@ -362,7 +362,7 @@ const TeamShowcase = () => {
 
                     {/* Bio Preview */}
                     <motion.p 
-                      className="text-text-secondary text-xs sm:text-sm leading-relaxed line-clamp-3"
+                      className="text-text-secondary text-xs sm:text-sm leading-relaxed line-clamp-3 font-sans"
                       initial={{ opacity: 0.7 }}
                       animate={{
                         opacity: hoveredCard === member.id ? 1 : 0.7
@@ -389,7 +389,7 @@ const TeamShowcase = () => {
           </AnimatePresence>
         </motion.div>
 
-        {/* Team Member Detail Modal - Keep the same */}
+        {/* Team Member Detail Modal */}
         <AnimatePresence>
           {selectedMember && (
             <motion.div
@@ -427,11 +427,11 @@ const TeamShowcase = () => {
                           ease: "linear"
                         }}
                       >
-                        <span className="text-2xl sm:text-3xl font-bold text-primary">{selectedMember?.name?.charAt(0)}</span>
+                        <span className="text-2xl sm:text-3xl font-heading-bold text-primary uppercase">{selectedMember?.name?.charAt(0)}</span>
                       </motion.div>
                       <div>
                         <motion.h3 
-                          className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary mb-1 sm:mb-2"
+                          className="text-xl sm:text-2xl lg:text-3xl font-heading-regular text-primary mb-1 sm:mb-2 uppercase tracking-wider"
                           initial={{ y: -10, opacity: 0 }}
                           animate={{ y: 0, opacity: 1 }}
                           transition={{ delay: 0.2 }}
@@ -439,7 +439,7 @@ const TeamShowcase = () => {
                           {selectedMember?.name}
                         </motion.h3>
                         <motion.p 
-                          className="text-accent font-semibold text-sm sm:text-base lg:text-lg"
+                          className="text-accent font-semibold text-sm sm:text-base lg:text-lg font-sans"
                           initial={{ y: -10, opacity: 0 }}
                           animate={{ y: 0, opacity: 1 }}
                           transition={{ delay: 0.25 }}
@@ -447,7 +447,7 @@ const TeamShowcase = () => {
                           {selectedMember?.role}
                         </motion.p>
                         <motion.p 
-                          className="text-text-secondary text-xs sm:text-sm"
+                          className="text-text-secondary text-xs sm:text-sm font-sans"
                           initial={{ y: -10, opacity: 0 }}
                           animate={{ y: 0, opacity: 1 }}
                           transition={{ delay: 0.3 }}
@@ -468,7 +468,7 @@ const TeamShowcase = () => {
 
                   {/* Animated Content Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-                    {/* Left Column with stagger animation */}
+                    {/* Left Column */}
                     <motion.div
                       initial={{ x: -50, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
@@ -476,13 +476,13 @@ const TeamShowcase = () => {
                     >
                       {/* Bio */}
                       <div className="mb-6 sm:mb-8">
-                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3 sm:mb-4">About</h4>
-                        <p className="text-text-secondary text-sm sm:text-base leading-relaxed">{selectedMember?.bio}</p>
+                        <h4 className="text-lg sm:text-xl font-heading-regular text-primary mb-3 sm:mb-4 uppercase tracking-wider">About</h4>
+                        <p className="text-text-secondary text-sm sm:text-base leading-relaxed font-sans">{selectedMember?.bio}</p>
                       </div>
 
                       {/* Expertise Tags */}
                       <div className="mb-6 sm:mb-8">
-                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3 sm:mb-4">Expertise</h4>
+                        <h4 className="text-lg sm:text-xl font-heading-regular text-primary mb-3 sm:mb-4 uppercase tracking-wider">Expertise</h4>
                         <div className="flex flex-wrap gap-2 sm:gap-3">
                           {selectedMember?.expertise?.map((skill, index) => (
                             <motion.span
@@ -494,7 +494,7 @@ const TeamShowcase = () => {
                                 duration: 0.3
                               }}
                               whileHover={{ scale: 1.05 }}
-                              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-accent/10 text-accent font-medium rounded-full text-sm sm:text-base cursor-default transition-all duration-200"
+                              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-accent/10 text-accent font-medium rounded-full text-sm sm:text-base cursor-default transition-all duration-200 font-sans"
                             >
                               {skill}
                             </motion.span>
@@ -503,7 +503,7 @@ const TeamShowcase = () => {
                       </div>
                     </motion.div>
 
-                    {/* Right Column with stagger animation */}
+                    {/* Right Column */}
                     <motion.div
                       initial={{ x: 50, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
@@ -511,7 +511,7 @@ const TeamShowcase = () => {
                     >
                       {/* Featured Projects */}
                       <div className="mb-6 sm:mb-8">
-                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3 sm:mb-4">Featured Projects</h4>
+                        <h4 className="text-lg sm:text-xl font-heading-regular text-primary mb-3 sm:mb-4 uppercase tracking-wider">Featured Projects</h4>
                         <ul className="space-y-2 sm:space-y-3">
                           {selectedMember?.projects?.map((project, index) => (
                             <motion.li 
@@ -527,15 +527,15 @@ const TeamShowcase = () => {
                               >
                                 <AppIcon name="CheckCircle" size={16} className="text-accent flex-shrink-0" />
                               </motion.div>
-                              <span className="text-text-secondary text-sm sm:text-base">{project}</span>
+                              <span className="text-text-secondary text-sm sm:text-base font-sans">{project}</span>
                             </motion.li>
                           ))}
                         </ul>
                       </div>
 
-                      {/* Social Links with hover effects */}
+                      {/* Social Links */}
                       <div>
-                        <h4 className="text-lg sm:text-xl font-bold text-primary mb-3 sm:mb-4">Connect</h4>
+                        <h4 className="text-lg sm:text-xl font-heading-regular text-primary mb-3 sm:mb-4 uppercase tracking-wider">Connect</h4>
                         <div className="flex space-x-3 sm:space-x-4">
                           {Object?.entries(selectedMember?.social || {})?.map(([platform, link], index) => (
                             <motion.a

@@ -361,9 +361,9 @@ const PartnershipEcosystem = () => {
             transition={{ type: "spring", stiffness: 300 }}
           >
             <AppIcon name="Network" size={16} className="text-accent" />
-            <span className="text-accent font-semibold text-xs sm:text-sm">Partnership Ecosystem</span>
+            <span className="text-accent font-semibold text-xs sm:text-sm font-sans">Partnership Ecosystem</span>
           </motion.div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4 sm:mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-heading-regular text-primary mb-4 sm:mb-6 uppercase tracking-wider">
             Our <motion.span 
               className="text-accent"
               initial={{ opacity: 0, x: -20 }}
@@ -372,7 +372,7 @@ const PartnershipEcosystem = () => {
             >Strategic Partners</motion.span>
           </h2>
           <motion.p 
-            className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4"
+            className="text-base sm:text-lg md:text-xl text-text-secondary max-w-3xl mx-auto px-4 font-sans"
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ delay: 0.3, duration: 0.4 }}
@@ -422,7 +422,7 @@ const PartnershipEcosystem = () => {
                 <AppIcon name={stat.icon} size={20} className="text-white" />
               </motion.div>
               <motion.div 
-                className="text-2xl sm:text-3xl font-bold text-primary mb-1"
+                className="text-2xl sm:text-3xl font-heading-regular text-primary mb-1 uppercase tracking-wider"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ 
@@ -433,7 +433,7 @@ const PartnershipEcosystem = () => {
               >
                 {stat.value}
               </motion.div>
-              <div className="text-xs sm:text-sm text-text-secondary">{stat.label}</div>
+              <div className="text-xs sm:text-sm text-text-secondary font-sans">{stat.label}</div>
             </motion.div>
           ))}
         </motion.div>
@@ -454,7 +454,7 @@ const PartnershipEcosystem = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setActiveCategory(category?.id)}
-              className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-semibold transition-all duration-300 text-sm sm:text-base ${
+              className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-heading-regular uppercase tracking-wider transition-all duration-300 text-sm sm:text-base ${
                 activeCategory === category?.id
                   ? 'bg-gradient-to-r from-accent to-primary text-white shadow-lg transform scale-105'
                   : 'bg-white text-text-secondary hover:bg-accent/5 hover:text-accent shadow-md'
@@ -462,7 +462,7 @@ const PartnershipEcosystem = () => {
             >
               <AppIcon name={category?.icon} size={16} className="flex-shrink-0" />
               <span>{category?.label}</span>
-              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
+              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-heading-regular uppercase ${
                 activeCategory === category?.id 
                   ? 'bg-white/20 text-white' 
                   : 'bg-accent/10 text-accent'
@@ -528,18 +528,18 @@ const PartnershipEcosystem = () => {
                       {partner?.certifications > 0 && (
                         <div className="flex items-center space-x-1">
                           <AppIcon name="Award" size={14} className="text-accent" />
-                          <span className="text-accent font-bold text-sm">{partner?.certifications}</span>
+                          <span className="text-accent font-heading-regular text-sm uppercase">{partner?.certifications}</span>
                         </div>
                       )}
-                      <div className="text-xs text-text-secondary">{partner?.projects} projects</div>
+                      <div className="text-xs text-text-secondary font-sans">{partner?.projects} projects</div>
                     </motion.div>
                   </div>
 
                   {/* Partner Info */}
-                  <h3 className="font-bold text-primary mb-2 group-hover:text-accent transition-colors duration-300 text-base sm:text-lg">
+                  <h3 className="font-heading-regular text-primary mb-2 group-hover:text-accent transition-colors duration-300 text-base sm:text-lg uppercase tracking-wider">
                     {partner?.name}
                   </h3>
-                  <p className="text-text-secondary text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">
+                  <p className="text-text-secondary text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 font-sans">
                     {partner?.description}
                   </p>
 
@@ -555,13 +555,13 @@ const PartnershipEcosystem = () => {
                           type: "spring",
                           stiffness: 200
                         }}
-                        className="px-2 py-1 bg-surface text-text-secondary text-xs rounded-full"
+                        className="px-2 py-1 bg-surface text-text-secondary text-xs rounded-full font-sans"
                       >
                         {service}
                       </motion.span>
                     ))}
                     {partner?.services?.length > 2 && (
-                      <span className="px-2 py-1 bg-accent/10 text-accent text-xs rounded-full font-medium">
+                      <span className="px-2 py-1 bg-accent/10 text-accent text-xs rounded-full font-medium font-sans">
                         +{partner?.services?.length - 2}
                       </span>
                     )}
@@ -574,7 +574,7 @@ const PartnershipEcosystem = () => {
                     animate={{ x: hoveredPartner === partner.id ? 0 : -10 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <span>View Details</span>
+                    <span className="font-sans">View Details</span>
                     <AppIcon name="ArrowRight" size={14} />
                   </motion.div>
                 </div>
@@ -619,7 +619,7 @@ const PartnershipEcosystem = () => {
           </motion.div>
           
           <motion.h3 
-            className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 relative z-10"
+            className="text-2xl sm:text-3xl lg:text-4xl font-heading-regular mb-3 sm:mb-4 relative z-10 uppercase tracking-wider"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.7 }}
@@ -628,7 +628,7 @@ const PartnershipEcosystem = () => {
           </motion.h3>
           
           <motion.p 
-            className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 max-w-3xl mx-auto opacity-90 relative z-10"
+            className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 max-w-3xl mx-auto opacity-90 relative z-10 font-sans"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.8 }}
@@ -646,7 +646,7 @@ const PartnershipEcosystem = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-accent rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
+              className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-accent rounded-full font-heading-regular uppercase tracking-wider shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
             >
               <span className="relative z-10">Explore Our Capabilities</span>
               <motion.div 
@@ -659,7 +659,7 @@ const PartnershipEcosystem = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-6 sm:px-8 py-3 sm:py-4 bg-transparent border-2 border-white text-white rounded-full font-semibold hover:bg-white hover:text-accent transition-all duration-300"
+              className="px-6 sm:px-8 py-3 sm:py-4 bg-transparent border-2 border-white text-white rounded-full font-heading-regular uppercase tracking-wider hover:bg-white hover:text-accent transition-all duration-300"
             >
               Talk to Our Experts
             </motion.button>
@@ -702,19 +702,19 @@ const PartnershipEcosystem = () => {
                         <AppIcon name={selectedPartner?.icon} size={32} className="text-white" />
                       </motion.div>
                       <div>
-                        <h3 className="text-2xl sm:text-3xl font-bold text-primary mb-1">
+                        <h3 className="text-2xl sm:text-3xl font-heading-regular text-primary mb-1 uppercase tracking-wider">
                           {selectedPartner?.name}
                         </h3>
                         <div className="flex items-center space-x-4 text-sm">
                           {selectedPartner?.certifications > 0 && (
                             <div className="flex items-center space-x-1">
                               <AppIcon name="Award" size={16} className="text-accent" />
-                              <span className="text-accent font-bold">{selectedPartner?.certifications} Certifications</span>
+                              <span className="text-accent font-heading-regular uppercase">{selectedPartner?.certifications} Certifications</span>
                             </div>
                           )}
                           <div className="flex items-center space-x-1">
                             <AppIcon name="Briefcase" size={16} className="text-text-secondary" />
-                            <span className="text-text-secondary">{selectedPartner?.projects} Projects</span>
+                            <span className="text-text-secondary font-sans">{selectedPartner?.projects} Projects</span>
                           </div>
                         </div>
                       </div>
@@ -737,7 +737,7 @@ const PartnershipEcosystem = () => {
                       animate={{ x: 0, opacity: 1 }}
                       transition={{ delay: 0.2 }}
                     >
-                      <h4 className="text-xl font-bold text-primary mb-4">Our Services</h4>
+                      <h4 className="text-xl font-heading-regular text-primary mb-4 uppercase tracking-wider">Our Services</h4>
                       <div className="space-y-3">
                         {selectedPartner?.services?.map((service, index) => (
                           <motion.div 
@@ -759,7 +759,7 @@ const PartnershipEcosystem = () => {
                             >
                               <AppIcon name="CheckCircle" size={16} className="text-accent flex-shrink-0" />
                             </motion.div>
-                            <span className="text-text-secondary">{service}</span>
+                            <span className="text-text-secondary font-sans">{service}</span>
                           </motion.div>
                         ))}
                       </div>
@@ -771,7 +771,7 @@ const PartnershipEcosystem = () => {
                       animate={{ x: 0, opacity: 1 }}
                       transition={{ delay: 0.25 }}
                     >
-                      <h4 className="text-xl font-bold text-primary mb-4">Key Benefits</h4>
+                      <h4 className="text-xl font-heading-regular text-primary mb-4 uppercase tracking-wider">Key Benefits</h4>
                       <div className="space-y-3">
                         {selectedPartner?.benefits?.map((benefit, index) => (
                           <motion.div 
@@ -782,7 +782,7 @@ const PartnershipEcosystem = () => {
                             transition={{ delay: 0.35 + index * 0.05 }}
                           >
                             <AppIcon name="Star" size={16} className="text-accent flex-shrink-0" />
-                            <span className="text-text-secondary">{benefit}</span>
+                            <span className="text-text-secondary font-sans">{benefit}</span>
                           </motion.div>
                         ))}
                       </div>
@@ -796,7 +796,7 @@ const PartnershipEcosystem = () => {
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.4 }}
                   >
-                    <p className="text-text-secondary leading-relaxed">
+                    <p className="text-text-secondary leading-relaxed font-sans">
                       {selectedPartner?.description}. Our certified experts leverage this partnership to deliver 
                       enterprise-grade solutions that drive measurable business outcomes. From implementation to 
                       optimization, we ensure you get maximum value from your investment.
