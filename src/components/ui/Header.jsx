@@ -329,7 +329,7 @@ const Header = () => {
           variant="default"
           size="lg"
           onClick={() => handleNavigation('/contact')}
-          className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent shadow-xl transition-all animate-pulse font-heading-regular tracking-wider uppercase text-base lg:text-heading-base"
+          className="bg-accent text-white border-2 border-accent hover:bg-white hover:text-accent shadow-xl transition-all animate-pulse font-heading-regular tracking-wider uppercase text-base lg:text-heading-sm"
           iconName="ArrowRight"
           iconPosition="right"
           aria-label="Book consultation"
