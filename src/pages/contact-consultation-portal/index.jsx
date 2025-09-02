@@ -1,3 +1,4 @@
+// src/pages/contact-consultation-portal/index.jsx
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -31,26 +32,22 @@ const ContactConsultationPortal = () => {
   };
 
   useEffect(() => {
-    // Enhanced loading animation
     setIsLoaded(true);
     
-    // Reduce motion for mobile devices
+    // Mobile optimization
     const isMobile = window.innerWidth < 768;
-    
     if (isMobile) {
       document.body.classList.add('mobile-device');
     }
     
-    // Smooth scroll with less delay
+    // Smooth scroll behavior
     document.documentElement.style.scrollBehavior = 'smooth';
-    
-    // Faster page appearance
     document.body.style.opacity = '1';
     
     // Scroll to top on mount
     window.scrollTo(0, 0);
     
-    // Performance optimization - lazy load images
+    // Lazy load images
     const images = document.querySelectorAll('img[data-src]');
     const imageObserver = new IntersectionObserver((entries, observer) => {
       entries.forEach(entry => {
@@ -61,11 +58,10 @@ const ContactConsultationPortal = () => {
           observer.unobserve(img);
         }
       });
-    });
+    }, { rootMargin: '50px' });
     
     images.forEach(img => imageObserver.observe(img));
     
-    // Cleanup on unmount
     return () => {
       document.body.classList.remove('mobile-device');
       document.documentElement.style.scrollBehavior = 'auto';
@@ -75,7 +71,7 @@ const ContactConsultationPortal = () => {
 
   return (
     <>
-    <Helmet>
+      <Helmet>
         <title>Contact | Rule27 Design - Start Your Transformation</title>
         <meta 
           name="description" 
@@ -98,11 +94,15 @@ const ContactConsultationPortal = () => {
         
         {/* Canonical */}
         <link rel="canonical" href="https://rule27design.com/contact" />
+        
+        {/* Preload critical resources */}
+        <link rel="preload" href="/src/assets/Fonts/steelfish.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/src/assets/Fonts/steelfish-bold.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
       </Helmet>
 
-      {/* Global Performance Styles */}
+      {/* Optimized Global Styles */}
       <style>{`
-        /* Enhanced animations and effects */
+        /* Optimized animations */
         @keyframes float-up {
           from {
             transform: translateY(100vh) scale(0);
@@ -117,46 +117,10 @@ const ContactConsultationPortal = () => {
           }
         }
 
-        @keyframes glow-pulse {
-          0%, 100% {
-            opacity: 0.3;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.6;
-            transform: scale(1.1);
-          }
-        }
-
-        @keyframes orbit {
-          from {
-            transform: rotate(0deg) translateX(100px) rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg) translateX(100px) rotate(-360deg);
-          }
-        }
-
         @keyframes gradient-flow {
-          0% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-          100% {
-            background-position: 0% 50%;
-          }
-        }
-
-        .floating-particle {
-          position: absolute;
-          pointer-events: none;
-          animation: float-up 10s linear infinite;
-        }
-
-        .glow-effect {
-          filter: drop-shadow(0 0 20px rgba(229, 62, 62, 0.3));
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
         }
 
         .gradient-animation {
@@ -164,110 +128,28 @@ const ContactConsultationPortal = () => {
           animation: gradient-flow 4s ease infinite;
         }
 
-        /* Mouse follower glow */
-        .mouse-glow {
-          pointer-events: none;
-          position: fixed;
-          width: 400px;
-          height: 400px;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(229, 62, 62, 0.15), transparent 40%);
-          transform: translate(-50%, -50%);
-          transition: opacity 0.3s ease;
-          z-index: 0;
-        }
-
-        /* Faster animations on mobile */
+        /* Mobile optimizations */
         @media (max-width: 768px) {
+          .floating-particle,
+          .mouse-glow {
+            display: none !important;
+          }
+          
           * {
             animation-duration: 0.3s !important;
-            transition-duration: 0.2s !important;
           }
           
-          .floating-particle {
-            display: none;
-          }
-          
-          .mouse-glow {
-            display: none;
-          }
-          
-          /* Immediate visibility for hero content */
           .hero-wrapper {
             opacity: 1 !important;
             transform: none !important;
           }
         }
         
-        /* Consistent tab wrapping */
-        .flex-wrap {
-          row-gap: 0.75rem;
-        }
-        
-        /* Better touch targets */
-        button {
-          min-height: 44px;
-          min-width: 44px;
-        }
-        
-        /* Prevent white flash on load */
-        body {
-          opacity: 1;
-          background-color: #ffffff;
-        }
-        
-        /* Page load animation */
-        .page-loaded {
-          animation: pageLoad 0.6s ease-out;
-        }
-        
-        @keyframes pageLoad {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .section-wrapper {
-          position: relative;
-          overflow: hidden;
-          isolation: isolate;
-        }
-        
-        /* Enhanced section transitions */
-        .section-transition {
-          position: relative;
-        }
-        
-        .section-transition::before {
-          content: '';
-          position: absolute;
-          top: -50px;
-          left: 0;
-          right: 0;
-          height: 100px;
-          background: linear-gradient(to bottom, transparent, rgba(229, 62, 62, 0.02));
-          pointer-events: none;
-        }
-        
-        /* Remove any default margins that could cause gaps */
-        section {
-          margin: 0;
-        }
-        
-        main > * {
-          margin: 0;
-        }
-        
+        /* Consistent form styling */
         .consultation-grid {
           position: relative;
         }
         
-        /* Ensure dropdowns are visible */
         .consultation-grid > * {
           overflow: visible;
         }
@@ -282,31 +164,20 @@ const ContactConsultationPortal = () => {
           }
         }
         
-        .hero-wrapper {
-          position: relative;
-          z-index: 1;
+        /* Performance optimizations */
+        .page-loaded {
+          animation: pageLoad 0.6s ease-out;
         }
         
-        /* Proper z-index layering */
-        #trust {
-          position: relative;
-          z-index: 1;
-        }
-        
-        #consultation {
-          position: relative;
-          z-index: 2;
-        }
-        
-        #faq {
-          position: relative;
-          z-index: 1;
-        }
-        
-        /* Contain floating elements */
-        .form-sidebar {
-          position: relative;
-          z-index: 5;
+        @keyframes pageLoad {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
         
         img.loaded {
@@ -323,35 +194,6 @@ const ContactConsultationPortal = () => {
             filter: blur(0);
           }
         }
-        
-        /* Enhanced scroll animations */
-        .scroll-animate {
-          opacity: 0;
-          transform: translateY(30px);
-          transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .scroll-animate.visible {
-          opacity: 1;
-          transform: translateY(0);
-        }
-        
-        /* Mobile-specific optimizations for contact page */
-        @media (max-width: 768px) {
-          .consultation-grid {
-            display: flex;
-            flex-direction: column;
-          }
-          
-          .form-sidebar {
-            margin-top: 2rem;
-          }
-          
-          .trust-grid {
-            grid-template-columns: 1fr;
-            gap: 1rem;
-          }
-        }
       `}</style>
 
       <AnimatePresence>
@@ -362,11 +204,11 @@ const ContactConsultationPortal = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6 }}
           >
-            {/* Header - Same component as homepage and about page */}
+            {/* Header - Consistent with homepage */}
             <Header />
             
             <main className="pt-16">
-              {/* Hero Section with Enhanced Features */}
+              {/* Hero Section */}
               <motion.section 
                 id="hero" 
                 className="hero-wrapper"
@@ -377,7 +219,7 @@ const ContactConsultationPortal = () => {
                 <HeroSection />
               </motion.section>
               
-              {/* Main Content Grid - Enhanced gradient transition */}
+              {/* Main Content Grid */}
               <motion.section 
                 id="consultation" 
                 className="section-transition bg-gradient-to-b from-white via-white to-gray-50 py-12 sm:py-16 md:py-20 lg:py-24"
@@ -388,7 +230,7 @@ const ContactConsultationPortal = () => {
               >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="consultation-grid grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-                    {/* Left Column - Form with Sticky Container */}
+                    {/* Form Column */}
                     <motion.div 
                       className="order-1 lg:col-span-2"
                       initial={{ opacity: 0, x: -30 }}
@@ -405,7 +247,7 @@ const ContactConsultationPortal = () => {
                       </div>
                     </motion.div>
                     
-                    {/* Right Column - Support Info - Mobile Optimized */}
+                    {/* Support Info Column */}
                     <motion.div 
                       className="form-sidebar order-2 space-y-6 sm:space-y-8"
                       initial={{ opacity: 0, x: 30 }}
@@ -420,7 +262,7 @@ const ContactConsultationPortal = () => {
                 </div>
               </motion.section>
 
-              {/* Trust Indicators - Enhanced animations */}
+              {/* Trust Indicators */}
               <motion.section
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
@@ -430,7 +272,7 @@ const ContactConsultationPortal = () => {
                 <TrustIndicators />
               </motion.section>
 
-              {/* FAQ Section - Enhanced animations */}
+              {/* FAQ Section */}
               <motion.section
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
@@ -441,10 +283,10 @@ const ContactConsultationPortal = () => {
               </motion.section>
             </main>
 
-            {/* Footer - Same component as homepage and about page */}
+            {/* Footer - Consistent with homepage */}
             <Footer />
 
-            {/* Back to Top Button - Enhanced */}
+            {/* Back to Top Button */}
             <BackToTop />
           </motion.div>
         )}
@@ -453,7 +295,7 @@ const ContactConsultationPortal = () => {
   );
 };
 
-// Enhanced Back to Top Component
+// Optimized Back to Top Component
 const BackToTop = () => {
   const [isVisible, setIsVisible] = React.useState(false);
   const [scrollPercentage, setScrollPercentage] = React.useState(0);
@@ -468,7 +310,7 @@ const BackToTop = () => {
       setIsVisible(scrollTop > 500);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
