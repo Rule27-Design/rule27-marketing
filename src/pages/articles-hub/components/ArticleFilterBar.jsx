@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
-const ArticleFilterBar = ({ 
+const ArticleFilterBar = React.memo(({ 
   filters, 
   activeFilters, 
   onFilterChange, 
@@ -14,7 +14,7 @@ const ArticleFilterBar = ({
 }) => {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  const filterCategories = [
+  const filterCategories = useMemo(() => [
     {
       key: 'category',
       label: 'Category',
@@ -33,7 +33,7 @@ const ArticleFilterBar = ({
       icon: 'Clock',
       options: filters?.readTimes || []
     }
-  ];
+  ], [filters]);
 
   const sortOptions = [
     { value: 'newest', label: 'Newest First' },
@@ -42,17 +42,21 @@ const ArticleFilterBar = ({
     { value: 'readTime', label: 'Quick Reads' }
   ];
 
-  const hasActiveFilters = Object.values(activeFilters)?.some(filters => filters?.length > 0) || searchQuery;
-  const activeFilterCount = Object.values(activeFilters)?.flat()?.length;
+  const hasActiveFilters = useMemo(() => 
+    Object.values(activeFilters)?.some(filters => filters?.length > 0) || searchQuery,
+  [activeFilters, searchQuery]);
+  
+  const activeFilterCount = useMemo(() => 
+    Object.values(activeFilters)?.flat()?.length,
+  [activeFilters]);
 
   return (
     <div className="bg-white border-b border-border sticky top-16 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
-        {/* Mobile Filter Toggle & Search Row */}
         <div className="flex flex-col gap-3">
           {/* Search and Sort Row */}
           <div className="flex flex-col sm:flex-row gap-3">
-            {/* Search */}
+            {/* Search - Using Helvetica */}
             <div className="relative flex-1">
               <Icon 
                 name="Search" 
@@ -64,13 +68,13 @@ const ArticleFilterBar = ({
                 placeholder="Search articles..."
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e?.target?.value)}
-                className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base font-body"
+                className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base font-sans"
               />
             </div>
 
             {/* Mobile: Filter Toggle & Sort */}
             <div className="flex gap-2">
-              {/* Mobile Filter Toggle */}
+              {/* Mobile Filter Toggle - Using Steelfish */}
               <Button
                 variant="outline"
                 onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
@@ -86,14 +90,14 @@ const ArticleFilterBar = ({
                 )}
               </Button>
 
-              {/* Sort Dropdown - Fixed Overlap */}
+              {/* Sort Dropdown - Using Helvetica */}
               <div className="flex items-center gap-2 flex-1 sm:flex-initial">
                 <Icon name="ArrowUpDown" size={18} className="text-text-secondary hidden sm:block" />
                 <div className="relative">
                   <select
                     value={sortBy}
                     onChange={(e) => onSortChange(e?.target?.value)}
-                    className="appearance-none w-full sm:w-auto border border-border rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base bg-white font-body"
+                    className="appearance-none w-full sm:w-auto border border-border rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base bg-white font-sans"
                   >
                     {sortOptions?.map((option) => (
                       <option key={option?.value} value={option?.value}>
@@ -111,7 +115,7 @@ const ArticleFilterBar = ({
             </div>
           </div>
 
-          {/* Desktop Filter Categories - Show All */}
+          {/* Desktop Filter Categories - Using Steelfish for labels */}
           <div className="hidden md:flex flex-wrap gap-4">
             {filterCategories?.map((category) => (
               <div key={category?.key} className="flex flex-wrap items-center gap-2">
@@ -126,7 +130,7 @@ const ArticleFilterBar = ({
                       <button
                         key={option}
                         onClick={() => onFilterChange(category?.key, option)}
-                        className={`px-3 py-1 text-sm rounded-full transition-all duration-300 font-body ${
+                        className={`px-3 py-1 text-sm rounded-full transition-all duration-300 font-sans ${
                           isActive
                             ? 'bg-accent text-white' 
                             : 'bg-muted text-text-secondary hover:bg-accent/10 hover:text-accent'
@@ -141,7 +145,7 @@ const ArticleFilterBar = ({
             ))}
           </div>
 
-          {/* Mobile Filter Panel - Compact Design */}
+          {/* Mobile Filter Panel */}
           {mobileFiltersOpen && (
             <div className="md:hidden bg-gray-50 rounded-lg p-3 space-y-3 max-h-64 overflow-y-auto">
               {filterCategories?.map((category) => (
@@ -157,7 +161,7 @@ const ArticleFilterBar = ({
                         <button
                           key={option}
                           onClick={() => onFilterChange(category?.key, option)}
-                          className={`px-2 py-1 text-[11px] rounded-full transition-all duration-300 font-body ${
+                          className={`px-2 py-1 text-[11px] rounded-full transition-all duration-300 font-sans ${
                             isActive
                               ? 'bg-accent text-white' 
                               : 'bg-white border border-border text-text-secondary hover:bg-accent/10 hover:text-accent'
@@ -173,12 +177,12 @@ const ArticleFilterBar = ({
             </div>
           )}
 
-          {/* Active Filters and Clear - Mobile Responsive */}
+          {/* Active Filters and Clear */}
           {hasActiveFilters && (
             <div className="flex items-center justify-between py-2 border-t border-gray-100">
               <div className="flex items-center space-x-2 text-xs md:text-sm text-text-secondary">
                 <Icon name="Filter" size={14} className="md:w-4 md:h-4" />
-                <span className="font-body">
+                <span className="font-sans">
                   <span className="font-heading-regular tracking-wider">{activeFilterCount}</span> filter{activeFilterCount !== 1 ? 's' : ''}
                   {searchQuery && ` • "${searchQuery}"`}
                 </span>
@@ -199,6 +203,8 @@ const ArticleFilterBar = ({
       </div>
     </div>
   );
-};
+});
+
+ArticleFilterBar.displayName = 'ArticleFilterBar';
 
 export default ArticleFilterBar;
