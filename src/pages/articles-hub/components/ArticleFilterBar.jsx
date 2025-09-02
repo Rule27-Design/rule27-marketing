@@ -90,14 +90,20 @@ const ArticleFilterBar = React.memo(({
                 )}
               </Button>
 
-              {/* Sort Dropdown - Using Helvetica */}
+              {/* Sort Dropdown - Fixed to hide native arrow */}
               <div className="flex items-center gap-2 flex-1 sm:flex-initial">
                 <Icon name="ArrowUpDown" size={18} className="text-text-secondary hidden sm:block" />
                 <div className="relative">
                   <select
                     value={sortBy}
                     onChange={(e) => onSortChange(e?.target?.value)}
-                    className="appearance-none w-full sm:w-auto border border-border rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base bg-white font-sans"
+                    className="appearance-none w-full sm:w-auto border border-border rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base bg-white font-sans cursor-pointer"
+                    style={{
+                      /* Hide native arrow in all browsers */
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'none',
+                      appearance: 'none'
+                    }}
                   >
                     {sortOptions?.map((option) => (
                       <option key={option?.value} value={option?.value}>
@@ -105,6 +111,7 @@ const ArticleFilterBar = React.memo(({
                       </option>
                     ))}
                   </select>
+                  {/* Custom arrow icon */}
                   <Icon 
                     name="ChevronDown" 
                     size={16} 
