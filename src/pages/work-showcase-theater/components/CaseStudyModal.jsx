@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from '../../../components/AppImage';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
-const CaseStudyModal = ({ caseStudy, isOpen, onClose }) => {
+const CaseStudyModal = React.memo(({ caseStudy, isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -19,28 +19,26 @@ const CaseStudyModal = ({ caseStudy, isOpen, onClose }) => {
     };
   }, [isOpen]);
 
-  if (!isOpen || !caseStudy) return null;
-
-  const tabs = [
+  const tabs = useMemo(() => [
     { id: 'overview', label: 'Overview', icon: 'Eye' },
     { id: 'process', label: 'Process', icon: 'GitBranch' },
     { id: 'results', label: 'Results', icon: 'TrendingUp' },
     { id: 'testimonial', label: 'Testimonial', icon: 'MessageSquare' }
-  ];
+  ], []);
 
-  const nextImage = () => {
+  const nextImage = useCallback(() => {
     setCurrentImageIndex((prev) => 
       prev === caseStudy?.gallery?.length - 1 ? 0 : prev + 1
     );
-  };
+  }, [caseStudy?.gallery?.length]);
 
-  const prevImage = () => {
+  const prevImage = useCallback(() => {
     setCurrentImageIndex((prev) => 
       prev === 0 ? caseStudy?.gallery?.length - 1 : prev - 1
     );
-  };
+  }, [caseStudy?.gallery?.length]);
 
-  const formatMetric = (value, type) => {
+  const formatMetric = useCallback((value, type) => {
     switch (type) {
       case 'percentage':
         return `+${value}%`;
@@ -51,7 +49,9 @@ const CaseStudyModal = ({ caseStudy, isOpen, onClose }) => {
       default:
         return value;
     }
-  };
+  }, []);
+
+  if (!isOpen || !caseStudy) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
@@ -75,7 +75,7 @@ const CaseStudyModal = ({ caseStudy, isOpen, onClose }) => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20"></div>
           
-          {/* Close Button - Mobile Optimized */}
+          {/* Close Button */}
           <Button
             variant="ghost"
             size="icon"
@@ -85,7 +85,7 @@ const CaseStudyModal = ({ caseStudy, isOpen, onClose }) => {
             <Icon name="X" size={20} className="sm:w-6 sm:h-6" />
           </Button>
 
-          {/* Gallery Navigation - Mobile Touch Friendly */}
+          {/* Gallery Navigation */}
           {caseStudy?.gallery?.length > 1 && (
             <>
               <Button
@@ -121,22 +121,24 @@ const CaseStudyModal = ({ caseStudy, isOpen, onClose }) => {
             </>
           )}
 
-          {/* Title Overlay - Mobile Responsive */}
+          {/* Title Overlay - Proper Typography */}
           <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="px-2 py-1 sm:px-3 sm:py-1 bg-white/20 backdrop-blur-sm text-xs font-semibold text-white rounded-full">
+              <span className="px-2 py-1 sm:px-3 sm:py-1 bg-white/20 backdrop-blur-sm text-xs font-heading-regular tracking-wider uppercase text-white rounded-full">
                 {caseStudy?.industry}
               </span>
-              <span className="px-2 py-1 sm:px-3 sm:py-1 bg-accent/80 backdrop-blur-sm text-xs font-semibold text-white rounded-full">
+              <span className="px-2 py-1 sm:px-3 sm:py-1 bg-accent/80 backdrop-blur-sm text-xs font-heading-regular tracking-wider uppercase text-white rounded-full">
                 {caseStudy?.serviceType}
               </span>
             </div>
-            <h2 className="text-xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 line-clamp-2">{caseStudy?.title}</h2>
-            <p className="text-white/90 text-sm sm:text-base">{caseStudy?.client} • {caseStudy?.businessStage}</p>
+            <h2 className="text-xl sm:text-3xl font-heading-regular text-white mb-1 sm:mb-2 line-clamp-2 tracking-wider uppercase">{caseStudy?.title}</h2>
+            <p className="text-white/90 text-sm sm:text-base font-sans">
+              <span className="font-heading-regular tracking-wider uppercase">{caseStudy?.client}</span> • {caseStudy?.businessStage}
+            </p>
           </div>
         </div>
 
-        {/* Tab Navigation - Mobile Scrollable */}
+        {/* Tab Navigation - Steelfish for Labels */}
         <div className="border-b border-border overflow-x-auto">
           <div className="flex px-4 sm:px-6 min-w-max">
             {tabs?.map((tab) => (
@@ -150,31 +152,31 @@ const CaseStudyModal = ({ caseStudy, isOpen, onClose }) => {
                 }`}
               >
                 <Icon name={tab?.icon} size={16} className="sm:w-[18px] sm:h-[18px]" />
-                <span className="font-medium whitespace-nowrap">{tab?.label}</span>
+                <span className="font-heading-regular tracking-wider uppercase whitespace-nowrap">{tab?.label}</span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Tab Content - Mobile Scrollable */}
+        {/* Tab Content - Typography Optimized */}
         <div className="p-4 sm:p-6 h-[calc(100%-21rem)] sm:max-h-96 overflow-y-auto">
           {activeTab === 'overview' && (
             <div className="space-y-4 sm:space-y-6">
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-primary mb-2 sm:mb-3">Challenge</h3>
-                <p className="text-sm sm:text-base text-text-secondary leading-relaxed">{caseStudy?.challenge}</p>
+                <h3 className="text-lg sm:text-xl font-heading-regular text-primary mb-2 sm:mb-3 tracking-wider uppercase">Challenge</h3>
+                <p className="text-sm sm:text-base text-text-secondary leading-relaxed font-sans">{caseStudy?.challenge}</p>
               </div>
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-primary mb-2 sm:mb-3">Solution</h3>
-                <p className="text-sm sm:text-base text-text-secondary leading-relaxed">{caseStudy?.solution}</p>
+                <h3 className="text-lg sm:text-xl font-heading-regular text-primary mb-2 sm:mb-3 tracking-wider uppercase">Solution</h3>
+                <p className="text-sm sm:text-base text-text-secondary leading-relaxed font-sans">{caseStudy?.solution}</p>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {caseStudy?.keyMetrics?.map((metric, index) => (
                   <div key={index} className="text-center p-3 sm:p-4 bg-muted rounded-lg">
-                    <div className="text-lg sm:text-2xl font-bold text-accent mb-1">
+                    <div className="text-lg sm:text-2xl font-heading-regular text-accent mb-1 uppercase tracking-wider">
                       {formatMetric(metric?.value, metric?.type)}
                     </div>
-                    <div className="text-xs sm:text-sm text-text-secondary">{metric?.label}</div>
+                    <div className="text-xs sm:text-sm text-text-secondary font-sans">{metric?.label}</div>
                   </div>
                 ))}
               </div>
@@ -183,16 +185,16 @@ const CaseStudyModal = ({ caseStudy, isOpen, onClose }) => {
 
           {activeTab === 'process' && (
             <div className="space-y-4 sm:space-y-6">
-              <h3 className="text-lg sm:text-xl font-bold text-primary mb-3 sm:mb-4">Our Methodology</h3>
+              <h3 className="text-lg sm:text-xl font-heading-regular text-primary mb-3 sm:mb-4 tracking-wider uppercase">Our Methodology</h3>
               <div className="space-y-3 sm:space-y-4">
                 {caseStudy?.processSteps?.map((step, index) => (
                   <div key={index} className="flex space-x-3 sm:space-x-4">
-                    <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 bg-accent rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm">
+                    <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 bg-accent rounded-full flex items-center justify-center text-white font-heading-regular text-xs sm:text-sm uppercase">
                       {index + 1}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-primary mb-1 text-sm sm:text-base">{step?.title}</h4>
-                      <p className="text-text-secondary text-xs sm:text-sm">{step?.description}</p>
+                      <h4 className="font-heading-regular text-primary mb-1 text-sm sm:text-base tracking-wider uppercase">{step?.title}</h4>
+                      <p className="text-text-secondary text-xs sm:text-sm font-sans">{step?.description}</p>
                     </div>
                   </div>
                 ))}
@@ -202,17 +204,17 @@ const CaseStudyModal = ({ caseStudy, isOpen, onClose }) => {
 
           {activeTab === 'results' && (
             <div className="space-y-4 sm:space-y-6">
-              <h3 className="text-lg sm:text-xl font-bold text-primary mb-3 sm:mb-4">Measurable Impact</h3>
+              <h3 className="text-lg sm:text-xl font-heading-regular text-primary mb-3 sm:mb-4 tracking-wider uppercase">Measurable Impact</h3>
               <div className="grid grid-cols-1 gap-4 sm:gap-6">
                 {caseStudy?.detailedResults?.map((result, index) => (
                   <div key={index} className="p-3 sm:p-4 border border-border rounded-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-primary text-sm sm:text-base">{result?.metric}</span>
-                      <span className="text-xl sm:text-2xl font-bold text-accent">
+                      <span className="font-heading-regular text-primary text-sm sm:text-base tracking-wider uppercase">{result?.metric}</span>
+                      <span className="text-xl sm:text-2xl font-heading-regular text-accent uppercase tracking-wider">
                         {formatMetric(result?.value, result?.type)}
                       </span>
                     </div>
-                    <p className="text-xs sm:text-sm text-text-secondary">{result?.description}</p>
+                    <p className="text-xs sm:text-sm text-text-secondary font-sans">{result?.description}</p>
                   </div>
                 ))}
               </div>
@@ -229,23 +231,23 @@ const CaseStudyModal = ({ caseStudy, isOpen, onClose }) => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <blockquote className="text-base sm:text-lg text-primary italic mb-3 sm:mb-4">
+                <blockquote className="text-base sm:text-lg text-primary italic mb-3 sm:mb-4 font-sans">
                   "{caseStudy?.testimonial?.quote}"
                 </blockquote>
                 <div>
-                  <div className="font-semibold text-primary text-sm sm:text-base">{caseStudy?.testimonial?.name}</div>
-                  <div className="text-xs sm:text-sm text-text-secondary">{caseStudy?.testimonial?.position}</div>
-                  <div className="text-xs sm:text-sm text-text-secondary">{caseStudy?.client}</div>
+                  <div className="font-heading-regular text-primary text-sm sm:text-base tracking-wider uppercase">{caseStudy?.testimonial?.name}</div>
+                  <div className="text-xs sm:text-sm text-text-secondary font-sans">{caseStudy?.testimonial?.position}</div>
+                  <div className="text-xs sm:text-sm text-text-secondary font-heading-regular tracking-wider uppercase">{caseStudy?.client}</div>
                 </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Footer - Mobile Optimized */}
+        {/* Footer - Typography Optimized */}
         <div className="border-t border-border p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="text-xs sm:text-sm text-text-secondary">
+            <div className="text-xs sm:text-sm text-text-secondary font-sans">
               Project completed in {caseStudy?.timeline} • {caseStudy?.duration}
             </div>
             <Button
@@ -255,7 +257,7 @@ const CaseStudyModal = ({ caseStudy, isOpen, onClose }) => {
               iconName="ExternalLink"
               iconPosition="right"
             >
-              Start Similar Project
+              <span className="font-heading-regular tracking-wider uppercase">Start Similar Project</span>
             </Button>
           </div>
         </div>
@@ -278,6 +280,8 @@ const CaseStudyModal = ({ caseStudy, isOpen, onClose }) => {
       `}</style>
     </div>
   );
-};
+});
+
+CaseStudyModal.displayName = 'CaseStudyModal';
 
 export default CaseStudyModal;

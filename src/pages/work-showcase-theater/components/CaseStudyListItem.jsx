@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import Image from '../../../components/AppImage';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
-const CaseStudyListItem = ({ caseStudy, onViewDetails }) => {
-  const formatMetric = (value, type) => {
+const CaseStudyListItem = React.memo(({ caseStudy, onViewDetails }) => {
+  const formatMetric = useMemo(() => (value, type) => {
     switch (type) {
       case 'percentage':
         return `+${value}%`;
@@ -15,17 +15,18 @@ const CaseStudyListItem = ({ caseStudy, onViewDetails }) => {
       default:
         return value;
     }
-  };
+  }, []);
 
   return (
     <div className="group relative bg-white rounded-xl overflow-hidden brand-shadow hover:brand-shadow-lg transition-all duration-500">
       <div className="flex flex-col lg:flex-row">
-        {/* Image Section */}
-        <div className="relative lg:w-80 h-48 lg:h-64 overflow-hidden flex-shrink-0">
+        {/* Image Section with Lazy Loading */}
+        <div className="relative lg:w-80 h-48 lg:h-64 overflow-hidden flex-shrink-0 bg-gray-100">
           <Image
             src={caseStudy?.heroImage}
             alt={`${caseStudy?.title} case study`}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            loading="lazy"
           />
           
           {/* Play Button Overlay */}
@@ -34,75 +35,84 @@ const CaseStudyListItem = ({ caseStudy, onViewDetails }) => {
               <Icon name="Play" size={20} className="text-white" />
             </div>
           </div>
+          
+          {/* Featured Badge on Image */}
+          {caseStudy?.featured && (
+            <div className="absolute bottom-3 right-3 z-10">
+              <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+                <Icon name="Star" size={18} className="text-white fill-white" />
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Content Section */}
+        {/* Content Section with Proper Typography */}
         <div className="flex-1 p-5 lg:p-8">
           <div className="flex flex-col h-full">
-            {/* Header with badges */}
+            {/* Header with badges - Steelfish for Labels */}
             <div className="flex flex-wrap items-center gap-2 mb-3">
               {caseStudy?.featured && (
-                <span className="px-3 py-1 bg-accent text-white text-xs font-semibold rounded-full flex items-center gap-1">
+                <span className="px-3 py-1 bg-accent text-white text-xs font-heading-regular tracking-wider uppercase rounded-full flex items-center gap-1">
                   <Icon name="Star" size={12} className="fill-white" />
                   Featured
                 </span>
               )}
-              <span className="px-3 py-1 bg-muted text-xs font-semibold text-primary rounded-full">
+              <span className="px-3 py-1 bg-muted text-xs font-heading-regular tracking-wider uppercase text-primary rounded-full">
                 {caseStudy?.industry}
               </span>
-              <span className="px-3 py-1 bg-accent/10 text-accent text-xs font-semibold rounded-full">
+              <span className="px-3 py-1 bg-accent/10 text-accent text-xs font-heading-regular tracking-wider uppercase rounded-full">
                 {caseStudy?.serviceType}
               </span>
-              <span className="hidden sm:inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+              <span className="hidden sm:inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full font-sans">
                 {caseStudy?.businessStage}
               </span>
             </div>
 
-            {/* Title and Client */}
+            {/* Title and Client - Steelfish for Title */}
             <div className="mb-3">
-              <h3 className="text-lg lg:text-2xl font-bold text-primary mb-1 group-hover:text-accent transition-colors duration-300">
+              <h3 className="text-lg lg:text-2xl font-heading-regular text-primary mb-1 group-hover:text-accent transition-colors duration-300 tracking-wider uppercase">
                 {caseStudy?.title}
               </h3>
-              <p className="text-sm text-text-secondary font-medium">
-                {caseStudy?.client} • {caseStudy?.businessStage}
+              <p className="text-sm text-text-secondary font-sans">
+                <span className="font-heading-regular tracking-wider uppercase">{caseStudy?.client}</span> • {caseStudy?.businessStage}
               </p>
             </div>
 
-            {/* Description */}
-            <p className="text-text-secondary text-sm lg:text-base mb-4 line-clamp-2 lg:line-clamp-3">
+            {/* Description - Helvetica */}
+            <p className="text-text-secondary text-sm lg:text-base mb-4 line-clamp-2 lg:line-clamp-3 font-sans">
               {caseStudy?.description}
             </p>
 
             {/* Metrics and Timeline */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
-              {/* Key Metrics */}
+              {/* Key Metrics - Steelfish for Numbers */}
               <div className="flex items-center gap-3 lg:gap-4">
                 {caseStudy?.keyMetrics?.slice(0, 3)?.map((metric, index) => (
                   <div key={index} className="text-center">
-                    <div className="text-base lg:text-xl font-bold text-accent">
+                    <div className="text-base lg:text-xl font-heading-regular text-accent uppercase tracking-wider">
                       {formatMetric(metric?.value, metric?.type)}
                     </div>
-                    <div className="text-xs text-text-secondary">
+                    <div className="text-xs text-text-secondary font-sans">
                       {metric?.label}
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* Timeline */}
+              {/* Timeline - Helvetica */}
               <div className="flex items-center gap-3 lg:gap-4 text-xs lg:text-sm text-text-secondary">
                 <div className="flex items-center space-x-1">
                   <Icon name="Calendar" size={14} />
-                  <span>{caseStudy?.timeline}</span>
+                  <span className="font-sans">{caseStudy?.timeline}</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Icon name="Clock" size={14} />
-                  <span>{caseStudy?.duration}</span>
+                  <span className="font-sans">{caseStudy?.duration}</span>
                 </div>
               </div>
             </div>
 
-            {/* CTA Button */}
+            {/* CTA Button - Steelfish */}
             <div className="mt-auto">
               <Button
                 variant="outline"
@@ -111,7 +121,7 @@ const CaseStudyListItem = ({ caseStudy, onViewDetails }) => {
                 iconName="ArrowRight"
                 iconPosition="right"
               >
-                View Full Story
+                <span className="font-heading-regular tracking-wider uppercase">View Full Story</span>
               </Button>
             </div>
           </div>
@@ -119,6 +129,8 @@ const CaseStudyListItem = ({ caseStudy, onViewDetails }) => {
       </div>
     </div>
   );
-};
+});
+
+CaseStudyListItem.displayName = 'CaseStudyListItem';
 
 export default CaseStudyListItem;
