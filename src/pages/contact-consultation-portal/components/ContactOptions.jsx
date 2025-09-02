@@ -111,8 +111,8 @@ const ContactOptions = () => {
           </span>
         </div>
 
-        {/* Contact Methods Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+        {/* Contact Methods List - Single Column */}
+        <div className="grid grid-cols-1 gap-2 sm:gap-3">
           {contactMethods.map((method) => (
             <a
               key={method.id}
@@ -121,31 +121,31 @@ const ContactOptions = () => {
               onMouseEnter={() => setHoveredMethod(method.id)}
               onMouseLeave={() => setHoveredMethod(null)}
             >
-              <div className={`flex items-center space-x-3 p-2.5 sm:p-3 rounded-lg hover:bg-surface transition-all duration-300 ${
+              <div className={`flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 rounded-lg hover:bg-surface transition-all duration-300 ${
                 hoveredMethod === method.id ? 'bg-surface' : ''
               }`}>
                 {/* Icon */}
-                <div className={`w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-r ${method.color} rounded-lg flex items-center justify-center text-white flex-shrink-0`}>
-                  <Icon name={method.icon} size={18} className="sm:w-5 sm:h-5" />
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r ${method.color} rounded-lg flex items-center justify-center text-white flex-shrink-0`}>
+                  <Icon name={method.icon} size={20} className="sm:w-6 sm:h-6" />
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <div className="font-heading-regular text-primary text-xs sm:text-sm uppercase tracking-wider">
+                    <div className="font-heading-regular text-primary text-sm sm:text-base uppercase tracking-wider">
                       {method.title}
                     </div>
                     {method.available && (
-                      <div className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />
+                      <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
                     )}
                   </div>
-                  <div className="text-accent text-xs sm:text-sm font-heading-regular truncate uppercase tracking-wider">
+                  <div className="text-accent text-sm sm:text-base font-heading-regular truncate uppercase tracking-wider">
                     {method.value}
                   </div>
                   <div className="flex items-center justify-between">
-                    <div className="text-text-secondary text-xs font-sans">{method.description}</div>
+                    <div className="text-text-secondary text-xs sm:text-sm font-sans">{method.description}</div>
                     {hoveredMethod === method.id && (
-                      <div className="text-xs text-accent font-sans">
+                      <div className="text-xs sm:text-sm text-accent font-sans">
                         {method.responseTime}
                       </div>
                     )}
@@ -154,7 +154,7 @@ const ContactOptions = () => {
 
                 {/* Arrow */}
                 {hoveredMethod === method.id && (
-                  <Icon name="ArrowRight" size={14} className="text-accent" />
+                  <Icon name="ArrowRight" size={16} className="text-accent" />
                 )}
               </div>
             </a>
