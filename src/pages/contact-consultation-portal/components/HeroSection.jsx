@@ -1,3 +1,4 @@
+// src/pages/contact-consultation-portal/components/HeroSection.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../../../components/AppIcon';
@@ -16,10 +17,10 @@ const HeroSection = () => {
   const deleteSpeed = 50;
   const pauseDuration = 2000;
 
-  // Animated particles background component
-  const ParticlesBackground = () => (
+  // Floating particles background component
+  const FloatingParticles = () => (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(25)].map((_, i) => (
+      {[...Array(20)].map((_, i) => (
         <motion.div
           key={i}
           className="absolute w-1 h-1 sm:w-2 sm:h-2 bg-accent/40 rounded-full"
@@ -45,7 +46,7 @@ const HeroSection = () => {
     </div>
   );
 
-  // Typewriter effect with smoother transitions
+  // Typewriter effect
   useEffect(() => {
     const word = dynamicWords[currentWord];
     let timeout;
@@ -74,7 +75,7 @@ const HeroSection = () => {
     return () => clearTimeout(timeout);
   }, [currentText, isDeleting, currentWord, dynamicWords]);
 
-  // Cursor blink effect
+  // Cursor blink
   useEffect(() => {
     const interval = setInterval(() => {
       setShowCursor(prev => !prev);
@@ -82,7 +83,7 @@ const HeroSection = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Mouse move effect for glow
+  // Mouse tracking for glow effect
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (sectionRef.current) {
@@ -154,7 +155,7 @@ const HeroSection = () => {
 
   return (
     <section ref={sectionRef} className="relative min-h-[600px] sm:min-h-[700px] md:min-h-[800px] bg-gradient-to-br from-black via-gray-900 to-primary overflow-hidden">
-      {/* Mouse Follower Glow - Enhanced */}
+      {/* Mouse Follower Glow - Desktop only */}
       <motion.div 
         className="pointer-events-none absolute inset-0 z-30 opacity-0 sm:opacity-100"
         animate={{
@@ -163,51 +164,40 @@ const HeroSection = () => {
         transition={{ type: "spring", damping: 25 }}
       />
       
-      {/* Enhanced Animated Background with Multiple Layers */}
+      {/* Animated Background */}
       <div className="absolute inset-0">
-        {/* Gradient Mesh Background */}
-        <div className="absolute inset-0 opacity-30">
-          <motion.div
-            className="absolute top-0 left-0 w-72 h-72 sm:w-96 sm:h-96 bg-gradient-radial from-accent/30 to-transparent blur-3xl"
-            animate={{
-              x: [0, 100, 0],
-              y: [0, -50, 0],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
-          <motion.div
-            className="absolute bottom-0 right-0 w-96 h-96 sm:w-[500px] sm:h-[500px] bg-gradient-radial from-accent/20 to-transparent blur-3xl"
-            animate={{
-              x: [0, -100, 0],
-              y: [0, 50, 0],
-              scale: [1, 1.3, 1],
-            }}
-            transition={{
-              duration: 25,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
-          <motion.div
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] bg-gradient-radial from-accent/10 to-transparent blur-3xl"
-            animate={{
-              rotate: [0, 360],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: 30,
-              repeat: Infinity,
-              ease: "linear"
-            }}
-          />
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black">
+          <div className="absolute inset-0 opacity-30">
+            <motion.div
+              className="absolute top-0 left-0 w-72 h-72 sm:w-96 sm:h-96 bg-gradient-radial from-accent/30 to-transparent blur-3xl"
+              animate={{
+                x: [0, 100, 0],
+                y: [0, -50, 0],
+                scale: [1, 1.2, 1],
+              }}
+              transition={{
+                duration: 20,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+            <motion.div
+              className="absolute bottom-0 right-0 w-96 h-96 sm:w-[500px] sm:h-[500px] bg-gradient-radial from-accent/20 to-transparent blur-3xl"
+              animate={{
+                x: [0, -100, 0],
+                y: [0, 50, 0],
+                scale: [1, 1.3, 1],
+              }}
+              transition={{
+                duration: 25,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          </div>
         </div>
-
-        {/* Animated Grid Pattern */}
+        
+        {/* Grid Pattern */}
         <motion.div 
           className="absolute inset-0 opacity-20"
           style={{
@@ -227,60 +217,11 @@ const HeroSection = () => {
           }}
         />
 
-        {/* Animated Particles */}
-        <ParticlesBackground />
+        {/* Particles */}
+        <FloatingParticles />
       </div>
 
-      {/* Animated Orbiting Elements */}
-      <div className="absolute right-10 top-1/2 -translate-y-1/2 w-[300px] h-[300px] opacity-0 lg:opacity-30 hidden lg:block">
-        <div className="relative w-full h-full">
-          {[...Array(4)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-full h-full"
-              animate={{ rotate: 360 }}
-              transition={{
-                duration: 15 + (i * 5),
-                repeat: Infinity,
-                ease: "linear"
-              }}
-            >
-              <motion.div 
-                className="absolute w-3 h-3 sm:w-4 sm:h-4 bg-accent rounded-full shadow-lg shadow-accent/50"
-                style={{
-                  top: '50%',
-                  left: '50%',
-                  transform: `translate(-50%, -50%) translateX(${80 + i * 30}px)`
-                }}
-                animate={{
-                  scale: [1, 1.5, 1],
-                  opacity: [0.5, 1, 0.5],
-                }}
-                transition={{
-                  duration: 3 + i,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-              />
-            </motion.div>
-          ))}
-          {/* Center orb with glow */}
-          <motion.div 
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 sm:w-32 sm:h-32 bg-accent/20 rounded-full blur-xl"
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.6, 0.3],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Floating Elements with Enhanced Animations */}
+      {/* Floating Elements */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.div 
           className="parallax-element absolute top-20 left-10 w-4 h-4 bg-accent/60 rounded-full blur-sm"
@@ -302,15 +243,9 @@ const HeroSection = () => {
           animate="animate"
           transition={{ delay: 1 }}
         />
-        <motion.div 
-          className="parallax-element absolute top-1/3 right-1/4 w-5 h-5 bg-accent/30 rounded-full blur-md"
-          variants={floatingVariants}
-          initial="initial"
-          animate="animate"
-          transition={{ delay: 1.5 }}
-        />
       </div>
 
+      {/* Main Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 md:py-32">
         <motion.div
           variants={containerVariants}
@@ -318,7 +253,7 @@ const HeroSection = () => {
           animate="visible"
           className="text-center"
         >
-          {/* Enhanced Status Badge */}
+          {/* Status Badge */}
           <motion.div 
             variants={itemVariants} 
             className="inline-flex items-center space-x-2 bg-accent/10 border border-accent/20 backdrop-blur-sm rounded-full px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8 group"
@@ -337,14 +272,16 @@ const HeroSection = () => {
                 ease: "easeInOut"
               }}
             />
-            <span className="text-accent font-medium text-sm sm:text-base">Available for New Projects</span>
+            <span className="text-accent font-heading-regular text-sm sm:text-base uppercase tracking-wider">
+              Available for New Projects
+            </span>
             <Icon name="Zap" size={16} className="text-accent group-hover:animate-pulse" />
           </motion.div>
 
-          {/* Enhanced Main Headline with Gradient Animation */}
+          {/* Main Headline - Using Steelfish */}
           <motion.h1 
             variants={itemVariants} 
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-white mb-4 sm:mb-6"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-heading-regular text-white mb-4 sm:mb-6 uppercase tracking-wider"
           >
             <motion.span 
               className="block mb-2"
@@ -387,10 +324,10 @@ const HeroSection = () => {
             </motion.span>
           </motion.h1>
 
-          {/* Enhanced Subheadline */}
+          {/* Subheadline - Using Sans font */}
           <motion.p 
             variants={itemVariants} 
-            className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 max-w-3xl mx-auto mb-8 sm:mb-12 leading-relaxed px-4"
+            className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 max-w-3xl mx-auto mb-8 sm:mb-12 leading-relaxed px-4 font-sans"
           >
             No cookie-cutter solutions. No boring meetings. Just honest conversations about 
             <motion.span 
@@ -410,7 +347,7 @@ const HeroSection = () => {
             </motion.span>.
           </motion.p>
 
-          {/* Enhanced Quick Stats with Counter Animations */}
+          {/* Quick Stats - Using Steelfish for numbers */}
           <motion.div 
             variants={itemVariants} 
             className="grid grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-3xl mx-auto mb-8 sm:mb-12"
@@ -432,7 +369,7 @@ const HeroSection = () => {
                   transition={{ delay: 0.8 + index * 0.1, type: "spring", stiffness: 200 }}
                 >
                   <motion.div 
-                    className="text-2xl sm:text-3xl md:text-4xl font-bold text-accent mb-1 sm:mb-2 group-hover:text-white transition-colors duration-300"
+                    className="text-2xl sm:text-3xl md:text-4xl font-heading-regular text-accent mb-1 sm:mb-2 group-hover:text-white transition-colors duration-300 uppercase tracking-wider"
                     animate={{
                       textShadow: [
                         "0 0 0px rgba(229, 62, 62, 0)",
@@ -444,13 +381,15 @@ const HeroSection = () => {
                   >
                     {stat.value}
                   </motion.div>
-                  <div className="text-gray-400 text-xs sm:text-sm group-hover:text-gray-300 transition-colors duration-300">{stat.label}</div>
+                  <div className="text-gray-400 text-xs sm:text-sm group-hover:text-gray-300 transition-colors duration-300 font-sans">
+                    {stat.label}
+                  </div>
                 </motion.div>
               </motion.div>
             ))}
           </motion.div>
 
-          {/* Enhanced CTA Buttons */}
+          {/* CTA Buttons - Using Steelfish */}
           <motion.div 
             variants={itemVariants} 
             className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0"
@@ -459,7 +398,7 @@ const HeroSection = () => {
               <Button
                 variant="default"
                 size="lg"
-                className="w-full sm:w-auto bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base shadow-2xl hover:shadow-accent/50 relative overflow-hidden group"
+                className="w-full sm:w-auto bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base shadow-2xl hover:shadow-accent/50 relative overflow-hidden group font-heading-regular uppercase tracking-wider"
                 iconName="Calendar"
                 iconPosition="left"
                 onClick={() => document.getElementById('consultation-form')?.scrollIntoView({ behavior: 'smooth' })}
@@ -477,7 +416,7 @@ const HeroSection = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full sm:w-auto border-2 border-white text-white hover:bg-white hover:text-black px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base backdrop-blur-sm relative overflow-hidden group"
+                className="w-full sm:w-auto border-2 border-white text-white hover:bg-white hover:text-black px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base backdrop-blur-sm relative overflow-hidden group font-heading-regular uppercase tracking-wider"
                 iconName="MessageCircle"
                 iconPosition="left"
                 onClick={() => document.getElementById('contact-options')?.scrollIntoView({ behavior: 'smooth' })}
@@ -494,10 +433,10 @@ const HeroSection = () => {
             </motion.div>
           </motion.div>
 
-          {/* Enhanced Trust Badge */}
+          {/* Trust Badge - Using Sans font */}
           <motion.div 
             variants={itemVariants} 
-            className="mt-8 sm:mt-12 flex flex-wrap justify-center gap-4 sm:gap-6 text-gray-400 text-xs sm:text-sm"
+            className="mt-8 sm:mt-12 flex flex-wrap justify-center gap-4 sm:gap-6 text-gray-400 text-xs sm:text-sm font-sans"
           >
             {[
               { icon: 'Shield', text: '100% Confidential' },
@@ -520,7 +459,7 @@ const HeroSection = () => {
         </motion.div>
       </div>
 
-      {/* Enhanced Scroll Indicator */}
+      {/* Scroll Indicator */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -534,7 +473,7 @@ const HeroSection = () => {
           onClick={() => document.getElementById('consultation')?.scrollIntoView({ behavior: 'smooth' })}
         >
           <motion.div 
-            className="mb-2 text-xs text-accent opacity-70 group-hover:opacity-100 transition-opacity duration-300"
+            className="mb-2 text-xs text-accent opacity-70 group-hover:opacity-100 transition-opacity duration-300 font-heading-regular uppercase tracking-wider"
             animate={{
               opacity: [0.5, 1, 0.5],
             }}
@@ -568,7 +507,7 @@ const HeroSection = () => {
         </motion.div>
       </motion.div>
 
-      {/* Bottom Gradient Fade */}
+      {/* Bottom Gradient */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none"></div>
 
       {/* Custom Styles */}

@@ -1,3 +1,4 @@
+// src/pages/contact-consultation-portal/components/FAQSection.jsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../../../components/AppIcon';
@@ -184,13 +185,11 @@ const FAQSection = () => {
     setSearchTerm('');
   }, [activeCategory]);
 
-  // Get filtered FAQs based on category and search
+  // Get filtered FAQs
   const getFilteredFaqs = () => {
     let results = [];
     
-    // Determine which categories to include
     if (activeCategory === 'all') {
-      // Include all categories
       Object.keys(allFaqs).forEach(categoryKey => {
         const categoryFaqs = allFaqs[categoryKey];
         categoryFaqs.forEach(faq => {
@@ -201,7 +200,6 @@ const FAQSection = () => {
         });
       });
     } else {
-      // Include only selected category
       const categoryFaqs = allFaqs[activeCategory];
       if (categoryFaqs) {
         categoryFaqs.forEach(faq => {
@@ -213,7 +211,6 @@ const FAQSection = () => {
       }
     }
     
-    // Apply search filter if there's a search term
     if (searchTerm && searchTerm.trim() !== '') {
       results = results.filter(item =>
         item.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -253,10 +250,12 @@ const FAQSection = () => {
           viewport={{ once: true }}
           className="text-center mb-8 sm:mb-12"
         >
-          <motion.h2 variants={itemVariants} className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-3 sm:mb-4">
-            Frequently Asked <span className="text-accent">Questions</span>
+          {/* Header - Using Steelfish */}
+          <motion.h2 variants={itemVariants} className="text-2xl sm:text-3xl md:text-4xl font-heading-regular text-primary mb-3 sm:mb-4 uppercase tracking-wider">
+            Frequently Asked
+            <span className="text-accent block mt-2 font-heading-regular uppercase">Questions</span>
           </motion.h2>
-          <motion.p variants={itemVariants} className="text-base sm:text-lg md:text-xl text-text-secondary max-w-2xl mx-auto">
+          <motion.p variants={itemVariants} className="text-base sm:text-lg md:text-xl text-text-secondary max-w-2xl mx-auto font-sans">
             Everything you need to know about working with Rule27 Design. Can't find your answer? Let's talk.
           </motion.p>
         </motion.div>
@@ -275,12 +274,12 @@ const FAQSection = () => {
               placeholder="Search for answers..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-white border border-border rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm sm:text-base"
+              className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-white border border-border rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm sm:text-base font-sans"
             />
           </div>
         </motion.div>
 
-        {/* Category Tabs */}
+        {/* Category Tabs - Using Steelfish for labels */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -290,7 +289,7 @@ const FAQSection = () => {
           <div className="flex flex-wrap gap-2 sm:gap-3 justify-center">
             <button
               onClick={() => setActiveCategory('all')}
-              className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-300 text-sm sm:text-base whitespace-nowrap ${
+              className={`px-3 sm:px-4 py-2 rounded-lg font-heading-regular uppercase tracking-wider transition-all duration-300 text-xs sm:text-sm whitespace-nowrap ${
                 activeCategory === 'all'
                   ? 'bg-accent text-white'
                   : 'bg-white text-gray-600 hover:bg-gray-100'
@@ -302,7 +301,7 @@ const FAQSection = () => {
               <button
                 key={category.id}
                 onClick={() => setActiveCategory(category.id)}
-                className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-300 text-sm sm:text-base whitespace-nowrap ${
+                className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 rounded-lg font-heading-regular uppercase tracking-wider transition-all duration-300 text-xs sm:text-sm whitespace-nowrap ${
                   activeCategory === category.id
                     ? 'bg-accent text-white'
                     : 'bg-white text-gray-600 hover:bg-gray-100'
@@ -310,7 +309,7 @@ const FAQSection = () => {
               >
                 <Icon name={category.icon} size={14} className="sm:w-4 sm:h-4" />
                 <span>{category.label}</span>
-                <span className="text-xs opacity-80">({category.count})</span>
+                <span className="text-xs opacity-80 font-sans">({category.count})</span>
               </button>
             ))}
           </div>
@@ -318,7 +317,7 @@ const FAQSection = () => {
 
         {/* FAQ Items */}
         <motion.div
-          key={activeCategory} // Force re-render when category changes
+          key={activeCategory}
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -327,8 +326,8 @@ const FAQSection = () => {
           {filteredFaqs.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-xl border border-border">
               <Icon name="Search" size={48} className="text-gray-300 mx-auto mb-4" />
-              <p className="text-lg font-medium text-gray-600">No questions found</p>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-lg font-heading-regular text-gray-600 uppercase tracking-wider">No questions found</p>
+              <p className="text-sm text-gray-500 mt-2 font-sans">
                 {searchTerm 
                   ? "Try searching for different keywords"
                   : "Please try selecting a different category"}
@@ -349,16 +348,16 @@ const FAQSection = () => {
                   className="w-full px-4 sm:px-6 py-3 sm:py-4 text-left flex items-center justify-between group"
                 >
                   <div className="flex-1 pr-3 sm:pr-4">
-                    <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-primary group-hover:text-accent transition-colors duration-300">
+                    <h3 className="text-sm sm:text-base lg:text-lg font-heading-regular text-primary group-hover:text-accent transition-colors duration-300 uppercase tracking-wider">
                       {item.question}
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
                       {item.highlight && (
-                        <span className="inline-block px-2 py-0.5 sm:py-1 bg-accent/10 text-accent text-xs font-medium rounded">
+                        <span className="inline-block px-2 py-0.5 sm:py-1 bg-accent/10 text-accent text-xs font-heading-regular uppercase tracking-wider rounded">
                           Most Asked
                         </span>
                       )}
-                      <span className="text-xs text-gray-500 capitalize">
+                      <span className="text-xs text-gray-500 capitalize font-sans">
                         {item.category}
                       </span>
                     </div>
@@ -380,7 +379,7 @@ const FAQSection = () => {
                       className="overflow-hidden"
                     >
                       <div className="px-4 sm:px-6 pb-3 sm:pb-4">
-                        <p className="text-text-secondary leading-relaxed text-sm sm:text-base">
+                        <p className="text-text-secondary leading-relaxed text-sm sm:text-base font-sans">
                           {item.answer}
                         </p>
                       </div>
@@ -392,7 +391,7 @@ const FAQSection = () => {
           )}
         </motion.div>
 
-        {/* Still Have Questions CTA */}
+        {/* Still Have Questions CTA - Mixed fonts */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -400,16 +399,16 @@ const FAQSection = () => {
           className="mt-8 sm:mt-12 lg:mt-16 text-center bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 border border-border"
         >
           <Icon name="MessageCircle" size={36} className="text-accent mx-auto mb-3 sm:mb-4 sm:w-12 sm:h-12" />
-          <h3 className="text-xl sm:text-2xl font-bold text-primary mb-3 sm:mb-4">
+          <h3 className="text-xl sm:text-2xl font-heading-regular text-primary mb-3 sm:mb-4 uppercase tracking-wider">
             Still Have Questions?
           </h3>
-          <p className="text-text-secondary mb-4 sm:mb-6 max-w-md mx-auto text-sm sm:text-base">
+          <p className="text-text-secondary mb-4 sm:mb-6 max-w-md mx-auto text-sm sm:text-base font-sans">
             Can't find what you're looking for? Our team is here to help with any questions you might have.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Button
               variant="default"
-              className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-sm sm:text-base"
+              className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-sm sm:text-base font-heading-regular uppercase tracking-wider"
               iconName="Calendar"
               iconPosition="left"
             >
@@ -417,7 +416,7 @@ const FAQSection = () => {
             </Button>
             <Button
               variant="outline"
-              className="w-full sm:w-auto border-accent text-accent hover:bg-accent hover:text-white text-sm sm:text-base"
+              className="w-full sm:w-auto border-accent text-accent hover:bg-accent hover:text-white text-sm sm:text-base font-heading-regular uppercase tracking-wider"
               iconName="Mail"
               iconPosition="left"
             >

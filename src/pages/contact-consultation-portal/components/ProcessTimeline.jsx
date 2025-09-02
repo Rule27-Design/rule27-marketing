@@ -1,3 +1,4 @@
+// src/pages/contact-consultation-portal/components/ProcessTimeline.jsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../../../components/AppIcon';
@@ -46,7 +47,7 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
     }
   ];
 
-  // Calculate total progress
+  // Calculate progress
   useEffect(() => {
     const progress = ((currentStep - 1) / (steps.length - 1)) * 100;
     setAnimatedProgress(progress);
@@ -56,32 +57,6 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
   useEffect(() => {
     setExpandedStep(currentStep);
   }, [currentStep]);
-
-  // Floating particles background
-  const FloatingParticles = () => (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(5)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-0.5 h-0.5 bg-accent/30 rounded-full"
-          initial={{
-            x: Math.random() * 300,
-            y: Math.random() * 400,
-          }}
-          animate={{
-            y: [null, -30, null],
-            x: [null, Math.random() * 50 - 25, null],
-          }}
-          transition={{
-            duration: Math.random() * 10 + 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: Math.random() * 5,
-          }}
-        />
-      ))}
-    </div>
-  );
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -128,10 +103,7 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
         }}
       />
 
-      {/* Floating particles */}
-      <FloatingParticles />
-
-      {/* Header with animated icon */}
+      {/* Header - Using Steelfish */}
       <motion.div 
         className="flex items-center justify-between mb-4 sm:mb-6 relative z-10"
         initial={{ opacity: 0, y: -20 }}
@@ -152,12 +124,14 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
           >
             <Icon name="GitBranch" size={18} className="text-white sm:w-5 sm:h-5" />
           </motion.div>
-          <h3 className="text-base sm:text-lg font-bold text-primary">Your Journey</h3>
+          <h3 className="text-base sm:text-lg font-heading-regular text-primary uppercase tracking-wider">
+            Your Journey
+          </h3>
         </div>
         
-        {/* Overall progress indicator */}
+        {/* Progress indicator - Using Steelfish for numbers */}
         <motion.div 
-          className="text-xs sm:text-sm text-accent font-semibold"
+          className="text-xs sm:text-sm text-accent font-heading-regular uppercase tracking-wider"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200, delay: 0.3 }}
@@ -175,7 +149,7 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
             animate={{ width: `${animatedProgress}%` }}
             transition={{ duration: 0.8, type: "spring", stiffness: 50 }}
           >
-            {/* Animated shine effect */}
+            {/* Animated shine */}
             <motion.div
               className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent"
               animate={{
@@ -191,7 +165,7 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
         </div>
       </div>
       
-      {/* Steps with enhanced animations */}
+      {/* Steps */}
       <motion.div 
         className="space-y-3 sm:space-y-4 relative z-10"
         variants={containerVariants}
@@ -201,7 +175,6 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
         {steps.map((step, index) => {
           const isCompleted = step.step < currentStep;
           const isCurrent = step.step === currentStep;
-          const isUpcoming = step.step > currentStep;
           const isExpanded = expandedStep === step.step;
 
           return (
@@ -212,7 +185,7 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
               onMouseEnter={() => setHoveredStep(step.step)}
               onMouseLeave={() => setHoveredStep(null)}
             >
-              {/* Animated Connection Line */}
+              {/* Connection Line */}
               {index < steps.length - 1 && (
                 <motion.div
                   className={`hidden sm:block absolute left-5 sm:left-6 top-10 sm:top-12 w-0.5 ${
@@ -243,7 +216,7 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
                 whileHover={{ x: 5 }}
                 onClick={() => setExpandedStep(isExpanded ? null : step.step)}
               >
-                {/* Enhanced Step Icon */}
+                {/* Step Icon */}
                 <motion.div
                   className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 relative ${
                     isCompleted
@@ -261,7 +234,7 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
                     ease: "easeInOut"
                   }}
                 >
-                  {/* Glow effect for current step */}
+                  {/* Glow effect for current */}
                   {isCurrent && (
                     <motion.div
                       className="absolute inset-0 bg-accent rounded-full"
@@ -277,7 +250,6 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
                     />
                   )}
                   
-                  {/* Icon with rotation on hover */}
                   <motion.div
                     animate={hoveredStep === step.step ? {
                       rotate: 360,
@@ -295,8 +267,9 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
                 {/* Step Content */}
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
+                    {/* Title - Using Steelfish */}
                     <motion.h4
-                      className={`font-semibold text-sm sm:text-base ${
+                      className={`font-heading-regular text-sm sm:text-base uppercase tracking-wider ${
                         isCurrent ? 'text-accent' : isCompleted ? 'text-primary' : 'text-text-secondary'
                       }`}
                       animate={isCurrent ? {
@@ -311,7 +284,7 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
                       {step.title}
                     </motion.h4>
                     <div className="flex items-center space-x-2">
-                      <span className="text-xs text-text-secondary">{step.duration}</span>
+                      <span className="text-xs text-text-secondary font-sans">{step.duration}</span>
                       <motion.div
                         animate={{ rotate: isExpanded ? 180 : 0 }}
                         transition={{ duration: 0.3 }}
@@ -320,9 +293,12 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
                       </motion.div>
                     </div>
                   </div>
-                  <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">{step.description}</p>
+                  {/* Description - Sans font */}
+                  <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1 font-sans">
+                    {step.description}
+                  </p>
                   
-                  {/* Progress indicator for current step */}
+                  {/* Progress for current step */}
                   {isCurrent && (
                     <motion.div
                       className="h-1 bg-accent/20 rounded-full mt-2"
@@ -354,11 +330,11 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
                         className="overflow-hidden"
                       >
                         <div className="mt-3 pt-3 border-t border-border/50">
-                          <p className="text-xs sm:text-sm text-text-secondary mb-2">
+                          <p className="text-xs sm:text-sm text-text-secondary mb-2 font-sans">
                             {step.details}
                           </p>
                           <div className="space-y-1">
-                            <p className="text-xs font-semibold text-primary mb-1">Tips:</p>
+                            <p className="text-xs font-heading-regular text-primary mb-1 uppercase tracking-wider">Tips:</p>
                             {step.tips.map((tip, tipIndex) => (
                               <motion.div
                                 key={tipIndex}
@@ -368,7 +344,7 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
                                 transition={{ delay: tipIndex * 0.1 }}
                               >
                                 <Icon name="Lightbulb" size={12} className="text-accent mt-0.5 flex-shrink-0" />
-                                <span className="text-xs text-text-secondary">{tip}</span>
+                                <span className="text-xs text-text-secondary font-sans">{tip}</span>
                               </motion.div>
                             ))}
                           </div>
@@ -383,7 +359,7 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
         })}
       </motion.div>
 
-      {/* Estimated Time with animation */}
+      {/* Estimated Time - Mixed fonts */}
       <motion.div 
         className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-border relative z-10"
         initial={{ opacity: 0 }}
@@ -404,10 +380,10 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
             >
               <Icon name="Clock" size={14} className="text-accent" />
             </motion.div>
-            <span className="text-text-secondary">Total time:</span>
+            <span className="text-text-secondary font-sans">Total time:</span>
           </div>
           <motion.span 
-            className="font-semibold text-primary"
+            className="font-heading-regular text-primary uppercase tracking-wider"
             whileHover={{ scale: 1.1 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
@@ -423,7 +399,7 @@ const ProcessTimeline = ({ currentStep = 1 }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <p className="text-xs text-success font-medium text-center">
+            <p className="text-xs text-success font-heading-regular text-center uppercase tracking-wider">
               🎉 Almost there! Just review and submit.
             </p>
           </motion.div>

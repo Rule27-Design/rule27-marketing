@@ -1,3 +1,4 @@
+// src/pages/contact-consultation-portal/components/ConsultationForm.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import Icon from '../../../components/AppIcon';
@@ -18,10 +19,10 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
 
   const totalSteps = 4;
 
-  // Animated particles for background
+  // Optimized floating particles - reduced for performance
   const FloatingParticles = () => (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(10)].map((_, i) => (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none hidden sm:block">
+      {[...Array(5)].map((_, i) => (
         <motion.div
           key={i}
           className="absolute w-1 h-1 bg-accent/20 rounded-full"
@@ -44,7 +45,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
     </div>
   );
 
-  // Sync with parent's step if it changes
+  // Sync with parent's step
   useEffect(() => {
     if (parentStep && parentStep !== currentStep) {
       setCurrentStep(parentStep);
@@ -52,8 +53,10 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
     }
   }, [parentStep, currentStep, controls]);
 
-  // Mouse tracking for glow effect
+  // Mouse tracking - desktop only
   useEffect(() => {
+    if (window.innerWidth < 768) return; // Skip on mobile
+    
     const handleMouseMove = (e) => {
       if (formRef.current) {
         const rect = formRef.current.getBoundingClientRect();
@@ -66,12 +69,12 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
 
     const form = formRef.current;
     if (form) {
-      form.addEventListener('mousemove', handleMouseMove);
+      form.addEventListener('mousemove', handleMouseMove, { passive: true });
       return () => form.removeEventListener('mousemove', handleMouseMove);
     }
   }, []);
 
-  // Form step data
+  // Form state
   const [contactInfo, setContactInfo] = useState({
     firstName: '',
     lastName: '',
@@ -102,7 +105,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
     newsletterOptIn: false
   });
 
-  // Options for selects (keeping existing options)
+  // Options for selects
   const roleOptions = [
     { value: 'founder', label: 'Founder / CEO' },
     { value: 'cmo', label: 'CMO / Marketing Director' },
@@ -212,7 +215,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
         onFormUpdate(newStep, 'step');
       }
     } else {
-      // Shake animation on error
+      // Simple shake animation on error
       controls.start({
         x: [0, -10, 10, -10, 10, 0],
         transition: { duration: 0.5 }
@@ -240,7 +243,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
 
     setIsSubmitting(true);
     
-    // Simulate form submission with animation
+    // Simulate submission
     await controls.start({
       scale: [1, 0.98, 1],
       transition: { duration: 0.3 }
@@ -252,15 +255,16 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
     }, 2000);
   };
 
-  // Enhanced input wrapper with glow effect
+  // Optimized glow input wrapper
   const GlowInput = ({ children, error }) => (
     <motion.div
       className="relative"
       whileHover={{ scale: 1.01 }}
       transition={{ type: "spring", stiffness: 300 }}
     >
+      {/* Desktop only glow effect */}
       <motion.div
-        className={`absolute inset-0 bg-gradient-to-r from-accent/20 to-primary/20 rounded-lg blur-xl opacity-0 ${
+        className={`hidden sm:block absolute inset-0 bg-gradient-to-r from-accent/20 to-primary/20 rounded-lg blur-xl opacity-0 ${
           focusedField ? 'opacity-100' : ''
         }`}
         animate={{
@@ -325,8 +329,12 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
             className="space-y-4 sm:space-y-6"
           >
             <motion.div variants={itemVariants}>
-              <h3 className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">Let's Get Acquainted</h3>
-              <p className="text-text-secondary text-sm sm:text-base">Tell us who you are and how we can reach you.</p>
+              <h3 className="text-xl sm:text-2xl font-heading-regular text-primary mb-1 sm:mb-2 uppercase tracking-wider">
+                Let's Get Acquainted
+              </h3>
+              <p className="text-text-secondary text-sm sm:text-base font-sans">
+                Tell us who you are and how we can reach you.
+              </p>
             </motion.div>
 
             <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -340,7 +348,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   onBlur={() => setFocusedField(null)}
                   error={errors.firstName}
                   placeholder="John"
-                  className="transition-all duration-300 hover:border-accent/50"
+                  className="transition-all duration-300 hover:border-accent/50 font-sans"
                 />
               </GlowInput>
               <GlowInput>
@@ -353,7 +361,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   onBlur={() => setFocusedField(null)}
                   error={errors.lastName}
                   placeholder="Doe"
-                  className="transition-all duration-300 hover:border-accent/50"
+                  className="transition-all duration-300 hover:border-accent/50 font-sans"
                 />
               </GlowInput>
             </motion.div>
@@ -370,7 +378,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   onBlur={() => setFocusedField(null)}
                   error={errors.email}
                   placeholder="john@company.com"
-                  className="transition-all duration-300 hover:border-accent/50"
+                  className="transition-all duration-300 hover:border-accent/50 font-sans"
                 />
               </GlowInput>
             </motion.div>
@@ -387,7 +395,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   onBlur={() => setFocusedField(null)}
                   error={errors.phone}
                   placeholder="+1 (555) 123-4567"
-                  className="transition-all duration-300 hover:border-accent/50"
+                  className="transition-all duration-300 hover:border-accent/50 font-sans"
                 />
               </GlowInput>
             </motion.div>
@@ -403,7 +411,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   onBlur={() => setFocusedField(null)}
                   error={errors.company}
                   placeholder="Awesome Company Inc."
-                  className="transition-all duration-300 hover:border-accent/50"
+                  className="transition-all duration-300 hover:border-accent/50 font-sans"
                 />
               </GlowInput>
             </motion.div>
@@ -417,7 +425,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   value={contactInfo.role}
                   onChange={(value) => setContactInfo({ ...contactInfo, role: value })}
                   error={errors.role}
-                  className="transition-all duration-300 hover:border-accent/50"
+                  className="transition-all duration-300 hover:border-accent/50 font-sans"
                 />
               </GlowInput>
             </motion.div>
@@ -434,8 +442,12 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
             className="space-y-4 sm:space-y-6"
           >
             <motion.div variants={itemVariants}>
-              <h3 className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">Tell Us About Your Project</h3>
-              <p className="text-text-secondary text-sm sm:text-base">Help us understand your vision and requirements.</p>
+              <h3 className="text-xl sm:text-2xl font-heading-regular text-primary mb-1 sm:mb-2 uppercase tracking-wider">
+                Tell Us About Your Project
+              </h3>
+              <p className="text-text-secondary text-sm sm:text-base font-sans">
+                Help us understand your vision and requirements.
+              </p>
             </motion.div>
 
             <motion.div variants={itemVariants}>
@@ -448,7 +460,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   value={projectDetails.projectType}
                   onChange={(value) => setProjectDetails({ ...projectDetails, projectType: value })}
                   error={errors.projectType}
-                  className="transition-all duration-300 hover:border-accent/50"
+                  className="transition-all duration-300 hover:border-accent/50 font-sans"
                 />
               </GlowInput>
             </motion.div>
@@ -463,7 +475,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   value={projectDetails.budget}
                   onChange={(value) => setProjectDetails({ ...projectDetails, budget: value })}
                   error={errors.budget}
-                  className="transition-all duration-300 hover:border-accent/50"
+                  className="transition-all duration-300 hover:border-accent/50 font-sans"
                 />
               </GlowInput>
             </motion.div>
@@ -478,7 +490,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   value={projectDetails.timeline}
                   onChange={(value) => setProjectDetails({ ...projectDetails, timeline: value })}
                   error={errors.timeline}
-                  className="transition-all duration-300 hover:border-accent/50"
+                  className="transition-all duration-300 hover:border-accent/50 font-sans"
                 />
               </GlowInput>
             </motion.div>
@@ -493,7 +505,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   onFocus={() => setFocusedField('website')}
                   onBlur={() => setFocusedField(null)}
                   placeholder="https://yourwebsite.com"
-                  className="transition-all duration-300 hover:border-accent/50"
+                  className="transition-all duration-300 hover:border-accent/50 font-sans"
                 />
               </GlowInput>
             </motion.div>
@@ -509,7 +521,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                     onChange={(e) => setProjectDetails({ ...projectDetails, challenges: e.target.value })}
                     onFocus={() => setFocusedField('challenges')}
                     onBlur={() => setFocusedField(null)}
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none text-sm sm:text-base transition-all duration-300 hover:border-accent/50"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none text-sm sm:text-base transition-all duration-300 hover:border-accent/50 font-sans"
                     rows={4}
                     placeholder="Tell us about your current challenges and what you hope to achieve..."
                     whileHover={{ scale: 1.01 }}
@@ -540,8 +552,12 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
             className="space-y-4 sm:space-y-6"
           >
             <motion.div variants={itemVariants}>
-              <h3 className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">Your Preferences</h3>
-              <p className="text-text-secondary text-sm sm:text-base">Let us know how we can best serve you.</p>
+              <h3 className="text-xl sm:text-2xl font-heading-regular text-primary mb-1 sm:mb-2 uppercase tracking-wider">
+                Your Preferences
+              </h3>
+              <p className="text-text-secondary text-sm sm:text-base font-sans">
+                Let us know how we can best serve you.
+              </p>
             </motion.div>
 
             <motion.div variants={itemVariants}>
@@ -567,7 +583,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                           : preferences.services.filter(s => s !== service.value);
                         setPreferences({ ...preferences, services: newServices });
                       }}
-                      className="transition-all duration-300 hover:scale-105"
+                      className="transition-all duration-300 hover:scale-105 font-sans"
                     />
                   </motion.div>
                 ))}
@@ -593,7 +609,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   value={preferences.communicationPreference}
                   onChange={(value) => setPreferences({ ...preferences, communicationPreference: value })}
                   error={errors.communicationPreference}
-                  className="transition-all duration-300 hover:border-accent/50"
+                  className="transition-all duration-300 hover:border-accent/50 font-sans"
                 />
               </GlowInput>
             </motion.div>
@@ -606,7 +622,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   options={timeSlotOptions}
                   value={preferences.bestTimeToCall}
                   onChange={(value) => setPreferences({ ...preferences, bestTimeToCall: value })}
-                  className="transition-all duration-300 hover:border-accent/50"
+                  className="transition-all duration-300 hover:border-accent/50 font-sans"
                 />
               </GlowInput>
             </motion.div>
@@ -619,7 +635,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   options={referralOptions}
                   value={preferences.referralSource}
                   onChange={(value) => setPreferences({ ...preferences, referralSource: value })}
-                  className="transition-all duration-300 hover:border-accent/50"
+                  className="transition-all duration-300 hover:border-accent/50 font-sans"
                 />
               </GlowInput>
             </motion.div>
@@ -635,7 +651,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                     onChange={(e) => setPreferences({ ...preferences, additionalInfo: e.target.value })}
                     onFocus={() => setFocusedField('additional')}
                     onBlur={() => setFocusedField(null)}
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none text-sm sm:text-base transition-all duration-300 hover:border-accent/50"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none text-sm sm:text-base transition-all duration-300 hover:border-accent/50 font-sans"
                     rows={3}
                     placeholder="Anything else you'd like us to know?"
                     whileHover={{ scale: 1.01 }}
@@ -657,17 +673,22 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
             className="space-y-4 sm:space-y-6"
           >
             <motion.div variants={itemVariants}>
-              <h3 className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">Almost There!</h3>
-              <p className="text-text-secondary text-sm sm:text-base">Review your information and agree to our terms.</p>
+              <h3 className="text-xl sm:text-2xl font-heading-regular text-primary mb-1 sm:mb-2 uppercase tracking-wider">
+                Almost There!
+              </h3>
+              <p className="text-text-secondary text-sm sm:text-base font-sans">
+                Review your information and agree to our terms.
+              </p>
             </motion.div>
 
-            {/* Enhanced Summary with animations */}
+            {/* Summary with optimized animations */}
             <motion.div 
               variants={itemVariants}
               className="bg-gradient-to-br from-surface to-white rounded-lg sm:rounded-xl p-4 sm:p-6 space-y-3 sm:space-y-4 relative overflow-hidden"
               whileHover={{ scale: 1.01 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
+              {/* Subtle animated background */}
               <motion.div
                 className="absolute inset-0 bg-gradient-to-br from-accent/5 to-primary/5"
                 animate={{
@@ -679,7 +700,9 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   ease: "easeInOut",
                 }}
               />
-              <h4 className="font-semibold text-primary text-sm sm:text-base relative z-10">Summary</h4>
+              <h4 className="font-heading-regular text-primary text-sm sm:text-base relative z-10 uppercase tracking-wider">
+                Summary
+              </h4>
               
               <div className="space-y-2 text-xs sm:text-sm relative z-10">
                 <motion.div 
@@ -687,24 +710,28 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   whileHover={{ x: 5 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  <span className="text-text-secondary">Name:</span>
-                  <span className="text-primary font-medium">{contactInfo.firstName} {contactInfo.lastName}</span>
+                  <span className="text-text-secondary font-sans">Name:</span>
+                  <span className="text-primary font-heading-regular uppercase tracking-wider">
+                    {contactInfo.firstName} {contactInfo.lastName}
+                  </span>
                 </motion.div>
                 <motion.div 
                   className="flex flex-col sm:flex-row sm:justify-between"
                   whileHover={{ x: 5 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  <span className="text-text-secondary">Company:</span>
-                  <span className="text-primary font-medium">{contactInfo.company}</span>
+                  <span className="text-text-secondary font-sans">Company:</span>
+                  <span className="text-primary font-heading-regular uppercase tracking-wider">
+                    {contactInfo.company}
+                  </span>
                 </motion.div>
                 <motion.div 
                   className="flex flex-col sm:flex-row sm:justify-between"
                   whileHover={{ x: 5 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  <span className="text-text-secondary">Project Type:</span>
-                  <span className="text-primary font-medium">
+                  <span className="text-text-secondary font-sans">Project Type:</span>
+                  <span className="text-primary font-sans">
                     {projectTypeOptions.find(opt => opt.value === projectDetails.projectType)?.label}
                   </span>
                 </motion.div>
@@ -713,8 +740,8 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   whileHover={{ x: 5 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  <span className="text-text-secondary">Budget:</span>
-                  <span className="text-primary font-medium">
+                  <span className="text-text-secondary font-sans">Budget:</span>
+                  <span className="text-primary font-sans">
                     {budgetOptions.find(opt => opt.value === projectDetails.budget)?.label}
                   </span>
                 </motion.div>
@@ -723,15 +750,15 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   whileHover={{ x: 5 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  <span className="text-text-secondary">Timeline:</span>
-                  <span className="text-primary font-medium">
+                  <span className="text-text-secondary font-sans">Timeline:</span>
+                  <span className="text-primary font-sans">
                     {timelineOptions.find(opt => opt.value === projectDetails.timeline)?.label}
                   </span>
                 </motion.div>
               </div>
             </motion.div>
 
-            {/* Enhanced Agreements */}
+            {/* Agreements */}
             <motion.div variants={itemVariants} className="space-y-3 sm:space-y-4">
               <motion.div
                 whileHover={{ x: 5 }}
@@ -743,6 +770,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   checked={agreement.termsAccepted}
                   onChange={(e) => setAgreement({ ...agreement, termsAccepted: e.target.checked })}
                   error={errors.termsAccepted}
+                  className="font-sans"
                 />
               </motion.div>
               
@@ -754,17 +782,19 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   label="Send me occasional updates about Rule27 Design's innovations and insights"
                   checked={agreement.newsletterOptIn}
                   onChange={(e) => setAgreement({ ...agreement, newsletterOptIn: e.target.checked })}
+                  className="font-sans"
                 />
               </motion.div>
             </motion.div>
 
-            {/* Enhanced What Happens Next */}
+            {/* What Happens Next */}
             <motion.div 
               variants={itemVariants}
               className="bg-gradient-to-r from-accent/5 to-primary/5 border border-accent/20 rounded-lg sm:rounded-xl p-4 sm:p-6 relative overflow-hidden"
               whileHover={{ scale: 1.01 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
+              {/* Optimized animated background */}
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-accent/10 to-transparent"
                 animate={{
@@ -776,11 +806,11 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                   ease: "linear",
                 }}
               />
-              <h4 className="font-semibold text-primary mb-2 sm:mb-3 flex items-center text-sm sm:text-base relative z-10">
+              <h4 className="font-heading-regular text-primary mb-2 sm:mb-3 flex items-center text-sm sm:text-base relative z-10 uppercase tracking-wider">
                 <Icon name="Info" size={18} className="text-accent mr-2 sm:w-5 sm:h-5" />
                 What Happens Next?
               </h4>
-              <ol className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-text-secondary relative z-10">
+              <ol className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-text-secondary relative z-10 font-sans">
                 {[
                   "We'll review your submission within 24 hours",
                   "A strategy expert will reach out to schedule your consultation",
@@ -795,7 +825,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                     transition={{ delay: 0.5 + index * 0.1 }}
                   >
                     <motion.span 
-                      className="text-accent font-semibold mr-2"
+                      className="text-accent font-heading-regular mr-2 uppercase"
                       animate={{
                         scale: [1, 1.2, 1],
                       }}
@@ -859,22 +889,25 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
             <Icon name="CheckCircle" size={32} className="text-success sm:w-10 sm:h-10" />
           </motion.div>
         </motion.div>
+        
         <motion.h2 
-          className="text-2xl sm:text-3xl font-bold text-primary mb-3 sm:mb-4 relative z-10"
+          className="text-2xl sm:text-3xl font-heading-regular text-primary mb-3 sm:mb-4 relative z-10 uppercase tracking-wider"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
           Submission Successful!
         </motion.h2>
+        
         <motion.p 
-          className="text-text-secondary mb-6 sm:mb-8 max-w-md mx-auto text-sm sm:text-base px-4 relative z-10"
+          className="text-text-secondary mb-6 sm:mb-8 max-w-md mx-auto text-sm sm:text-base px-4 relative z-10 font-sans"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
           Thank you for reaching out to Rule27 Design. We've received your consultation request and will be in touch within 24 hours.
         </motion.p>
+        
         <motion.div 
           className="space-y-3 sm:space-y-4 relative z-10"
           initial={{ y: 20, opacity: 0 }}
@@ -885,14 +918,14 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
             <Button
               variant="default"
               size="lg"
-              className="w-full sm:w-auto bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300"
+              className="w-full sm:w-auto bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300 font-heading-regular uppercase tracking-wider"
               iconName="Calendar"
               iconPosition="left"
             >
               Add to Calendar
             </Button>
           </motion.div>
-          <p className="text-xs sm:text-sm text-text-secondary">
+          <p className="text-xs sm:text-sm text-text-secondary font-sans">
             Check your email for confirmation details
           </p>
         </motion.div>
@@ -911,23 +944,23 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
     >
-      {/* Mouse follower glow effect */}
+      {/* Mouse follower glow - desktop only */}
       <motion.div 
-        className="pointer-events-none absolute inset-0 z-0 opacity-0 sm:opacity-100 rounded-xl sm:rounded-2xl"
+        className="pointer-events-none absolute inset-0 z-0 opacity-0 sm:opacity-100 rounded-xl sm:rounded-2xl hidden sm:block"
         animate={{
           background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(229, 62, 62, 0.03), transparent 40%)`,
         }}
         transition={{ type: "spring", damping: 25 }}
       />
 
-      {/* Floating particles background */}
+      {/* Floating particles - hidden on mobile */}
       <FloatingParticles />
 
-      {/* Enhanced Progress Bar */}
+      {/* Progress Bar */}
       <div className="bg-gradient-to-r from-surface to-white p-4 sm:p-6 border-b border-border relative overflow-hidden">
-        {/* Animated background pattern */}
+        {/* Animated background pattern - simplified for performance */}
         <motion.div
-          className="absolute inset-0 opacity-5"
+          className="absolute inset-0 opacity-5 hidden sm:block"
           style={{
             backgroundImage: `
               linear-gradient(45deg, #E53E3E 25%, transparent 25%),
@@ -950,7 +983,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
         
         <div className="flex items-center justify-between mb-3 sm:mb-4 relative z-10">
           <motion.h2 
-            className="text-xl sm:text-2xl font-bold text-primary"
+            className="text-xl sm:text-2xl font-heading-regular text-primary uppercase tracking-wider"
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
@@ -958,7 +991,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
             Start Your Journey
           </motion.h2>
           <motion.span 
-            className="text-xs sm:text-sm text-text-secondary"
+            className="text-xs sm:text-sm text-text-secondary font-sans"
             initial={{ x: 20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
@@ -966,6 +999,7 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
             Step {currentStep} of {totalSteps}
           </motion.span>
         </div>
+        
         <div className="w-full bg-muted rounded-full h-2 overflow-hidden relative z-10">
           <motion.div
             className="bg-gradient-to-r from-accent to-red-500 h-2 rounded-full relative"
@@ -973,9 +1007,9 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
             animate={{ width: `${(currentStep / totalSteps) * 100}%` }}
             transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
           >
-            {/* Animated shine effect */}
+            {/* Shine effect - simplified */}
             <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent hidden sm:block"
               animate={{
                 x: ["-100%", "200%"],
               }}
@@ -1004,13 +1038,13 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
         </div>
       </div>
 
-      {/* Form Content with AnimatePresence */}
+      {/* Form Content */}
       <div className="p-4 sm:p-6 md:p-8 relative z-10">
         <AnimatePresence mode="wait">
           {renderStepContent()}
         </AnimatePresence>
 
-        {/* Enhanced Navigation Buttons */}
+        {/* Navigation Buttons */}
         <motion.div 
           className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 mt-6 sm:mt-8"
           initial={{ opacity: 0, y: 20 }}
@@ -1022,13 +1056,13 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
               variant="outline"
               onClick={handlePrevious}
               disabled={currentStep === 1}
-              className="w-full sm:w-auto order-2 sm:order-1 border-2 border-accent text-accent hover:bg-accent hover:text-white disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base transition-all duration-300 relative overflow-hidden group"
+              className="w-full sm:w-auto order-2 sm:order-1 border-2 border-accent text-accent hover:bg-accent hover:text-white disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base transition-all duration-300 relative overflow-hidden group font-heading-regular uppercase tracking-wider"
               iconName="ArrowLeft"
               iconPosition="left"
             >
               <span className="relative z-10">Previous</span>
               <motion.div 
-                className="absolute inset-0 bg-accent"
+                className="absolute inset-0 bg-accent hidden sm:block"
                 initial={{ x: "-100%" }}
                 whileHover={{ x: 0 }}
                 transition={{ duration: 0.3 }}
@@ -1041,13 +1075,13 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
               <Button
                 variant="default"
                 onClick={handleNext}
-                className="w-full sm:w-auto order-1 sm:order-2 bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden"
+                className="w-full sm:w-auto order-1 sm:order-2 bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden font-heading-regular uppercase tracking-wider"
                 iconName="ArrowRight"
                 iconPosition="right"
               >
                 <span className="relative z-10">Next Step</span>
                 <motion.div 
-                  className="absolute inset-0 bg-gradient-to-r from-red-600 to-accent"
+                  className="absolute inset-0 bg-gradient-to-r from-red-600 to-accent hidden sm:block"
                   initial={{ x: "100%" }}
                   whileHover={{ x: 0 }}
                   transition={{ duration: 0.3 }}
@@ -1060,14 +1094,14 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
                 variant="default"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="w-full sm:w-auto order-1 sm:order-2 bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white disabled:opacity-50 text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden"
+                className="w-full sm:w-auto order-1 sm:order-2 bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white disabled:opacity-50 text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden font-heading-regular uppercase tracking-wider"
                 iconName={isSubmitting ? "Loader" : "Send"}
                 iconPosition="right"
               >
                 <span className="relative z-10">{isSubmitting ? 'Submitting...' : 'Submit Request'}</span>
                 {isSubmitting && (
                   <motion.div 
-                    className="absolute inset-0 bg-gradient-to-r from-accent/50 to-red-500/50"
+                    className="absolute inset-0 bg-gradient-to-r from-accent/50 to-red-500/50 hidden sm:block"
                     animate={{
                       x: ["-100%", "100%"],
                     }}

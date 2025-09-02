@@ -1,3 +1,4 @@
+// src/pages/contact-consultation-portal/components/ContactOptions.jsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../../../components/AppIcon';
@@ -70,14 +71,13 @@ const ContactOptions = () => {
     { day: 'Sunday', hours: 'Closed', isOpen: false }
   ];
 
-  // Check if currently business hours
+  // Check business hours
   useEffect(() => {
     const checkBusinessHours = () => {
       const now = new Date();
       const day = now.getDay();
       const hour = now.getHours();
       
-      // Simple business hours check (Mon-Fri 9-18, Sat 10-16 PST)
       if (day === 0) {
         setIsBusinessHours(false); // Sunday
       } else if (day === 6) {
@@ -96,7 +96,7 @@ const ContactOptions = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Mouse tracking for glow effect
+  // Mouse tracking
   useEffect(() => {
     const handleMouseMove = (e) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
@@ -105,35 +105,6 @@ const ContactOptions = () => {
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
-
-  // Floating particles for background
-  const FloatingOrbs = () => (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(3)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-20 h-20 sm:w-32 sm:h-32 rounded-full"
-          style={{
-            background: `radial-gradient(circle, rgba(229, 62, 62, 0.1), transparent)`,
-            filter: 'blur(40px)',
-          }}
-          initial={{
-            x: Math.random() * 300,
-            y: Math.random() * 400,
-          }}
-          animate={{
-            x: [null, Math.random() * 300, null],
-            y: [null, Math.random() * 400, null],
-          }}
-          transition={{
-            duration: Math.random() * 20 + 20,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-      ))}
-    </div>
-  );
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -165,24 +136,21 @@ const ContactOptions = () => {
       initial="hidden"
       animate="visible"
     >
-      {/* Quick Contact Card with Enhanced Animations */}
+      {/* Quick Contact Card */}
       <motion.div
         variants={itemVariants}
         className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-brand-md hover:shadow-brand-elevation-lg transition-all duration-500 relative overflow-hidden"
         whileHover={{ scale: 1.02 }}
         transition={{ type: "spring", stiffness: 300 }}
       >
-        {/* Animated background orbs */}
-        <FloatingOrbs />
-
-        {/* Header with animated icon */}
+        {/* Header - Using Steelfish */}
         <motion.div 
           className="flex items-center justify-between mb-3 sm:mb-4 relative z-10"
           initial={{ x: -20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <h3 className="text-base sm:text-lg font-bold text-primary flex items-center">
+          <h3 className="text-base sm:text-lg font-heading-regular text-primary flex items-center uppercase tracking-wider">
             <motion.div
               animate={{
                 rotate: [0, 360],
@@ -198,7 +166,7 @@ const ContactOptions = () => {
             Quick Contact
           </h3>
           <motion.span 
-            className="text-xs text-accent font-medium"
+            className="text-xs text-accent font-heading-regular uppercase tracking-wider"
             animate={{
               opacity: [0.5, 1, 0.5],
             }}
@@ -212,7 +180,7 @@ const ContactOptions = () => {
           </motion.span>
         </motion.div>
 
-        {/* Contact Methods Grid with Enhanced Cards */}
+        {/* Contact Methods Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 relative z-10">
           {contactMethods.map((method, index) => (
             <motion.a
@@ -235,7 +203,7 @@ const ContactOptions = () => {
                 }}
                 transition={{ duration: 0.3 }}
               >
-                {/* Animated gradient background on hover */}
+                {/* Gradient background on hover */}
                 <motion.div
                   className={`absolute inset-0 bg-gradient-to-r ${method.color} opacity-0`}
                   animate={{
@@ -244,17 +212,7 @@ const ContactOptions = () => {
                   transition={{ duration: 0.3 }}
                 />
 
-                {/* Glow effect */}
-                {hoveredMethod === method.id && (
-                  <motion.div
-                    className="absolute inset-0 opacity-30"
-                    style={{
-                      background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(229, 62, 62, 0.2), transparent 50%)`,
-                    }}
-                  />
-                )}
-
-                {/* Icon with animation */}
+                {/* Icon */}
                 <motion.div 
                   className={`w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-r ${method.color} rounded-lg flex items-center justify-center text-white flex-shrink-0 relative`}
                   animate={hoveredMethod === method.id ? {
@@ -262,7 +220,6 @@ const ContactOptions = () => {
                   } : {}}
                   transition={{ duration: 0.5 }}
                 >
-                  {/* Pulse effect for available methods */}
                   {method.available && (
                     <motion.div
                       className="absolute inset-0 bg-white rounded-lg"
@@ -281,10 +238,12 @@ const ContactOptions = () => {
                   <Icon name={method.icon} size={18} className="sm:w-5 sm:h-5 relative z-10" />
                 </motion.div>
 
-                {/* Content */}
+                {/* Content - Mixed fonts */}
                 <div className="flex-1 min-w-0 relative z-10">
                   <div className="flex items-center justify-between">
-                    <div className="font-semibold text-primary text-xs sm:text-sm">{method.title}</div>
+                    <div className="font-heading-regular text-primary text-xs sm:text-sm uppercase tracking-wider">
+                      {method.title}
+                    </div>
                     {method.available && (
                       <motion.div 
                         className="w-1.5 h-1.5 bg-success rounded-full"
@@ -302,7 +261,7 @@ const ContactOptions = () => {
                     )}
                   </div>
                   <motion.div 
-                    className="text-accent text-xs sm:text-sm font-medium truncate"
+                    className="text-accent text-xs sm:text-sm font-heading-regular truncate uppercase tracking-wider"
                     animate={hoveredMethod === method.id ? {
                       x: [0, 5, 0],
                     } : {}}
@@ -311,9 +270,9 @@ const ContactOptions = () => {
                     {method.value}
                   </motion.div>
                   <div className="flex items-center justify-between">
-                    <div className="text-text-secondary text-xs">{method.description}</div>
+                    <div className="text-text-secondary text-xs font-sans">{method.description}</div>
                     <motion.div 
-                      className="text-xs text-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      className="text-xs text-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-sans"
                       initial={{ x: -10 }}
                       animate={{ x: hoveredMethod === method.id ? 0 : -10 }}
                     >
@@ -322,7 +281,7 @@ const ContactOptions = () => {
                   </div>
                 </div>
 
-                {/* Arrow indicator */}
+                {/* Arrow */}
                 <motion.div
                   animate={{
                     x: hoveredMethod === method.id ? 5 : 0,
@@ -338,14 +297,14 @@ const ContactOptions = () => {
         </div>
       </motion.div>
 
-      {/* Social Links Card with Enhanced Animations */}
+      {/* Social Links Card */}
       <motion.div
         variants={itemVariants}
         className="bg-gradient-to-r from-accent to-primary rounded-xl sm:rounded-2xl p-4 sm:p-6 text-white relative overflow-hidden"
         whileHover={{ scale: 1.02 }}
         transition={{ type: "spring", stiffness: 300 }}
       >
-        {/* Animated pattern background */}
+        {/* Animated pattern */}
         <motion.div
           className="absolute inset-0 opacity-10"
           style={{
@@ -366,7 +325,7 @@ const ContactOptions = () => {
         />
 
         <motion.h3 
-          className="text-base sm:text-lg font-bold mb-3 sm:mb-4 relative z-10"
+          className="text-base sm:text-lg font-heading-regular mb-3 sm:mb-4 relative z-10 uppercase tracking-wider"
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -401,7 +360,6 @@ const ContactOptions = () => {
                   boxShadow: '0 0 20px rgba(255,255,255,0.5)',
                 } : {}}
               >
-                {/* Gradient background on hover */}
                 <motion.div
                   className={`absolute inset-0 bg-gradient-to-r ${social.color} rounded-lg`}
                   initial={{ opacity: 0 }}
@@ -417,7 +375,7 @@ const ContactOptions = () => {
                 <AnimatePresence>
                   {hoveredSocial === social.label && (
                     <motion.div
-                      className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap"
+                      className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap font-sans"
                       initial={{ opacity: 0, y: 5 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 5 }}
@@ -431,7 +389,7 @@ const ContactOptions = () => {
           ))}
         </div>
 
-        {/* Animated message */}
+        {/* Message - Mixed fonts */}
         <motion.div 
           className="mt-4 flex items-center space-x-2 text-xs sm:text-sm opacity-90 relative z-10"
           initial={{ opacity: 0 }}
@@ -450,32 +408,20 @@ const ContactOptions = () => {
           >
             <Icon name="Heart" size={14} className="text-white" />
           </motion.div>
-          <span>Join our community of innovators</span>
+          <span className="font-sans">Join our community of innovators</span>
         </motion.div>
       </motion.div>
 
-      {/* Office Hours Card with Enhanced Status */}
+      {/* Office Hours Card */}
       <motion.div
         variants={itemVariants}
         className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 relative overflow-hidden"
         whileHover={{ scale: 1.02 }}
         transition={{ type: "spring", stiffness: 300 }}
       >
-        {/* Animated gradient background */}
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-br from-accent/5 to-primary/5"
-          animate={{
-            opacity: [0, 0.1, 0],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-
+        {/* Header - Using Steelfish */}
         <motion.h3 
-          className="text-base sm:text-lg font-bold text-primary mb-3 sm:mb-4 flex items-center relative z-10"
+          className="text-base sm:text-lg font-heading-regular text-primary mb-3 sm:mb-4 flex items-center relative z-10 uppercase tracking-wider"
           initial={{ x: -20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.4 }}
@@ -495,7 +441,7 @@ const ContactOptions = () => {
           Office Hours
         </motion.h3>
 
-        {/* Hours list with stagger animation */}
+        {/* Hours list - Sans font for readability */}
         <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm relative z-10">
           {officeHours.map((schedule, index) => (
             <motion.div 
@@ -506,9 +452,9 @@ const ContactOptions = () => {
               transition={{ delay: 0.5 + index * 0.1 }}
               whileHover={{ x: 5 }}
             >
-              <span className="text-text-secondary">{schedule.day}</span>
+              <span className="text-text-secondary font-sans">{schedule.day}</span>
               <motion.span 
-                className={`font-semibold ${schedule.isOpen ? 'text-primary' : 'text-text-secondary'}`}
+                className={`font-heading-regular uppercase tracking-wider ${schedule.isOpen ? 'text-primary' : 'text-text-secondary'}`}
                 animate={schedule.isOpen && isBusinessHours ? {
                   color: ['#000000', '#E53E3E', '#000000'],
                 } : {}}
@@ -524,7 +470,7 @@ const ContactOptions = () => {
           ))}
         </div>
 
-        {/* Live status indicator */}
+        {/* Live status - Mixed fonts */}
         <motion.div 
           className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border relative z-10"
           initial={{ opacity: 0 }}
@@ -545,12 +491,12 @@ const ContactOptions = () => {
                   ease: "easeInOut",
                 }}
               />
-              <span className={`font-medium ${isBusinessHours ? 'text-success' : 'text-warning'}`}>
+              <span className={`font-heading-regular uppercase tracking-wider ${isBusinessHours ? 'text-success' : 'text-warning'}`}>
                 {isBusinessHours ? 'Currently Open' : 'Currently Closed'}
               </span>
             </div>
             <motion.span 
-              className="text-xs text-text-secondary"
+              className="text-xs text-text-secondary font-sans"
               animate={{
                 opacity: [0.5, 1, 0.5],
               }}
@@ -569,7 +515,7 @@ const ContactOptions = () => {
           </div>
         </motion.div>
 
-        {/* Quick action button */}
+        {/* CTA Button - Using Steelfish */}
         <motion.div 
           className="mt-4 relative z-10"
           initial={{ opacity: 0, y: 20 }}
@@ -579,7 +525,7 @@ const ContactOptions = () => {
           <Button
             variant="outline"
             size="sm"
-            className="w-full border-accent text-accent hover:bg-accent hover:text-white transition-all duration-300"
+            className="w-full border-accent text-accent hover:bg-accent hover:text-white transition-all duration-300 font-heading-regular uppercase tracking-wider"
             iconName="Calendar"
             iconPosition="left"
           >
