@@ -129,16 +129,19 @@ const ArticleCard = React.memo(({ article, onViewDetails }) => {
               </span>
             </span>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
+          
+          {/* Fixed Read Button with better hover state */}
+          <button
             onClick={() => onViewDetails(article)}
-            className="text-accent hover:text-accent/80 text-xs sm:text-sm p-1"
-            iconName="ArrowRight"
-            iconPosition="right"
+            className="group/btn flex items-center gap-1 text-accent hover:text-accent/80 text-xs sm:text-sm p-1 transition-colors duration-300"
           >
             <span className="font-heading-regular tracking-wider uppercase">Read</span>
-          </Button>
+            <Icon 
+              name="ArrowRight" 
+              size={16} 
+              className="transform transition-transform duration-300 group-hover/btn:translate-x-1"
+            />
+          </button>
         </div>
       </div>
     </div>
