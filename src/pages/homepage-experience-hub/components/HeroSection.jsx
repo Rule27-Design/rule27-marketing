@@ -231,7 +231,7 @@ const HeroSection = () => {
               <Button
                 variant="default"
                 size="lg"
-                className="bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white px-8 py-4 text-lg font-heading-regular uppercase tracking-wider transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-accent/50"
+                className="bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white px-8 py-4 text-xl font-heading-regular uppercase tracking-wider transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-accent/50"
                 iconName="ArrowRight"
                 iconPosition="right"
               >
@@ -242,7 +242,7 @@ const HeroSection = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="border-2 border-white/50 text-white hover:bg-white hover:text-black backdrop-blur-sm px-8 py-4 text-lg font-heading-regular uppercase tracking-wider transform hover:scale-105 transition-all duration-300"
+                className="border-2 border-white/50 text-white hover:bg-white hover:text-black backdrop-blur-sm px-8 py-4 text-xl font-heading-regular uppercase tracking-wider transform hover:scale-105 transition-all duration-300"
                 iconName="Compass"
                 iconPosition="left"
               >
