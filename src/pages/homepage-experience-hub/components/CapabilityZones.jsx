@@ -225,7 +225,7 @@ const CapabilityZones = () => {
                     <h3 className="text-3xl font-heading-regular text-primary mb-2 uppercase tracking-wide">
                       {capability?.title}
                     </h3>
-                    <p className={`text-sm font-heading-regular ${capability?.textColor} uppercase tracking-wider`}>
+                    <p className={`text-lg font-heading-regular ${capability?.textColor} uppercase tracking-wider`}>
                       {capability?.subtitle}
                     </p>
                   </div>
@@ -252,7 +252,7 @@ const CapabilityZones = () => {
                           <div className={`w-2 h-2 rounded-full ${capability?.bgColor} ${
                             hoveredZone === capability?.id ? 'scale-150' : ''
                           } transition-transform duration-300`}></div>
-                          <span className="text-sm text-text-secondary font-sans">{feature}</span>
+                          <span className="text-lg text-text-secondary font-sans">{feature}</span>
                         </div>
                       ))}
                     </div>
