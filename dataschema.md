@@ -1221,20 +1221,27 @@ const { data: funnel } = await supabase
 
 ## Environment Variables
 
-```bash
-# Frontend (Public)
+# Supabase Connection (Public keys - safe for frontend)
 VITE_SUPABASE_URL=https://[project-id].supabase.co
 VITE_SUPABASE_ANON_KEY=[anon-key]
 
-# Backend (Edge Functions - Secret)
+# Analytics (Optional - frontend tracking)
+VITE_GOOGLE_ANALYTICS_ID=[ga-id]
+VITE_HOTJAR_ID=[hotjar-id]
+
+# Any other frontend config
+VITE_APP_URL=https://www.rule27design.com
+
+# Supabase (Service role - NEVER expose to frontend)
 SUPABASE_URL=https://[project-id].supabase.co
 SUPABASE_SERVICE_ROLE_KEY=[service-key]
+
+# Email Service
 RESEND_API_KEY=[resend-key]
 
-# Optional Analytics
-GOOGLE_ANALYTICS_ID=[ga-id]
-HOTJAR_ID=[hotjar-id]
-```
+# Future payment processing
+STRIPE_SECRET_KEY=[stripe-secret-key]
+STRIPE_WEBHOOK_SECRET=[webhook-secret]
 
 ---
 
