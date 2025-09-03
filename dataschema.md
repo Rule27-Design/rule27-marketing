@@ -1,164 +1,82 @@
-Rule27 Design - Complete Supabase Backend Architecture & Schema Documentation
-Table of Contents
+# Rule27 Design Database Schema Documentation
 
-Project Overview
-Architecture Overview
-Requirements & Decisions
-Database Schema
-Initial Setup Guide
-API Architecture
-Security Model
-Performance Considerations
-Migration Strategy
-Future Scalability
+## 📋 Table of Contents
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Database Tables](#database-tables)
+- [Views](#views)
+- [Storage Buckets](#storage-buckets)
+- [Row Level Security (RLS)](#row-level-security-rls)
+- [Functions & Triggers](#functions--triggers)
+- [Custom Types & Enums](#custom-types--enums)
+- [Indexes](#indexes)
+- [Edge Functions](#edge-functions)
+- [Usage Examples](#usage-examples)
+- [Environment Variables](#environment-variables)
+- [Best Practices](#best-practices)
+- [Database Maintenance](#database-maintenance)
+- [Migration Strategy](#migration-strategy)
+- [Support & Resources](#support--resources)
 
+---
 
-Project Overview
-Rule27 Design is transitioning from a consulting practice to a full software company leveraging AI agents for clients, with design/development services as add-ons. This backend architecture supports a content management system for the current marketing website while laying the foundation for future SaaS capabilities.
-Tech Stack
+## Overview
 
-Frontend: React (Vite) with Tailwind CSS
-Backend: Supabase (PostgreSQL, Authentication, Storage, Realtime)
-Deployment: TBD (Vercel/Netlify recommended for frontend)
-Email: Resend (for transactional emails)
-CDN: Supabase Storage with potential CloudFront/Cloudflare integration
+Rule27 Design is transitioning from a **consulting practice to a full software company** leveraging AI agents for clients, with design/development services as add-ons. Built on PostgreSQL via Supabase, the platform provides:
 
+- **Service Management**: Capability universe with 4 service zones and tiered pricing
+- **Content Management**: Articles, case studies, and resources with approval workflows  
+- **User Journey Tracking**: Complete path analysis across services and content
+- **Capability Assessments**: Interactive assessment system with recommendations
+- **Partnership Management**: Technology partnerships with certifications
+- **Notification System**: Automated email notifications for key events
+- **Media Management**: Integrated storage with CDN for images and videos
+- **Analytics & Tracking**: Comprehensive engagement and conversion metrics
+- **Lead Management**: Contact forms with scoring and follow-up tracking
+- **Real-time Updates**: WebSocket subscriptions for live content updates
 
-Architecture Overview
-mermaidgraph TB
-    subgraph "Client Layer"
-        A[React Frontend]
-        B[Mobile App - Future]
-    end
-    
-    subgraph "API Gateway"
-        C[Supabase Auth]
-        D[Supabase REST API]
-        E[Supabase Realtime]
-        F[Edge Functions]
-    end
-    
-    subgraph "Data Layer"
-        G[PostgreSQL Database]
-        H[Storage Buckets]
-        I[Redis Cache - Future]
-    end
-    
-    subgraph "External Services"
-        J[Resend Email]
-        K[Analytics Services]
-        L[AI Services - Future]
-    end
-    
-    A --> C
-    A --> D
-    A --> E
-    B --> C
-    B --> D
-    
-    C --> G
-    D --> G
-    E --> G
-    F --> G
-    F --> H
-    
-    F --> J
-    F --> K
-    F --> L
-Key Architecture Principles
+## Architecture
 
-API-First Design: All functionality exposed through REST APIs for future mobile/third-party integrations
-Role-Based Access Control (RBAC): Three-tier permission system (Admin, Contributor, Standard)
-Content Versioning: Draft → Pending → Published workflow
-Real-time Updates: Live analytics and content updates using Supabase Realtime
-Scalable Storage: Separate buckets for different content types with appropriate access policies
-Performance Optimization: Strategic indexing and caching strategies
-SEO-Optimized: Structured data and meta fields for all content types
+```
+┌─────────────────┐        ┌─────────────────┐       ┌─────────────────┐
+│   React App     │──────> |    Supabase     │──────>|     Resend      │
+│   (Netlify)     │        │   (Backend)     │       │    (Email)      │
+└─────────────────┘        └─────────────────┘       └─────────────────┘
+        │                         │                         │
+        │                         ├── Auth (JWT)            │
+        │                         ├── Database (PostgreSQL) │
+        │                         ├── Storage (CDN)         │
+        │                         ├── Real-time (WebSocket) │
+        │                         └── Edge Functions        │
+        └───────────────────────────────────────────────────┘
+```
 
+### Core Business Flow
+```
+Services ──┬──▶ Capability Universe ──▶ Assessments
+           │                                │
+           └──── Content ◀──────────────────┘
+                    │
+                Journeys ──▶ Analytics & Notifications
+```
 
-Requirements & Decisions
-User Management & Permissions
-Question: Who will be managing content and what permission levels are needed?
-Decision:
+### Service Zone Architecture
+```
+Creative Studio ────┬──▶ Services ──▶ Pricing Tiers (Basic/Pro/Enterprise)
+Marketing Command ──┤         │              │
+Development Lab ────┤    Case Studies    Analytics
+Executive Advisory ─┘         │              │
+                        Partnerships ◀───────┘
+```
 
-Three user roles: Admin, Contributor, Standard
-Admins can publish directly and manage all content
-Contributors can create content but require Admin approval (Draft → Pending → Published)
-Standard users are clients/visitors with potential login access to view their projects
+---
 
-Media & File Storage
-Question: How should media files be handled?
-Decision:
+## Database Tables
 
-Store media in Supabase Storage with separate buckets for different content types
-Support both images and videos in rich text editors
-Implement image optimization through Supabase Transform API
-Public bucket for general media, private bucket for premium resources
+### 1. **profiles**
+Primary user table extending Supabase Auth.
 
-Content Management
-Question: What content features are needed?
-Decision:
-
-Single author with optional co-author support
-Testimonials reusable across multiple pages
-Content scheduling for future publication
-Custom metrics per case study (not templated)
-Flexible engagement duration (not fixed periods)
-Optional team member attribution for projects
-
-Analytics & Tracking
-Question: What analytics capabilities are required?
-Decision:
-
-Track page views, user sessions, and engagement metrics
-Store UTM parameters for marketing attribution
-A/B testing capabilities for content variations
-Tool usage tracking with conversion attribution
-Performance metrics per author and per page
-Only store detailed data for logged-in users
-
-Resource Management
-Question: How should downloadable resources be handled?
-Decision:
-
-Two tiers: Standard (free) and Premium (paid)
-Track total download counts (not per-user initially)
-Premium resources with pricing stored for future monetization
-No current gating, but architecture supports it
-
-Content Organization
-Question: How should content be categorized?
-Decision:
-
-Hierarchical categories with parent/child relationships
-Flat tag structure for flexible labeling
-Content collections/series support
-Custom fields for future flexibility
-
-Team Structure
-Question: How should team members be organized?
-Decision:
-
-Public/private profile toggle controlled by Admin
-Multiple department assignment capability
-Flexible expertise areas
-Current departments: Leadership, Marketing, Development, Creative
-Performance tracking per author
-
-
-Database Schema
-Complete Schema Setup Script
-sql-- ============================================
--- RULE27 DESIGN - COMPLETE DATABASE SCHEMA
--- ============================================
--- Run this script in a fresh Supabase project
--- Order matters due to foreign key constraints
-
--- ============================================
--- 1. CORE USER & AUTHENTICATION TABLES
--- ============================================
-
--- User profiles extending Supabase auth.users
+```sql
 CREATE TABLE public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT UNIQUE NOT NULL,
@@ -168,151 +86,133 @@ CREATE TABLE public.profiles (
   bio TEXT,
   role TEXT NOT NULL CHECK (role IN ('admin', 'contributor', 'standard')) DEFAULT 'standard',
   is_public BOOLEAN DEFAULT false,
-  department TEXT[] DEFAULT '{}', -- Array for multiple departments
-  expertise TEXT[] DEFAULT '{}', -- Array of expertise areas
+  is_active BOOLEAN DEFAULT true,
+  department TEXT[] DEFAULT '{}',
+  expertise TEXT[] DEFAULT '{}',
   job_title TEXT,
   linkedin_url TEXT,
   twitter_url TEXT,
   github_url TEXT,
   sort_order INTEGER DEFAULT 0,
-  is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+```
 
--- Departments lookup table
-CREATE TABLE public.departments (
+**Key Features:**
+- Links to Supabase Auth via `auth.users(id)`
+- Three-tier role system for permissions
+- Auto-created via trigger on user signup
+- Array fields for multiple departments/expertise
+
+### 2. **service_zones**
+Four capability zones for service organization.
+
+```sql
+CREATE TABLE public.service_zones (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT UNIQUE NOT NULL, -- Leadership, Marketing, Development, Creative
   slug TEXT UNIQUE NOT NULL,
-  description TEXT,
+  title TEXT NOT NULL,
   icon TEXT,
-  color TEXT,
+  description TEXT,
+  service_count INTEGER DEFAULT 0,
+  key_services TEXT[] DEFAULT '{}',
+  stats JSONB DEFAULT '{"projects": 0, "satisfaction": 0}',
   sort_order INTEGER DEFAULT 0,
   is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+```
 
--- Expertise areas lookup table
-CREATE TABLE public.expertise_areas (
+**Purpose:** Groups services into Creative Studio, Marketing Command, Development Lab, and Executive Advisory zones.
+
+### 3. **services**
+Comprehensive service offerings with tiered pricing.
+
+```sql
+CREATE TABLE public.services (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT UNIQUE NOT NULL,
   slug TEXT UNIQUE NOT NULL,
-  department_id UUID REFERENCES departments(id),
-  description TEXT,
-  sort_order INTEGER DEFAULT 0,
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- ============================================
--- 2. CATEGORIZATION & ORGANIZATION
--- ============================================
-
--- Hierarchical categories for content organization
-CREATE TABLE public.categories (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  slug TEXT UNIQUE NOT NULL,
-  description TEXT,
-  parent_id UUID REFERENCES categories(id),
-  type TEXT NOT NULL, -- article, case_study, resource, etc.
+  title TEXT NOT NULL,
+  category TEXT NOT NULL,
+  zone_id UUID REFERENCES service_zones(id),
   icon TEXT,
-  color TEXT,
-  sort_order INTEGER DEFAULT 0,
-  is_active BOOLEAN DEFAULT true,
-  meta_title TEXT,
-  meta_description TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Tags (flat structure for flexible labeling)
-CREATE TABLE public.tags (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  slug TEXT UNIQUE NOT NULL,
-  type TEXT, -- Optional: to categorize tags
   description TEXT,
-  usage_count INTEGER DEFAULT 0,
+  full_description TEXT,
+  features TEXT[] DEFAULT '{}',
+  technologies TEXT[] DEFAULT '{}',
+  
+  -- Process and results
+  process_steps JSONB DEFAULT '[]',
+  expected_results JSONB DEFAULT '[]',
+  
+  -- Three-tier pricing
+  pricing_tiers JSONB DEFAULT '[]',
+  -- Format: [{"name": "Basic", "price": "$2,500", "billing": "Per month", "features": [...]}]
+  
+  -- Analytics
+  view_count INTEGER DEFAULT 0,
+  unique_view_count INTEGER DEFAULT 0,
+  inquiry_count INTEGER DEFAULT 0,
+  
+  -- Status
   is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Content series/collections for grouping related content
-CREATE TABLE public.content_collections (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  slug TEXT UNIQUE NOT NULL,
-  description TEXT,
-  type TEXT NOT NULL, -- article_series, case_study_campaign, resource_pack
-  cover_image TEXT,
-  featured BOOLEAN DEFAULT false,
-  sort_order INTEGER DEFAULT 0,
-  is_active BOOLEAN DEFAULT true,
-  meta_title TEXT,
-  meta_description TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- ============================================
--- 3. TESTIMONIALS & SOCIAL PROOF
--- ============================================
-
--- Testimonials that can be reused across multiple pages
-CREATE TABLE public.testimonials (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  client_name TEXT NOT NULL,
-  client_title TEXT,
-  client_company TEXT,
-  client_avatar TEXT,
-  client_logo TEXT,
-  quote TEXT NOT NULL,
-  long_quote TEXT, -- Extended version for case studies
-  rating INTEGER CHECK (rating >= 1 AND rating <= 5),
-  video_url TEXT,
-  video_thumbnail TEXT,
   is_featured BOOLEAN DEFAULT false,
-  display_locations TEXT[] DEFAULT '{}', -- Array of page locations
-  industry TEXT,
-  service_type TEXT,
-  project_value TEXT, -- e.g., "$2.5M Revenue Impact"
-  sort_order INTEGER DEFAULT 0,
-  status TEXT CHECK (status IN ('draft', 'published', 'archived')) DEFAULT 'published',
+  
+  -- SEO
+  meta_title TEXT,
+  meta_description TEXT,
+  
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  created_by UUID REFERENCES profiles(id),
+  updated_by UUID REFERENCES profiles(id)
 );
+```
 
--- ============================================
--- 4. CONTENT MANAGEMENT TABLES
--- ============================================
+### 4. **articles**
+Blog content with approval workflow.
 
--- Articles/Blog posts with full CMS capabilities
+```sql
 CREATE TABLE public.articles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title TEXT NOT NULL,
   slug TEXT UNIQUE NOT NULL,
   excerpt TEXT,
-  content JSONB NOT NULL, -- Rich text editor content (EditorJS/TipTap format)
+  content JSONB NOT NULL, -- Rich text editor content
   featured_image TEXT,
   featured_image_alt TEXT,
   featured_video TEXT,
   author_id UUID REFERENCES profiles(id) NOT NULL,
-  co_authors UUID[] DEFAULT '{}', -- Array of profile IDs
+  co_authors UUID[] DEFAULT '{}',
   category_id UUID REFERENCES categories(id),
   tags TEXT[] DEFAULT '{}',
-  status TEXT CHECK (status IN ('draft', 'pending', 'published', 'archived')) DEFAULT 'draft',
+  
+  -- Approval workflow
+  status TEXT CHECK (status IN ('draft', 'pending_approval', 'approved', 'published', 'archived')) DEFAULT 'draft',
+  submitted_for_approval_at TIMESTAMPTZ,
+  approved_by UUID REFERENCES profiles(id),
+  approved_at TIMESTAMPTZ,
   published_at TIMESTAMPTZ,
   scheduled_at TIMESTAMPTZ,
-  read_time INTEGER, -- in minutes
-  is_featured BOOLEAN DEFAULT false,
   
-  -- Content settings
-  enable_comments BOOLEAN DEFAULT true,
+  -- Engagement metrics
+  read_time INTEGER,
+  is_featured BOOLEAN DEFAULT false,
+  enable_comments BOOLEAN DEFAULT false,
   enable_reactions BOOLEAN DEFAULT true,
   
-  -- SEO fields
+  -- Analytics
+  view_count INTEGER DEFAULT 0,
+  unique_view_count INTEGER DEFAULT 0,
+  like_count INTEGER DEFAULT 0,
+  share_count INTEGER DEFAULT 0,
+  bookmark_count INTEGER DEFAULT 0,
+  average_read_depth DECIMAL(5,2),
+  average_time_on_page INTEGER,
+  
+  -- SEO
   meta_title TEXT,
   meta_description TEXT,
   meta_keywords TEXT[],
@@ -323,24 +223,18 @@ CREATE TABLE public.articles (
   canonical_url TEXT,
   schema_markup JSONB,
   
-  -- Analytics
-  view_count INTEGER DEFAULT 0,
-  unique_view_count INTEGER DEFAULT 0,
-  like_count INTEGER DEFAULT 0,
-  share_count INTEGER DEFAULT 0,
-  comment_count INTEGER DEFAULT 0,
-  average_read_depth DECIMAL(5,2), -- Percentage of article read
-  
-  -- Internal notes
   internal_notes TEXT,
-  
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   created_by UUID REFERENCES profiles(id),
   updated_by UUID REFERENCES profiles(id)
 );
+```
 
--- Case Studies with flexible metrics
+### 5. **case_studies**
+Client success stories with flexible metrics.
+
+```sql
 CREATE TABLE public.case_studies (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title TEXT NOT NULL,
@@ -353,38 +247,43 @@ CREATE TABLE public.case_studies (
   business_stage TEXT,
   hero_image TEXT,
   hero_video TEXT,
-  gallery JSONB DEFAULT '[]', -- Array of {url, type, caption, alt}
+  gallery JSONB DEFAULT '[]',
   description TEXT,
   challenge TEXT,
   solution TEXT,
   implementation TEXT,
   
-  -- Timeline (flexible duration)
-  project_duration TEXT, -- e.g., "3 months", "6 weeks", "2 years"
+  -- Timeline
+  project_duration TEXT,
   start_date DATE,
   end_date DATE,
   
-  -- Results & Metrics (completely flexible JSON structure)
-  key_metrics JSONB DEFAULT '[]', 
-  -- Example: [{label: "Revenue Growth", value: 400, type: "percentage", description: "..."}]
-  
+  -- Flexible metrics
+  key_metrics JSONB DEFAULT '[]',
   detailed_results JSONB DEFAULT '[]',
   process_steps JSONB DEFAULT '[]',
   technologies_used TEXT[] DEFAULT '{}',
   deliverables TEXT[] DEFAULT '{}',
   
-  -- Team (optional)
-  team_members UUID[] DEFAULT '{}', -- Array of profile IDs
+  -- Team
+  team_members UUID[] DEFAULT '{}',
   project_lead UUID REFERENCES profiles(id),
-  
-  -- Testimonial
   testimonial_id UUID REFERENCES testimonials(id),
   
-  -- Status and visibility
-  status TEXT CHECK (status IN ('draft', 'pending', 'published', 'archived')) DEFAULT 'draft',
+  -- Status
+  status TEXT CHECK (status IN ('draft', 'pending_approval', 'approved', 'published', 'archived')) DEFAULT 'draft',
+  approved_by UUID REFERENCES profiles(id),
+  approved_at TIMESTAMPTZ,
   is_featured BOOLEAN DEFAULT false,
-  is_confidential BOOLEAN DEFAULT false, -- For NDA projects
+  is_confidential BOOLEAN DEFAULT false,
+  is_active BOOLEAN DEFAULT true,
   sort_order INTEGER DEFAULT 0,
+  
+  -- Analytics
+  view_count INTEGER DEFAULT 0,
+  unique_view_count INTEGER DEFAULT 0,
+  conversion_count INTEGER DEFAULT 0,
+  average_time_on_page INTEGER,
   
   -- SEO
   meta_title TEXT,
@@ -395,276 +294,129 @@ CREATE TABLE public.case_studies (
   og_image TEXT,
   schema_markup JSONB,
   
-  -- Analytics
-  view_count INTEGER DEFAULT 0,
-  conversion_count INTEGER DEFAULT 0, -- Tracked conversions from this case study
-  
-  -- Internal
   internal_notes TEXT,
-  
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   created_by UUID REFERENCES profiles(id),
   updated_by UUID REFERENCES profiles(id)
 );
+```
 
--- Resources (Innovation Lab - downloadable content)
-CREATE TABLE public.resources (
+### 6. **partnerships**
+Technology and service partnerships.
+
+```sql
+CREATE TABLE public.partnerships (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title TEXT NOT NULL,
   slug TEXT UNIQUE NOT NULL,
-  description TEXT,
-  long_description TEXT,
-  type TEXT NOT NULL, -- template, framework, tool, report, whitepaper, ebook
-  category TEXT NOT NULL,
-  format TEXT, -- PDF, Excel, Figma, Sketch, etc.
-  file_url TEXT,
-  file_size TEXT,
-  preview_image TEXT,
-  preview_url TEXT, -- For tools/demos
-  
-  -- Pricing
-  access_type TEXT CHECK (access_type IN ('free', 'premium', 'gated')) DEFAULT 'free',
-  price DECIMAL(10, 2),
-  currency TEXT DEFAULT 'USD',
-  
-  -- Metadata
-  tags TEXT[] DEFAULT '{}',
-  prerequisites TEXT[] DEFAULT '{}', -- Required knowledge/tools
-  learning_outcomes TEXT[] DEFAULT '{}',
-  is_featured BOOLEAN DEFAULT false,
-  status TEXT CHECK (status IN ('draft', 'published', 'archived')) DEFAULT 'draft',
-  
-  -- Analytics
-  download_count INTEGER DEFAULT 0,
-  unique_download_count INTEGER DEFAULT 0,
-  view_count INTEGER DEFAULT 0,
-  rating DECIMAL(3, 2), -- Average rating
-  rating_count INTEGER DEFAULT 0,
-  
-  -- SEO
-  meta_title TEXT,
-  meta_description TEXT,
-  og_image TEXT,
-  
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  created_by UUID REFERENCES profiles(id),
-  updated_by UUID REFERENCES profiles(id)
-);
-
--- Junction table for content to collections
-CREATE TABLE public.content_collection_items (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  collection_id UUID REFERENCES content_collections(id) ON DELETE CASCADE,
-  content_type TEXT NOT NULL, -- article, case_study, resource
-  content_id UUID NOT NULL, -- ID from respective table
-  sort_order INTEGER DEFAULT 0,
-  featured_in_collection BOOLEAN DEFAULT false,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(collection_id, content_type, content_id)
-);
-
--- ============================================
--- 5. INTERACTIVE TOOLS & ANALYTICS
--- ============================================
-
--- Tool usage tracking for ROI Calculator, Brand Analyzer, etc.
-CREATE TABLE public.tool_interactions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES profiles(id),
-  session_id TEXT NOT NULL,
-  tool_name TEXT NOT NULL, -- roi_calculator, brand_analyzer, design_generator, performance_audit
-  input_data JSONB NOT NULL,
-  results JSONB NOT NULL,
-  shared_url TEXT UNIQUE,
-  is_shared BOOLEAN DEFAULT false,
-  converted_to_contact BOOLEAN DEFAULT false,
-  converted_to_signup BOOLEAN DEFAULT false,
-  time_spent INTEGER, -- seconds
-  completion_rate DECIMAL(5,2), -- percentage
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Tool presets/templates for common scenarios
-CREATE TABLE public.tool_presets (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tool_name TEXT NOT NULL,
-  preset_name TEXT NOT NULL,
-  description TEXT,
-  icon TEXT,
-  preset_data JSONB NOT NULL,
+  name TEXT NOT NULL,
   category TEXT,
-  is_default BOOLEAN DEFAULT false,
-  is_premium BOOLEAN DEFAULT false,
-  usage_count INTEGER DEFAULT 0,
+  icon TEXT,
+  color TEXT,
+  description TEXT,
+  services TEXT[] DEFAULT '{}',
+  certification_count INTEGER DEFAULT 0,
+  project_count INTEGER DEFAULT 0,
+  benefits TEXT[] DEFAULT '{}',
+  features JSONB DEFAULT '[]',
+  is_active BOOLEAN DEFAULT true,
+  is_featured BOOLEAN DEFAULT false,
   sort_order INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+```
 
--- Page analytics for comprehensive tracking
-CREATE TABLE public.page_analytics (
+### 7. **capability_assessments**
+Interactive assessment results and recommendations.
+
+```sql
+CREATE TABLE public.capability_assessments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  page_path TEXT NOT NULL,
-  page_title TEXT,
-  page_type TEXT, -- homepage, article, case_study, tool, etc.
   user_id UUID REFERENCES profiles(id),
-  session_id TEXT NOT NULL,
+  session_id TEXT,
+  answers JSONB NOT NULL,
+  recommendations JSONB,
+  score INTEGER,
+  readiness_level TEXT,
+  priority_level TEXT,
+  approach_type TEXT,
+  completed BOOLEAN DEFAULT false,
+  completion_time INTEGER,
+  abandoned_at_step INTEGER,
   
-  -- UTM parameters for marketing attribution
+  -- Follow-up tracking
+  contacted BOOLEAN DEFAULT false,
+  contact_date TIMESTAMPTZ,
+  converted BOOLEAN DEFAULT false,
+  conversion_value DECIMAL(10,2),
+  
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  completed_at TIMESTAMPTZ
+);
+```
+
+### 8. **user_journeys**
+Complete user path tracking across platform.
+
+```sql
+CREATE TABLE public.user_journeys (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id TEXT NOT NULL,
+  user_id UUID REFERENCES profiles(id),
+  journey_path JSONB DEFAULT '[]', -- Array of {type, id, timestamp}
+  total_duration INTEGER,
+  conversion_event TEXT,
+  conversion_value DECIMAL(10,2),
   utm_source TEXT,
   utm_medium TEXT,
   utm_campaign TEXT,
-  utm_term TEXT,
-  utm_content TEXT,
-  
-  -- Referrer info
-  referrer_url TEXT,
-  referrer_domain TEXT,
-  
-  -- User info
-  ip_address INET,
-  user_agent TEXT,
-  browser TEXT,
-  browser_version TEXT,
-  os TEXT,
-  device_type TEXT, -- desktop, mobile, tablet
-  screen_resolution TEXT,
-  viewport_size TEXT,
-  country TEXT,
-  region TEXT,
-  city TEXT,
-  
-  -- Engagement metrics
-  time_on_page INTEGER, -- seconds
-  scroll_depth DECIMAL(5,2), -- percentage
-  clicks INTEGER DEFAULT 0,
-  interactions JSONB DEFAULT '[]', -- Array of interaction events
-  bounce BOOLEAN DEFAULT false,
-  exit_page BOOLEAN DEFAULT false,
-  
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Content engagement tracking for detailed metrics
-CREATE TABLE public.content_engagement (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES profiles(id),
-  content_type TEXT NOT NULL, -- article, case_study, resource
-  content_id UUID NOT NULL,
-  action TEXT NOT NULL, -- view, like, share, download, comment, bookmark
-  action_metadata JSONB, -- Additional data about the action
-  session_id TEXT,
-  source TEXT, -- Where the action originated
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(user_id, content_type, content_id, action)
-);
-
--- User sessions for tracking user journeys
-CREATE TABLE public.user_sessions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  session_id TEXT UNIQUE NOT NULL,
-  user_id UUID REFERENCES profiles(id),
-  start_time TIMESTAMPTZ DEFAULT NOW(),
-  end_time TIMESTAMPTZ,
-  duration INTEGER, -- seconds
-  page_views INTEGER DEFAULT 0,
-  events_count INTEGER DEFAULT 0,
-  
-  -- Entry and exit info
-  entry_page TEXT,
-  exit_page TEXT,
-  
-  -- Session metadata
-  ip_address INET,
-  user_agent TEXT,
-  device_fingerprint TEXT,
-  
-  -- Conversion tracking
-  converted BOOLEAN DEFAULT false,
-  conversion_type TEXT, -- signup, contact, download, etc.
-  conversion_value DECIMAL(10,2),
-  
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+```
 
--- A/B testing framework
-CREATE TABLE public.ab_tests (
+### 9. **email_notifications**
+Email notification queue and tracking.
+
+```sql
+CREATE TABLE public.email_notifications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  test_name TEXT NOT NULL,
-  test_description TEXT,
-  test_type TEXT NOT NULL, -- content, cta, layout, color, copy
-  test_page TEXT, -- Which page/component
-  variants JSONB NOT NULL, -- Array of variant configurations
-  traffic_split JSONB, -- Percentage split between variants
-  target_metric TEXT, -- conversion, engagement, clicks, etc.
-  success_criteria TEXT,
-  hypothesis TEXT,
-  
-  -- Test status
-  status TEXT CHECK (status IN ('draft', 'running', 'paused', 'completed', 'archived')) DEFAULT 'draft',
-  start_date TIMESTAMPTZ,
-  end_date TIMESTAMPTZ,
-  
-  -- Results
-  winning_variant TEXT,
-  confidence_level DECIMAL(5,2),
-  results JSONB,
-  conclusion TEXT,
-  
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  created_by UUID REFERENCES profiles(id)
+  recipient_email TEXT NOT NULL,
+  recipient_id UUID REFERENCES profiles(id),
+  subject TEXT NOT NULL,
+  template TEXT NOT NULL, -- new_lead, assessment_complete, content_approved
+  data JSONB,
+  status TEXT CHECK (status IN ('pending', 'sent', 'failed', 'cancelled')) DEFAULT 'pending',
+  sent_at TIMESTAMPTZ,
+  error_message TEXT,
+  opened BOOLEAN DEFAULT false,
+  opened_at TIMESTAMPTZ,
+  clicked BOOLEAN DEFAULT false,
+  clicked_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
+```
 
--- A/B test participation tracking
-CREATE TABLE public.ab_test_participants (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  test_id UUID REFERENCES ab_tests(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES profiles(id),
-  session_id TEXT,
-  variant TEXT NOT NULL,
-  enrolled_at TIMESTAMPTZ DEFAULT NOW(),
-  
-  -- Conversion tracking
-  converted BOOLEAN DEFAULT false,
-  converted_at TIMESTAMPTZ,
-  conversion_value DECIMAL(10,2),
-  
-  -- Engagement metrics
-  interactions INTEGER DEFAULT 0,
-  time_spent INTEGER, -- seconds
-  
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(test_id, session_id)
-);
+### 10. **contact_submissions**
+Lead management with scoring.
 
--- ============================================
--- 6. CONTACT & LEAD MANAGEMENT
--- ============================================
-
--- Contact form submissions with lead scoring
+```sql
 CREATE TABLE public.contact_submissions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  
-  -- Contact info
   name TEXT NOT NULL,
   email TEXT NOT NULL,
   company TEXT,
   company_size TEXT,
   phone TEXT,
   website TEXT,
-  
-  -- Project details
   project_type TEXT,
   services_needed TEXT[] DEFAULT '{}',
   budget_range TEXT,
   timeline TEXT,
   message TEXT,
   
-  -- Source tracking
+  -- Attribution
   source_page TEXT,
   source_campaign TEXT,
   referrer TEXT,
@@ -674,25 +426,23 @@ CREATE TABLE public.contact_submissions (
   utm_term TEXT,
   utm_content TEXT,
   
-  -- Lead scoring and qualification
+  -- Scoring
   lead_score INTEGER,
   lead_temperature TEXT CHECK (lead_temperature IN ('cold', 'warm', 'hot')),
-  lead_status TEXT DEFAULT 'new', 
-  -- new, contacted, qualified, proposal_sent, negotiating, won, lost
+  lead_status TEXT DEFAULT 'new',
   
-  -- Assignment and follow-up
+  -- Assignment
   assigned_to UUID REFERENCES profiles(id),
   first_contact_date TIMESTAMPTZ,
   last_contact_date TIMESTAMPTZ,
   next_follow_up TIMESTAMPTZ,
   
-  -- Email tracking
+  -- Tracking
   email_sent BOOLEAN DEFAULT false,
   email_sent_at TIMESTAMPTZ,
   email_opened BOOLEAN DEFAULT false,
   email_opened_at TIMESTAMPTZ,
   
-  -- Notes and outcomes
   notes TEXT,
   rejection_reason TEXT,
   won_value DECIMAL(10,2),
@@ -700,320 +450,158 @@ CREATE TABLE public.contact_submissions (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+```
 
--- Newsletter subscriptions with segmentation
-CREATE TABLE public.newsletter_subscribers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email TEXT UNIQUE NOT NULL,
-  name TEXT,
-  company TEXT,
-  
-  -- Subscription status
-  status TEXT CHECK (status IN ('pending', 'confirmed', 'unsubscribed', 'bounced', 'complained')) DEFAULT 'pending',
-  confirmation_token TEXT UNIQUE,
-  confirmed_at TIMESTAMPTZ,
-  unsubscribed_at TIMESTAMPTZ,
-  
-  -- Subscription preferences
-  frequency TEXT DEFAULT 'weekly', -- daily, weekly, monthly
-  topics TEXT[] DEFAULT '{}', -- design, development, marketing, case_studies
-  
-  -- Source and attribution
-  source TEXT,
-  source_page TEXT,
-  utm_source TEXT,
-  utm_medium TEXT,
-  utm_campaign TEXT,
-  
-  -- Engagement
-  emails_sent INTEGER DEFAULT 0,
-  emails_opened INTEGER DEFAULT 0,
-  emails_clicked INTEGER DEFAULT 0,
-  last_email_sent TIMESTAMPTZ,
-  last_email_opened TIMESTAMPTZ,
-  
-  -- Segmentation
-  tags TEXT[] DEFAULT '{}',
-  lead_score INTEGER,
-  customer_status TEXT, -- prospect, customer, past_customer
-  
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+### Additional Core Tables
 
--- ============================================
--- 7. MEDIA & FILE MANAGEMENT
--- ============================================
+- **categories** - Hierarchical content organization
+- **tags** - Flexible content labeling
+- **testimonials** - Reusable client testimonials
+- **resources** - Downloadable content (templates, frameworks, tools)
+- **media** - Media library for all uploaded files
+- **service_analytics** - Service view tracking with journey
+- **article_analytics** - Article engagement metrics
+- **page_analytics** - Comprehensive page tracking
+- **content_engagement** - Detailed engagement actions
+- **tool_interactions** - Interactive tool usage tracking
+- **departments** - Team organization structure
+- **newsletter_subscribers** - Email list management
+- **notification_preferences** - User notification settings
 
--- Media library for all uploaded files
-CREATE TABLE public.media (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  file_name TEXT NOT NULL,
-  original_name TEXT,
-  file_url TEXT NOT NULL,
-  file_path TEXT NOT NULL, -- Path in storage bucket
-  file_type TEXT NOT NULL, -- image, video, document, audio
-  mime_type TEXT,
-  file_size BIGINT, -- bytes
-  
-  -- Image/Video specific
-  width INTEGER,
-  height INTEGER,
-  duration INTEGER, -- for videos/audio in seconds
-  thumbnail_url TEXT,
-  thumbnails JSONB, -- Multiple sizes {small, medium, large}
-  
-  -- Metadata
-  alt_text TEXT,
-  caption TEXT,
-  description TEXT,
-  tags TEXT[] DEFAULT '{}',
-  
-  -- Organization
-  folder TEXT DEFAULT '/',
-  is_public BOOLEAN DEFAULT true,
-  
-  -- Usage tracking
-  usage_count INTEGER DEFAULT 0,
-  last_used_at TIMESTAMPTZ,
-  
-  -- Upload info
-  uploaded_by UUID REFERENCES profiles(id),
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+---
 
--- Media usage tracking (which content uses which media)
-CREATE TABLE public.media_usage (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  media_id UUID REFERENCES media(id) ON DELETE CASCADE,
-  content_type TEXT NOT NULL,
-  content_id UUID NOT NULL,
-  field_name TEXT, -- Which field uses this media
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+## Views
 
--- ============================================
--- 8. FUNCTIONS & TRIGGERS
--- ============================================
+### Analytics Summary View
+Materialized view for dashboard performance.
 
--- Auto-update updated_at timestamp
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
+```sql
+CREATE MATERIALIZED VIEW public.analytics_summary AS
+SELECT 
+  DATE(created_at) as date,
+  COUNT(DISTINCT session_id) as unique_sessions,
+  COUNT(*) as page_views,
+  AVG(time_on_page) as avg_time_on_page,
+  COUNT(DISTINCT user_id) as logged_in_users
+FROM page_analytics
+GROUP BY DATE(created_at);
+
+-- Refresh function
+CREATE OR REPLACE FUNCTION refresh_analytics_summary()
+RETURNS void AS $$
 BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
+  REFRESH MATERIALIZED VIEW CONCURRENTLY analytics_summary;
 END;
 $$ LANGUAGE plpgsql;
+```
 
--- Apply updated_at trigger to all relevant tables
-DO $$ 
-DECLARE
-  t text;
-BEGIN
-  FOR t IN 
-    SELECT table_name 
-    FROM information_schema.columns 
-    WHERE column_name = 'updated_at' 
-    AND table_schema = 'public'
-  LOOP
-    EXECUTE format('CREATE TRIGGER update_%I_updated_at BEFORE UPDATE ON %I 
-                    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()', t, t);
-  END LOOP;
-END $$;
+### Articles with Author View
+Optimized view for article listings.
 
--- Auto-generate slugs from titles
-CREATE OR REPLACE FUNCTION generate_slug(title TEXT)
-RETURNS TEXT AS $$
-DECLARE
-  slug TEXT;
-BEGIN
-  -- Convert to lowercase, replace spaces and special chars with hyphens
-  slug := lower(title);
-  slug := regexp_replace(slug, '[^a-z0-9\s-]', '', 'g');
-  slug := regexp_replace(slug, '\s+', '-', 'g');
-  slug := regexp_replace(slug, '-+', '-', 'g');
-  slug := trim(both '-' from slug);
-  RETURN slug;
-END;
-$$ LANGUAGE plpgsql;
+```sql
+CREATE OR REPLACE VIEW public.articles_with_author AS
+SELECT 
+  a.*,
+  p.full_name as author_name,
+  p.avatar_url as author_avatar,
+  p.job_title as author_title,
+  c.name as category_name,
+  c.slug as category_slug
+FROM articles a
+JOIN profiles p ON a.author_id = p.id
+LEFT JOIN categories c ON a.category_id = c.id
+WHERE a.status = 'published';
+```
 
--- Ensure unique slug
-CREATE OR REPLACE FUNCTION ensure_unique_slug()
-RETURNS TRIGGER AS $$
-DECLARE
-  base_slug TEXT;
-  final_slug TEXT;
-  counter INTEGER := 1;
-BEGIN
-  IF NEW.slug IS NULL OR NEW.slug = '' THEN
-    base_slug := generate_slug(NEW.title);
-  ELSE
-    base_slug := NEW.slug;
-  END IF;
-  
-  final_slug := base_slug;
-  
-  -- Check for existing slugs and append number if necessary
-  WHILE EXISTS (
-    SELECT 1 FROM articles WHERE slug = final_slug AND id != COALESCE(NEW.id, '00000000-0000-0000-0000-000000000000'::uuid)
-    UNION
-    SELECT 1 FROM case_studies WHERE slug = final_slug AND id != COALESCE(NEW.id, '00000000-0000-0000-0000-000000000000'::uuid)
-    UNION
-    SELECT 1 FROM resources WHERE slug = final_slug AND id != COALESCE(NEW.id, '00000000-0000-0000-0000-000000000000'::uuid)
-  ) LOOP
-    final_slug := base_slug || '-' || counter;
-    counter := counter + 1;
-  END LOOP;
-  
-  NEW.slug := final_slug;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+---
 
--- Apply slug generation to content tables
-CREATE TRIGGER ensure_unique_article_slug BEFORE INSERT OR UPDATE ON articles
-  FOR EACH ROW EXECUTE FUNCTION ensure_unique_slug();
+## Storage Buckets
 
-CREATE TRIGGER ensure_unique_case_study_slug BEFORE INSERT OR UPDATE ON case_studies
-  FOR EACH ROW EXECUTE FUNCTION ensure_unique_slug();
+### media Bucket
+General media storage for content.
 
-CREATE TRIGGER ensure_unique_resource_slug BEFORE INSERT OR UPDATE ON resources
-  FOR EACH ROW EXECUTE FUNCTION ensure_unique_slug();
+```sql
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) 
+VALUES ('media', 'media', true, 52428800, 
+  ARRAY['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm']);
+```
 
--- Calculate read time for articles
-CREATE OR REPLACE FUNCTION calculate_read_time()
-RETURNS TRIGGER AS $$
-DECLARE
-  word_count INTEGER;
-  reading_speed INTEGER := 200; -- words per minute
-BEGIN
-  -- Extract text from JSON content and count words
-  word_count := array_length(
-    string_to_array(
-      regexp_replace(NEW.content::text, '<[^>]*>', '', 'g'), -- Remove HTML tags
-      ' '
-    ), 
-    1
+### resources Bucket  
+Private storage for premium resources.
+
+```sql
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) 
+VALUES ('resources', 'resources', false, 104857600, 
+  ARRAY['application/pdf', 'application/zip', 'application/vnd.ms-excel']);
+```
+
+### avatars Bucket
+Profile images and team photos.
+
+```sql
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) 
+VALUES ('avatars', 'avatars', true, 5242880, 
+  ARRAY['image/jpeg', 'image/png', 'image/webp']);
+```
+
+**Storage Structure:**
+```
+avatars/
+├── profiles/
+│   └── {user_id}-{timestamp}.{ext}
+media/
+├── articles/
+│   └── {article_id}/
+├── case-studies/
+│   └── {case_study_id}/
+└── services/
+    └── {service_id}/
+resources/
+├── templates/
+├── frameworks/
+└── tools/
+```
+
+**Storage Policies:**
+```sql
+-- Public can view media
+CREATE POLICY "Public can view media" ON storage.objects 
+  FOR SELECT USING (bucket_id = 'media');
+
+-- Authenticated users can upload media
+CREATE POLICY "Authenticated users can upload media" ON storage.objects 
+  FOR INSERT WITH CHECK (
+    bucket_id = 'media' AND
+    auth.role() = 'authenticated'
   );
-  
-  NEW.read_time := GREATEST(1, CEIL(word_count::decimal / reading_speed));
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
 
-CREATE TRIGGER calculate_article_read_time BEFORE INSERT OR UPDATE ON articles
-  FOR EACH ROW EXECUTE FUNCTION calculate_read_time();
+-- Users can manage own avatars
+CREATE POLICY "Users can manage own avatar" ON storage.objects 
+  FOR ALL USING (
+    bucket_id = 'avatars' AND
+    auth.uid()::text = (storage.foldername(name))[1]
+  );
+```
 
--- Increment view counts with unique tracking
-CREATE OR REPLACE FUNCTION increment_view_count(
-  p_content_type TEXT,
-  p_content_id UUID,
-  p_user_id UUID DEFAULT NULL,
-  p_session_id TEXT DEFAULT NULL
-)
-RETURNS VOID AS $$
-BEGIN
-  -- Check if this is a unique view
-  IF NOT EXISTS (
-    SELECT 1 FROM content_engagement 
-    WHERE content_type = p_content_type 
-    AND content_id = p_content_id 
-    AND action = 'view'
-    AND (
-      (p_user_id IS NOT NULL AND user_id = p_user_id) OR
-      (p_session_id IS NOT NULL AND session_id = p_session_id)
-    )
-    AND created_at > NOW() - INTERVAL '24 hours'
-  ) THEN
-    -- Update view counts
-    IF p_content_type = 'article' THEN
-      UPDATE articles 
-      SET view_count = view_count + 1,
-          unique_view_count = unique_view_count + 1
-      WHERE id = p_content_id;
-    ELSIF p_content_type = 'case_study' THEN
-      UPDATE case_studies 
-      SET view_count = view_count + 1
-      WHERE id = p_content_id;
-    ELSIF p_content_type = 'resource' THEN
-      UPDATE resources 
-      SET view_count = view_count + 1
-      WHERE id = p_content_id;
-    END IF;
-    
-    -- Record engagement
-    INSERT INTO content_engagement (user_id, content_type, content_id, action, session_id)
-    VALUES (p_user_id, p_content_type, p_content_id, 'view', p_session_id)
-    ON CONFLICT (user_id, content_type, content_id, action) 
-    DO NOTHING;
-  END IF;
-END;
-$$ LANGUAGE plpgsql;
+---
 
--- Handle content publishing workflow
-CREATE OR REPLACE FUNCTION handle_content_publishing()
-RETURNS TRIGGER AS $$
-BEGIN
-  -- Auto-publish if admin
-  IF NEW.status = 'pending' AND EXISTS (
-    SELECT 1 FROM profiles 
-    WHERE id = NEW.created_by 
-    AND role = 'admin'
-  ) THEN
-    NEW.status := 'published';
-    NEW.published_at := NOW();
-  END IF;
-  
-  -- Set published_at when status changes to published
-  IF NEW.status = 'published' AND OLD.status != 'published' THEN
-    NEW.published_at := NOW();
-  END IF;
-  
-  -- Handle scheduled publishing
-  IF NEW.scheduled_at IS NOT NULL AND NEW.scheduled_at <= NOW() AND NEW.status = 'draft' THEN
-    NEW.status := 'published';
-    NEW.published_at := NEW.scheduled_at;
-  END IF;
-  
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+## Row Level Security (RLS)
 
-CREATE TRIGGER handle_article_publishing BEFORE UPDATE ON articles
-  FOR EACH ROW EXECUTE FUNCTION handle_content_publishing();
-
-CREATE TRIGGER handle_case_study_publishing BEFORE UPDATE ON case_studies
-  FOR EACH ROW EXECUTE FUNCTION handle_content_publishing();
-
--- ============================================
--- 9. ROW LEVEL SECURITY (RLS) POLICIES
--- ============================================
-
--- Enable RLS on all tables
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE articles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE case_studies ENABLE ROW LEVEL SECURITY;
-ALTER TABLE resources ENABLE ROW LEVEL SECURITY;
-ALTER TABLE testimonials ENABLE ROW LEVEL SECURITY;
-ALTER TABLE contact_submissions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE page_analytics ENABLE ROW LEVEL SECURITY;
-ALTER TABLE content_engagement ENABLE ROW LEVEL SECURITY;
-ALTER TABLE tool_interactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE tags ENABLE ROW LEVEL SECURITY;
-ALTER TABLE media ENABLE ROW LEVEL SECURITY;
-
--- PROFILES POLICIES
+### profiles table
+```sql
+-- Public profiles are viewable
 CREATE POLICY "Public profiles are viewable by everyone" ON profiles
   FOR SELECT USING (is_public = true);
 
+-- Users can view own profile
 CREATE POLICY "Users can view own profile" ON profiles
   FOR SELECT USING (auth.uid() = id);
 
+-- Users can update own profile
 CREATE POLICY "Users can update own profile" ON profiles
   FOR UPDATE USING (auth.uid() = id);
 
+-- Admins can view all profiles
 CREATE POLICY "Admins can view all profiles" ON profiles
   FOR SELECT USING (
     EXISTS (
@@ -1022,17 +610,39 @@ CREATE POLICY "Admins can view all profiles" ON profiles
       AND profiles.role = 'admin'
     )
   );
+```
 
--- ARTICLES POLICIES
+### services table
+```sql
+-- Public can view active services
+CREATE POLICY "Public can view active services" ON services
+  FOR SELECT USING (is_active = true);
+
+-- Admins can manage services
+CREATE POLICY "Admins can manage services" ON services
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM profiles 
+      WHERE profiles.id = auth.uid() 
+      AND profiles.role = 'admin'
+    )
+  );
+```
+
+### articles table
+```sql
+-- Published articles are public
 CREATE POLICY "Published articles are public" ON articles
   FOR SELECT USING (status = 'published');
 
+-- Authors can view own articles
 CREATE POLICY "Authors can view own articles" ON articles
   FOR SELECT USING (
     auth.uid() = author_id OR 
     auth.uid() = ANY(co_authors)
   );
 
+-- Contributors can create articles
 CREATE POLICY "Contributors can create articles" ON articles
   FOR INSERT WITH CHECK (
     EXISTS (
@@ -1042,97 +652,26 @@ CREATE POLICY "Contributors can create articles" ON articles
     )
   );
 
+-- Authors can update own drafts
 CREATE POLICY "Authors can update own drafts" ON articles
   FOR UPDATE USING (
     auth.uid() = author_id AND 
-    status IN ('draft', 'pending')
+    status IN ('draft', 'pending_approval')
   );
+```
 
-CREATE POLICY "Admins can manage all articles" ON articles
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
-      AND profiles.role = 'admin'
-    )
-  );
-
--- CASE STUDIES POLICIES
-CREATE POLICY "Published case studies are public" ON case_studies
-  FOR SELECT USING (status = 'published' AND NOT is_confidential);
-
-CREATE POLICY "Team members can view their case studies" ON case_studies
-  FOR SELECT USING (
-    auth.uid() = ANY(team_members) OR
-    auth.uid() = project_lead
-  );
-
-CREATE POLICY "Admins and contributors can manage case studies" ON case_studies
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
-      AND profiles.role IN ('admin', 'contributor')
-    )
-  );
-
--- RESOURCES POLICIES
-CREATE POLICY "Published free resources are public" ON resources
-  FOR SELECT USING (status = 'published' AND access_type = 'free');
-
-CREATE POLICY "Authenticated users can view premium resources" ON resources
-  FOR SELECT USING (
-    status = 'published' AND 
-    access_type = 'premium' AND
-    auth.uid() IS NOT NULL
-  );
-
-CREATE POLICY "Admins and contributors can manage resources" ON resources
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
-      AND profiles.role IN ('admin', 'contributor')
-    )
-  );
-
--- TESTIMONIALS POLICIES
-CREATE POLICY "Published testimonials are public" ON testimonials
-  FOR SELECT USING (status = 'published');
-
-CREATE POLICY "Admins can manage testimonials" ON testimonials
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
-      AND profiles.role = 'admin'
-    )
-  );
-
--- CONTACT SUBMISSIONS POLICIES
-CREATE POLICY "Anyone can submit contact form" ON contact_submissions
+### capability_assessments table
+```sql
+-- Anyone can create assessments
+CREATE POLICY "Anyone can create assessments" ON capability_assessments
   FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Admins can view and manage submissions" ON contact_submissions
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
-      AND profiles.role = 'admin'
-    )
-  );
-
-CREATE POLICY "Assigned users can view their leads" ON contact_submissions
-  FOR SELECT USING (auth.uid() = assigned_to);
-
--- ANALYTICS POLICIES
-CREATE POLICY "Anyone can insert page analytics" ON page_analytics
-  FOR INSERT WITH CHECK (true);
-
-CREATE POLICY "Users can view own analytics" ON page_analytics
+-- Users can view own assessments
+CREATE POLICY "Users can view own assessments" ON capability_assessments
   FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY "Admins can view all analytics" ON page_analytics
+-- Admins can view all assessments
+CREATE POLICY "Admins can view all assessments" ON capability_assessments
   FOR SELECT USING (
     EXISTS (
       SELECT 1 FROM profiles 
@@ -1140,311 +679,14 @@ CREATE POLICY "Admins can view all analytics" ON page_analytics
       AND profiles.role = 'admin'
     )
   );
+```
 
--- TOOL INTERACTIONS POLICIES
-CREATE POLICY "Anyone can save tool interactions" ON tool_interactions
-  FOR INSERT WITH CHECK (true);
+---
 
-CREATE POLICY "Users can view own tool usage" ON tool_interactions
-  FOR SELECT USING (auth.uid() = user_id);
+## Functions & Triggers
 
-CREATE POLICY "Admins can view all tool usage" ON tool_interactions
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
-      AND profiles.role = 'admin'
-    )
-  );
-
--- CATEGORIES & TAGS POLICIES
-CREATE POLICY "Categories are public" ON categories
-  FOR SELECT USING (is_active = true);
-
-CREATE POLICY "Tags are public" ON tags
-  FOR SELECT USING (is_active = true);
-
-CREATE POLICY "Admins can manage categories and tags" ON categories
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
-      AND profiles.role = 'admin'
-    )
-  );
-
-CREATE POLICY "Admins can manage tags" ON tags
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
-      AND profiles.role = 'admin'
-    )
-  );
-
--- MEDIA POLICIES
-CREATE POLICY "Public media is viewable by everyone" ON media
-  FOR SELECT USING (is_public = true);
-
-CREATE POLICY "Users can view own uploads" ON media
-  FOR SELECT USING (auth.uid() = uploaded_by);
-
-CREATE POLICY "Contributors can upload media" ON media
-  FOR INSERT WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
-      AND profiles.role IN ('admin', 'contributor')
-    )
-  );
-
-CREATE POLICY "Users can manage own uploads" ON media
-  FOR UPDATE USING (auth.uid() = uploaded_by);
-
-CREATE POLICY "Admins can manage all media" ON media
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
-      AND profiles.role = 'admin'
-    )
-  );
-
--- ============================================
--- 10. INDEXES FOR PERFORMANCE
--- ============================================
-
--- Content indexes
-CREATE INDEX idx_articles_slug ON articles(slug);
-CREATE INDEX idx_articles_status_published ON articles(status, published_at DESC) WHERE status = 'published';
-CREATE INDEX idx_articles_author ON articles(author_id);
-CREATE INDEX idx_articles_category ON articles(category_id);
-CREATE INDEX idx_articles_featured ON articles(is_featured) WHERE is_featured = true;
-CREATE INDEX idx_articles_scheduled ON articles(scheduled_at) WHERE scheduled_at IS NOT NULL;
-
-CREATE INDEX idx_case_studies_slug ON case_studies(slug);
-CREATE INDEX idx_case_studies_status ON case_studies(status);
-CREATE INDEX idx_case_studies_featured ON case_studies(is_featured) WHERE is_featured = true;
-CREATE INDEX idx_case_studies_industry ON case_studies(industry);
-CREATE INDEX idx_case_studies_service ON case_studies(service_type);
-
-CREATE INDEX idx_resources_slug ON resources(slug);
-CREATE INDEX idx_resources_type ON resources(type);
-CREATE INDEX idx_resources_access ON resources(access_type);
-CREATE INDEX idx_resources_status ON resources(status);
-
-CREATE INDEX idx_testimonials_status ON testimonials(status);
-CREATE INDEX idx_testimonials_featured ON testimonials(is_featured) WHERE is_featured = true;
-
--- Analytics indexes
-CREATE INDEX idx_page_analytics_page ON page_analytics(page_path);
-CREATE INDEX idx_page_analytics_session ON page_analytics(session_id);
-CREATE INDEX idx_page_analytics_user ON page_analytics(user_id);
-CREATE INDEX idx_page_analytics_created ON page_analytics(created_at DESC);
-
-CREATE INDEX idx_content_engagement_user ON content_engagement(user_id);
-CREATE INDEX idx_content_engagement_content ON content_engagement(content_type, content_id);
-CREATE INDEX idx_content_engagement_action ON content_engagement(action);
-CREATE INDEX idx_content_engagement_created ON content_engagement(created_at DESC);
-
-CREATE INDEX idx_user_sessions_session ON user_sessions(session_id);
-CREATE INDEX idx_user_sessions_user ON user_sessions(user_id);
-CREATE INDEX idx_user_sessions_created ON user_sessions(created_at DESC);
-
-CREATE INDEX idx_tool_interactions_user ON tool_interactions(user_id);
-CREATE INDEX idx_tool_interactions_tool ON tool_interactions(tool_name);
-CREATE INDEX idx_tool_interactions_converted ON tool_interactions(converted_to_contact, converted_to_signup);
-
--- Lead management indexes
-CREATE INDEX idx_contact_submissions_email ON contact_submissions(email);
-CREATE INDEX idx_contact_submissions_status ON contact_submissions(lead_status);
-CREATE INDEX idx_contact_submissions_assigned ON contact_submissions(assigned_to);
-CREATE INDEX idx_contact_submissions_created ON contact_submissions(created_at DESC);
-
-CREATE INDEX idx_newsletter_email ON newsletter_subscribers(email);
-CREATE INDEX idx_newsletter_status ON newsletter_subscribers(status);
-
--- Media indexes
-CREATE INDEX idx_media_type ON media(file_type);
-CREATE INDEX idx_media_folder ON media(folder);
-CREATE INDEX idx_media_uploaded_by ON media(uploaded_by);
-
--- Full-text search indexes
-CREATE INDEX idx_articles_search ON articles 
-  USING gin(to_tsvector('english', 
-    title || ' ' || 
-    COALESCE(excerpt, '') || ' ' || 
-    COALESCE(content::text, '')
-  ));
-
-CREATE INDEX idx_case_studies_search ON case_studies 
-  USING gin(to_tsvector('english', 
-    title || ' ' || 
-    client_name || ' ' || 
-    COALESCE(description, '') || ' ' ||
-    COALESCE(challenge, '') || ' ' ||
-    COALESCE(solution, '')
-  ));
-
-CREATE INDEX idx_resources_search ON resources 
-  USING gin(to_tsvector('english', 
-    title || ' ' || 
-    COALESCE(description, '') || ' ' ||
-    COALESCE(long_description, '')
-  ));
-
--- Array indexes for better performance
-CREATE INDEX idx_articles_tags ON articles USING gin(tags);
-CREATE INDEX idx_articles_coauthors ON articles USING gin(co_authors);
-CREATE INDEX idx_case_studies_team ON case_studies USING gin(team_members);
-CREATE INDEX idx_case_studies_tech ON case_studies USING gin(technologies_used);
-CREATE INDEX idx_testimonials_locations ON testimonials USING gin(display_locations);
-CREATE INDEX idx_profiles_departments ON profiles USING gin(department);
-CREATE INDEX idx_profiles_expertise ON profiles USING gin(expertise);
-
--- ============================================
--- 11. INITIAL DATA SEEDING
--- ============================================
-
--- Insert default departments
-INSERT INTO departments (name, slug, description, sort_order) VALUES
-  ('Leadership', 'leadership', 'Executive team and strategic leaders', 1),
-  ('Marketing', 'marketing', 'Marketing and growth team', 2),
-  ('Development', 'development', 'Engineering and technical team', 3),
-  ('Creative', 'creative', 'Design and creative team', 4);
-
--- Insert default expertise areas
-INSERT INTO expertise_areas (name, slug, department_id) 
-SELECT 
-  expertise.name,
-  generate_slug(expertise.name),
-  d.id
-FROM (VALUES
-  ('Business Strategy', 'Leadership'),
-  ('Digital Transformation', 'Leadership'),
-  ('Innovation Leadership', 'Leadership'),
-  ('Creative Strategy', 'Creative'),
-  ('UX/UI Design', 'Creative'),
-  ('Brand Design', 'Creative'),
-  ('Marketing Strategy', 'Marketing'),
-  ('Brand Development', 'Marketing'),
-  ('Campaign Management', 'Marketing'),
-  ('Cloud Architecture', 'Development'),
-  ('DevOps Strategy', 'Development'),
-  ('Technical Innovation', 'Development')
-) AS expertise(name, dept_name)
-JOIN departments d ON d.name = expertise.dept_name;
-
--- Insert default categories
-INSERT INTO categories (name, slug, type, description, sort_order) VALUES
-  ('Design', 'design', 'article', 'Articles about design and creativity', 1),
-  ('Development', 'development', 'article', 'Technical and development articles', 2),
-  ('Marketing', 'marketing', 'article', 'Marketing and growth articles', 3),
-  ('Strategy', 'strategy', 'article', 'Business and strategy articles', 4),
-  ('Technology', 'technology', 'case_study', 'Technology industry case studies', 1),
-  ('Healthcare', 'healthcare', 'case_study', 'Healthcare industry case studies', 2),
-  ('Financial Services', 'financial-services', 'case_study', 'Financial services case studies', 3),
-  ('E-commerce', 'e-commerce', 'case_study', 'E-commerce case studies', 4),
-  ('Templates', 'templates', 'resource', 'Downloadable templates', 1),
-  ('Frameworks', 'frameworks', 'resource', 'Strategic frameworks', 2),
-  ('Tools', 'tools', 'resource', 'Digital tools and calculators', 3),
-  ('Reports', 'reports', 'resource', 'Industry reports and whitepapers', 4);
-
--- ============================================
--- 12. STORAGE BUCKETS CONFIGURATION
--- ============================================
-
--- Note: Run these in Supabase Dashboard SQL Editor after tables are created
-
--- Create storage buckets
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) 
-VALUES 
-  ('media', 'media', true, 52428800, ARRAY['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm']),
-  ('resources', 'resources', false, 104857600, ARRAY['application/pdf', 'application/zip', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']),
-  ('avatars', 'avatars', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp']);
-
--- Storage policies for media bucket
-CREATE POLICY "Public can view media" ON storage.objects 
-  FOR SELECT USING (bucket_id = 'media');
-
-CREATE POLICY "Authenticated users can upload media" ON storage.objects 
-  FOR INSERT WITH CHECK (
-    bucket_id = 'media' AND
-    auth.role() = 'authenticated'
-  );
-
-CREATE POLICY "Users can update own media" ON storage.objects 
-  FOR UPDATE USING (
-    bucket_id = 'media' AND
-    auth.uid()::text = (storage.foldername(name))[1]
-  );
-
-CREATE POLICY "Admins can delete media" ON storage.objects 
-  FOR DELETE USING (
-    bucket_id = 'media' AND
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
-      AND profiles.role = 'admin'
-    )
-  );
-
--- Storage policies for resources bucket
-CREATE POLICY "Authenticated can view resources" ON storage.objects 
-  FOR SELECT USING (
-    bucket_id = 'resources' AND
-    auth.role() = 'authenticated'
-  );
-
-CREATE POLICY "Contributors can upload resources" ON storage.objects 
-  FOR INSERT WITH CHECK (
-    bucket_id = 'resources' AND
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
-      AND profiles.role IN ('admin', 'contributor')
-    )
-  );
-
--- Storage policies for avatars bucket
-CREATE POLICY "Public can view avatars" ON storage.objects 
-  FOR SELECT USING (bucket_id = 'avatars');
-
-CREATE POLICY "Users can upload own avatar" ON storage.objects 
-  FOR INSERT WITH CHECK (
-    bucket_id = 'avatars' AND
-    auth.uid()::text = (storage.foldername(name))[1]
-  );
-
-CREATE POLICY "Users can update own avatar" ON storage.objects 
-  FOR UPDATE USING (
-    bucket_id = 'avatars' AND
-    auth.uid()::text = (storage.foldername(name))[1]
-  );
-
-CREATE POLICY "Users can delete own avatar" ON storage.objects 
-  FOR DELETE USING (
-    bucket_id = 'avatars' AND
-    auth.uid()::text = (storage.foldername(name))[1]
-  );
-
-Initial Setup Guide
-Step 1: Database Setup
-
-Create a new Supabase project at app.supabase.com
-Run the complete schema in SQL Editor (in order):
-
-Copy the entire schema from Section 4 above
-Execute in Supabase SQL Editor
-Verify all tables are created
-
-
-Configure Authentication:
-
-sql-- Enable email authentication
--- Go to Authentication > Providers > Email
-
--- Set up custom claims for roles
+### 1. Auto-create profile on signup
+```sql
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
@@ -1462,336 +704,730 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-Step 2: Create Admin User
-sql-- After creating your first user through Supabase Auth
--- Promote them to admin
-UPDATE profiles 
-SET role = 'admin' 
-WHERE email = 'your-email@example.com';
-Step 3: Environment Variables
-Create .env.local in your React project:
-envVITE_SUPABASE_URL=your-project-url
-VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_SUPABASE_SERVICE_KEY=your-service-key # Only for server-side operations
-Step 4: Install Supabase Client
-bashnpm install @supabase/supabase-js
-Step 5: Initialize Supabase Client
-javascript// src/lib/supabase.js
-import { createClient } from '@supabase/supabase-js'
+```
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+### 2. Track service views with journey
+```sql
+CREATE OR REPLACE FUNCTION track_service_view(
+  p_service_id UUID,
+  p_user_id UUID DEFAULT NULL,
+  p_session_id TEXT,
+  p_referrer_service_id UUID DEFAULT NULL
+)
+RETURNS VOID AS $$
+BEGIN
+  -- Update service view counts
+  UPDATE services 
+  SET view_count = view_count + 1,
+      unique_view_count = CASE 
+        WHEN NOT EXISTS (
+          SELECT 1 FROM service_analytics 
+          WHERE service_id = p_service_id 
+          AND session_id = p_session_id
+        ) THEN unique_view_count + 1
+        ELSE unique_view_count
+      END
+  WHERE id = p_service_id;
+  
+  -- Record analytics
+  INSERT INTO service_analytics (
+    service_id, user_id, session_id, referrer_service_id
+  ) VALUES (
+    p_service_id, p_user_id, p_session_id, p_referrer_service_id
+  );
+  
+  -- Update user journey
+  INSERT INTO user_journeys (session_id, user_id, journey_path)
+  VALUES (
+    p_session_id, 
+    p_user_id,
+    jsonb_build_array(jsonb_build_object(
+      'type', 'service',
+      'id', p_service_id,
+      'timestamp', NOW()
+    ))
+  )
+  ON CONFLICT (session_id) DO UPDATE
+  SET journey_path = user_journeys.journey_path || jsonb_build_object(
+    'type', 'service',
+    'id', p_service_id,
+    'timestamp', NOW()
+  ),
+  updated_at = NOW();
+END;
+$$ LANGUAGE plpgsql;
+```
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+### 3. Content approval with notifications
+```sql
+CREATE OR REPLACE FUNCTION approve_content()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.status = 'approved' AND OLD.status = 'pending_approval' THEN
+    NEW.approved_at = NOW();
+    
+    -- Create notification
+    INSERT INTO email_notifications (
+      recipient_email,
+      recipient_id,
+      subject,
+      template,
+      data
+    )
+    SELECT 
+      p.email,
+      p.id,
+      'Your content has been approved',
+      'content_approved',
+      jsonb_build_object(
+        'content_type', TG_TABLE_NAME,
+        'content_title', NEW.title,
+        'approved_by', NEW.approved_by
+      )
+    FROM profiles p
+    WHERE p.id = NEW.author_id
+    AND EXISTS (
+      SELECT 1 FROM notification_preferences np
+      WHERE np.user_id = p.id
+      AND np.content_approvals = true
+    );
+  END IF;
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
-API Architecture
-RESTful Endpoints Structure
-javascript// Content APIs
-GET    /api/articles          // List published articles
-GET    /api/articles/:slug    // Get single article
-POST   /api/articles          // Create article (auth required)
-PUT    /api/articles/:id      // Update article (auth required)
-DELETE /api/articles/:id      // Delete article (admin only)
+CREATE TRIGGER approve_article BEFORE UPDATE ON articles
+  FOR EACH ROW EXECUTE FUNCTION approve_content();
+```
 
-GET    /api/case-studies      // List published case studies
-GET    /api/case-studies/:slug // Get single case study
+### 4. Update timestamp trigger
+```sql
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
-GET    /api/resources         // List available resources
-GET    /api/resources/:slug   // Get resource details
-POST   /api/resources/:id/download // Track download
+-- Apply to all tables with updated_at
+DO $$ 
+DECLARE
+  t text;
+BEGIN
+  FOR t IN 
+    SELECT table_name 
+    FROM information_schema.columns 
+    WHERE column_name = 'updated_at' 
+    AND table_schema = 'public'
+  LOOP
+    EXECUTE format('CREATE TRIGGER update_%I_updated_at BEFORE UPDATE ON %I 
+                    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()', t, t);
+  END LOOP;
+END $$;
+```
 
-// Analytics APIs
-POST   /api/analytics/page-view    // Track page view
-POST   /api/analytics/engagement   // Track engagement
-GET    /api/analytics/dashboard    // Admin dashboard data
+### 5. Auto-generate slugs
+```sql
+CREATE OR REPLACE FUNCTION generate_slug(title TEXT)
+RETURNS TEXT AS $$
+DECLARE
+  slug TEXT;
+BEGIN
+  slug := lower(title);
+  slug := regexp_replace(slug, '[^a-z0-9\s-]', '', 'g');
+  slug := regexp_replace(slug, '\s+', '-', 'g');
+  slug := regexp_replace(slug, '-+', '-', 'g');
+  slug := trim(both '-' from slug);
+  RETURN slug;
+END;
+$$ LANGUAGE plpgsql;
 
-// Contact APIs
-POST   /api/contact             // Submit contact form
-GET    /api/contact/submissions  // List submissions (admin)
-PUT    /api/contact/:id         // Update lead status (admin)
+CREATE OR REPLACE FUNCTION ensure_unique_slug()
+RETURNS TRIGGER AS $$
+DECLARE
+  base_slug TEXT;
+  final_slug TEXT;
+  counter INTEGER := 1;
+BEGIN
+  IF NEW.slug IS NULL OR NEW.slug = '' THEN
+    base_slug := generate_slug(NEW.title);
+  ELSE
+    base_slug := NEW.slug;
+  END IF;
+  
+  final_slug := base_slug;
+  
+  WHILE EXISTS (
+    SELECT 1 FROM articles WHERE slug = final_slug AND id != COALESCE(NEW.id, '00000000-0000-0000-0000-000000000000'::uuid)
+    UNION
+    SELECT 1 FROM case_studies WHERE slug = final_slug AND id != COALESCE(NEW.id, '00000000-0000-0000-0000-000000000000'::uuid)
+    UNION
+    SELECT 1 FROM resources WHERE slug = final_slug AND id != COALESCE(NEW.id, '00000000-0000-0000-0000-000000000000'::uuid)
+  ) LOOP
+    final_slug := base_slug || '-' || counter;
+    counter := counter + 1;
+  END LOOP;
+  
+  NEW.slug := final_slug;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+```
 
-// Tool APIs
-POST   /api/tools/:tool-name/calculate  // Run tool calculation
-POST   /api/tools/:tool-name/save       // Save results
-GET    /api/tools/:tool-name/presets    // Get presets
-Real-time Subscriptions
-javascript// Subscribe to content updates
-supabase
-  .channel('articles')
+---
+
+## Custom Types & Enums
+
+```sql
+-- Activity types for tracking
+CREATE TYPE activity_type AS ENUM (
+  'profile_view',
+  'service_view',
+  'article_view',
+  'assessment_complete',
+  'contact_submitted',
+  'resource_downloaded'
+);
+
+-- Lead temperature
+CREATE TYPE lead_temperature_type AS ENUM (
+  'cold',
+  'warm', 
+  'hot'
+);
+
+-- Content status
+CREATE TYPE content_status AS ENUM (
+  'draft',
+  'pending_approval',
+  'approved',
+  'published',
+  'archived'
+);
+```
+
+**Type Constraints Used:**
+- `role`: 'admin' | 'contributor' | 'standard'
+- `status` (content): 'draft' | 'pending_approval' | 'approved' | 'published' | 'archived'
+- `readiness_level`: 'high' | 'medium' | 'low'
+- `priority_level`: 'urgent' | 'standard' | 'planning'
+- `notification_status`: 'pending' | 'sent' | 'failed' | 'cancelled'
+- `lead_status`: 'new' | 'contacted' | 'qualified' | 'won' | 'lost'
+
+---
+
+## Indexes
+
+### Performance Indexes
+```sql
+-- Service indexes
+CREATE INDEX idx_services_zone ON services(zone_id);
+CREATE INDEX idx_services_slug ON services(slug);
+CREATE INDEX idx_services_active ON services(is_active) WHERE is_active = true;
+CREATE INDEX idx_services_featured ON services(is_featured) WHERE is_featured = true;
+
+-- Analytics indexes
+CREATE INDEX idx_service_analytics_service ON service_analytics(service_id);
+CREATE INDEX idx_service_analytics_session ON service_analytics(session_id);
+CREATE INDEX idx_service_analytics_created ON service_analytics(created_at DESC);
+
+CREATE INDEX idx_article_analytics_article ON article_analytics(article_id);
+CREATE INDEX idx_article_analytics_session ON article_analytics(session_id);
+
+CREATE INDEX idx_user_journeys_session ON user_journeys(session_id);
+CREATE INDEX idx_user_journeys_user ON user_journeys(user_id);
+
+-- Content indexes
+CREATE INDEX idx_articles_slug ON articles(slug);
+CREATE INDEX idx_articles_status_published ON articles(status, published_at DESC) WHERE status = 'published';
+CREATE INDEX idx_articles_author ON articles(author_id);
+CREATE INDEX idx_articles_category ON articles(category_id);
+CREATE INDEX idx_articles_featured ON articles(is_featured) WHERE is_featured = true;
+
+CREATE INDEX idx_case_studies_slug ON case_studies(slug);
+CREATE INDEX idx_case_studies_status ON case_studies(status);
+CREATE INDEX idx_case_studies_industry ON case_studies(industry);
+
+-- Lead management indexes  
+CREATE INDEX idx_contact_submissions_email ON contact_submissions(email);
+CREATE INDEX idx_contact_submissions_status ON contact_submissions(lead_status);
+CREATE INDEX idx_contact_submissions_created ON contact_submissions(created_at DESC);
+
+-- Notification indexes
+CREATE INDEX idx_email_notifications_status ON email_notifications(status);
+CREATE INDEX idx_email_notifications_recipient ON email_notifications(recipient_id);
+
+-- Full-text search indexes
+CREATE INDEX idx_articles_search ON articles 
+  USING gin(to_tsvector('english', 
+    title || ' ' || 
+    COALESCE(excerpt, '') || ' ' || 
+    COALESCE(content::text, '')
+  ));
+
+CREATE INDEX idx_services_search ON services
+  USING gin(to_tsvector('english',
+    title || ' ' ||
+    COALESCE(description, '') || ' ' ||
+    COALESCE(full_description, '')
+  ));
+
+-- Array indexes
+CREATE INDEX idx_articles_tags ON articles USING gin(tags);
+CREATE INDEX idx_services_features ON services USING gin(features);
+CREATE INDEX idx_services_technologies ON services USING gin(technologies);
+```
+
+---
+
+## Edge Functions
+
+### send-notification-email
+Sends email notifications for various events.
+
+**Location:** `supabase/functions/send-notification-email/index.ts`  
+**Triggers:** New leads, content approval, assessment completion  
+**Required Secrets:** `RESEND_API_KEY`
+
+```typescript
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+serve(async (req) => {
+  const { notification_id } = await req.json()
+  
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL'),
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  )
+  
+  // Fetch notification details
+  const { data: notification } = await supabase
+    .from('email_notifications')
+    .select('*')
+    .eq('id', notification_id)
+    .single()
+  
+  // Send via Resend
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${Deno.env.get('RESEND_API_KEY')}`
+    },
+    body: JSON.stringify({
+      from: 'Rule27 Design <noreply@rule27design.com>',
+      to: notification.recipient_email,
+      subject: notification.subject,
+      html: generateTemplate(notification.template, notification.data)
+    })
+  })
+  
+  // Update notification status
+  await supabase
+    .from('email_notifications')
+    .update({ 
+      status: res.ok ? 'sent' : 'failed',
+      sent_at: new Date().toISOString()
+    })
+    .eq('id', notification_id)
+  
+  return new Response(JSON.stringify({ success: res.ok }), {
+    headers: { "Content-Type": "application/json" },
+  })
+})
+```
+
+---
+
+## Usage Examples
+
+### Authentication
+```javascript
+// Sign up with role
+const { data, error } = await supabase.auth.signUp({
+  email: 'user@example.com',
+  password: 'password',
+  options: {
+    data: {
+      full_name: 'John Doe',
+      role: 'contributor'
+    }
+  }
+});
+
+// Sign in
+const { data, error } = await supabase.auth.signInWithPassword({
+  email: 'user@example.com',
+  password: 'password'
+});
+
+// Get current user
+const { data: { user } } = await supabase.auth.getUser();
+```
+
+### Service Management
+```javascript
+// Track service view with journey
+await supabase.rpc('track_service_view', {
+  p_service_id: serviceId,
+  p_session_id: sessionId,
+  p_referrer_service_id: referrerServiceId,
+  p_user_id: user?.id
+});
+
+// Get services with analytics
+const { data: services } = await supabase
+  .from('services')
+  .select(`
+    *,
+    zone:service_zones(title, icon),
+    case_studies:service_case_studies(
+      case_study:case_studies(title, client_name, key_metrics)
+    )
+  `)
+  .eq('is_active', true)
+  .order('view_count', { ascending: false });
+```
+
+### Content Publishing
+```javascript
+// Submit article for approval
+const { data, error } = await supabase
+  .from('articles')
+  .update({ 
+    status: 'pending_approval',
+    submitted_for_approval_at: new Date().toISOString()
+  })
+  .eq('id', articleId);
+
+// Approve content (admin only)
+const { data, error } = await supabase
+  .from('articles')
+  .update({ 
+    status: 'approved',
+    approved_by: user.id
+  })
+  .eq('id', articleId);
+```
+
+### Capability Assessment
+```javascript
+// Submit assessment
+const { data: assessment } = await supabase
+  .from('capability_assessments')
+  .insert({
+    answers: assessmentAnswers,
+    session_id: sessionId,
+    user_id: user?.id
+  })
+  .select()
+  .single();
+
+// Generate recommendations
+const recommendations = generateRecommendations(assessmentAnswers);
+await supabase
+  .from('capability_assessments')
+  .update({
+    recommendations,
+    score: calculateScore(assessmentAnswers),
+    readiness_level: determineReadiness(score),
+    completed: true,
+    completed_at: new Date().toISOString()
+  })
+  .eq('id', assessment.id);
+```
+
+### User Journey Tracking
+```javascript
+// Track journey path
+const updateJourney = async (type, id) => {
+  await supabase
+    .from('user_journeys')
+    .upsert({
+      session_id: sessionId,
+      user_id: user?.id,
+      journey_path: supabase.sql`
+        COALESCE(journey_path, '[]'::jsonb) || 
+        ${JSON.stringify([{ type, id, timestamp: new Date() }])}::jsonb
+      `
+    }, {
+      onConflict: 'session_id'
+    });
+};
+```
+
+### Real-time Subscriptions
+```javascript
+// Listen for new leads
+const leadSubscription = supabase
+  .channel('new-leads')
   .on('postgres_changes', 
-    { event: 'INSERT', schema: 'public', table: 'articles' },
-    handleNewArticle
+    { 
+      event: 'INSERT', 
+      schema: 'public', 
+      table: 'contact_submissions'
+    },
+    (payload) => {
+      console.log('New lead received!', payload.new);
+      updateDashboard(payload.new);
+    }
   )
-  .subscribe()
+  .subscribe();
 
-// Subscribe to analytics
-supabase
-  .channel('analytics')
+// Listen for content updates
+const contentSubscription = supabase
+  .channel('content-updates')
   .on('postgres_changes',
-    { event: '*', schema: 'public', table: 'page_analytics' },
-    handleAnalyticsUpdate
+    {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'articles',
+      filter: 'status=eq.published'
+    },
+    (payload) => {
+      console.log('Article published!', payload.new);
+    }
   )
-  .subscribe()
+  .subscribe();
+```
 
-Security Model
-Authentication Flow
-mermaidsequenceDiagram
-    participant User
-    participant Frontend
-    participant Supabase Auth
-    participant Database
-    
-    User->>Frontend: Login Request
-    Frontend->>Supabase Auth: Authenticate
-    Supabase Auth->>Database: Create Session
-    Database->>Supabase Auth: Session Token
-    Supabase Auth->>Frontend: JWT Token
-    Frontend->>User: Logged In
-    
-    User->>Frontend: Request Content
-    Frontend->>Database: API Call with JWT
-    Database->>Database: Check RLS Policies
-    Database->>Frontend: Filtered Data
-    Frontend->>User: Display Content
-Role-Based Permissions Matrix
-ActionStandardContributorAdminView published content✅✅✅View drafts❌Own only✅Create content❌✅✅Edit content❌Own drafts✅Publish directly❌❌✅Delete content❌❌✅View analytics❌Limited✅Manage users❌❌✅Access tools✅✅✅Download resourcesFree only✅✅
+### Analytics Queries
+```javascript
+// Get service analytics summary
+const { data: analytics } = await supabase.rpc('generate_analytics_summary', {
+  p_start_date: startDate,
+  p_end_date: endDate
+});
 
-Performance Considerations
-Caching Strategy
+// Top performing content
+const { data: topContent } = await supabase
+  .from('articles')
+  .select('title, slug, view_count, average_time_on_page')
+  .order('view_count', { ascending: false })
+  .limit(10);
 
-Edge Caching: Use Supabase CDN for static assets
-Query Caching: Implement React Query for API response caching
-Image Optimization: Use Supabase Transform API for on-the-fly resizing
-Database Indexes: Strategic indexes on frequently queried columns
+// Conversion funnel
+const { data: funnel } = await supabase
+  .from('user_journeys')
+  .select('conversion_event, count')
+  .gte('created_at', lastMonth)
+  .order('count', { ascending: false });
+```
 
-Query Optimization Examples
-sql-- Optimized article listing with author info
-CREATE OR REPLACE VIEW public.articles_with_author AS
+---
+
+## Environment Variables
+
+```bash
+# Frontend (Public)
+VITE_SUPABASE_URL=https://[project-id].supabase.co
+VITE_SUPABASE_ANON_KEY=[anon-key]
+
+# Backend (Edge Functions - Secret)
+SUPABASE_URL=https://[project-id].supabase.co
+SUPABASE_SERVICE_ROLE_KEY=[service-key]
+RESEND_API_KEY=[resend-key]
+
+# Optional Analytics
+GOOGLE_ANALYTICS_ID=[ga-id]
+HOTJAR_ID=[hotjar-id]
+```
+
+---
+
+## Best Practices
+
+### Security
+1. **Always use RLS** - Never disable Row Level Security in production
+2. **Validate inputs** - Use database constraints and application validation
+3. **API keys** - Never expose service role key to frontend
+4. **Content approval** - Enforce workflow for contributors
+5. **Rate limiting** - Implement via Edge Functions for public APIs
+
+### Performance
+1. **Use indexes** - Add indexes for frequently queried columns
+2. **Optimize queries** - Use `select()` with specific columns
+3. **Batch operations** - Use `upsert()` for bulk operations  
+4. **Materialized views** - For complex analytics queries
+5. **Connection pooling** - Handled automatically by Supabase
+
+### Data Management
+1. **Use transactions** - For multi-table operations
+2. **Audit trails** - Track all content changes
+3. **Soft deletes** - Archive instead of delete for important data
+4. **Regular backups** - Enable Point-in-Time Recovery
+5. **Data validation** - Use triggers for business rules
+
+### Content Strategy
+1. **SEO optimization** - Always populate meta fields
+2. **Image optimization** - Resize and compress before upload
+3. **Content versioning** - Track all edits and approvals
+4. **Scheduled publishing** - Use scheduled_at for planned releases
+5. **Analytics tracking** - Monitor engagement metrics
+
+---
+
+## Database Maintenance
+
+### Regular Tasks
+- **Daily**: Monitor notification queue, Check failed emails
+- **Weekly**: Review slow queries, Update analytics summary
+- **Monthly**: Clean old analytics data, Archive completed assessments
+- **Quarterly**: Review indexes, Optimize query performance
+
+### Monitoring Queries
+```sql
+-- Check table sizes
 SELECT 
-  a.*,
-  p.full_name as author_name,
-  p.avatar_url as author_avatar,
-  p.job_title as author_title,
-  c.name as category_name,
-  c.slug as category_slug
-FROM articles a
-JOIN profiles p ON a.author_id = p.id
-LEFT JOIN categories c ON a.category_id = c.id
-WHERE a.status = 'published';
-
--- Materialized view for analytics dashboard
-CREATE MATERIALIZED VIEW public.analytics_summary AS
-SELECT 
-  DATE(created_at) as date,
-  COUNT(DISTINCT session_id) as unique_sessions,
-  COUNT(*) as page_views,
-  AVG(time_on_page) as avg_time_on_page,
-  COUNT(DISTINCT user_id) as logged_in_users
-FROM page_analytics
-GROUP BY DATE(created_at);
-
--- Refresh daily
-CREATE OR REPLACE FUNCTION refresh_analytics_summary()
-RETURNS void AS $$
-BEGIN
-  REFRESH MATERIALIZED VIEW CONCURRENTLY analytics_summary;
-END;
-$$ LANGUAGE plpgsql;
-
-Migration Strategy
-Phase 1: Initial Setup (Week 1)
-
-Set up Supabase project
-Run database schema
-Create admin user
-Configure authentication
-
-Phase 2: Content Migration (Week 2)
-
-Export hardcoded content to JSON
-Create migration scripts
-Import into Supabase
-Verify data integrity
-
-Phase 3: Frontend Integration (Weeks 3-4)
-
-Install Supabase client
-Replace hardcoded data with API calls
-Implement authentication UI
-Add content management interface
-
-Phase 4: Testing & Optimization (Week 5)
-
-Performance testing
-Security audit
-SEO verification
-User acceptance testing
-
-Phase 5: Launch (Week 6)
-
-Deploy to production
-Monitor analytics
-Gather feedback
-Iterate and improve
-
-
-Future Scalability
-Planned Enhancements
-
-AI Integration
-
-Content generation assistance
-Automated tagging and categorization
-Predictive lead scoring
-Chatbot for initial client interaction
-
-
-Advanced Analytics
-
-Heat mapping
-Conversion funnel analysis
-Cohort analysis
-Revenue attribution
-
-
-Multi-tenancy for SaaS
-
-Organization/workspace structure
-Team collaboration features
-White-label capabilities
-Usage-based billing
-
-
-Enhanced Workflow
-
-Visual workflow builder
-Automated approval chains
-Content calendar
-Social media integration
-
-
-Performance Improvements
-
-Redis caching layer
-GraphQL API option
-Webhook system
-Background job processing
-
-
-
-Database Schema Extensions (Future)
-sql-- Organizations for multi-tenancy
-CREATE TABLE public.organizations (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  slug TEXT UNIQUE NOT NULL,
-  plan TEXT DEFAULT 'free',
-  -- ... additional fields
-);
-
--- AI content generation logs
-CREATE TABLE public.ai_generations (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  prompt TEXT NOT NULL,
-  response JSONB,
-  model TEXT,
-  tokens_used INTEGER,
-  -- ... additional fields
-);
-
--- Workflow automation
-CREATE TABLE public.workflows (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  trigger_type TEXT,
-  conditions JSONB,
-  actions JSONB,
-  -- ... additional fields
-);
-
-Monitoring & Maintenance
-Key Metrics to Track
-
-Performance Metrics
-
-Page load times
-API response times
-Database query performance
-Storage usage
-
-
-Business Metrics
-
-Content engagement rates
-Lead conversion rates
-Tool usage statistics
-Resource download patterns
-
-
-System Health
-
-Error rates
-Authentication failures
-Storage quotas
-API rate limits
-
-
-
-Backup Strategy
-sql-- Automated daily backups are handled by Supabase
--- Additional backup for critical data
-
-CREATE OR REPLACE FUNCTION backup_critical_data()
-RETURNS TABLE(
-  backup_date TIMESTAMPTZ,
-  articles_count BIGINT,
-  case_studies_count BIGINT,
-  contacts_count BIGINT
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT 
-    NOW() as backup_date,
-    (SELECT COUNT(*) FROM articles WHERE status = 'published'),
-    (SELECT COUNT(*) FROM case_studies WHERE status = 'published'),
-    (SELECT COUNT(*) FROM contact_submissions);
-END;
-$$ LANGUAGE plpgsql;
-
-Support & Documentation
-Useful Supabase Commands
-sql-- Check table sizes
-SELECT 
-  schemaname,
   tablename,
-  pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS size
-FROM pg_tables
+  pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size
+FROM pg_tables 
 WHERE schemaname = 'public'
 ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 
--- Monitor active connections
-SELECT count(*) FROM pg_stat_activity;
-
--- View slow queries
+-- Find slow queries
 SELECT 
   query,
-  calls,
   mean_exec_time,
-  total_exec_time
+  calls
 FROM pg_stat_statements
 ORDER BY mean_exec_time DESC
 LIMIT 10;
-Troubleshooting Guide
-IssueSolutionRLS blocking accessCheck user role and policy conditionsSlow queriesAdd appropriate indexesStorage errorsCheck bucket policies and MIME typesAuth issuesVerify JWT token and user session
 
-Conclusion
-This comprehensive backend architecture provides Rule27 Design with:
+-- Service performance
+SELECT 
+  s.title,
+  s.view_count,
+  s.unique_view_count,
+  s.inquiry_count,
+  ROUND(s.inquiry_count::decimal / NULLIF(s.view_count, 0) * 100, 2) as conversion_rate
+FROM services s
+ORDER BY view_count DESC;
 
-Scalable Foundation: Ready for growth from marketing site to SaaS platform
-Flexible Content Management: Supports all current content types with room for expansion
-Robust Security: Role-based access control with row-level security
-Performance Optimized: Strategic indexing and caching capabilities
-Analytics Ready: Comprehensive tracking for data-driven decisions
-Future-Proof: Extensible schema supporting AI integration and multi-tenancy
+-- Content engagement
+SELECT 
+  a.title,
+  a.view_count,
+  a.average_read_depth,
+  a.average_time_on_page,
+  ROUND(a.like_count::decimal / NULLIF(a.view_count, 0) * 100, 2) as engagement_rate
+FROM articles a
+WHERE a.status = 'published'
+ORDER BY engagement_rate DESC;
+```
 
-The architecture balances current needs with future scalability, ensuring Rule27 Design can evolve from a consulting practice to a full software company without major infrastructure changes.RetryClaude can make mistakes. Please double-check responses.Research Opus 4.1
+### Cleanup Functions
+```sql
+-- Clean old analytics data
+CREATE OR REPLACE FUNCTION cleanup_old_analytics()
+RETURNS INTEGER AS $$
+DECLARE
+  deleted_count INTEGER;
+BEGIN
+  DELETE FROM service_analytics WHERE created_at < NOW() - INTERVAL '90 days';
+  GET DIAGNOSTICS deleted_count = ROW_COUNT;
+  
+  DELETE FROM article_analytics WHERE created_at < NOW() - INTERVAL '90 days';
+  DELETE FROM page_analytics WHERE created_at < NOW() - INTERVAL '90 days';
+  
+  RETURN deleted_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Archive old assessments
+CREATE OR REPLACE FUNCTION archive_old_assessments()
+RETURNS void AS $$
+BEGIN
+  UPDATE capability_assessments
+  SET archived = true
+  WHERE completed_at < NOW() - INTERVAL '180 days'
+  AND archived = false;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+---
+
+## Migration Strategy
+
+### Phase 1: Database Setup
+- Run complete schema in Supabase
+- Set up authentication and roles
+- Configure storage buckets
+- Test RLS policies
+- Create initial admin user
+
+### Phase 2: Data Migration
+- Migrate 140 articles to database
+- Import team profiles
+- Load 31 services with pricing
+- Import partnership data
+- Set up categories and tags
+
+### Phase 3: API Development
+- Service CRUD endpoints
+- Article management APIs
+- Analytics tracking endpoints
+- Assessment APIs
+- Notification endpoints
+
+### Phase 4: Frontend Integration
+- Connect Articles Hub
+- Integrate Capability Universe
+- Implement assessment flow
+- Add analytics tracking
+- Connect team profiles
+
+### Phase 5: Admin Interface
+- Content management dashboard
+- Approval workflow UI
+- Analytics dashboard
+- Service management
+- Team management
+
+### Phase 6: Testing & Launch
+- Performance testing
+- Security audit
+- SEO verification
+- User acceptance testing
+- Production deployment
+
+---
+
+## Migration Benefits
+
+### Before (Traditional Setup)
+- Manual JWT management
+- Complex caching layers
+- Limited analytics
+- No real-time updates
+- Separate file storage
+- Multiple service costs
+
+### After (Supabase)
+- Sub-second response times
+- Automatic JWT handling
+- Direct database queries
+- Real-time subscriptions
+- Integrated storage with CDN
+- Auto-scaling infrastructure
+- Single platform solution
+
+---
+
+## Support & Resources
+
+- **Supabase Documentation**: https://supabase.com/docs
+- **PostgreSQL Documentation**: https://www.postgresql.org/docs/
+- **React Integration**: https://supabase.com/docs/guides/getting-started/quickstarts/reactjs
+- **Community Discord**: https://discord.supabase.com/
+- **Status Page**: https://status.supabase.com/
+
+---
+
+*Last Updated: Septempber 2025*  
+*Version: 2.0 - Complete Enhanced Architecture*  
+*Platform: Supabase + React + Tailwind CSS*
