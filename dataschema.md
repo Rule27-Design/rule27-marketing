@@ -1,4 +1,4 @@
-# Rule27 Design Database Schema Documentation
+# Rule27 Design Complete Database Schema Documentation
 
 ## 📋 Table of Contents
 - [Overview](#overview)
@@ -48,7 +48,7 @@ Rule27 Design is transitioning from a **consulting practice to a full software c
         │                         ├── Storage (CDN)        │
         │                         ├── Real-time (WebSocket)│
         │                         └── Edge Functions       │
-        └─────────────────────────────────────────────────┘
+        └───────────────────────────────────────────────────┘
 ```
 
 ### Core Business Flow
@@ -73,12 +73,13 @@ Executive Advisory ─┘         │              │
 
 ## Database Tables
 
-### 1. **profiles**
-Primary user table extending Supabase Auth.
+### 1. **profiles** (UPDATED)
+Primary user/team member table with optional authentication.
 
 ```sql
 CREATE TABLE public.profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  auth_user_id UUID UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE, -- NEW: Optional auth connection
   email TEXT UNIQUE NOT NULL,
   full_name TEXT NOT NULL,
   display_name TEXT,
@@ -99,11 +100,15 @@ CREATE TABLE public.profiles (
 );
 ```
 
-**Key Features:**
-- Links to Supabase Auth via `auth.users(id)`
-- Three-tier role system for permissions
-- Auto-created via trigger on user signup
-- Array fields for multiple departments/expertise
+**Key Changes:**
+- `id` is now auto-generated UUID (not tied to auth.users)
+- `auth_user_id` is NEW - optional link to auth.users for login capability
+- Profiles can exist without authentication (display-only team members)
+- Admins can create profiles for team members who don't need login
+
+**Profile Types:**
+- **With auth_user_id**: Can log in, manage content based on role
+- **Without auth_user_id**: Display only, shown on public team page
 
 ### 2. **service_zones**
 Four capability zones for service organization.
@@ -728,6 +733,49 @@ CREATE TABLE public.notification_preferences (
 
 ## Views
 
+### user_profiles View (NEW)
+Shows only profiles that have authentication (can log in).
+
+```sql
+CREATE OR REPLACE VIEW public.user_profiles AS
+SELECT 
+  p.*,
+  au.email as auth_email,
+  au.last_sign_in_at,
+  au.created_at as user_created_at
+FROM profiles p
+LEFT JOIN auth.users au ON p.auth_user_id = au.id
+WHERE p.auth_user_id IS NOT NULL;
+```
+
+**Purpose:** Easy querying of profiles with login capability for admin interfaces.
+
+### team_members_display View (NEW)
+Public team members for website display.
+
+```sql
+CREATE OR REPLACE VIEW public.team_members_display AS
+SELECT 
+  id,
+  full_name,
+  display_name,
+  avatar_url,
+  bio,
+  job_title,
+  department,
+  expertise,
+  linkedin_url,
+  twitter_url,
+  github_url,
+  sort_order
+FROM profiles
+WHERE is_public = true 
+  AND is_active = true
+ORDER BY sort_order, full_name;
+```
+
+**Purpose:** Optimized view for public team page, excludes sensitive data.
+
 ### Analytics Summary View
 Materialized view for dashboard performance.
 
@@ -843,30 +891,55 @@ CREATE POLICY "Users can manage own avatar" ON storage.objects
 
 ## Row Level Security (RLS)
 
-### profiles table
+### profiles table (UPDATED)
 ```sql
 -- Public profiles are viewable
 CREATE POLICY "Public profiles are viewable by everyone" ON profiles
   FOR SELECT USING (is_public = true);
 
--- Users can view own profile
+-- Users can view their own profile
 CREATE POLICY "Users can view own profile" ON profiles
-  FOR SELECT USING (auth.uid() = id);
+  FOR SELECT USING (auth.uid() = auth_user_id);
 
--- Users can update own profile
+-- Users can update their own profile
 CREATE POLICY "Users can update own profile" ON profiles
-  FOR UPDATE USING (auth.uid() = id);
+  FOR UPDATE USING (auth.uid() = auth_user_id);
 
--- Admins can view all profiles
-CREATE POLICY "Admins can view all profiles" ON profiles
-  FOR SELECT USING (
+-- Admins can manage all profiles
+CREATE POLICY "Admins can manage all profiles" ON profiles
+  FOR ALL USING (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
+      WHERE profiles.auth_user_id = auth.uid() 
       AND profiles.role = 'admin'
     )
   );
+
+-- Contributors can view and create profiles
+CREATE POLICY "Contributors can view and create profiles" ON profiles
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM profiles 
+      WHERE profiles.auth_user_id = auth.uid() 
+      AND profiles.role IN ('admin', 'contributor')
+    )
+  );
+
+CREATE POLICY "Contributors can create profiles" ON profiles
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM profiles 
+      WHERE profiles.auth_user_id = auth.uid() 
+      AND profiles.role IN ('admin', 'contributor')
+    )
+  );
 ```
+
+**Key RLS Changes:**
+- Policies now check `auth_user_id` instead of `id`
+- Admins can create/edit/delete any profile
+- Contributors can create profiles and view all
+- Public can only see profiles marked as `is_public = true`
 
 ### services table
 ```sql
@@ -879,7 +952,7 @@ CREATE POLICY "Admins can manage services" ON services
   FOR ALL USING (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
+      WHERE profiles.auth_user_id = auth.uid() 
       AND profiles.role = 'admin'
     )
   );
@@ -894,8 +967,8 @@ CREATE POLICY "Published articles are public" ON articles
 -- Authors can view own articles
 CREATE POLICY "Authors can view own articles" ON articles
   FOR SELECT USING (
-    auth.uid() = author_id OR 
-    auth.uid() = ANY(co_authors)
+    auth.uid() = (SELECT auth_user_id FROM profiles WHERE id = author_id) OR 
+    auth.uid() = ANY(SELECT auth_user_id FROM profiles WHERE id = ANY(co_authors))
   );
 
 -- Contributors can create articles
@@ -903,7 +976,7 @@ CREATE POLICY "Contributors can create articles" ON articles
   FOR INSERT WITH CHECK (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
+      WHERE profiles.auth_user_id = auth.uid() 
       AND profiles.role IN ('admin', 'contributor')
     )
   );
@@ -911,7 +984,7 @@ CREATE POLICY "Contributors can create articles" ON articles
 -- Authors can update own drafts
 CREATE POLICY "Authors can update own drafts" ON articles
   FOR UPDATE USING (
-    auth.uid() = author_id AND 
+    auth.uid() = (SELECT auth_user_id FROM profiles WHERE id = author_id) AND 
     status IN ('draft', 'pending_approval')
   );
 ```
@@ -924,18 +997,20 @@ CREATE POLICY "Anyone can create assessments" ON capability_assessments
 
 -- Users can view own assessments
 CREATE POLICY "Users can view own assessments" ON capability_assessments
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT USING (auth.uid() = (SELECT auth_user_id FROM profiles WHERE id = user_id));
 
 -- Admins can view all assessments
 CREATE POLICY "Admins can view all assessments" ON capability_assessments
   FOR SELECT USING (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
+      WHERE profiles.auth_user_id = auth.uid() 
       AND profiles.role = 'admin'
     )
   );
 ```
+
+### Additional RLS Policies
 ```sql
 -- Enable RLS on all new tables
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
@@ -960,7 +1035,7 @@ CREATE POLICY "Admins can manage categories" ON categories
   FOR ALL USING (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
+      WHERE profiles.auth_user_id = auth.uid() 
       AND profiles.role = 'admin'
     )
   );
@@ -973,7 +1048,7 @@ CREATE POLICY "Admins can manage tags" ON tags
   FOR ALL USING (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
+      WHERE profiles.auth_user_id = auth.uid() 
       AND profiles.role = 'admin'
     )
   );
@@ -986,7 +1061,7 @@ CREATE POLICY "Admins can manage testimonials" ON testimonials
   FOR ALL USING (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
+      WHERE profiles.auth_user_id = auth.uid() 
       AND profiles.role = 'admin'
     )
   );
@@ -1006,7 +1081,7 @@ CREATE POLICY "Admins and contributors can manage resources" ON resources
   FOR ALL USING (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
+      WHERE profiles.auth_user_id = auth.uid() 
       AND profiles.role IN ('admin', 'contributor')
     )
   );
@@ -1016,25 +1091,25 @@ CREATE POLICY "Public media is viewable by everyone" ON media
   FOR SELECT USING (is_public = true);
 
 CREATE POLICY "Users can view own uploads" ON media
-  FOR SELECT USING (auth.uid() = uploaded_by);
+  FOR SELECT USING (auth.uid() = (SELECT auth_user_id FROM profiles WHERE id = uploaded_by));
 
 CREATE POLICY "Contributors can upload media" ON media
   FOR INSERT WITH CHECK (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
+      WHERE profiles.auth_user_id = auth.uid() 
       AND profiles.role IN ('admin', 'contributor')
     )
   );
 
 CREATE POLICY "Users can manage own uploads" ON media
-  FOR UPDATE USING (auth.uid() = uploaded_by);
+  FOR UPDATE USING (auth.uid() = (SELECT auth_user_id FROM profiles WHERE id = uploaded_by));
 
 CREATE POLICY "Admins can manage all media" ON media
   FOR ALL USING (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
+      WHERE profiles.auth_user_id = auth.uid() 
       AND profiles.role = 'admin'
     )
   );
@@ -1047,7 +1122,7 @@ CREATE POLICY "Admins can view all service analytics" ON service_analytics
   FOR SELECT USING (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
+      WHERE profiles.auth_user_id = auth.uid() 
       AND profiles.role = 'admin'
     )
   );
@@ -1060,7 +1135,7 @@ CREATE POLICY "Admins can view all article analytics" ON article_analytics
   FOR SELECT USING (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
+      WHERE profiles.auth_user_id = auth.uid() 
       AND profiles.role = 'admin'
     )
   );
@@ -1070,13 +1145,13 @@ CREATE POLICY "Anyone can insert page analytics" ON page_analytics
   FOR INSERT WITH CHECK (true);
 
 CREATE POLICY "Users can view own analytics" ON page_analytics
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT USING (auth.uid() = (SELECT auth_user_id FROM profiles WHERE id = user_id));
 
 CREATE POLICY "Admins can view all analytics" ON page_analytics
   FOR SELECT USING (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
+      WHERE profiles.auth_user_id = auth.uid() 
       AND profiles.role = 'admin'
     )
   );
@@ -1086,13 +1161,13 @@ CREATE POLICY "Anyone can track engagement" ON content_engagement
   FOR INSERT WITH CHECK (true);
 
 CREATE POLICY "Users can view own engagement" ON content_engagement
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT USING (auth.uid() = (SELECT auth_user_id FROM profiles WHERE id = user_id));
 
 CREATE POLICY "Admins can view all engagement" ON content_engagement
   FOR SELECT USING (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
+      WHERE profiles.auth_user_id = auth.uid() 
       AND profiles.role = 'admin'
     )
   );
@@ -1102,13 +1177,13 @@ CREATE POLICY "Anyone can save tool interactions" ON tool_interactions
   FOR INSERT WITH CHECK (true);
 
 CREATE POLICY "Users can view own tool usage" ON tool_interactions
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT USING (auth.uid() = (SELECT auth_user_id FROM profiles WHERE id = user_id));
 
 CREATE POLICY "Admins can view all tool usage" ON tool_interactions
   FOR SELECT USING (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
+      WHERE profiles.auth_user_id = auth.uid() 
       AND profiles.role = 'admin'
     )
   );
@@ -1121,7 +1196,7 @@ CREATE POLICY "Admins can manage departments" ON departments
   FOR ALL USING (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
+      WHERE profiles.auth_user_id = auth.uid() 
       AND profiles.role = 'admin'
     )
   );
@@ -1131,32 +1206,32 @@ CREATE POLICY "Anyone can subscribe" ON newsletter_subscribers
   FOR INSERT WITH CHECK (true);
 
 CREATE POLICY "Users can view own subscription" ON newsletter_subscribers
-  FOR SELECT USING (email = (SELECT email FROM profiles WHERE id = auth.uid()));
+  FOR SELECT USING (email = (SELECT email FROM profiles WHERE auth_user_id = auth.uid()));
 
 CREATE POLICY "Users can update own subscription" ON newsletter_subscribers
-  FOR UPDATE USING (email = (SELECT email FROM profiles WHERE id = auth.uid()));
+  FOR UPDATE USING (email = (SELECT email FROM profiles WHERE auth_user_id = auth.uid()));
 
 CREATE POLICY "Admins can manage all subscriptions" ON newsletter_subscribers
   FOR ALL USING (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
+      WHERE profiles.auth_user_id = auth.uid() 
       AND profiles.role = 'admin'
     )
   );
 
 -- NOTIFICATION PREFERENCES POLICIES
 CREATE POLICY "Users can view own preferences" ON notification_preferences
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT USING (auth.uid() = (SELECT auth_user_id FROM profiles WHERE id = user_id));
 
 CREATE POLICY "Users can update own preferences" ON notification_preferences
-  FOR ALL USING (auth.uid() = user_id);
+  FOR ALL USING (auth.uid() = (SELECT auth_user_id FROM profiles WHERE id = user_id));
 
 CREATE POLICY "Admins can view all preferences" ON notification_preferences
   FOR SELECT USING (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
+      WHERE profiles.auth_user_id = auth.uid() 
       AND profiles.role = 'admin'
     )
   );
@@ -1165,18 +1240,27 @@ CREATE POLICY "Admins can view all preferences" ON notification_preferences
 
 ## Functions & Triggers
 
-### 1. Auto-create profile on signup
+### 1. Auto-create profile on signup (UPDATED)
 ```sql
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.profiles (id, email, full_name, role)
+  INSERT INTO public.profiles (
+    auth_user_id, -- Changed from id to auth_user_id
+    email, 
+    full_name, 
+    role
+  )
   VALUES (
     new.id,
     new.email,
     COALESCE(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
     COALESCE(new.raw_user_meta_data->>'role', 'standard')
-  );
+  )
+  ON CONFLICT (email) DO UPDATE
+  SET 
+    auth_user_id = new.id,
+    updated_at = NOW();
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -1186,7 +1270,49 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 ```
 
-### 2. Track service views with journey
+### 2. Create team member function (NEW)
+Helper function for admin interface to create profiles.
+
+```sql
+CREATE OR REPLACE FUNCTION create_team_member(
+  p_email TEXT,
+  p_full_name TEXT,
+  p_job_title TEXT,
+  p_bio TEXT DEFAULT NULL,
+  p_avatar_url TEXT DEFAULT NULL,
+  p_is_public BOOLEAN DEFAULT true
+)
+RETURNS UUID AS $$
+DECLARE
+  new_id UUID;
+BEGIN
+  INSERT INTO public.profiles (
+    email,
+    full_name,
+    job_title,
+    bio,
+    avatar_url,
+    is_public,
+    is_active,
+    role
+  ) VALUES (
+    p_email,
+    p_full_name,
+    p_job_title,
+    p_bio,
+    p_avatar_url,
+    p_is_public,
+    true,
+    'standard'
+  )
+  RETURNING id INTO new_id;
+  
+  RETURN new_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+### 3. Track service views with journey
 ```sql
 CREATE OR REPLACE FUNCTION track_service_view(
   p_service_id UUID,
@@ -1238,7 +1364,7 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-### 3. Content approval with notifications
+### 4. Content approval with notifications
 ```sql
 CREATE OR REPLACE FUNCTION approve_content()
 RETURNS TRIGGER AS $$
@@ -1276,11 +1402,13 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-```
-```sql
+
 CREATE TRIGGER approve_article BEFORE UPDATE ON articles
   FOR EACH ROW EXECUTE FUNCTION approve_content();
+```
 
+### 5. Track article views
+```sql
 CREATE OR REPLACE FUNCTION track_article_view(
   p_article_id UUID,
   p_session_id TEXT,
@@ -1331,7 +1459,7 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-### 4. Update timestamp trigger
+### 6. Update timestamp trigger
 ```sql
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -1361,7 +1489,7 @@ BEGIN
 END $$;
 ```
 
-### 5. Auto-generate slugs
+### 7. Auto-generate slugs
 ```sql
 CREATE OR REPLACE FUNCTION generate_slug(title TEXT)
 RETURNS TEXT AS $$
@@ -1577,28 +1705,84 @@ serve(async (req) => {
 
 ## Usage Examples
 
-### Authentication
+### Authentication & Profiles (UPDATED)
 ```javascript
-// Sign up with role
+// Sign up new user (creates auth user AND profile)
 const { data, error } = await supabase.auth.signUp({
-  email: 'user@example.com',
+  email: 'contributor@example.com',
   password: 'password',
   options: {
     data: {
-      full_name: 'John Doe',
+      full_name: 'John Contributor',
       role: 'contributor'
     }
   }
 });
 
-// Sign in
-const { data, error } = await supabase.auth.signInWithPassword({
-  email: 'user@example.com',
-  password: 'password'
-});
+// Create display-only team member (NO auth user)
+const { data, error } = await supabase
+  .from('profiles')
+  .insert({
+    email: 'designer@rule27design.com',
+    full_name: 'Jane Designer',
+    job_title: 'Senior Designer',
+    bio: 'Creative expert...',
+    is_public: true,
+    is_active: true,
+    role: 'standard' // No special permissions needed
+  });
 
-// Get current user
-const { data: { user } } = await supabase.auth.getUser();
+// Get all public team members for website
+const { data: teamMembers } = await supabase
+  .from('team_members_display')
+  .select('*');
+
+// Get only profiles that can log in (for admin panel)
+const { data: users } = await supabase
+  .from('user_profiles')
+  .select('*');
+
+// Check if current user is admin
+const { data: profile } = await supabase
+  .from('profiles')
+  .select('role')
+  .eq('auth_user_id', user.id)
+  .single();
+
+const isAdmin = profile?.role === 'admin';
+```
+
+### Admin Management (NEW)
+```javascript
+// Admin creates a new team member
+const createTeamMember = async (memberData) => {
+  const { data: profile, error } = await supabase
+    .rpc('create_team_member', {
+      p_email: memberData.email,
+      p_full_name: memberData.fullName,
+      p_job_title: memberData.jobTitle,
+      p_bio: memberData.bio,
+      p_avatar_url: memberData.avatarUrl,
+      p_is_public: true
+    });
+  
+  return { profile, error };
+};
+
+// Admin updates any profile
+const updateProfile = async (profileId, updates) => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', profileId);
+  
+  return { data, error };
+};
+
+// Check if profile has login capability
+const canLogin = (profile) => {
+  return profile.auth_user_id !== null;
+};
 ```
 
 ### Service Management
@@ -1689,61 +1873,6 @@ const updateJourney = async (type, id) => {
     }, {
       onConflict: 'session_id'
     });
-};
-```
-
-### Payment Processing with Stripe
-```javascript
-// Initialize Stripe
-import { loadStripe } from '@stripe/stripe-js';
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
-
-// Create checkout session
-const createCheckoutSession = async (serviceId, priceTier) => {
-  const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-    body: { 
-      serviceId, 
-      priceTier,
-      successUrl: `${window.location.origin}/payment/success`,
-      cancelUrl: `${window.location.origin}/payment/cancel`
-    }
-  });
-  
-  if (data?.sessionId) {
-    const stripe = await stripePromise;
-    const { error } = await stripe.redirectToCheckout({
-      sessionId: data.sessionId
-    });
-    
-    if (error) console.error('Stripe redirect error:', error);
-  }
-};
-
-// Check subscription status
-const checkSubscriptionStatus = async () => {
-  const { data: subscription } = await supabase
-    .from('stripe_subscriptions')
-    .select('*')
-    .eq('stripe_customer_id', customerId)
-    .eq('status', 'active')
-    .single();
-    
-  return subscription;
-};
-
-// Handle webhook in Edge Function (backend)
-const handleWebhook = async (event) => {
-  // This runs in your Edge Function
-  switch (event.type) {
-    case 'checkout.session.completed':
-      await handleCheckoutCompleted(event.data.object);
-      break;
-    case 'customer.subscription.created':
-      await handleSubscriptionCreated(event.data.object);
-      break;
-    // Add other cases as needed
-  }
 };
 ```
 
@@ -1955,7 +2084,7 @@ $$ LANGUAGE plpgsql;
 
 ### Phase 2: Data Migration (Week 1-2)
 - 📝 Migrate 140 articles to database
-- 📝 Import team profiles
+- 📝 Import team profiles (both auth and display-only)
 - 📝 Load 31 services with pricing
 - 📝 Import partnership data
 - 📝 Set up categories and tags
@@ -1972,14 +2101,14 @@ $$ LANGUAGE plpgsql;
 - 🎨 Integrate Capability Universe
 - 🎨 Implement assessment flow
 - 🎨 Add analytics tracking
-- 🎨 Connect team profiles
+- 🎨 Connect team profiles (both types)
 
 ### Phase 5: Admin Interface (Week 4-5)
 - 👤 Content management dashboard
+- 👤 Team member management (auth vs display-only)
 - 👤 Approval workflow UI
 - 👤 Analytics dashboard
 - 👤 Service management
-- 👤 Team management
 
 ### Phase 6: Testing & Launch (Week 5-6)
 - ✔️ Performance testing
@@ -1990,11 +2119,64 @@ $$ LANGUAGE plpgsql;
 
 ---
 
+## Profile Migration Path (NEW)
+
+### Data Flow
+```
+Display-Only Team Members:
+Admin Interface → profiles table → team_members_display view → Public Website
+
+Login-Enabled Users:
+Sign Up → auth.users → trigger → profiles (with auth_user_id) → Can access admin
+```
+
+### Profile Management Best Practices
+1. **Display-only profiles**: Create directly via admin interface
+2. **Login users**: Always create through auth.signUp
+3. **Role assignment**: Only admins should update role field
+4. **Public display**: Use `is_public` flag for team page visibility
+5. **Deactivation**: Set `is_active = false` instead of deleting
+
+### Profile Fields by Access Level
+
+| Field | Public View | Auth User View | Admin View |
+|-------|------------|----------------|------------|
+| id | ✅ | ✅ | ✅ |
+| auth_user_id | ❌ | Own only | ✅ |
+| email | ❌ | ✅ | ✅ |
+| full_name | ✅ | ✅ | ✅ |
+| display_name | ✅ | ✅ | ✅ |
+| avatar_url | ✅ | ✅ | ✅ |
+| bio | ✅ | ✅ | ✅ |
+| role | ❌ | Own only | ✅ |
+| job_title | ✅ | ✅ | ✅ |
+| department | ✅ | ✅ | ✅ |
+| expertise | ✅ | ✅ | ✅ |
+| social_links | ✅ | ✅ | ✅ |
+| is_public | ❌ | ❌ | ✅ |
+| is_active | ❌ | ❌ | ✅ |
+| timestamps | ❌ | ❌ | ✅ |
+
+### Role Capabilities
+
+| Capability | Standard | Contributor | Admin |
+|-----------|----------|-------------|--------|
+| View public profiles | ✅ | ✅ | ✅ |
+| View own profile | ✅ | ✅ | ✅ |
+| Edit own profile | ✅ | ✅ | ✅ |
+| View all profiles | ❌ | ✅ | ✅ |
+| Create profiles | ❌ | ✅ | ✅ |
+| Edit any profile | ❌ | ❌ | ✅ |
+| Delete profiles | ❌ | ❌ | ✅ |
+| Change roles | ❌ | ❌ | ✅ |
+
+---
+
 ## Migration Benefits
 
 ### Before (Traditional Setup)
-- 🔑 Manual JWT management
-- 🐌 Complex caching layers
+- 🔐 Manual JWT management
+- 🌍 Complex caching layers
 - 📊 Limited analytics
 - 🔄 No real-time updates
 - 📁 Separate file storage
@@ -2002,7 +2184,7 @@ $$ LANGUAGE plpgsql;
 
 ### After (Supabase)
 - ⚡ Sub-second response times
-- 🔐 Automatic JWT handling
+- 🔑 Automatic JWT handling
 - 🚀 Direct database queries
 - 📡 Real-time subscriptions
 - 🖼️ Integrated storage with CDN
@@ -2022,5 +2204,5 @@ $$ LANGUAGE plpgsql;
 ---
 
 *Last Updated: January 2025*  
-*Version: 2.0 - Complete Enhanced Architecture*  
+*Version: 3.0 - Complete Enhanced Architecture with Updated Profiles*  
 *Platform: Supabase + React + Tailwind CSS*
