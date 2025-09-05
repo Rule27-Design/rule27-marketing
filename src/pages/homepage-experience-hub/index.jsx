@@ -7,42 +7,51 @@ import CaseStudyCarousel from './components/CaseStudyCarousel';
 import CapabilityZones from './components/CapabilityZones';
 import InnovationTicker from './components/InnovationTicker';
 import SocialProofSection from './components/SocialProofSection';
+import { useHomePageData } from '../../hooks/useHomePageData';
 
 const HomepageExperienceHub = () => {
+  const { 
+    caseStudies, 
+    testimonials, 
+    serviceZones, 
+    awards, 
+    partnerships, 
+    stats, 
+    loading, 
+    error 
+  } = useHomePageData();
+
   useEffect(() => {
-    // Smooth scroll behavior for anchor links
     document.documentElement.style.scrollBehavior = 'smooth';
-    
-    // Add page transition animation
     document.body.classList.add('page-loaded');
     
-    // Performance optimization - lazy load images
-    const images = document.querySelectorAll('img[data-src]');
-    const imageObserver = new IntersectionObserver((entries, observer) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const img = entry.target;
-          img.src = img.dataset.src;
-          img.classList.add('loaded');
-          observer.unobserve(img);
-        }
-      });
-    });
-    
-    images.forEach(img => imageObserver.observe(img));
-    
-    // Cleanup on unmount
     return () => {
       document.documentElement.style.scrollBehavior = 'auto';
       document.body.classList.remove('page-loaded');
-      imageObserver.disconnect();
     };
   }, []);
 
-  // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg font-heading-regular text-primary uppercase tracking-wider">Loading Experience...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    console.error('Homepage data error:', error);
+    // Fall back to static content or show error message
+  }
 
   return (
     <>
@@ -53,68 +62,59 @@ const HomepageExperienceHub = () => {
           content="Break conventional boundaries with Rule27 Design. We combine creative audacity with technical precision to transform ambitious brands into industry leaders." 
         />
         <meta name="keywords" content="creative agency, digital marketing, web development, brand design, Rule27 Design, premium creative services, innovation, digital transformation" />
-        
-        {/* Open Graph */}
         <meta property="og:title" content="Rule27 Design - Digital Powerhouse | Creative + Technical Excellence" />
         <meta property="og:description" content="Break conventional boundaries with Rule27 Design. We combine creative audacity with technical precision to transform ambitious brands into industry leaders." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://rule27design.com" />
         <meta property="og:image" content="/assets/og-image.jpg" />
-        
-        {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Rule27 Design - Digital Powerhouse | Creative + Technical Excellence" />
         <meta name="twitter:description" content="Break conventional boundaries with Rule27 Design. We combine creative audacity with technical precision to transform ambitious brands into industry leaders." />
         <meta name="twitter:image" content="/assets/og-image.jpg" />
-        
-        {/* Canonical */}
         <link rel="canonical" href="https://rule27design.com" />
-        
-        {/* Preload critical resources */}
         <link rel="preload" href="/assets/logo/rule27-color.svg" as="image" />
         <link rel="preload" href="/assets/logo/rule27-icon-white.svg" as="image" />
       </Helmet>
 
       <div className="min-h-screen bg-background overflow-x-hidden">
-        {/* Header */}
         <Header />
 
-        {/* Main Content */}
         <main className="pt-16">
-          {/* Hero Section with Enhanced Animations */}
+          {/* Hero Section - Remains static/hardcoded */}
           <section id="hero" className="hero-wrapper">
             <HeroSection />
           </section>
 
-          {/* Case Study Carousel */}
+          {/* Case Study Carousel - Now database-driven */}
           <section id="work" className="section-wrapper">
-            <CaseStudyCarousel />
+            <CaseStudyCarousel caseStudies={caseStudies} />
           </section>
 
-          {/* Capability Zones */}
+          {/* Capability Zones - Now database-driven */}
           <section id="capabilities" className="section-wrapper">
-            <CapabilityZones />
+            <CapabilityZones serviceZones={serviceZones} />
           </section>
 
-          {/* Innovation Ticker */}
+          {/* Innovation Ticker - Remains hardcoded for now */}
           <section id="innovation" className="section-wrapper">
             <InnovationTicker />
           </section>
 
-          {/* Social Proof Section */}
+          {/* Social Proof Section - Now database-driven */}
           <section id="social-proof" className="section-wrapper">
-            <SocialProofSection />
+            <SocialProofSection 
+              testimonials={testimonials}
+              awards={awards}
+              partnerships={partnerships}
+              stats={stats}
+            />
           </section>
         </main>
 
-        {/* Footer */}
         <Footer />
-
-        {/* Back to Top Button */}
         <BackToTop />
       </div>
 
-      {/* Page-specific styles */}
       <style jsx>{`
         .page-loaded {
           animation: pageLoad 0.6s ease-out;
@@ -140,27 +140,12 @@ const HomepageExperienceHub = () => {
           position: relative;
           z-index: 1;
         }
-        
-        img.loaded {
-          animation: imageLoad 0.6s ease-out;
-        }
-        
-        @keyframes imageLoad {
-          from {
-            opacity: 0;
-            filter: blur(5px);
-          }
-          to {
-            opacity: 1;
-            filter: blur(0);
-          }
-        }
       `}</style>
     </>
   );
 };
 
-// Back to Top Component
+// Back to Top Component remains the same
 const BackToTop = () => {
   const [isVisible, setIsVisible] = React.useState(false);
 
