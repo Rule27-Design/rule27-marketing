@@ -135,6 +135,14 @@ function transformCaseStudies(studies) {
 
 // Transform service zones to match capability zones structure
 function transformServiceZones(zones) {
+  // Fallback images in case database doesn't have them
+  const fallbackImages = {
+    'creative-studio': 'https://images.unsplash.com/photo-1561070791-2526d30994b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=2064&q=80',
+    'digital-marketing': 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2015&q=80',
+    'development-lab': 'https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+    'executive-advisory': 'https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80'
+  };
+
   // Map database zones to specific capability zone styling
   const zoneStyles = {
     'creative-studio': {
@@ -168,7 +176,8 @@ function transformServiceZones(zones) {
     icon: zone.icon || 'Zap',
     features: zone.key_services || [],
     stats: zone.stats || { projects: 0, satisfaction: 0 },
-    previewImage: getZoneImage(zone.slug), // Helper to get appropriate image
+    // Use database image first, then fallback
+    previewImage: zone.preview_image || fallbackImages[zone.slug] || fallbackImages['creative-studio'],
     ...zoneStyles[zone.slug] || zoneStyles['creative-studio']
   }));
 }

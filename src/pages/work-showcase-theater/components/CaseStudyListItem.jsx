@@ -1,9 +1,12 @@
 import React, { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Image from '../../../components/AppImage';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
-const CaseStudyListItem = React.memo(({ caseStudy, onViewDetails }) => {
+const CaseStudyListItem = React.memo(({ caseStudy }) => {
+  const navigate = useNavigate();
+  
   const formatMetric = useMemo(() => (value, type) => {
     switch (type) {
       case 'percentage':
@@ -17,11 +20,18 @@ const CaseStudyListItem = React.memo(({ caseStudy, onViewDetails }) => {
     }
   }, []);
 
+  const handleViewDetails = () => {
+    navigate(`/case-study/${caseStudy.slug}`);
+  };
+
   return (
     <div className="group relative bg-white rounded-xl overflow-hidden brand-shadow hover:brand-shadow-lg transition-all duration-500">
       <div className="flex flex-col lg:flex-row">
-        {/* Image Section with Lazy Loading */}
-        <div className="relative lg:w-80 h-48 lg:h-64 overflow-hidden flex-shrink-0 bg-gray-100">
+        {/* Image Section - Make clickable */}
+        <div 
+          className="relative lg:w-80 h-48 lg:h-64 overflow-hidden flex-shrink-0 bg-gray-100 cursor-pointer"
+          onClick={handleViewDetails}
+        >
           <Image
             src={caseStudy?.heroImage}
             alt={`${caseStudy?.title} case study`}
@@ -29,10 +39,11 @@ const CaseStudyListItem = React.memo(({ caseStudy, onViewDetails }) => {
             loading="lazy"
           />
           
-          {/* Play Button Overlay */}
+          {/* View Case Study Overlay */}
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20">
-            <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-              <Icon name="Play" size={20} className="text-white" />
+            <div className="bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 flex items-center space-x-2">
+              <span className="text-sm font-heading-regular text-primary tracking-wider uppercase">View Case Study</span>
+              <Icon name="ArrowRight" size={16} className="text-primary" />
             </div>
           </div>
           
@@ -46,10 +57,10 @@ const CaseStudyListItem = React.memo(({ caseStudy, onViewDetails }) => {
           )}
         </div>
 
-        {/* Content Section with Proper Typography */}
+        {/* Content Section */}
         <div className="flex-1 p-5 lg:p-8">
           <div className="flex flex-col h-full">
-            {/* Header with badges - Steelfish for Labels */}
+            {/* Header with badges */}
             <div className="flex flex-wrap items-center gap-2 mb-3">
               {caseStudy?.featured && (
                 <span className="px-3 py-1 bg-accent text-white text-xs font-heading-regular tracking-wider uppercase rounded-full flex items-center gap-1">
@@ -68,9 +79,12 @@ const CaseStudyListItem = React.memo(({ caseStudy, onViewDetails }) => {
               </span>
             </div>
 
-            {/* Title and Client - Steelfish for Title */}
+            {/* Title and Client - Make title clickable */}
             <div className="mb-3">
-              <h3 className="text-lg lg:text-2xl font-heading-regular text-primary mb-1 group-hover:text-accent transition-colors duration-300 tracking-wider uppercase">
+              <h3 
+                className="text-lg lg:text-2xl font-heading-regular text-primary mb-1 group-hover:text-accent transition-colors duration-300 tracking-wider uppercase cursor-pointer"
+                onClick={handleViewDetails}
+              >
                 {caseStudy?.title}
               </h3>
               <p className="text-sm text-text-secondary font-sans">
@@ -78,14 +92,14 @@ const CaseStudyListItem = React.memo(({ caseStudy, onViewDetails }) => {
               </p>
             </div>
 
-            {/* Description - Helvetica */}
+            {/* Description */}
             <p className="text-text-secondary text-sm lg:text-base mb-4 line-clamp-2 lg:line-clamp-3 font-sans">
               {caseStudy?.description}
             </p>
 
             {/* Metrics and Timeline */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
-              {/* Key Metrics - Steelfish for Numbers */}
+              {/* Key Metrics */}
               <div className="flex items-center gap-3 lg:gap-4">
                 {caseStudy?.keyMetrics?.slice(0, 3)?.map((metric, index) => (
                   <div key={index} className="text-center">
@@ -99,7 +113,7 @@ const CaseStudyListItem = React.memo(({ caseStudy, onViewDetails }) => {
                 ))}
               </div>
 
-              {/* Timeline - Helvetica */}
+              {/* Timeline */}
               <div className="flex items-center gap-3 lg:gap-4 text-xs lg:text-sm text-text-secondary">
                 <div className="flex items-center space-x-1">
                   <Icon name="Calendar" size={14} />
@@ -112,11 +126,11 @@ const CaseStudyListItem = React.memo(({ caseStudy, onViewDetails }) => {
               </div>
             </div>
 
-            {/* CTA Button - Steelfish */}
+            {/* CTA Button */}
             <div className="mt-auto">
               <Button
                 variant="outline"
-                onClick={() => onViewDetails(caseStudy)}
+                onClick={handleViewDetails}
                 className="border-accent text-accent hover:bg-accent hover:text-white text-sm lg:text-base"
                 iconName="ArrowRight"
                 iconPosition="right"

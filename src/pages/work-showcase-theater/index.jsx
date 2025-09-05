@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
 import Footer from '../../components/ui/Footer';
@@ -6,14 +7,15 @@ import HeroSection from './components/HeroSection';
 import FilterBar from './components/FilterBar';
 import CaseStudyCard from './components/CaseStudyCard';
 import CaseStudyListItem from './components/CaseStudyListItem';
-import CaseStudyModal from './components/CaseStudyModal';
 import MetricsVisualization from './components/MetricsVisualization';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import { useCaseStudies, useCaseStudyFilters } from '../../hooks/useCaseStudies';
 
 const WorkShowcaseTheater = () => {
-  const [selectedCaseStudy, setSelectedCaseStudy] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
+  const { caseStudies, featuredCaseStudies, loading, error } = useCaseStudies();
+  const { industries, serviceTypes, businessStages } = useCaseStudyFilters();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('featured');
   const [viewMode, setViewMode] = useState(() => {
@@ -40,158 +42,14 @@ const WorkShowcaseTheater = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Sample case studies data - memoized
-  const caseStudies = useMemo(() => [
-    {
-      id: 1,
-      title: "E-commerce Revolution: 400% Revenue Growth",
-      client: "TechFlow Solutions",
-      industry: "Technology",
-      serviceType: "Full Rebrand",
-      businessStage: "Growth Stage",
-      heroImage: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop",
-      description: `Transformed a struggling tech startup into a market leader through comprehensive brand strategy, cutting-edge web development, and data-driven marketing campaigns that delivered unprecedented growth.`,
-      challenge: `TechFlow Solutions was losing market share to competitors despite having superior technology. Their outdated brand identity and poor digital presence were hindering growth and investor confidence.`,
-      solution: `We implemented a complete brand transformation including new visual identity, responsive web platform, and integrated marketing automation system that positioned them as industry innovators.`,
-      timeline: "6 months",
-      duration: "Jan - Jun 2024",
-      featured: true,
-      keyMetrics: [
-        { label: "Revenue Growth", value: 400, type: "percentage" },
-        { label: "Lead Generation", value: 250, type: "percentage" },
-        { label: "Brand Recognition", value: 180, type: "percentage" }
-      ],
-      detailedResults: [
-        { metric: "Monthly Revenue", value: 2500000, type: "currency", description: "From $500K to $2.5M monthly recurring revenue" },
-        { metric: "Website Conversion", value: 340, type: "percentage", description: "Conversion rate improved from 2.1% to 7.2%" },
-        { metric: "Customer Acquisition Cost", value: 65, type: "percentage", description: "Reduced CAC by 65% through optimized funnels" },
-        { metric: "Brand Awareness", value: 180, type: "percentage", description: "Measured through brand recall surveys" }
-      ],
-      processSteps: [
-        { title: "Discovery & Research", description: "Comprehensive market analysis and competitor research to identify opportunities" },
-        { title: "Brand Strategy", description: "Developed new brand positioning and messaging framework" },
-        { title: "Visual Identity", description: "Created modern, scalable brand identity system" },
-        { title: "Digital Platform", description: "Built responsive, conversion-optimized website" },
-        { title: "Marketing Automation", description: "Implemented integrated CRM and marketing systems" },
-        { title: "Launch & Optimization", description: "Coordinated launch with ongoing performance optimization" }
-      ],
-      testimonial: {
-        name: "Sarah Chen",
-        position: "CEO & Founder",
-        avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-        quote: "Rule27 Design didn't just redesign our brand - they transformed our entire business trajectory. The results exceeded every expectation we had."
-      },
-      gallery: [
-        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&h=600&fit=crop"
-      ]
-    },
-    {
-      id: 2,
-      title: "Healthcare Innovation: Digital Transformation",
-      client: "MedCore Systems",
-      industry: "Healthcare",
-      serviceType: "Digital Strategy",
-      businessStage: "Enterprise",
-      heroImage: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=800&h=600&fit=crop",
-      description: `Revolutionized patient care delivery through innovative digital solutions, streamlined workflows, and user-centered design that improved outcomes while reducing operational costs.`,
-      challenge: `MedCore's legacy systems were creating bottlenecks in patient care, leading to longer wait times, frustrated staff, and declining patient satisfaction scores.`,
-      solution: `We designed and implemented a comprehensive digital ecosystem including patient portal, staff dashboard, and automated workflow management system.`,
-      timeline: "8 months",
-      duration: "Mar - Oct 2024",
-      featured: true,
-      keyMetrics: [
-        { label: "Patient Satisfaction", value: 95, type: "percentage" },
-        { label: "Operational Efficiency", value: 160, type: "percentage" },
-        { label: "Cost Reduction", value: 35, type: "percentage" }
-      ],
-      detailedResults: [
-        { metric: "Patient Wait Time", value: 45, type: "percentage", description: "Average wait time reduced by 45%" },
-        { metric: "Staff Productivity", value: 160, type: "percentage", description: "60% increase in daily patient capacity" },
-        { metric: "System Uptime", value: 99.8, type: "percentage", description: "Achieved 99.8% system reliability" },
-        { metric: "Annual Savings", value: 850000, type: "currency", description: "Operational cost savings in first year" }
-      ],
-      processSteps: [
-        { title: "Stakeholder Interviews", description: "Conducted extensive interviews with patients, staff, and administrators" },
-        { title: "System Architecture", description: "Designed scalable, secure healthcare technology infrastructure" },
-        { title: "User Experience Design", description: "Created intuitive interfaces for all user types" },
-        { title: "Development & Testing", description: "Built and rigorously tested all system components" },
-        { title: "Staff Training", description: "Comprehensive training program for seamless adoption" },
-        { title: "Phased Rollout", description: "Careful implementation with continuous monitoring" }
-      ],
-      testimonial: {
-        name: "Dr. Michael Rodriguez",
-        position: "Chief Medical Officer",
-        avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-        quote: "The digital transformation Rule27 Design delivered has fundamentally changed how we deliver patient care. Our staff is happier, patients are more satisfied, and our outcomes have never been better."
-      },
-      gallery: [
-        "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=800&h=600&fit=crop"
-      ]
-    },
-    {
-      id: 3,
-      title: "Fintech Startup: From Idea to IPO",
-      client: "PayStream",
-      industry: "Financial Services",
-      serviceType: "Complete Package",
-      businessStage: "Startup",
-      heroImage: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&h=600&fit=crop",
-      description: `Guided a fintech startup from concept to successful IPO through strategic branding, product development, and market positioning that attracted top-tier investors and customers.`,
-      challenge: `PayStream had innovative technology but lacked market credibility, brand recognition, and the strategic positioning needed to compete with established financial institutions.`,
-      solution: `We provided end-to-end support including brand development, product strategy, regulatory compliance guidance, and investor relations materials.`,
-      timeline: "18 months",
-      duration: "Jan 2023 - Jun 2024",
-      featured: true,
-      keyMetrics: [
-        { label: "Valuation Growth", value: 15, type: "multiplier" },
-        { label: "User Acquisition", value: 500, type: "percentage" },
-        { label: "Investment Raised", value: 125000000, type: "currency" }
-      ],
-      detailedResults: [
-        { metric: "Company Valuation", value: 750000000, type: "currency", description: "From $50M to $750M valuation" },
-        { metric: "Active Users", value: 2500000, type: "number", description: "Grew from 50K to 2.5M active users" },
-        { metric: "Revenue Growth", value: 800, type: "percentage", description: "Monthly recurring revenue increased 8x" },
-        { metric: "Market Share", value: 12, type: "percentage", description: "Captured 12% of target market segment" }
-      ],
-      processSteps: [
-        { title: "Market Research", description: "Deep analysis of fintech landscape and regulatory requirements" },
-        { title: "Brand Foundation", description: "Built trust-focused brand identity for financial services" },
-        { title: "Product Strategy", description: "Refined product-market fit and user experience" },
-        { title: "Compliance Framework", description: "Established regulatory compliance and security protocols" },
-        { title: "Go-to-Market", description: "Executed multi-channel launch and user acquisition strategy" },
-        { title: "Scale & IPO Prep", description: "Prepared company for public offering and institutional investment" }
-      ],
-      testimonial: {
-        name: "Jennifer Walsh",
-        position: "Co-Founder & CEO",
-        avatar: "https://randomuser.me/api/portraits/women/68.jpg",
-        quote: "Rule27 Design was instrumental in our journey from startup to IPO. Their strategic guidance and execution excellence made the impossible possible."
-      },
-      gallery: [
-        "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=600&fit=crop"
-      ]
-    }
-  ], []);
-
-  // Filter options - memoized
+  // Filter options
   const filters = useMemo(() => ({
-    industries: [...new Set(caseStudies.map(study => study.industry))],
-    serviceTypes: [...new Set(caseStudies.map(study => study.serviceType))],
-    businessStages: [...new Set(caseStudies.map(study => study.businessStage))]
-  }), [caseStudies]);
+    industries,
+    serviceTypes,
+    businessStages
+  }), [industries, serviceTypes, businessStages]);
 
-  // Featured case studies for hero section - memoized
-  const featuredCaseStudies = useMemo(() => 
-    caseStudies?.filter(study => study?.featured),
-  [caseStudies]);
-
-  // Filter and sort case studies - memoized
+  // Filter and sort case studies
   const filteredCaseStudies = useMemo(() => {
     let filtered = [...caseStudies];
 
@@ -230,12 +88,12 @@ const WorkShowcaseTheater = () => {
         case 'featured':
           if (a?.featured && !b?.featured) return -1;
           if (!a?.featured && b?.featured) return 1;
-          return b?.id - a?.id;
+          return 0;
         case 'newest':
-          return b?.id - a?.id;
+          return new Date(b?.created_at || 0) - new Date(a?.created_at || 0);
         case 'impact':
-          const aImpact = a?.keyMetrics?.reduce((sum, metric) => sum + metric?.value, 0);
-          const bImpact = b?.keyMetrics?.reduce((sum, metric) => sum + metric?.value, 0);
+          const aImpact = a?.keyMetrics?.reduce((sum, metric) => sum + (metric?.value || 0), 0);
+          const bImpact = b?.keyMetrics?.reduce((sum, metric) => sum + (metric?.value || 0), 0);
           return bImpact - aImpact;
         case 'alphabetical':
           return a?.title?.localeCompare(b?.title);
@@ -247,7 +105,7 @@ const WorkShowcaseTheater = () => {
     return filtered;
   }, [caseStudies, searchQuery, activeFilters, sortBy]);
 
-  // Memoized callbacks
+  // Callbacks
   const handleFilterChange = useCallback((category, value) => {
     setActiveFilters(prev => ({
       ...prev,
@@ -266,15 +124,52 @@ const WorkShowcaseTheater = () => {
     setSearchQuery('');
   }, []);
 
+  // Navigate to case study detail page
   const handleViewCaseStudy = useCallback((caseStudy) => {
-    setSelectedCaseStudy(caseStudy);
-    setIsModalOpen(true);
-  }, []);
+    navigate(`/case-study/${caseStudy.slug}`);
+  }, [navigate]);
 
-  const handleCloseModal = useCallback(() => {
-    setIsModalOpen(false);
-    setSelectedCaseStudy(null);
-  }, []);
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex items-center justify-center h-[60vh]">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-text-secondary font-sans">Loading case studies...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex items-center justify-center h-[60vh]">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Icon name="AlertCircle" size={32} className="text-red-600" />
+            </div>
+            <h2 className="text-xl font-heading-regular text-primary mb-2 tracking-wider uppercase">Error Loading Case Studies</h2>
+            <p className="text-text-secondary mb-4 font-sans">{error}</p>
+            <Button
+              variant="outline"
+              onClick={() => window.location.reload()}
+              className="border-accent text-accent hover:bg-accent hover:text-white"
+            >
+              <span className="font-heading-regular tracking-wider uppercase">Try Again</span>
+            </Button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -294,7 +189,7 @@ const WorkShowcaseTheater = () => {
       <div className="min-h-screen bg-background">
         <Header />
 
-        {/* Hero Section */}
+        {/* Hero Section - Now navigates to case study page */}
         <HeroSection 
           featuredCaseStudies={featuredCaseStudies}
           onViewCaseStudy={handleViewCaseStudy}
@@ -315,7 +210,7 @@ const WorkShowcaseTheater = () => {
         {/* Case Studies Grid */}
         <section className="py-8 sm:py-12 md:py-16 bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Results Header - Typography Optimized */}
+            {/* Results Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 md:mb-8">
               <div>
                 <h2 className="text-lg sm:text-xl md:text-2xl font-heading-regular text-primary tracking-wider uppercase">
@@ -358,7 +253,6 @@ const WorkShowcaseTheater = () => {
                       <CaseStudyCard
                         key={caseStudy?.id}
                         caseStudy={caseStudy}
-                        onViewDetails={handleViewCaseStudy}
                       />
                     ))}
                   </div>
@@ -368,7 +262,6 @@ const WorkShowcaseTheater = () => {
                       <CaseStudyListItem
                         key={caseStudy?.id}
                         caseStudy={caseStudy}
-                        onViewDetails={handleViewCaseStudy}
                       />
                     ))}
                   </div>
@@ -383,24 +276,28 @@ const WorkShowcaseTheater = () => {
                   No case studies found
                 </h3>
                 <p className="text-xs sm:text-sm md:text-base text-text-secondary mb-3 sm:mb-4 md:mb-6 font-sans">
-                  Try adjusting your filters or search terms
+                  {caseStudies.length === 0 ? 'No case studies available yet' : 'Try adjusting your filters or search terms'}
                 </p>
-                <Button
-                  variant="outline"
-                  onClick={handleClearFilters}
-                  className="border-accent text-accent hover:bg-accent hover:text-white text-xs sm:text-sm md:text-base px-3 py-2 font-heading-regular tracking-wider uppercase"
-                >
-                  Clear All Filters
-                </Button>
+                {caseStudies.length > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={handleClearFilters}
+                    className="border-accent text-accent hover:bg-accent hover:text-white text-xs sm:text-sm md:text-base px-3 py-2 font-heading-regular tracking-wider uppercase"
+                  >
+                    Clear All Filters
+                  </Button>
+                )}
               </div>
             )}
           </div>
         </section>
 
-        {/* Metrics Visualization */}
-        <MetricsVisualization caseStudies={caseStudies} />
+        {/* Metrics Visualization - Only show if we have data */}
+        {caseStudies.length > 0 && (
+          <MetricsVisualization caseStudies={caseStudies} />
+        )}
 
-        {/* CTA Section - Typography Optimized */}
+        {/* CTA Section */}
         <section className="py-12 sm:py-16 bg-primary text-white">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading-regular mb-4 sm:mb-6 tracking-wider uppercase">
@@ -414,7 +311,7 @@ const WorkShowcaseTheater = () => {
               <Button
                 variant="default"
                 size="default"
-                onClick={() => window.location.href = '/contact'}
+                onClick={() => navigate('/contact')}
                 className="bg-accent hover:bg-accent/90 text-white w-full sm:w-auto text-sm sm:text-base px-6 py-3"
                 iconName="Calendar"
                 iconPosition="left"
@@ -424,7 +321,7 @@ const WorkShowcaseTheater = () => {
               <Button
                 variant="outline"
                 size="default"
-                onClick={() => window.location.href = '/capabilities'}
+                onClick={() => navigate('/capabilities')}
                 className="border-white text-white hover:bg-white hover:text-primary w-full sm:w-auto text-sm sm:text-base px-6 py-3"
                 iconName="Zap"
                 iconPosition="left"
@@ -435,14 +332,6 @@ const WorkShowcaseTheater = () => {
           </div>
         </section>
 
-        {/* Case Study Modal */}
-        <CaseStudyModal
-          caseStudy={selectedCaseStudy}
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-        />
-
-        {/* Footer */}
         <Footer />
       </div>
 
