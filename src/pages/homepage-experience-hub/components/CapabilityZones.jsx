@@ -4,101 +4,13 @@ import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 import Logo from '../../../components/ui/Logo';
 
-const CapabilityZones = () => {
+const CapabilityZones = ({ serviceZones = [] }) => {
   const [hoveredZone, setHoveredZone] = useState(null);
   const [visibleCards, setVisibleCards] = useState([]);
   const cardsRef = useRef([]);
 
-  const capabilities = [
-    {
-      id: 'creative-studio',
-      title: 'Creative Studio',
-      subtitle: 'Visual Identity & Brand Design',
-      description: 'Where bold ideas take visual form. We craft distinctive brand identities that command attention and drive emotional connection.',
-      icon: 'Palette',
-      color: 'from-purple-500 to-pink-500',
-      bgColor: 'bg-purple-50',
-      textColor: 'text-purple-600',
-      features: [
-        'Brand Identity Design',
-        'Visual System Creation',
-        'Creative Direction',
-        'Art Direction'
-      ],
-      previewImage: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=2064&q=80',
-      stats: {
-        projects: '150+',
-        awards: '25+',
-        satisfaction: '98%'
-      }
-    },
-    {
-      id: 'digital-marketing',
-      title: 'Digital Marketing Command',
-      subtitle: 'Performance-Driven Growth',
-      description: 'Strategic campaigns that convert. We blend creative storytelling with data-driven optimization to maximize your ROI.',
-      icon: 'Target',
-      color: 'from-blue-500 to-cyan-500',
-      bgColor: 'bg-blue-50',
-      textColor: 'text-blue-600',
-      features: [
-        'Performance Marketing',
-        'Content Strategy',
-        'Social Media Management',
-        'SEO & Analytics'
-      ],
-      previewImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2015&q=80',
-      stats: {
-        campaigns: '200+',
-        avgROI: '340%',
-        reach: '50M+'
-      }
-    },
-    {
-      id: 'development-lab',
-      title: 'Development Lab',
-      subtitle: 'Technical Excellence & Innovation',
-      description: 'Code that performs. We build scalable, secure, and lightning-fast digital experiences that exceed expectations.',
-      icon: 'Code',
-      color: 'from-green-500 to-emerald-500',
-      bgColor: 'bg-green-50',
-      textColor: 'text-green-600',
-      features: [
-        'Custom Web Development',
-        'Mobile App Creation',
-        'E-commerce Platforms',
-        'API Integration'
-      ],
-      previewImage: 'https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
-      stats: {
-        applications: '120+',
-        uptime: '99.9%',
-        performance: '95+'
-      }
-    },
-    {
-      id: 'executive-advisory',
-      title: 'Executive Advisory',
-      subtitle: 'Strategic Leadership & Consulting',
-      description: 'C-suite guidance when you need it most. Fractional executive services that provide strategic direction without the overhead.',
-      icon: 'Users',
-      color: 'from-orange-500 to-red-500',
-      bgColor: 'bg-orange-50',
-      textColor: 'text-orange-600',
-      features: [
-        'Fractional CMO Services',
-        'Strategic Planning',
-        'Team Leadership',
-        'Growth Consulting'
-      ],
-      previewImage: 'https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
-      stats: {
-        executives: '50+',
-        companies: '80+',
-        growth: '250%'
-      }
-    }
-  ];
+  // Use database zones or fall back to static
+  const capabilities = serviceZones.length > 0 ? serviceZones : getStaticCapabilities();
 
   // Intersection Observer for animation on scroll
   useEffect(() => {
@@ -152,12 +64,12 @@ const CapabilityZones = () => {
 
         {/* Capability Grid with Enhanced Animations */}
         <div className="grid lg:grid-cols-2 gap-8 mb-16">
-          {capabilities?.map((capability, index) => (
+          {capabilities.map((capability, index) => (
             <div
-              key={capability?.id}
+              key={capability.id || index}
               ref={el => cardsRef.current[index] = el}
               className={`relative group cursor-pointer transition-all duration-700 ${
-                hoveredZone === capability?.id ? 'scale-[1.02] z-10' : 'hover:scale-[1.01]'
+                hoveredZone === capability.id ? 'scale-[1.02] z-10' : 'hover:scale-[1.01]'
               } ${
                 visibleCards.includes(index) 
                   ? 'opacity-100 translate-y-0' 
@@ -166,82 +78,84 @@ const CapabilityZones = () => {
               style={{
                 transitionDelay: `${index * 100}ms`
               }}
-              onMouseEnter={() => setHoveredZone(capability?.id)}
+              onMouseEnter={() => setHoveredZone(capability.id)}
               onMouseLeave={() => setHoveredZone(null)}
             >
               <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl overflow-hidden border border-gray-100 h-full transition-all duration-500">
                 {/* Image Section with Parallax Effect */}
                 <div className="relative h-64 overflow-hidden">
                   <Image
-                    src={capability?.previewImage}
-                    alt={capability?.title}
+                    src={capability.previewImage}
+                    alt={capability.title}
                     className={`w-full h-full object-cover transition-all duration-1000 ${
-                      hoveredZone === capability?.id ? 'scale-110' : 'scale-100'
+                      hoveredZone === capability.id ? 'scale-110' : 'scale-100'
                     }`}
                   />
                   
                   {/* Dynamic Gradient Overlay */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${capability?.color} transition-opacity duration-500 ${
-                    hoveredZone === capability?.id ? 'opacity-90' : 'opacity-80'
+                  <div className={`absolute inset-0 bg-gradient-to-br ${capability.color} transition-opacity duration-500 ${
+                    hoveredZone === capability.id ? 'opacity-90' : 'opacity-80'
                   }`}></div>
                   
                   {/* Animated Icon */}
                   <div className="absolute top-6 left-6">
                     <div className={`w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-500 ${
-                      hoveredZone === capability?.id ? 'scale-110 rotate-12' : ''
+                      hoveredZone === capability.id ? 'scale-110 rotate-12' : ''
                     }`}>
-                      <Icon name={capability?.icon} size={24} className="text-white" />
+                      <Icon name={capability.icon} size={24} className="text-white" />
                     </div>
                   </div>
 
                   {/* Stats Overlay with Stagger Animation */}
-                  <div className={`absolute bottom-4 right-4 transition-all duration-500 ${
-                    hoveredZone === capability?.id ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                  }`}>
-                    <div className="bg-white/20 backdrop-blur-md rounded-lg p-3 border border-white/30">
-                      <div className="flex space-x-4 text-white text-sm">
-                        {Object.entries(capability?.stats)?.map(([key, value], idx) => (
-                          <div 
-                            key={key} 
-                            className="text-center"
-                            style={{
-                              animation: hoveredZone === capability?.id 
-                                ? `fadeInUp 0.3s ease-out ${idx * 0.1}s both` 
-                                : 'none'
-                            }}
-                          >
-                            <div className="font-heading-regular text-xl uppercase">{value}</div>
-                            <div className="capitalize opacity-90 text-xs font-sans">{key}</div>
-                          </div>
-                        ))}
+                  {capability.stats && (
+                    <div className={`absolute bottom-4 right-4 transition-all duration-500 ${
+                      hoveredZone === capability.id ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                    }`}>
+                      <div className="bg-white/20 backdrop-blur-md rounded-lg p-3 border border-white/30">
+                        <div className="flex space-x-4 text-white text-sm">
+                          {Object.entries(capability.stats).map(([key, value], idx) => (
+                            <div 
+                              key={key} 
+                              className="text-center"
+                              style={{
+                                animation: hoveredZone === capability.id 
+                                  ? `fadeInUp 0.3s ease-out ${idx * 0.1}s both` 
+                                  : 'none'
+                              }}
+                            >
+                              <div className="font-heading-regular text-xl uppercase">{value}</div>
+                              <div className="capitalize opacity-90 text-xs font-sans">{key}</div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Content Section with Progressive Enhancement */}
                 <div className="p-8">
                   <div className="mb-4">
                     <h3 className="text-3xl font-heading-regular text-primary mb-2 uppercase tracking-wide">
-                      {capability?.title}
+                      {capability.title}
                     </h3>
-                    <p className={`text-lg font-heading-regular ${capability?.textColor} uppercase tracking-wider`}>
-                      {capability?.subtitle}
+                    <p className={`text-lg font-heading-regular ${capability.textColor} uppercase tracking-wider`}>
+                      {capability.subtitle}
                     </p>
                   </div>
 
                   <p className="text-text-secondary mb-6 leading-relaxed font-sans">
-                    {capability?.description}
+                    {capability.description}
                   </p>
 
                   {/* Features with Hover Effects */}
                   <div className="mb-6">
                     <div className="grid grid-cols-2 gap-2">
-                      {capability?.features?.map((feature, featureIndex) => (
+                      {capability.features?.slice(0, 4).map((feature, featureIndex) => (
                         <div 
                           key={featureIndex} 
                           className={`flex items-center space-x-2 transition-all duration-300 ${
-                            hoveredZone === capability?.id 
+                            hoveredZone === capability.id 
                               ? 'translate-x-2' 
                               : ''
                           }`}
@@ -249,10 +163,10 @@ const CapabilityZones = () => {
                             transitionDelay: `${featureIndex * 50}ms`
                           }}
                         >
-                          <div className={`w-2 h-2 rounded-full ${capability?.bgColor} ${
-                            hoveredZone === capability?.id ? 'scale-150' : ''
+                          <div className={`w-2 h-2 rounded-full ${capability.bgColor} ${
+                            hoveredZone === capability.id ? 'scale-150' : ''
                           } transition-transform duration-300`}></div>
-                          <span className="text-lg text-text-secondary font-sans">{feature}</span>
+                          <span className="text-sm text-text-secondary font-sans">{feature}</span>
                         </div>
                       ))}
                     </div>
@@ -260,11 +174,11 @@ const CapabilityZones = () => {
 
                   {/* Enhanced Hover Action */}
                   <div className={`transition-all duration-500 ${
-                    hoveredZone === capability?.id 
+                    hoveredZone === capability.id 
                       ? 'opacity-100 translate-y-0' 
                       : 'opacity-0 translate-y-4 pointer-events-none'
                   }`}>
-                    <div className="flex items-center space-x-2 text-accent font-heading-regular uppercase tracking-wider group">
+                    <Link to="/capabilities" className="flex items-center space-x-2 text-accent font-heading-regular uppercase tracking-wider group">
                       <span className="bg-gradient-to-r from-accent to-red-400 bg-clip-text text-transparent">
                         Explore This Universe
                       </span>
@@ -273,7 +187,7 @@ const CapabilityZones = () => {
                         size={16} 
                         className="transform transition-transform duration-300 group-hover:translate-x-2"
                       />
-                    </div>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -342,5 +256,33 @@ const CapabilityZones = () => {
     </section>
   );
 };
+
+// Static fallback data
+function getStaticCapabilities() {
+  return [
+    {
+      id: 'creative-studio',
+      title: 'Creative Studio',
+      subtitle: 'Visual Identity & Brand Design',
+      description: 'Where bold ideas take visual form. We craft distinctive brand identities that command attention and drive emotional connection.',
+      icon: 'Palette',
+      color: 'from-purple-500 to-pink-500',
+      bgColor: 'bg-purple-50',
+      textColor: 'text-purple-600',
+      features: [
+        'Brand Identity Design',
+        'Visual System Creation',
+        'Creative Direction',
+        'Art Direction'
+      ],
+      previewImage: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=2064&q=80',
+      stats: {
+        projects: '150+',
+        awards: '25+',
+        satisfaction: '98%'
+      }
+    }
+  ];
+}
 
 export default CapabilityZones;
