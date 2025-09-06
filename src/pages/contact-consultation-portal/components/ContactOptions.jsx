@@ -235,7 +235,7 @@ const ContactOptions = () => {
           </div>
         </div>
 
-        {/* CTA Button */}
+        {/* CTA Button 
         <div className="mt-4">
           <Button
             variant="outline"
@@ -246,7 +246,7 @@ const ContactOptions = () => {
           >
             Schedule a Call
           </Button>
-        </div>
+        </div>*/}
       </div>
     </div>
   );
