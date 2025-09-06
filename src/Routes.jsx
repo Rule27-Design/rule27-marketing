@@ -1,6 +1,6 @@
-// src/Routes.jsx - Updated with Admin routes and Auth callback
+// src/Routes.jsx - Complete file with all routes and auth handling
 import React from "react";
-import { BrowserRouter, Routes as RouterRoutes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes as RouterRoutes, Route, Navigate, useNavigate } from "react-router-dom";
 import ScrollToTop from "components/ScrollToTop";
 import ErrorBoundary from "components/ErrorBoundary";
 import NotFound from "pages/NotFound";
@@ -28,11 +28,11 @@ import ProtectedRoute from './components/ProtectedRoute';
 import SetupProfile from './pages/admin/SetupProfile';
 import ForgotPassword from './pages/admin/ForgotPassword';
 import ResetPassword from './pages/admin/ResetPassword';
+import { supabase } from './lib/supabase';
 
-// Auth Callback Component (inline for simplicity, or you can import it)
+// Auth Callback Component
 const AuthCallback = () => {
-  const navigate = React.useNavigate();
-  const { supabase } = require('./lib/supabase');
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     handleAuthCallback();
@@ -43,22 +43,75 @@ const AuthCallback = () => {
       // Get the session from the URL
       const { data: { session }, error } = await supabase.auth.getSession();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Session error:', error);
+        navigate('/admin/login');
+        return;
+      }
       
       if (session) {
-        // Check user role
-        const { data: profile } = await supabase
+        console.log('Session found for:', session.user.email);
+        
+        // Wait a moment for the trigger to create/update the profile
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Check user profile and role
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('role')
+          .select('*')
           .eq('auth_user_id', session.user.id)
           .single();
         
-        if (profile && (profile.role === 'admin' || profile.role === 'contributor')) {
-          navigate('/admin');
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('Profile fetch error:', profileError);
+        }
+        
+        // If no profile exists, create one
+        if (!profile) {
+          console.log('Creating profile for new user');
+          const userData = session.user.user_metadata;
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              auth_user_id: session.user.id,
+              email: session.user.email,
+              full_name: userData?.full_name || session.user.email.split('@')[0],
+              role: userData?.role || 'standard',
+              is_active: true,
+              is_public: false,
+              onboarding_completed: false
+            })
+            .select()
+            .single();
+          
+          if (createError) {
+            console.error('Profile creation error:', createError);
+            // Try to fetch existing profile by email
+            const { data: existingProfile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('email', session.user.email)
+              .single();
+            
+            if (existingProfile) {
+              // Update it to link with auth
+              await supabase
+                .from('profiles')
+                .update({ auth_user_id: session.user.id })
+                .eq('id', existingProfile.id);
+              
+              handleNavigation(session, existingProfile);
+            } else {
+              navigate('/admin/login');
+            }
+          } else {
+            handleNavigation(session, newProfile);
+          }
         } else {
-          navigate('/');
+          handleNavigation(session, profile);
         }
       } else {
+        console.log('No session found');
         navigate('/admin/login');
       }
     } catch (error) {
@@ -67,11 +120,47 @@ const AuthCallback = () => {
     }
   };
 
+  const handleNavigation = async (session, profile) => {
+    const userData = session.user.user_metadata;
+    const hasPassword = userData?.has_password === true;
+    const isFirstLogin = userData?.first_login !== false;
+    const profileCompleted = profile.onboarding_completed === true;
+    
+    console.log('Navigation decision:', {
+      hasPassword,
+      isFirstLogin,
+      profileCompleted,
+      role: profile.role
+    });
+    
+    // STEP 1: Password setup (for invited users who haven't set password)
+    if (!hasPassword && isFirstLogin) {
+      console.log('Redirecting to password setup');
+      navigate('/admin/setup-profile?step=password');
+    }
+    // STEP 2: Profile setup (if password is set but profile not complete)
+    else if (!profileCompleted) {
+      console.log('Redirecting to profile setup');
+      navigate('/admin/setup-profile?step=profile');
+    }
+    // STEP 3: Check role access
+    else if (profile.role === 'admin' || profile.role === 'contributor') {
+      console.log('Redirecting to admin dashboard');
+      navigate('/admin');
+    }
+    // STEP 4: No admin access
+    else {
+      console.log('User has standard role, no admin access');
+      navigate('/');
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto"></div>
-        <p className="mt-4">Authenticating...</p>
+        <p className="mt-4 text-gray-600">Authenticating...</p>
+        <p className="text-sm text-gray-500 mt-2">Please wait...</p>
       </div>
     </div>
   );
@@ -81,43 +170,46 @@ const Routes = ({ session }) => {
   return (
     <BrowserRouter>
       <ErrorBoundary>
-      <ScrollToTop />
-      <RouterRoutes>
-        {/* Public Routes */}
-        <Route path="/" element={<HomepageExperienceHub />} />
-        <Route path="/capabilities" element={<CapabilityUniverse />} />
-        <Route path="/innovation" element={<InnovationLaboratory />} />
-        <Route path="/work" element={<WorkShowcaseTheater />} />
-        <Route path="/case-study/:slug" element={<CaseStudyDetail />} />
-        <Route path="/articles" element={<ArticlesHub />} />
-        <Route path="/about" element={<AboutProcessStudio />} />
-        <Route path="/contact" element={<ContactConsultationPortal />} />
-        
-        {/* Auth Routes */}
-        <Route path="/auth/callback" element={<AuthCallback />} />
-        
-        {/* Admin Routes */}
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin" element={
-          <ProtectedRoute session={session}>
-            <AdminLayout />
-          </ProtectedRoute>
-        }>
-          <Route index element={<AdminDashboard />} />
-          <Route path="services" element={<AdminServices />} />
-          <Route path="articles" element={<AdminArticles />} />
-          <Route path="case-studies" element={<AdminCaseStudies />} />
-          <Route path="profiles" element={<AdminProfiles />} />
-          <Route path="leads" element={<AdminLeads />} />
-          <Route path="analytics" element={<AdminAnalytics />} />
-          <Route path="settings" element={<AdminSettings />} />
+        <ScrollToTop />
+        <RouterRoutes>
+          {/* Public Routes */}
+          <Route path="/" element={<HomepageExperienceHub />} />
+          <Route path="/capabilities" element={<CapabilityUniverse />} />
+          <Route path="/innovation" element={<InnovationLaboratory />} />
+          <Route path="/work" element={<WorkShowcaseTheater />} />
+          <Route path="/case-study/:slug" element={<CaseStudyDetail />} />
+          <Route path="/articles" element={<ArticlesHub />} />
+          <Route path="/about" element={<AboutProcessStudio />} />
+          <Route path="/contact" element={<ContactConsultationPortal />} />
+          
+          {/* Auth Routes */}
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          
+          {/* Admin Auth Routes (Outside of protected routes) */}
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/setup-profile" element={<SetupProfile />} />
           <Route path="/admin/forgot-password" element={<ForgotPassword />} />
           <Route path="/admin/reset-password" element={<ResetPassword />} />
-        </Route>
-        
-        <Route path="*" element={<NotFound />} />
-      </RouterRoutes>
+          
+          {/* Protected Admin Routes */}
+          <Route path="/admin" element={
+            <ProtectedRoute session={session}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<AdminDashboard />} />
+            <Route path="services" element={<AdminServices />} />
+            <Route path="articles" element={<AdminArticles />} />
+            <Route path="case-studies" element={<AdminCaseStudies />} />
+            <Route path="profiles" element={<AdminProfiles />} />
+            <Route path="leads" element={<AdminLeads />} />
+            <Route path="analytics" element={<AdminAnalytics />} />
+            <Route path="settings" element={<AdminSettings />} />
+          </Route>
+          
+          {/* 404 - Not Found */}
+          <Route path="*" element={<NotFound />} />
+        </RouterRoutes>
       </ErrorBoundary>
     </BrowserRouter>
   );

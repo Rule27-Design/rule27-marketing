@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
-import Icon from '../../components/AppIcon';
+import Icon from '../../components/AdminIcon';
 import { Checkbox } from '../../components/ui/Checkbox';
 
 const SetupProfile = () => {
