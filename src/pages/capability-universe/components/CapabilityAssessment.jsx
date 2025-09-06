@@ -7,8 +7,9 @@ import {
   AlertTriangle, HelpCircle, UserCheck, Code, Mail, FileText, Shield, 
   CheckCircle, ArrowLeft, ArrowRight, Cpu, Map
 } from 'lucide-react';
+import { supabase } from '../../../lib/supabase';
 
-// Button Component
+// Button Component (keeping the same)
 const Button = memo(({ 
   children, 
   variant = 'default', 
@@ -59,7 +60,7 @@ const Button = memo(({
   );
 });
 
-// Icon Component
+// Icon Component (keeping the same)
 const Icon = memo(({ name, size = 20, className = '' }) => {
   const icons = {
     Cpu, ShoppingCart, Heart, DollarSign, Home, GraduationCap, MapPin, Factory, 
@@ -82,8 +83,28 @@ const EnhancedCapabilityAssessment = memo(() => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [assessmentId, setAssessmentId] = useState(null);
+  const [startTime, setStartTime] = useState(null);
 
-  // Enhanced assessment questions
+  // Track assessment start time
+  useEffect(() => {
+    if (currentStep === 0 && !startTime) {
+      setStartTime(Date.now());
+    }
+  }, [currentStep, startTime]);
+
+  // Get session ID for tracking
+  const getSessionId = useCallback(() => {
+    let sessionId = sessionStorage.getItem('sessionId');
+    if (!sessionId) {
+      sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      sessionStorage.setItem('sessionId', sessionId);
+    }
+    return sessionId;
+  }, []);
+
+  // Enhanced assessment questions (keeping the same)
   const assessmentQuestions = useMemo(() => [
     {
       id: 'industry',
@@ -190,7 +211,59 @@ const EnhancedCapabilityAssessment = memo(() => {
     });
   }, [assessmentQuestions]);
 
-  // Get recommendations
+  // Save assessment to database
+  const saveAssessment = useCallback(async (recommendations) => {
+    try {
+      setIsSaving(true);
+      const sessionId = getSessionId();
+      const completionTime = startTime ? Math.round((Date.now() - startTime) / 1000) : null;
+      
+      const { data, error } = await supabase
+        .from('capability_assessments')
+        .insert({
+          session_id: sessionId,
+          answers: answers,
+          recommendations: recommendations,
+          score: recommendations.insights.score,
+          readiness_level: recommendations.insights.readiness,
+          priority_level: recommendations.insights.priority,
+          approach_type: recommendations.insights.approach,
+          completed: true,
+          completion_time: completionTime,
+          completed_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setAssessmentId(data.id);
+      
+      // Create email notification for admin
+      await supabase
+        .from('email_notifications')
+        .insert({
+          recipient_email: 'admin@rule27design.com',
+          subject: 'New Capability Assessment Completed',
+          template: 'assessment_complete',
+          data: {
+            assessment_id: data.id,
+            score: recommendations.insights.score,
+            readiness: recommendations.insights.readiness,
+            budget: answers['budget-range'],
+            industry: answers.industry,
+            timeline: answers.timeline
+          }
+        });
+
+    } catch (error) {
+      console.error('Error saving assessment:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [answers, startTime, getSessionId]);
+
+  // Get recommendations (keeping the same logic)
   const getSmartRecommendations = useMemo(() => {
     if (!showResults) return { services: [], packages: [], insights: {} };
     
@@ -239,13 +312,18 @@ const EnhancedCapabilityAssessment = memo(() => {
   }, [showResults, answers]);
 
   // Navigation
-  const nextStep = useCallback(() => {
+  const nextStep = useCallback(async () => {
     if (currentStep < assessmentQuestions.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
       setShowResults(true);
+      // Save assessment when showing results
+      const recommendations = getSmartRecommendations;
+      if (recommendations.insights.score !== undefined) {
+        await saveAssessment(recommendations);
+      }
     }
-  }, [currentStep, assessmentQuestions.length]);
+  }, [currentStep, assessmentQuestions.length, getSmartRecommendations, saveAssessment]);
 
   const prevStep = useCallback(() => {
     if (currentStep > 0) {
@@ -259,18 +337,27 @@ const EnhancedCapabilityAssessment = memo(() => {
     setCurrentStep(0);
     setAnswers({});
     setSelectedPackage(null);
+    setAssessmentId(null);
+    setStartTime(Date.now());
   }, []);
 
-  const handleScheduleCall = useCallback((pkg) => {
+  const handleScheduleCall = useCallback(async (pkg) => {
     setSelectedPackage(pkg);
     setShowCalendar(true);
-  }, []);
+    
+    // Track that user requested contact
+    if (assessmentId) {
+      await supabase
+        .from('capability_assessments')
+        .update({ contacted: true, contact_date: new Date().toISOString() })
+        .eq('id', assessmentId);
+    }
+  }, [assessmentId]);
 
-  // Generate PDF function
+  // Generate PDF function (keeping the same)
   const generatePDF = useCallback(() => {
     setIsGeneratingPDF(true);
     
-    // Create a simple HTML representation of the results
     const { services, packages, insights } = getSmartRecommendations;
     
     const htmlContent = `
@@ -293,6 +380,7 @@ const EnhancedCapabilityAssessment = memo(() => {
         <body>
           <h1>Your Personalized Growth Plan</h1>
           <p><strong>Business Readiness Score:</strong> ${insights.score}/100</p>
+          <p><strong>Assessment ID:</strong> ${assessmentId || 'Not saved'}</p>
           
           <h2>Assessment Summary</h2>
           <div class="metric"><strong>Readiness:</strong> ${insights.readiness.toUpperCase()}</div>
@@ -342,11 +430,11 @@ const EnhancedCapabilityAssessment = memo(() => {
       // Fallback: direct download
       const a = document.createElement('a');
       a.href = url;
-      a.download = `capability-assessment-${Date.now()}.html`;
+      a.download = `capability-assessment-${assessmentId || Date.now()}.html`;
       a.click();
       setIsGeneratingPDF(false);
     }
-  }, [getSmartRecommendations]);
+  }, [getSmartRecommendations, assessmentId]);
 
   // Format currency
   const formatCurrency = (value) => {
@@ -369,7 +457,7 @@ const EnhancedCapabilityAssessment = memo(() => {
         : !!answers[currentQuestion.id]
   );
 
-  // Calendar Modal with Calendly Integration
+  // Calendar Modal with Calendly Integration (keeping the same)
   const CalendarModal = () => (
     <>
       {showCalendar && (
@@ -413,7 +501,7 @@ const EnhancedCapabilityAssessment = memo(() => {
     </>
   );
 
-  // Results View
+  // Results View (updated with saving indicator)
   if (showResults) {
     const { services, packages, insights } = getSmartRecommendations;
     
@@ -430,11 +518,13 @@ const EnhancedCapabilityAssessment = memo(() => {
                 <h3 className="text-xl font-bold text-primary">Your Personalized Growth Plan</h3>
                 <p className="text-sm text-text-secondary">
                   Business Readiness Score: {insights.score}/100
+                  {assessmentId && <span className="ml-2 text-xs">(Saved)</span>}
                 </p>
               </div>
             </div>
           </div>
           
+          {/* Rest of the results view remains the same */}
           {/* Insights Bar */}
           <div className="p-4 md:p-6 bg-muted/50">
             <div className="grid grid-cols-3 gap-4 text-center">
@@ -582,7 +672,7 @@ const EnhancedCapabilityAssessment = memo(() => {
     );
   }
 
-  // Question View
+  // Question View (same as before)
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden">
       {/* Header */}
@@ -726,7 +816,9 @@ const EnhancedCapabilityAssessment = memo(() => {
             iconName={currentStep === assessmentQuestions.length - 1 ? "CheckCircle" : "ArrowRight"}
             iconPosition="right"
           >
-            {currentStep === assessmentQuestions.length - 1 ? 'Get Results' : 'Next'}
+            {currentStep === assessmentQuestions.length - 1 ? 
+              (isSaving ? 'Saving...' : 'Get Results') : 
+              'Next'}
           </Button>
         </div>
         
