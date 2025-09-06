@@ -25,6 +25,9 @@ import AdminAnalytics from './pages/admin/Analytics';
 import AdminSettings from './pages/admin/Settings';
 import AdminLogin from './pages/admin/Login';
 import ProtectedRoute from './components/ProtectedRoute';
+import SetupProfile from './pages/admin/SetupProfile';
+import ForgotPassword from './pages/admin/ForgotPassword';
+import ResetPassword from './pages/admin/ResetPassword';
 
 // Auth Callback Component (inline for simplicity, or you can import it)
 const AuthCallback = () => {
@@ -108,6 +111,9 @@ const Routes = ({ session }) => {
           <Route path="leads" element={<AdminLeads />} />
           <Route path="analytics" element={<AdminAnalytics />} />
           <Route path="settings" element={<AdminSettings />} />
+          <Route path="/admin/setup-profile" element={<SetupProfile />} />
+          <Route path="/admin/forgot-password" element={<ForgotPassword />} />
+          <Route path="/admin/reset-password" element={<ResetPassword />} />
         </Route>
         
         <Route path="*" element={<NotFound />} />
