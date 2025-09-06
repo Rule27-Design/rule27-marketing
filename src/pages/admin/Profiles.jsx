@@ -14,8 +14,11 @@ const Profiles = () => {
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showEditor, setShowEditor] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [selectedProfileForRole, setSelectedProfileForRole] = useState(null);
   const [editingProfile, setEditingProfile] = useState(null);
   const [activeTab, setActiveTab] = useState('all'); // all, team, users
+  const [roleChangeReason, setRoleChangeReason] = useState('');
   
   // Form state
   const [formData, setFormData] = useState({
@@ -74,67 +77,120 @@ const Profiles = () => {
     }
   };
 
-  const handleSave = async () => {
+  const handleRoleChange = async (profile) => {
+    setSelectedProfileForRole(profile);
+    setShowRoleModal(true);
+    setRoleChangeReason('');
+  };
+
+  const confirmRoleChange = async (newRole) => {
+    if (!selectedProfileForRole) return;
+    
     try {
-      const profileData = {
-        ...formData,
-        department: formData.department.filter(Boolean),
-        expertise: formData.expertise.filter(Boolean)
-      };
+      // Update the role
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          role: newRole,
+          updated_at: new Date().toISOString(),
+          updated_by: userProfile.id
+        })
+        .eq('id', selectedProfileForRole.id);
 
-      // Remove auth-specific fields
-      delete profileData.send_invite;
-      delete profileData.temp_password;
+      if (error) throw error;
 
-      if (editingProfile) {
-        // Update existing profile
-        const { error } = await supabase
-          .from('profiles')
-          .update(profileData)
-          .eq('id', editingProfile.id);
+      // Log the role change (optional - if you want audit trail)
+      await supabase
+        .from('audit_logs')
+        .insert({
+          action: 'role_change',
+          table_name: 'profiles',
+          record_id: selectedProfileForRole.id,
+          old_value: { role: selectedProfileForRole.role },
+          new_value: { role: newRole },
+          reason: roleChangeReason,
+          performed_by: userProfile.id
+        })
+        .select()
+        .single();
 
-        if (error) throw error;
-      } else {
-        // Check if creating auth user or display-only profile
-        if (formData.send_invite) {
-          // Create auth user first
-          const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-            email: formData.email,
-            password: formData.temp_password || Math.random().toString(36).slice(-8),
-            email_confirm: true,
-            user_metadata: {
-              full_name: formData.full_name,
-              role: formData.role
-            }
-          });
-
-          if (authError) throw authError;
-
-          // Profile will be created automatically by trigger
-          // Update it with additional data
-          await supabase
-            .from('profiles')
-            .update(profileData)
-            .eq('auth_user_id', authData.user.id);
-        } else {
-          // Create display-only profile (no auth)
-          const { error } = await supabase
-            .from('profiles')
-            .insert(profileData);
-
-          if (error) throw error;
-        }
-      }
-
+      // Show success message
+      alert(`Role updated successfully for ${selectedProfileForRole.full_name}`);
+      
       await fetchProfiles();
-      setShowEditor(false);
-      setEditingProfile(null);
-      resetForm();
+      setShowRoleModal(false);
+      setSelectedProfileForRole(null);
+      setRoleChangeReason('');
     } catch (error) {
-      console.error('Error saving profile:', error);
-      alert('Error saving profile: ' + error.message);
+      console.error('Error updating role:', error);
+      alert('Error updating role: ' + error.message);
     }
   };
+
+  const handleSave = async () => {
+  try {
+    const profileData = {
+      ...formData,
+      department: formData.department.filter(Boolean),
+      expertise: formData.expertise.filter(Boolean)
+    };
+
+    // Remove auth-specific fields
+    delete profileData.send_invite;
+    delete profileData.temp_password;
+
+    if (editingProfile) {
+      // Update existing profile
+      const { error } = await supabase
+        .from('profiles')
+        .update(profileData)
+        .eq('id', editingProfile.id);
+
+      if (error) throw error;
+    } else {
+      // Check if creating auth user or display-only profile
+      if (formData.send_invite) {
+        // NEW APPROACH: Send magic link invitation instead of setting password
+        const { data: authData, error: authError } = await supabase.auth.admin.inviteUserByEmail(
+          formData.email,
+          {
+            data: {
+              full_name: formData.full_name,
+              role: formData.role,
+              invited_by: userProfile.full_name,
+              first_login: true,
+              has_password: false
+            },
+            redirectTo: `${window.location.origin}/auth/callback`
+          }
+        );
+
+        if (authError) throw authError;
+
+        // Show success message
+        alert(`Invitation sent to ${formData.email}! They will receive an email to set up their account.`);
+        
+        // Note: Profile will be created automatically by the trigger when they accept the invite
+        
+      } else {
+        // Create display-only profile (no auth)
+        const { error } = await supabase
+          .from('profiles')
+          .insert(profileData);
+
+        if (error) throw error;
+      }
+    }
+
+    await fetchProfiles();
+    setShowEditor(false);
+    setEditingProfile(null);
+    resetForm();
+  } catch (error) {
+    console.error('Error saving profile:', error);
+    alert('Error saving profile: ' + error.message);
+  }
+};
 
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this profile? This cannot be undone.')) return;
@@ -180,7 +236,7 @@ const Profiles = () => {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(profile.email, {
-        redirectTo: `${window.location.origin}/admin/login`,
+        redirectTo: `${window.location.origin}/admin/reset-password`,
       });
 
       if (error) throw error;
@@ -281,6 +337,20 @@ const Profiles = () => {
           </Button>
         </div>
 
+        {/* Warning about Supabase invites */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+          <div className="flex items-start space-x-2">
+            <Icon name="AlertTriangle" size={20} className="text-yellow-600 mt-1" />
+            <div className="flex-1">
+              <h4 className="font-medium text-yellow-900">Important: User Invitations</h4>
+              <p className="text-sm text-yellow-700 mt-1">
+                When inviting users directly from Supabase, they will be created with 'Standard' role by default. 
+                Use the role management feature below to grant admin or contributor access after they've been created.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Tabs */}
         <div className="flex space-x-1 border-b">
           <button
@@ -372,8 +442,22 @@ const Profiles = () => {
                       <span className={`px-2 py-1 text-xs rounded-full ${getRoleBadgeClass(profile.role)}`}>
                         {profile.role}
                       </span>
-                      {profile.auth_user_id && (
-                        <Icon name="Key" size={14} className="text-green-600" title="Can login" />
+                      {profile.auth_user_id ? (
+                        <>
+                          <Icon name="Key" size={14} className="text-green-600" title="Can login" />
+                          {profile.id !== userProfile.id && (
+                            <Button
+                              size="xs"
+                              variant="ghost"
+                              onClick={() => handleRoleChange(profile)}
+                              title="Change role"
+                            >
+                              <Icon name="Edit2" size={14} />
+                            </Button>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-xs text-gray-400">Display only</span>
                       )}
                     </div>
                   </td>
@@ -388,6 +472,7 @@ const Profiles = () => {
                           ? 'bg-green-100 text-green-800' 
                           : 'bg-gray-100 text-gray-800'
                       }`}
+                      disabled={profile.id === userProfile.id}
                     >
                       {profile.is_active ? 'Active' : 'Inactive'}
                     </button>
@@ -453,6 +538,71 @@ const Profiles = () => {
           )}
         </div>
       </div>
+
+      {/* Role Change Modal */}
+      {showRoleModal && selectedProfileForRole && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <h2 className="text-xl font-heading-bold uppercase mb-4">Change User Role</h2>
+              
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-2">
+                  Changing role for: <strong>{selectedProfileForRole.full_name}</strong>
+                </p>
+                <p className="text-sm text-gray-600">
+                  Current role: <span className={`px-2 py-1 text-xs rounded-full ${getRoleBadgeClass(selectedProfileForRole.role)}`}>
+                    {selectedProfileForRole.role}
+                  </span>
+                </p>
+              </div>
+
+              <Select
+                label="New Role"
+                value=""
+                onChange={(value) => {
+                  if (value) confirmRoleChange(value);
+                }}
+                options={[
+                  { value: '', label: 'Select new role...' },
+                  ...(selectedProfileForRole.role !== 'admin' ? [{ value: 'admin', label: 'Admin - Full system access' }] : []),
+                  ...(selectedProfileForRole.role !== 'contributor' ? [{ value: 'contributor', label: 'Contributor - Can create/edit content' }] : []),
+                  ...(selectedProfileForRole.role !== 'standard' ? [{ value: 'standard', label: 'Standard - No admin access' }] : [])
+                ]}
+              />
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium mb-2">Reason for change (optional)</label>
+                <textarea
+                  value={roleChangeReason}
+                  onChange={(e) => setRoleChangeReason(e.target.value)}
+                  className="w-full h-20 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent"
+                  placeholder="e.g., Promoted to content manager"
+                />
+              </div>
+
+              <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-xs text-yellow-800">
+                  <strong>Note:</strong> Role changes take effect immediately. The user may need to log out and back in to see their new permissions.
+                </p>
+              </div>
+
+              <div className="flex justify-end space-x-3 mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowRoleModal(false);
+                    setSelectedProfileForRole(null);
+                    setRoleChangeReason('');
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Profile Editor Modal */}
       {showEditor && (
@@ -535,25 +685,36 @@ const Profiles = () => {
                       { value: 'contributor', label: 'Contributor (Can create content)' },
                       { value: 'admin', label: 'Admin (Full access)' }
                     ]}
+                    disabled={editingProfile} // Can't change role during edit - use role change feature
                   />
                   
                   {!editingProfile && (
-                    <div className="space-y-2">
-                      <Checkbox
-                        checked={formData.send_invite}
-                        onCheckedChange={(checked) => setFormData({ ...formData, send_invite: checked })}
-                        label="Create login account"
-                        description="User can sign in to admin panel"
-                      />
-                      {formData.send_invite && (
-                        <Input
-                          type="password"
-                          label="Temporary Password"
-                          value={formData.temp_password}
-                          onChange={(e) => setFormData({ ...formData, temp_password: e.target.value })}
-                          placeholder="Leave blank for auto-generate"
+                      <div className="space-y-2">
+                        <Checkbox
+                          checked={formData.send_invite}
+                          onCheckedChange={(checked) => setFormData({ ...formData, send_invite: checked })}
+                          label="Send login invitation"
+                          description="User will receive an email to set up their password"
                         />
-                      )}
+                        {formData.send_invite && (
+                          <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p className="text-xs text-blue-800">
+                              <strong>How it works:</strong>
+                              <br />• User receives an invitation email with a secure link
+                              <br />• They'll set their own password during setup
+                              <br />• Their role ({formData.role}) will be automatically assigned
+                              <br />• They'll complete their profile information
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  
+                  {editingProfile && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-xs text-blue-800">
+                        To change this user's role, use the role management button in the table.
+                      </p>
                     </div>
                   )}
                 </div>
