@@ -96,3 +96,25 @@ const Routes = ({ session }) => {
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={
+          <ProtectedRoute session={session}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<AdminDashboard />} />
+          <Route path="services" element={<AdminServices />} />
+          <Route path="articles" element={<AdminArticles />} />
+          <Route path="case-studies" element={<AdminCaseStudies />} />
+          <Route path="profiles" element={<AdminProfiles />} />
+          <Route path="leads" element={<AdminLeads />} />
+          <Route path="analytics" element={<AdminAnalytics />} />
+          <Route path="settings" element={<AdminSettings />} />
+        </Route>
+        
+        <Route path="*" element={<NotFound />} />
+      </RouterRoutes>
+      </ErrorBoundary>
+    </BrowserRouter>
+  );
+};
+
+export default Routes;
