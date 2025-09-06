@@ -73,26 +73,31 @@ const AdminLogin = () => {
   };
 
   const handleMagicLink = async () => {
-    setLoading(true);
-    setError(null);
+  setLoading(true);
+  setError(null);
 
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/admin`,
-        },
-      });
+  try {
+    // Make sure to use the full URL with /admin
+    const redirectUrl = window.location.origin + '/admin';
+    
+    console.log('Sending magic link with redirect to:', redirectUrl);
+    
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: redirectUrl,
+      },
+    });
 
-      if (error) throw error;
+    if (error) throw error;
 
-      setError('Check your email for the login link!');
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    setError('Check your email for the login link!');
+  } catch (error) {
+    setError(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-accent flex items-center justify-center px-4">
