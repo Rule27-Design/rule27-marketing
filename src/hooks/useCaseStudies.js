@@ -72,7 +72,9 @@ export const useCaseStudies = () => {
           typeof item === 'string' ? item : item.url
         ) || [study.hero_image],
         viewCount: study.view_count || 0,
-        conversionCount: study.conversion_count || 0
+        conversionCount: study.conversion_count || 0,
+        created_at: study.created_at,
+        end_date: study.end_date
       }));
 
       // Separate featured studies
@@ -95,44 +97,6 @@ export const useCaseStudies = () => {
     }
   };
 
-  // Track case study view
-  const trackView = async (caseStudyId) => {
-    try {
-      // Update view count
-      await supabase
-        .from('case_studies')
-        .update({ 
-          view_count: supabase.raw('view_count + 1'),
-          unique_view_count: supabase.raw(`
-            CASE 
-              WHEN NOT EXISTS (
-                SELECT 1 FROM content_engagement 
-                WHERE content_id = ? AND content_type = 'case_study' 
-                AND session_id = ?
-              ) THEN unique_view_count + 1
-              ELSE unique_view_count
-            END
-          `, [caseStudyId, getSessionId()])
-        })
-        .eq('id', caseStudyId);
-
-      // Track engagement
-      await supabase
-        .from('content_engagement')
-        .upsert({
-          content_type: 'case_study',
-          content_id: caseStudyId,
-          action: 'view',
-          session_id: getSessionId(),
-          user_id: null // Add user_id if logged in
-        }, {
-          onConflict: 'user_id,content_type,content_id,action'
-        });
-    } catch (error) {
-      console.error('Error tracking view:', error);
-    }
-  };
-
   // Get or create session ID
   const getSessionId = () => {
     let sessionId = sessionStorage.getItem('sessionId');
@@ -141,6 +105,53 @@ export const useCaseStudies = () => {
       sessionStorage.setItem('sessionId', sessionId);
     }
     return sessionId;
+  };
+
+  // Track case study view
+  const trackView = async (caseStudyId) => {
+    try {
+      // First, get the current counts
+      const { data: currentData } = await supabase
+        .from('case_studies')
+        .select('view_count, unique_view_count')
+        .eq('id', caseStudyId)
+        .single();
+      
+      const sessionId = getSessionId();
+      
+      // Check if this session has already viewed this case study
+      const { data: existingView } = await supabase
+        .from('content_engagement')
+        .select('id')
+        .eq('content_type', 'case_study')
+        .eq('content_id', caseStudyId)
+        .eq('session_id', sessionId)
+        .single();
+      
+      // Update counts
+      await supabase
+        .from('case_studies')
+        .update({ 
+          view_count: (currentData?.view_count || 0) + 1,
+          unique_view_count: existingView ? (currentData?.unique_view_count || 0) : (currentData?.unique_view_count || 0) + 1
+        })
+        .eq('id', caseStudyId);
+
+      // Track engagement if not already tracked
+      if (!existingView) {
+        await supabase
+          .from('content_engagement')
+          .insert({
+            content_type: 'case_study',
+            content_id: caseStudyId,
+            action: 'view',
+            session_id: sessionId,
+            user_id: null
+          });
+      }
+    } catch (error) {
+      console.error('Error tracking view:', error);
+    }
   };
 
   return {
@@ -179,8 +190,42 @@ export const useCaseStudy = (slug) => {
 
       if (error) throw error;
 
+      // Transform the data to match component expectations
+      const transformedStudy = study ? {
+        id: study.id,
+        title: study.title,
+        slug: study.slug,
+        client_name: study.client_name,
+        client_logo: study.client_logo,
+        client_website: study.client_website,
+        industry: study.industry,
+        service_type: study.service_type,
+        business_stage: study.business_stage,
+        hero_image: study.hero_image || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop',
+        description: study.description,
+        challenge: study.challenge,
+        solution: study.solution,
+        implementation: study.implementation,
+        project_duration: study.project_duration,
+        start_date: study.start_date,
+        end_date: study.end_date,
+        featured: study.featured || study.is_featured,
+        is_featured: study.is_featured,
+        key_metrics: study.key_metrics || [],
+        detailed_results: study.detailed_results || [],
+        process_steps: study.process_steps || [],
+        technologies_used: study.technologies_used || [],
+        deliverables: study.deliverables || [],
+        team_members: study.team_members || [],
+        project_lead: study.project_lead,
+        testimonial: study.testimonial,
+        gallery: study.gallery || [],
+        view_count: study.view_count || 0,
+        conversion_count: study.conversion_count || 0
+      } : null;
+
       setData({
-        caseStudy: study,
+        caseStudy: transformedStudy,
         loading: false,
         error: null
       });
