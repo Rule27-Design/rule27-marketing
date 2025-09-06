@@ -45,17 +45,44 @@ const CaseStudyDetail = () => {
   };
 
   const trackView = async () => {
-    if (!caseStudy?.id) return;
+  if (!caseStudy?.id) return;
+  
+  try {
+    // First, get the current counts
+    const { data: currentData } = await supabase
+      .from('case_studies')
+      .select('view_count, unique_view_count')
+      .eq('id', caseStudy.id)
+      .single();
     
-    // Update view count
+    // Then update with incremented values
     await supabase
       .from('case_studies')
       .update({ 
-        view_count: supabase.raw('view_count + 1'),
-        unique_view_count: supabase.raw('unique_view_count + 1')
+        view_count: (currentData?.view_count || 0) + 1,
+        unique_view_count: (currentData?.unique_view_count || 0) + 1
       })
       .eq('id', caseStudy.id);
-  };
+      
+    // Track engagement
+    const sessionId = sessionStorage.getItem('sessionId') || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    sessionStorage.setItem('sessionId', sessionId);
+    
+    await supabase
+      .from('content_engagement')
+      .upsert({
+        content_type: 'case_study',
+        content_id: caseStudy.id,
+        action: 'view',
+        session_id: sessionId,
+        user_id: null
+      }, {
+        onConflict: 'user_id,content_type,content_id,action'
+      });
+  } catch (error) {
+    console.error('Error tracking view:', error);
+  }
+};
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: 'Eye' },
