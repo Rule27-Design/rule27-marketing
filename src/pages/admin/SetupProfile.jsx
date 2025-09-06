@@ -52,40 +52,52 @@ const SetupProfile = () => {
   }, []);
 
   const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      navigate('/admin/login');
-      return;
-    }
-
-    setSession(session);
-
-    // Load existing profile data
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('auth_user_id', session.user.id)
-      .single();
-
-    if (profile) {
-      setExistingProfile(profile);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
       
-      // If profile is complete and we're not in password setup mode, redirect
-      if (profile.onboarding_completed && !passwordOnlyMode) {
-        navigate('/admin');
+      if (!session) {
+        console.log('No session found, redirecting to login');
+        navigate('/admin/login');
         return;
       }
-      
-      setFormData(prev => ({
-        ...prev,
-        ...profile,
-        password: '',
-        confirmPassword: ''
-      }));
-    }
 
-    setLoading(false);
+      setSession(session);
+
+      // Load existing profile data
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('auth_user_id', session.user.id)
+        .single();
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error('Profile fetch error:', profileError);
+      }
+
+      if (profile) {
+        setExistingProfile(profile);
+        
+        // If profile is complete and we're not in password setup mode, redirect
+        if (profile.onboarding_completed && !passwordOnlyMode) {
+          navigate('/admin');
+          return;
+        }
+        
+        // Populate form with existing data
+        setFormData(prev => ({
+          ...prev,
+          ...profile,
+          password: '',
+          confirmPassword: ''
+        }));
+      }
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Auth check error:', error);
+      setError('Authentication error. Please try logging in again.');
+      setLoading(false);
+    }
   };
 
   const handlePasswordSetup = async () => {
@@ -93,6 +105,7 @@ const SetupProfile = () => {
     setError(null);
 
     try {
+      // Validate passwords
       if (formData.password !== formData.confirmPassword) {
         throw new Error('Passwords do not match');
       }
@@ -101,30 +114,66 @@ const SetupProfile = () => {
         throw new Error('Password must be at least 6 characters');
       }
 
+      // Get current session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('Session expired. Please request a new login link.');
+      }
+
       // Update password
-      const { error: passwordError } = await supabase.auth.updateUser({
+      const { data, error: passwordError } = await supabase.auth.updateUser({
         password: formData.password
       });
 
-      if (passwordError) throw passwordError;
+      if (passwordError) {
+        console.error('Password update error:', passwordError);
+        throw new Error(passwordError.message || 'Failed to set password');
+      }
 
       // Update user metadata to indicate password has been set
-      await supabase.auth.updateUser({
+      const { error: metaError } = await supabase.auth.updateUser({
         data: { 
           has_password: true,
-          first_login: false
+          first_login: false,
+          password_set_at: new Date().toISOString()
         }
       });
 
-      // If profile exists and is already complete, go to admin
+      if (metaError) {
+        console.error('Metadata update error:', metaError);
+        // Don't throw here, password was set successfully
+      }
+
+      // Update profile if it exists
+      if (existingProfile) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ 
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingProfile.id);
+
+        if (profileError) {
+          console.error('Profile update error:', profileError);
+        }
+      }
+
+      // Show success message
+      setError(null);
+      
+      // Decide where to go next
       if (existingProfile?.onboarding_completed) {
+        // Profile is complete, go to admin
         navigate('/admin');
       } else {
         // Continue with profile setup
         setCurrentStep(1);
       }
     } catch (error) {
-      setError(error.message);
+      console.error('Password setup error:', error);
+      setError(error.message || 'Failed to set password. Please try again.');
+    } finally {
       setSaving(false);
     }
   };
@@ -146,7 +195,11 @@ const SetupProfile = () => {
     setError(null);
 
     try {
-      // Update profile
+      if (!session) {
+        throw new Error('Session expired. Please log in again.');
+      }
+
+      // Prepare profile data
       const profileData = { ...formData };
       delete profileData.password;
       delete profileData.confirmPassword;
@@ -154,25 +207,35 @@ const SetupProfile = () => {
       profileData.onboarding_completed = true;
       profileData.updated_at = new Date().toISOString();
 
+      // Update profile
       const { error: profileError } = await supabase
         .from('profiles')
         .update(profileData)
         .eq('auth_user_id', session.user.id);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile update error:', profileError);
+        throw new Error('Failed to update profile. Please try again.');
+      }
 
       // Update user metadata
-      await supabase.auth.updateUser({
+      const { error: metaError } = await supabase.auth.updateUser({
         data: { 
           onboarding_completed: true,
           first_login: false
         }
       });
 
+      if (metaError) {
+        console.error('User metadata update error:', metaError);
+      }
+
       // Navigate to dashboard
       navigate('/admin');
     } catch (error) {
-      setError(error.message);
+      console.error('Profile submit error:', error);
+      setError(error.message || 'Failed to save profile. Please try again.');
+    } finally {
       setSaving(false);
     }
   };
@@ -180,18 +243,18 @@ const SetupProfile = () => {
   const addArrayItem = (field) => {
     setFormData({
       ...formData,
-      [field]: [...formData[field], '']
+      [field]: [...(formData[field] || []), '']
     });
   };
 
   const updateArrayItem = (field, index, value) => {
-    const newArray = [...formData[field]];
+    const newArray = [...(formData[field] || [])];
     newArray[index] = value;
     setFormData({ ...formData, [field]: newArray });
   };
 
   const removeArrayItem = (field, index) => {
-    const newArray = formData[field].filter((_, i) => i !== index);
+    const newArray = (formData[field] || []).filter((_, i) => i !== index);
     setFormData({ ...formData, [field]: newArray });
   };
 
@@ -275,7 +338,10 @@ const SetupProfile = () => {
         <div className="bg-white rounded-lg shadow-xl p-8">
           {error && (
             <div className="mb-6 p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
-              {error}
+              <div className="flex items-start space-x-2">
+                <Icon name="AlertCircle" size={16} className="mt-0.5" />
+                <span>{error}</span>
+              </div>
             </div>
           )}
 
@@ -289,8 +355,8 @@ const SetupProfile = () => {
                   <Icon name="Info" size={20} className="text-blue-600 mt-0.5" />
                   <div className="flex-1">
                     <p className="text-sm text-blue-800">
-                      You've been invited to Rule27 Design. Set up a password to secure your account.
-                      You can also use magic links to sign in at any time.
+                      You've been invited to Rule27 Design Admin. Set up a password to secure your account.
+                      You can also continue to use magic links to sign in if you prefer.
                     </p>
                   </div>
                 </div>
@@ -391,7 +457,7 @@ const SetupProfile = () => {
               
               <div>
                 <label className="block text-sm font-medium mb-2">Departments</label>
-                {formData.department.map((dept, index) => (
+                {(formData.department || []).map((dept, index) => (
                   <div key={index} className="flex gap-2 mb-2">
                     <Input
                       value={dept}
@@ -422,7 +488,7 @@ const SetupProfile = () => {
 
               <div>
                 <label className="block text-sm font-medium mb-2">Areas of Expertise</label>
-                {formData.expertise.map((skill, index) => (
+                {(formData.expertise || []).map((skill, index) => (
                   <div key={index} className="flex gap-2 mb-2">
                     <Input
                       value={skill}

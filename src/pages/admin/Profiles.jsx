@@ -99,20 +99,22 @@ const Profiles = () => {
 
       if (error) throw error;
 
-      // Log the role change (optional - if you want audit trail)
-      await supabase
-        .from('audit_logs')
-        .insert({
-          action: 'role_change',
-          table_name: 'profiles',
-          record_id: selectedProfileForRole.id,
-          old_value: { role: selectedProfileForRole.role },
-          new_value: { role: newRole },
-          reason: roleChangeReason,
-          performed_by: userProfile.id
-        })
-        .select()
-        .single();
+      // Log the role change (optional - if you have audit_logs table)
+      try {
+        await supabase
+          .from('audit_logs')
+          .insert({
+            action: 'role_change',
+            table_name: 'profiles',
+            record_id: selectedProfileForRole.id,
+            old_value: { role: selectedProfileForRole.role },
+            new_value: { role: newRole },
+            reason: roleChangeReason,
+            performed_by: userProfile.id
+          });
+      } catch (auditError) {
+        console.log('Audit log not available:', auditError);
+      }
 
       // Show success message
       alert(`Role updated successfully for ${selectedProfileForRole.full_name}`);
@@ -128,69 +130,70 @@ const Profiles = () => {
   };
 
   const handleSave = async () => {
-  try {
-    const profileData = {
-      ...formData,
-      department: formData.department.filter(Boolean),
-      expertise: formData.expertise.filter(Boolean)
-    };
+    try {
+      const profileData = {
+        ...formData,
+        department: formData.department.filter(Boolean),
+        expertise: formData.expertise.filter(Boolean)
+      };
 
-    // Remove auth-specific fields
-    delete profileData.send_invite;
-    delete profileData.temp_password;
+      // Remove auth-specific fields
+      delete profileData.send_invite;
+      delete profileData.temp_password;
 
-    if (editingProfile) {
-      // Update existing profile
-      const { error } = await supabase
-        .from('profiles')
-        .update(profileData)
-        .eq('id', editingProfile.id);
-
-      if (error) throw error;
-    } else {
-      // Check if creating auth user or display-only profile
-      if (formData.send_invite) {
-        // NEW APPROACH: Send magic link invitation instead of setting password
-        const { data: authData, error: authError } = await supabase.auth.admin.inviteUserByEmail(
-          formData.email,
-          {
-            data: {
-              full_name: formData.full_name,
-              role: formData.role,
-              invited_by: userProfile.full_name,
-              first_login: true,
-              has_password: false
-            },
-            redirectTo: `${window.location.origin}/auth/callback`
-          }
-        );
-
-        if (authError) throw authError;
-
-        // Show success message
-        alert(`Invitation sent to ${formData.email}! They will receive an email to set up their account.`);
-        
-        // Note: Profile will be created automatically by the trigger when they accept the invite
-        
-      } else {
-        // Create display-only profile (no auth)
+      if (editingProfile) {
+        // Update existing profile
         const { error } = await supabase
           .from('profiles')
-          .insert(profileData);
+          .update(profileData)
+          .eq('id', editingProfile.id);
 
         if (error) throw error;
-      }
-    }
+      } else {
+        // Check if creating auth user or display-only profile
+        if (formData.send_invite) {
+          // FIXED: Use signInWithOtp instead of admin API
+          const { data: authData, error: authError } = await supabase.auth.signInWithOtp({
+            email: formData.email,
+            options: {
+              data: {
+                full_name: formData.full_name,
+                role: formData.role,
+                invited_by: userProfile.full_name,
+                first_login: true,
+                has_password: false
+              },
+              emailRedirectTo: `${window.location.origin}/auth/callback`,
+              shouldCreateUser: true // Creates user if they don't exist
+            }
+          });
 
-    await fetchProfiles();
-    setShowEditor(false);
-    setEditingProfile(null);
-    resetForm();
-  } catch (error) {
-    console.error('Error saving profile:', error);
-    alert('Error saving profile: ' + error.message);
-  }
-};
+          if (authError) throw authError;
+
+          // Show success message
+          alert(`Invitation sent to ${formData.email}! They will receive a magic link to set up their account.`);
+          
+          // Note: Profile will be created automatically by the trigger when they accept the invite
+          
+        } else {
+          // Create display-only profile (no auth)
+          const { error } = await supabase
+            .from('profiles')
+            .insert(profileData);
+
+          if (error) throw error;
+        }
+      }
+
+      await fetchProfiles();
+      setShowEditor(false);
+      setEditingProfile(null);
+      resetForm();
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert('Error saving profile: ' + error.message);
+    }
+  };
 
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this profile? This cannot be undone.')) return;
@@ -198,9 +201,10 @@ const Profiles = () => {
     try {
       const profile = profiles.find(p => p.id === id);
       
-      // If profile has auth_user_id, delete auth user first
+      // If profile has auth_user_id, we can't delete the auth user from client
+      // Just delete the profile and let them know
       if (profile?.auth_user_id) {
-        await supabase.auth.admin.deleteUser(profile.auth_user_id);
+        alert('Note: This will remove the profile but the user account will remain. Contact support to fully delete the user account.');
       }
 
       // Delete profile
@@ -337,15 +341,17 @@ const Profiles = () => {
           </Button>
         </div>
 
-        {/* Warning about Supabase invites */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+        {/* Info about magic link invites */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
           <div className="flex items-start space-x-2">
-            <Icon name="AlertTriangle" size={20} className="text-yellow-600 mt-1" />
+            <Icon name="Info" size={20} className="text-blue-600 mt-1" />
             <div className="flex-1">
-              <h4 className="font-medium text-yellow-900">Important: User Invitations</h4>
-              <p className="text-sm text-yellow-700 mt-1">
-                When inviting users directly from Supabase, they will be created with 'Standard' role by default. 
-                Use the role management feature below to grant admin or contributor access after they've been created.
+              <h4 className="font-medium text-blue-900">User Invitation System</h4>
+              <p className="text-sm text-blue-700 mt-1">
+                When inviting users, they'll receive a magic link via email. After clicking the link, 
+                they'll be prompted to set up their password and complete their profile. Users invited 
+                directly from Supabase will have 'Standard' role by default - use the role management 
+                feature to grant admin or contributor access.
               </p>
             </div>
           </div>
@@ -689,26 +695,26 @@ const Profiles = () => {
                   />
                   
                   {!editingProfile && (
-                      <div className="space-y-2">
-                        <Checkbox
-                          checked={formData.send_invite}
-                          onCheckedChange={(checked) => setFormData({ ...formData, send_invite: checked })}
-                          label="Send login invitation"
-                          description="User will receive an email to set up their password"
-                        />
-                        {formData.send_invite && (
-                          <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                            <p className="text-xs text-blue-800">
-                              <strong>How it works:</strong>
-                              <br />• User receives an invitation email with a secure link
-                              <br />• They'll set their own password during setup
-                              <br />• Their role ({formData.role}) will be automatically assigned
-                              <br />• They'll complete their profile information
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    <div className="space-y-2">
+                      <Checkbox
+                        checked={formData.send_invite}
+                        onCheckedChange={(checked) => setFormData({ ...formData, send_invite: checked })}
+                        label="Send login invitation"
+                        description="User will receive a magic link to set up their account"
+                      />
+                      {formData.send_invite && (
+                        <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <p className="text-xs text-blue-800">
+                            <strong>How it works:</strong>
+                            <br />• User receives a magic link via email
+                            <br />• They click the link to access the system
+                            <br />• They'll set their password during setup
+                            <br />• Their role ({formData.role}) will be automatically assigned
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   
                   {editingProfile && (
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
