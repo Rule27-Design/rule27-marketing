@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
-import Icon from '../../components/AppIcon';
+import Icon from '../../components/AdminIcon';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
