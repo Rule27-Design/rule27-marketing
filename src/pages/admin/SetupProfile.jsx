@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
-import Icon from '../../components/AdminIcon';
+import Icon from '../../components/AppIcon';
 import { Checkbox } from '../../components/ui/Checkbox';
 
 const SetupProfile = () => {
@@ -16,12 +16,16 @@ const SetupProfile = () => {
   const [session, setSession] = useState(null);
   const [existingProfile, setExistingProfile] = useState(null);
   
-  // Check if we're in password-only mode (for invited users)
-  const passwordOnlyMode = searchParams.get('step') === 'password';
-  const [currentStep, setCurrentStep] = useState(passwordOnlyMode ? 0 : 1);
+  // Determine which step based on URL parameter
+  const stepParam = searchParams.get('step');
+  const isPasswordStep = stepParam === 'password';
+  const isProfileStep = stepParam === 'profile';
+  
+  // Start at the appropriate step
+  const [currentStep, setCurrentStep] = useState(isPasswordStep ? 0 : 1);
   
   const [formData, setFormData] = useState({
-    // Step 0: Password Setup (for invited users)
+    // Step 0: Password Setup
     password: '',
     confirmPassword: '',
     
@@ -77,19 +81,42 @@ const SetupProfile = () => {
       if (profile) {
         setExistingProfile(profile);
         
-        // If profile is complete and we're not in password setup mode, redirect
-        if (profile.onboarding_completed && !passwordOnlyMode) {
+        // Pre-fill form with existing profile data
+        setFormData(prev => ({
+          ...prev,
+          full_name: profile.full_name || '',
+          display_name: profile.display_name || '',
+          job_title: profile.job_title || '',
+          bio: profile.bio || '',
+          avatar_url: profile.avatar_url || '',
+          department: profile.department || [],
+          expertise: profile.expertise || [],
+          linkedin_url: profile.linkedin_url || '',
+          twitter_url: profile.twitter_url || '',
+          github_url: profile.github_url || '',
+          is_public: profile.is_public || false,
+          email_notifications: profile.email_notifications !== false,
+          // Keep password fields empty
+          password: '',
+          confirmPassword: ''
+        }));
+        
+        // Check if we should redirect
+        const userData = session.user.user_metadata;
+        const hasPassword = userData?.has_password === true;
+        const profileCompleted = profile.onboarding_completed === true;
+        
+        // If everything is complete, redirect to admin
+        if (hasPassword && profileCompleted && !isPasswordStep && !isProfileStep) {
           navigate('/admin');
           return;
         }
         
-        // Populate form with existing data
-        setFormData(prev => ({
-          ...prev,
-          ...profile,
-          password: '',
-          confirmPassword: ''
-        }));
+        // If password is set but we're on password step, skip to profile
+        if (hasPassword && isPasswordStep) {
+          navigate('/admin/setup-profile?step=profile');
+          return;
+        }
       }
 
       setLoading(false);
@@ -114,13 +141,6 @@ const SetupProfile = () => {
         throw new Error('Password must be at least 6 characters');
       }
 
-      // Get current session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        throw new Error('Session expired. Please request a new login link.');
-      }
-
       // Update password
       const { data, error: passwordError } = await supabase.auth.updateUser({
         password: formData.password
@@ -132,7 +152,7 @@ const SetupProfile = () => {
       }
 
       // Update user metadata to indicate password has been set
-      const { error: metaError } = await supabase.auth.updateUser({
+      await supabase.auth.updateUser({
         data: { 
           has_password: true,
           first_login: false,
@@ -140,36 +160,17 @@ const SetupProfile = () => {
         }
       });
 
-      if (metaError) {
-        console.error('Metadata update error:', metaError);
-        // Don't throw here, password was set successfully
-      }
+      // Clear password fields
+      setFormData(prev => ({
+        ...prev,
+        password: '',
+        confirmPassword: ''
+      }));
 
-      // Update profile if it exists
-      if (existingProfile) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ 
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existingProfile.id);
-
-        if (profileError) {
-          console.error('Profile update error:', profileError);
-        }
-      }
-
-      // Show success message
-      setError(null);
+      // Move to profile setup
+      setCurrentStep(1);
+      navigate('/admin/setup-profile?step=profile', { replace: true });
       
-      // Decide where to go next
-      if (existingProfile?.onboarding_completed) {
-        // Profile is complete, go to admin
-        navigate('/admin');
-      } else {
-        // Continue with profile setup
-        setCurrentStep(1);
-      }
     } catch (error) {
       console.error('Password setup error:', error);
       setError(error.message || 'Failed to set password. Please try again.');
@@ -185,7 +186,7 @@ const SetupProfile = () => {
   };
 
   const handleBack = () => {
-    if (currentStep > (passwordOnlyMode ? 0 : 1)) {
+    if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
   };
@@ -200,12 +201,22 @@ const SetupProfile = () => {
       }
 
       // Prepare profile data
-      const profileData = { ...formData };
-      delete profileData.password;
-      delete profileData.confirmPassword;
-      
-      profileData.onboarding_completed = true;
-      profileData.updated_at = new Date().toISOString();
+      const profileData = {
+        full_name: formData.full_name,
+        display_name: formData.display_name,
+        job_title: formData.job_title,
+        bio: formData.bio,
+        avatar_url: formData.avatar_url,
+        department: formData.department.filter(Boolean),
+        expertise: formData.expertise.filter(Boolean),
+        linkedin_url: formData.linkedin_url,
+        twitter_url: formData.twitter_url,
+        github_url: formData.github_url,
+        is_public: formData.is_public,
+        email_notifications: formData.email_notifications,
+        onboarding_completed: true,
+        updated_at: new Date().toISOString()
+      };
 
       // Update profile
       const { error: profileError } = await supabase
@@ -219,23 +230,19 @@ const SetupProfile = () => {
       }
 
       // Update user metadata
-      const { error: metaError } = await supabase.auth.updateUser({
+      await supabase.auth.updateUser({
         data: { 
           onboarding_completed: true,
-          first_login: false
+          profile_completed_at: new Date().toISOString()
         }
       });
-
-      if (metaError) {
-        console.error('User metadata update error:', metaError);
-        // Don't throw here - profile was updated successfully
-      }
 
       // Small delay to ensure state updates
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Force navigation even if there are rendering issues
+      // Navigate to dashboard
       window.location.href = '/admin';
+      
     } catch (error) {
       console.error('Profile submit error:', error);
       setError(error.message || 'Failed to save profile. Please try again.');
@@ -269,9 +276,10 @@ const SetupProfile = () => {
     );
   }
 
-  // Calculate total steps based on mode
-  const totalSteps = passwordOnlyMode && existingProfile?.onboarding_completed ? 1 : 4;
-  const stepOffset = passwordOnlyMode ? 0 : 1;
+  // Determine if we show password step
+  const showPasswordStep = isPasswordStep || currentStep === 0;
+  const totalSteps = showPasswordStep ? 4 : 3;
+  const displayStep = showPasswordStep ? currentStep : currentStep - 1;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-accent">
@@ -282,60 +290,59 @@ const SetupProfile = () => {
             <span className="text-3xl font-bold text-accent">27</span>
           </div>
           <h1 className="text-3xl font-heading-bold text-white uppercase">
-            {passwordOnlyMode && existingProfile?.onboarding_completed 
+            {showPasswordStep && currentStep === 0 
               ? 'Secure Your Account' 
-              : 'Welcome to Rule27'}
+              : 'Complete Your Profile'}
           </h1>
           <p className="text-gray-400 mt-2">
-            {passwordOnlyMode && existingProfile?.onboarding_completed
+            {showPasswordStep && currentStep === 0
               ? 'Set up your password to enable secure login'
-              : "Let's set up your profile"}
+              : "Let's finish setting up your profile"}
           </p>
+          {existingProfile && (
+            <p className="text-sm text-gray-500 mt-2">
+              Welcome back, {existingProfile.email}
+            </p>
+          )}
         </div>
 
-        {/* Progress Bar - Only show if not in password-only mode for existing users */}
-        {!(passwordOnlyMode && existingProfile?.onboarding_completed) && (
-          <div className="mb-8">
-            <div className="flex items-center justify-center space-x-4">
-              {[...Array(totalSteps)].map((_, index) => {
-                const stepNumber = index + stepOffset;
-                return (
-                  <div key={stepNumber} className="flex items-center">
-                    <div className={`
-                      w-10 h-10 rounded-full flex items-center justify-center font-bold
-                      ${currentStep >= stepNumber ? 'bg-accent text-white' : 'bg-gray-600 text-gray-400'}
-                    `}>
-                      {stepNumber === 0 ? <Icon name="Lock" size={20} /> : stepNumber}
-                    </div>
-                    {index < totalSteps - 1 && (
-                      <div className={`w-20 h-1 ${currentStep > stepNumber ? 'bg-accent' : 'bg-gray-600'}`} />
-                    )}
+        {/* Progress Bar */}
+        <div className="mb-8">
+          <div className="flex items-center justify-center space-x-4">
+            {[...Array(totalSteps)].map((_, index) => {
+              const stepNumber = showPasswordStep ? index : index + 1;
+              return (
+                <div key={index} className="flex items-center">
+                  <div className={`
+                    w-10 h-10 rounded-full flex items-center justify-center font-bold
+                    ${displayStep >= index ? 'bg-accent text-white' : 'bg-gray-600 text-gray-400'}
+                  `}>
+                    {stepNumber === 0 ? <Icon name="Lock" size={20} /> : stepNumber}
                   </div>
-                );
-              })}
-            </div>
-            <div className="flex justify-center space-x-6 mt-4">
-              {passwordOnlyMode && (
-                <span className={`text-sm ${currentStep >= 0 ? 'text-white' : 'text-gray-500'}`}>
-                  Password
-                </span>
-              )}
-              {!(passwordOnlyMode && existingProfile?.onboarding_completed) && (
-                <>
-                  <span className={`text-sm ${currentStep >= 1 ? 'text-white' : 'text-gray-500'}`}>
-                    Basic Info
-                  </span>
-                  <span className={`text-sm ${currentStep >= 2 ? 'text-white' : 'text-gray-500'}`}>
-                    Professional
-                  </span>
-                  <span className={`text-sm ${currentStep >= 3 ? 'text-white' : 'text-gray-500'}`}>
-                    Preferences
-                  </span>
-                </>
-              )}
-            </div>
+                  {index < totalSteps - 1 && (
+                    <div className={`w-20 h-1 ${displayStep > index ? 'bg-accent' : 'bg-gray-600'}`} />
+                  )}
+                </div>
+              );
+            })}
           </div>
-        )}
+          <div className="flex justify-center space-x-4 mt-4 text-sm">
+            {showPasswordStep && (
+              <span className={displayStep >= 0 ? 'text-white' : 'text-gray-500'}>
+                Password
+              </span>
+            )}
+            <span className={displayStep >= (showPasswordStep ? 1 : 0) ? 'text-white' : 'text-gray-500'}>
+              Basic Info
+            </span>
+            <span className={displayStep >= (showPasswordStep ? 2 : 1) ? 'text-white' : 'text-gray-500'}>
+              Professional
+            </span>
+            <span className={displayStep >= (showPasswordStep ? 3 : 2) ? 'text-white' : 'text-gray-500'}>
+              Preferences
+            </span>
+          </div>
+        </div>
 
         {/* Form */}
         <div className="bg-white rounded-lg shadow-xl p-8">
@@ -348,8 +355,8 @@ const SetupProfile = () => {
             </div>
           )}
 
-          {/* Step 0: Password Setup (for invited users) */}
-          {currentStep === 0 && passwordOnlyMode && (
+          {/* Step 0: Password Setup */}
+          {currentStep === 0 && showPasswordStep && (
             <div className="space-y-6">
               <h2 className="text-2xl font-heading-bold uppercase mb-6">Set Your Password</h2>
               
@@ -358,8 +365,7 @@ const SetupProfile = () => {
                   <Icon name="Info" size={20} className="text-blue-600 mt-0.5" />
                   <div className="flex-1">
                     <p className="text-sm text-blue-800">
-                      You've been invited to Rule27 Design Admin. Set up a password to secure your account.
-                      You can also continue to use magic links to sign in if you prefer.
+                      Create a secure password for your account. You can also continue using magic links to sign in.
                     </p>
                   </div>
                 </div>
@@ -411,6 +417,14 @@ const SetupProfile = () => {
           {currentStep === 1 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-heading-bold uppercase mb-6">Basic Information</h2>
+              
+              {existingProfile && (
+                <div className="bg-blue-50 p-3 rounded-lg mb-4">
+                  <p className="text-xs text-blue-800">
+                    We've pre-filled some information from your profile. Update as needed.
+                  </p>
+                </div>
+              )}
               
               <Input
                 label="Full Name"
@@ -580,7 +594,7 @@ const SetupProfile = () => {
 
           {/* Navigation Buttons */}
           <div className="flex justify-between mt-8">
-            {currentStep > (passwordOnlyMode ? 0 : 1) && (
+            {currentStep > (showPasswordStep ? 1 : 0) && (
               <Button
                 variant="outline"
                 onClick={handleBack}
@@ -591,7 +605,7 @@ const SetupProfile = () => {
             )}
             
             <div className="ml-auto">
-              {currentStep === 0 && passwordOnlyMode ? (
+              {currentStep === 0 && showPasswordStep ? (
                 <Button
                   variant="default"
                   onClick={handlePasswordSetup}
@@ -600,7 +614,7 @@ const SetupProfile = () => {
                   iconName="Lock"
                   className="bg-accent hover:bg-accent/90"
                 >
-                  {existingProfile?.onboarding_completed ? 'Set Password & Continue' : 'Set Password'}
+                  Set Password & Continue
                 </Button>
               ) : currentStep < 3 ? (
                 <Button

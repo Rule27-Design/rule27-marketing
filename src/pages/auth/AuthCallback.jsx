@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import Icon from '../../components/AdminIcon';
+import Icon from '../../components/AppIcon';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -30,10 +30,10 @@ const AuthCallback = () => {
         console.log('Session established for:', session.user.email);
         setStatus('Checking profile...');
         
-        // Wait a moment for the trigger to create the profile
+        // Wait a moment for the trigger to create/update the profile
         await new Promise(resolve => setTimeout(resolve, 1500));
         
-        // Check if user has a profile
+        // Get the profile
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
@@ -66,14 +66,20 @@ const AuthCallback = () => {
           
           if (createError) {
             console.error('Profile creation error:', createError);
-            // Profile might already exist, try to fetch again
+            // Try to fetch again in case it exists
             const { data: existingProfile } = await supabase
               .from('profiles')
               .select('*')
-              .eq('auth_user_id', session.user.id)
+              .eq('email', session.user.email)
               .single();
             
             if (existingProfile) {
+              // Update it to link with auth
+              await supabase
+                .from('profiles')
+                .update({ auth_user_id: session.user.id })
+                .eq('id', existingProfile.id);
+              
               await handleNavigation(session, existingProfile);
             } else {
               throw new Error('Failed to create user profile');
@@ -102,33 +108,42 @@ const AuthCallback = () => {
     
     // Get user metadata
     const userData = session.user.user_metadata;
-    const needsPassword = !userData?.has_password && userData?.first_login !== false;
+    
+    // FLOW LOGIC:
+    // 1. First check if password needs to be set (ALWAYS FIRST for new users)
+    // 2. Then check if profile needs completion
+    // 3. Finally route to admin or no-access based on role
+    
+    const hasPassword = userData?.has_password === true;
+    const isFirstLogin = userData?.first_login !== false;
+    const profileCompleted = profile.onboarding_completed === true;
     
     console.log('Navigation decision:', {
-      needsPassword,
-      onboardingCompleted: profile.onboarding_completed,
-      role: profile.role,
-      hasPassword: userData?.has_password,
-      firstLogin: userData?.first_login
+      hasPassword,
+      isFirstLogin,
+      profileCompleted,
+      role: profile.role
     });
     
-    // Determine where to redirect based on user state
-    if (needsPassword) {
-      // User needs to set password (invited user)
+    // STEP 1: Password setup (for invited users who haven't set password)
+    if (!hasPassword && isFirstLogin) {
       console.log('Redirecting to password setup');
       navigate('/admin/setup-profile?step=password');
-    } else if (!profile.onboarding_completed) {
-      // Profile exists but onboarding not complete
+    }
+    // STEP 2: Profile setup (if password is set but profile not complete)
+    else if (!profileCompleted) {
       console.log('Redirecting to profile setup');
-      navigate('/admin/setup-profile');
-    } else if (profile.role === 'admin' || profile.role === 'contributor') {
-      // Fully set up user with proper role
+      navigate('/admin/setup-profile?step=profile');
+    }
+    // STEP 3: Check role access
+    else if (profile.role === 'admin' || profile.role === 'contributor') {
       console.log('Redirecting to admin dashboard');
       navigate('/admin');
-    } else {
-      // Standard user - no admin access
+    }
+    // STEP 4: No admin access
+    else {
       console.log('User has standard role, no admin access');
-      navigate('/no-access'); // You'll need to create this page
+      navigate('/no-access');
     }
   };
 
