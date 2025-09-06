@@ -81,7 +81,7 @@ const CaseStudyDetail = () => {
   const formatMetric = (value, type) => {
     switch (type) {
       case 'percentage':
-        return `+${value}%`;
+        return `${value}%`;
       case 'currency':
         return `$${value?.toLocaleString()}`;
       case 'multiplier':
