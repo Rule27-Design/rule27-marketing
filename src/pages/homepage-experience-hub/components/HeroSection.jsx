@@ -17,7 +17,7 @@ const HeroSection = () => {
 
   // Define words outside of component or use useMemo to prevent recreating
   const dynamicWords = React.useMemo(() => 
-    ['Audacity', 'Innovation', 'Excellence', 'Precision', 'Vision', 'Impact'], 
+    ['Audacity', 'Innovation', 'Excellence', 'Vision', 'Impact'], 
   []);
 
   // Typewriter effect - fixed dependency array
