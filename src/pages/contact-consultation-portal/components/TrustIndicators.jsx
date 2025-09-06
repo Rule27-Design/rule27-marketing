@@ -9,7 +9,7 @@ const TrustIndicators = () => {
     { value: '150+', label: 'Projects Completed', icon: 'Briefcase' },
     { value: '98%', label: 'Client Satisfaction', icon: 'Heart' },
     { value: '24hr', label: 'Response Time', icon: 'Clock' },
-    { value: '8+', label: 'Years Experience', icon: 'Award' }
+    { value: '15+', label: 'Years Experience', icon: 'Award' }
   ];
 
   const testimonials = [
