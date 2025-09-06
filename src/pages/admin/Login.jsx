@@ -1,6 +1,6 @@
 // src/pages/admin/Login.jsx
-import React, { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -11,18 +11,17 @@ const AdminLogin = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [session, setSession] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [authMethod, setAuthMethod] = useState('password'); // 'password' or 'magic'
   const navigate = useNavigate();
 
-  // Check if already logged in
-  React.useEffect(() => {
+  useEffect(() => {
     checkSession();
   }, []);
 
   const checkSession = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      setSession(session);
       checkAuthorization(session);
     }
   };
@@ -30,16 +29,21 @@ const AdminLogin = () => {
   const checkAuthorization = async (session) => {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, onboarding_completed')
       .eq('auth_user_id', session.user.id)
       .single();
 
-    if (profile && (profile.role === 'admin' || profile.role === 'contributor')) {
-      navigate('/admin');
+    if (profile) {
+      // Check if onboarding is needed
+      if (!profile.onboarding_completed) {
+        navigate('/admin/setup-profile');
+      } else if (profile.role === 'admin' || profile.role === 'contributor') {
+        navigate('/admin');
+      }
     }
   };
 
-  const handleLogin = async (e) => {
+  const handlePasswordLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -52,10 +56,9 @@ const AdminLogin = () => {
 
       if (error) throw error;
 
-      // Check if user has admin or contributor role
       const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, onboarding_completed')
         .eq('auth_user_id', data.user.id)
         .single();
 
@@ -64,7 +67,12 @@ const AdminLogin = () => {
         throw new Error('You do not have permission to access the admin panel.');
       }
 
-      navigate('/admin');
+      // Check if onboarding is needed
+      if (!profile.onboarding_completed) {
+        navigate('/admin/setup-profile');
+      } else {
+        navigate('/admin');
+      }
     } catch (error) {
       setError(error.message);
     } finally {
@@ -73,31 +81,33 @@ const AdminLogin = () => {
   };
 
   const handleMagicLink = async () => {
-  setLoading(true);
-  setError(null);
+    if (!email) {
+      setError('Please enter your email address');
+      return;
+    }
 
-  try {
-    // Make sure to use the full URL with /admin
-    const redirectUrl = window.location.origin + '/admin';
-    
-    console.log('Sending magic link with redirect to:', redirectUrl);
-    
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: redirectUrl,
-      },
-    });
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
 
-    if (error) throw error;
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
 
-    setError('Check your email for the login link!');
-  } catch (error) {
-    setError(error.message);
-  } finally {
-    setLoading(false);
-  }
-};
+      if (error) throw error;
+
+      setSuccess('Check your email for the login link!');
+      setEmail('');
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-accent flex items-center justify-center px-4">
@@ -113,42 +123,72 @@ const AdminLogin = () => {
 
         {/* Login Form */}
         <div className="bg-white rounded-lg shadow-xl p-8">
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <Input
-                type="email"
-                label="Email Address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="admin@rule27design.com"
-                className="w-full"
-              />
-            </div>
+          {/* Auth Method Tabs */}
+          <div className="flex space-x-2 mb-6">
+            <button
+              type="button"
+              onClick={() => setAuthMethod('password')}
+              className={`flex-1 py-2 px-4 rounded-lg transition-colors ${
+                authMethod === 'password'
+                  ? 'bg-accent text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Password
+            </button>
+            <button
+              type="button"
+              onClick={() => setAuthMethod('magic')}
+              className={`flex-1 py-2 px-4 rounded-lg transition-colors ${
+                authMethod === 'magic'
+                  ? 'bg-accent text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Magic Link
+            </button>
+          </div>
 
-            <div>
-              <Input
-                type="password"
-                label="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="Enter your password"
-                className="w-full"
-              />
-            </div>
-
-            {error && (
-              <div className={`p-3 rounded-lg text-sm ${
-                error.includes('Check your email') 
-                  ? 'bg-green-50 text-green-700 border border-green-200'
-                  : 'bg-red-50 text-red-700 border border-red-200'
-              }`}>
-                {error}
+          {authMethod === 'password' ? (
+            <form onSubmit={handlePasswordLogin} className="space-y-6">
+              <div>
+                <Input
+                  type="email"
+                  label="Email Address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="admin@rule27design.com"
+                  className="w-full"
+                />
               </div>
-            )}
 
-            <div className="space-y-3">
+              <div>
+                <Input
+                  type="password"
+                  label="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="Enter your password"
+                  className="w-full"
+                />
+                <div className="mt-2 text-right">
+                  <Link 
+                    to="/admin/forgot-password" 
+                    className="text-sm text-accent hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+              </div>
+
+              {error && (
+                <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
+                  {error}
+                </div>
+              )}
+
               <Button
                 type="submit"
                 variant="default"
@@ -159,38 +199,47 @@ const AdminLogin = () => {
               >
                 Sign In
               </Button>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">or</span>
-                </div>
+            </form>
+          ) : (
+            <div className="space-y-6">
+              <div>
+                <Input
+                  type="email"
+                  label="Email Address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="admin@rule27design.com"
+                  className="w-full"
+                />
               </div>
+
+              {error && (
+                <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
+                  {error}
+                </div>
+              )}
+
+              {success && (
+                <div className="p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200">
+                  {success}
+                </div>
+              )}
 
               <Button
                 type="button"
-                variant="outline"
+                variant="default"
                 fullWidth
                 onClick={handleMagicLink}
                 loading={loading}
                 disabled={loading || !email}
+                className="bg-accent hover:bg-accent/90"
                 iconName="Mail"
               >
                 Send Magic Link
               </Button>
             </div>
-          </form>
-
-          <div className="mt-6 text-center">
-            <a 
-              href="/" 
-              className="text-sm text-gray-600 hover:text-accent transition-colors"
-            >
-              ← Back to website
-            </a>
-          </div>
+          )}
         </div>
 
         {/* Info */}
