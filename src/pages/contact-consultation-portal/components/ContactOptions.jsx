@@ -163,7 +163,7 @@ const ContactOptions = () => {
       </div>
 
       {/* Social Links Card */}
-      <div className="bg-gradient-to-r from-accent to-primary rounded-xl sm:rounded-2xl p-4 sm:p-6 text-white">
+      <div className="bg-gradient-to-r from-accent to-accent rounded-xl sm:rounded-2xl p-4 sm:p-6 text-white">
         <h3 className="text-base sm:text-lg font-heading-regular mb-3 sm:mb-4 uppercase tracking-wider">
           Connect on Social
         </h3>
