@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import Icon from '../../components/AppIcon';
+import Icon from '../../components/AdminIcon';
 
 const AuthCallback = () => {
   const navigate = useNavigate();

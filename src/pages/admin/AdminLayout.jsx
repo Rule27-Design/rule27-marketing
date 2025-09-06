@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import Icon from '../../components/AppIcon';
+import Icon from '../../components/AdminIcon';
 import Button from '../../components/ui/Button';
 
 const AdminLayout = ({ userProfile, setUserProfile }) => {

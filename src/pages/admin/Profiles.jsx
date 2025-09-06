@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import Icon from '../../components/AppIcon';
+import Icon from '../../components/AdminIcon';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
@@ -130,29 +130,40 @@ const Profiles = () => {
   };
 
   const handleSave = async () => {
-    try {
-      const profileData = {
-        ...formData,
-        department: formData.department.filter(Boolean),
-        expertise: formData.expertise.filter(Boolean)
-      };
+  try {
+    const profileData = {
+      ...formData,
+      department: formData.department.filter(Boolean),
+      expertise: formData.expertise.filter(Boolean)
+    };
 
-      // Remove auth-specific fields
-      delete profileData.send_invite;
-      delete profileData.temp_password;
+    // Remove auth-specific fields
+    delete profileData.send_invite;
+    delete profileData.temp_password;
 
-      if (editingProfile) {
-        // Update existing profile
-        const { error } = await supabase
-          .from('profiles')
-          .update(profileData)
-          .eq('id', editingProfile.id);
+    if (editingProfile) {
+      // Update existing profile
+      const { error } = await supabase
+        .from('profiles')
+        .update(profileData)
+        .eq('id', editingProfile.id);
 
-        if (error) throw error;
-      } else {
-        // Check if creating auth user or display-only profile
-        if (formData.send_invite) {
-          // FIXED: Use signInWithOtp instead of admin API
+      if (error) throw error;
+    } else {
+      // Check if profile already exists with this email
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id, auth_user_id')
+        .eq('email', formData.email)
+        .single();
+
+      if (existingProfile) {
+        if (existingProfile.auth_user_id) {
+          // Profile already has an auth account
+          alert('A user with this email already exists and has login access.');
+          return;
+        } else if (formData.send_invite) {
+          // Profile exists but no auth - send invite to link them
           const { data: authData, error: authError } = await supabase.auth.signInWithOtp({
             email: formData.email,
             options: {
@@ -164,36 +175,66 @@ const Profiles = () => {
                 has_password: false
               },
               emailRedirectTo: `${window.location.origin}/auth/callback`,
-              shouldCreateUser: true // Creates user if they don't exist
+              shouldCreateUser: true
             }
           });
 
           if (authError) throw authError;
+          
+          // Update the existing profile with new data
+          await supabase
+            .from('profiles')
+            .update({ ...profileData, role: formData.role })
+            .eq('id', existingProfile.id);
 
-          // Show success message
           alert(`Invitation sent to ${formData.email}! They will receive a magic link to set up their account.`);
-          
-          // Note: Profile will be created automatically by the trigger when they accept the invite
-          
+        } else {
+          // Just update the existing display-only profile
+          await supabase
+            .from('profiles')
+            .update(profileData)
+            .eq('id', existingProfile.id);
+        }
+      } else {
+        // No existing profile - proceed with creation
+        if (formData.send_invite) {
+          // Send invitation for new user
+          const { data: authData, error: authError } = await supabase.auth.signInWithOtp({
+            email: formData.email,
+            options: {
+              data: {
+                full_name: formData.full_name,
+                role: formData.role,
+                invited_by: userProfile.full_name,
+                first_login: true,
+                has_password: false
+              },
+              emailRedirectTo: `${window.location.origin}/auth/callback`,
+              shouldCreateUser: true
+            }
+          });
+
+          if (authError) throw authError;
+          alert(`Invitation sent to ${formData.email}! They will receive a magic link to set up their account.`);
         } else {
           // Create display-only profile (no auth)
           const { error } = await supabase
             .from('profiles')
             .insert(profileData);
-
           if (error) throw error;
         }
       }
-
-      await fetchProfiles();
-      setShowEditor(false);
-      setEditingProfile(null);
-      resetForm();
-    } catch (error) {
-      console.error('Error saving profile:', error);
-      alert('Error saving profile: ' + error.message);
     }
-  };
+
+    await fetchProfiles();
+    setShowEditor(false);
+    setEditingProfile(null);
+    resetForm();
+  } catch (error) {
+    console.error('Error saving profile:', error);
+    alert('Error saving profile: ' + error.message);
+  }
+};
 
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this profile? This cannot be undone.')) return;

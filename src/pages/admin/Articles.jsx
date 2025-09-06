@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import Icon from '../../components/AppIcon';
+import Icon from '../../components/AdminIcon';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';

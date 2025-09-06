@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
-import Icon from '../../components/AppIcon';
+import Icon from '../../components/AdminIcon';
 import { Checkbox } from '../../components/ui/Checkbox';
 
 const SetupProfile = () => {
@@ -228,14 +228,17 @@ const SetupProfile = () => {
 
       if (metaError) {
         console.error('User metadata update error:', metaError);
+        // Don't throw here - profile was updated successfully
       }
 
-      // Navigate to dashboard
-      navigate('/admin');
+      // Small delay to ensure state updates
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Force navigation even if there are rendering issues
+      window.location.href = '/admin';
     } catch (error) {
       console.error('Profile submit error:', error);
       setError(error.message || 'Failed to save profile. Please try again.');
-    } finally {
       setSaving(false);
     }
   };
