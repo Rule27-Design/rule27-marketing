@@ -1,4 +1,4 @@
-// src/pages/admin/Articles.jsx
+// src/pages/admin/Articles.jsx - Enhanced version
 import React, { useState, useEffect } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
@@ -7,6 +7,8 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import { Checkbox } from '../../components/ui/Checkbox';
+import ImageUpload from '../../components/ui/ImageUpload';
+import ContentEditor, { ContentDisplay } from '../../components/ui/ContentEditor';
 
 const Articles = () => {
   const { userProfile } = useOutletContext();
@@ -15,33 +17,62 @@ const Articles = () => {
   const [loading, setLoading] = useState(true);
   const [showEditor, setShowEditor] = useState(false);
   const [editingArticle, setEditingArticle] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview'); // overview, content, media, seo, settings
   const [filters, setFilters] = useState({
     status: searchParams.get('filter') || 'all',
     search: '',
-    category: 'all'
+    category: 'all',
+    author: 'all',
+    featured: 'all'
   });
   const [categories, setCategories] = useState([]);
+  const [authors, setAuthors] = useState([]);
 
-  // Article form state
+  // Enhanced Article form state
   const [formData, setFormData] = useState({
+    // Basic Info
     title: '',
     slug: '',
     excerpt: '',
-    content: '',
+    content: null,
+    
+    // Media
+    featured_image: '',
+    featured_image_alt: '',
+    featured_video: '',
+    
+    // Organization
     category_id: '',
     tags: [],
+    co_authors: [],
+    
+    // Status & Publishing
     status: 'draft',
-    featured_image: '',
+    is_featured: false,
     enable_comments: false,
     enable_reactions: true,
-    is_featured: false,
+    scheduled_at: '',
+    
+    // SEO & Social
     meta_title: '',
-    meta_description: ''
+    meta_description: '',
+    meta_keywords: [],
+    og_title: '',
+    og_description: '',
+    og_image: '',
+    twitter_card: 'summary_large_image',
+    canonical_url: '',
+    
+    // Advanced
+    read_time: null,
+    internal_notes: '',
+    schema_markup: null
   });
 
   useEffect(() => {
     fetchArticles();
     fetchCategories();
+    fetchAuthors();
 
     // Check if we should open the editor
     if (searchParams.get('action') === 'new') {
@@ -51,8 +82,11 @@ const Articles = () => {
 
   useEffect(() => {
     const filtered = filterArticles();
-    setArticles(filtered);
-  }, [filters]);
+    // Only update if we have articles to filter
+    if (articles.length > 0) {
+      // This will be handled by the display logic
+    }
+  }, [filters, articles]);
 
   const fetchArticles = async () => {
     try {
@@ -60,10 +94,11 @@ const Articles = () => {
         .from('articles')
         .select(`
           *,
-          author:profiles!author_id(full_name, email),
-          category:categories!category_id(name)
+          author:profiles!author_id(id, full_name, email, avatar_url),
+          category:categories!category_id(id, name, slug),
+          co_authors_data:profiles!inner(id, full_name, email)
         `)
-        .order('created_at', { ascending: false });
+        .order('updated_at', { ascending: false });
 
       // If contributor, only show their articles
       if (userProfile?.role === 'contributor') {
@@ -92,10 +127,26 @@ const Articles = () => {
     setCategories(data || []);
   };
 
+  const fetchAuthors = async () => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, full_name, email')
+      .in('role', ['admin', 'contributor'])
+      .eq('is_active', true)
+      .order('full_name');
+    
+    setAuthors(data || []);
+  };
+
   const filterArticles = () => {
     return articles.filter(article => {
       if (filters.status !== 'all' && article.status !== filters.status) return false;
       if (filters.category !== 'all' && article.category_id !== filters.category) return false;
+      if (filters.author !== 'all' && article.author_id !== filters.author) return false;
+      if (filters.featured !== 'all') {
+        const isFeatured = article.is_featured ? 'featured' : 'not_featured';
+        if (isFeatured !== filters.featured) return false;
+      }
       if (filters.search && !article.title.toLowerCase().includes(filters.search.toLowerCase())) return false;
       return true;
     });
@@ -108,13 +159,19 @@ const Articles = () => {
         formData.slug = formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
       }
 
+      // Calculate read time if content exists
+      if (formData.content && typeof formData.content === 'object' && formData.content.wordCount) {
+        formData.read_time = Math.ceil(formData.content.wordCount / 200); // 200 words per minute
+      }
+
       // Prepare data
       const articleData = {
         ...formData,
         author_id: userProfile.id,
         updated_by: userProfile.id,
-        content: { blocks: [{ type: 'paragraph', content: formData.content }] }, // Simple content structure
-        tags: formData.tags.filter(Boolean)
+        tags: formData.tags.filter(Boolean),
+        meta_keywords: formData.meta_keywords.filter(Boolean),
+        co_authors: formData.co_authors.filter(Boolean)
       };
 
       if (editingArticle) {
@@ -139,6 +196,7 @@ const Articles = () => {
       await fetchArticles();
       setShowEditor(false);
       setEditingArticle(null);
+      setActiveTab('overview');
       resetForm();
     } catch (error) {
       console.error('Error saving article:', error);
@@ -190,22 +248,86 @@ const Articles = () => {
     }
   };
 
+  const handleEditArticle = (article) => {
+    setEditingArticle(article);
+    setFormData({
+      title: article.title || '',
+      slug: article.slug || '',
+      excerpt: article.excerpt || '',
+      content: article.content,
+      featured_image: article.featured_image || '',
+      featured_image_alt: article.featured_image_alt || '',
+      featured_video: article.featured_video || '',
+      category_id: article.category_id || '',
+      tags: article.tags || [],
+      co_authors: article.co_authors || [],
+      status: article.status || 'draft',
+      is_featured: article.is_featured || false,
+      enable_comments: article.enable_comments || false,
+      enable_reactions: article.enable_reactions !== false,
+      scheduled_at: article.scheduled_at || '',
+      meta_title: article.meta_title || '',
+      meta_description: article.meta_description || '',
+      meta_keywords: article.meta_keywords || [],
+      og_title: article.og_title || '',
+      og_description: article.og_description || '',
+      og_image: article.og_image || '',
+      twitter_card: article.twitter_card || 'summary_large_image',
+      canonical_url: article.canonical_url || '',
+      read_time: article.read_time,
+      internal_notes: article.internal_notes || '',
+      schema_markup: article.schema_markup
+    });
+    setShowEditor(true);
+  };
+
   const resetForm = () => {
     setFormData({
       title: '',
       slug: '',
       excerpt: '',
-      content: '',
+      content: null,
+      featured_image: '',
+      featured_image_alt: '',
+      featured_video: '',
       category_id: '',
       tags: [],
+      co_authors: [],
       status: 'draft',
-      featured_image: '',
+      is_featured: false,
       enable_comments: false,
       enable_reactions: true,
-      is_featured: false,
+      scheduled_at: '',
       meta_title: '',
-      meta_description: ''
+      meta_description: '',
+      meta_keywords: [],
+      og_title: '',
+      og_description: '',
+      og_image: '',
+      twitter_card: 'summary_large_image',
+      canonical_url: '',
+      read_time: null,
+      internal_notes: '',
+      schema_markup: null
     });
+  };
+
+  const addArrayItem = (field) => {
+    setFormData({
+      ...formData,
+      [field]: [...(formData[field] || []), '']
+    });
+  };
+
+  const updateArrayItem = (field, index, value) => {
+    const newArray = [...(formData[field] || [])];
+    newArray[index] = value;
+    setFormData({ ...formData, [field]: newArray });
+  };
+
+  const removeArrayItem = (field, index) => {
+    const newArray = (formData[field] || []).filter((_, i) => i !== index);
+    setFormData({ ...formData, [field]: newArray });
   };
 
   const getStatusBadgeClass = (status) => {
@@ -218,6 +340,8 @@ const Articles = () => {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  const filteredArticles = filterArticles();
 
   if (loading) {
     return (
@@ -232,7 +356,10 @@ const Articles = () => {
       {/* Header */}
       <div className="bg-white rounded-lg shadow p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-heading-bold uppercase">Articles Management</h1>
+          <div>
+            <h1 className="text-2xl font-heading-bold uppercase">Articles Management</h1>
+            <p className="text-gray-600 mt-1">{filteredArticles.length} of {articles.length} articles</p>
+          </div>
           <Button
             variant="default"
             onClick={() => setShowEditor(true)}
@@ -243,8 +370,8 @@ const Articles = () => {
           </Button>
         </div>
 
-        {/* Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Enhanced Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
           <Input
             placeholder="Search articles..."
             value={filters.search}
@@ -258,7 +385,7 @@ const Articles = () => {
             options={[
               { value: 'all', label: 'All Status' },
               { value: 'draft', label: 'Draft' },
-              { value: 'pending_approval', label: 'Pending Approval' },
+              { value: 'pending_approval', label: 'Pending' },
               { value: 'approved', label: 'Approved' },
               { value: 'published', label: 'Published' },
               { value: 'archived', label: 'Archived' }
@@ -271,6 +398,25 @@ const Articles = () => {
             options={[
               { value: 'all', label: 'All Categories' },
               ...categories.map(cat => ({ value: cat.id, label: cat.name }))
+            ]}
+          />
+
+          <Select
+            value={filters.author}
+            onChange={(value) => setFilters({ ...filters, author: value })}
+            options={[
+              { value: 'all', label: 'All Authors' },
+              ...authors.map(author => ({ value: author.id, label: author.full_name }))
+            ]}
+          />
+
+          <Select
+            value={filters.featured}
+            onChange={(value) => setFilters({ ...filters, featured: value })}
+            options={[
+              { value: 'all', label: 'All Articles' },
+              { value: 'featured', label: 'Featured' },
+              { value: 'not_featured', label: 'Not Featured' }
             ]}
           />
 
@@ -291,7 +437,7 @@ const Articles = () => {
             <thead className="bg-gray-50 border-b">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Title
+                  Article
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Author
@@ -302,11 +448,11 @@ const Articles = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Views
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Engagement
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Created
+                  Updated
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -314,18 +460,47 @@ const Articles = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {articles.map((article) => (
+              {filteredArticles.map((article) => (
                 <tr key={article.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
-                    <div>
-                      <p className="font-medium text-gray-900">{article.title}</p>
-                      {article.is_featured && (
-                        <span className="text-xs text-accent">Featured</span>
+                    <div className="flex items-start space-x-3">
+                      {article.featured_image && (
+                        <img 
+                          src={article.featured_image} 
+                          alt={article.title}
+                          className="w-12 h-12 object-cover rounded"
+                        />
                       )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 truncate">{article.title}</p>
+                        <p className="text-sm text-gray-500 truncate">{article.excerpt}</p>
+                        <div className="flex items-center space-x-2 mt-1">
+                          {article.is_featured && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                              <Icon name="Star" size={12} className="mr-1" />
+                              Featured
+                            </span>
+                          )}
+                          {article.read_time && (
+                            <span className="text-xs text-gray-400">{article.read_time} min read</span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {article.author?.full_name || 'Unknown'}
+                  <td className="px-6 py-4">
+                    <div className="flex items-center space-x-2">
+                      {article.author?.avatar_url && (
+                        <img 
+                          src={article.author.avatar_url} 
+                          alt={article.author.full_name}
+                          className="w-6 h-6 rounded-full"
+                        />
+                      )}
+                      <span className="text-sm text-gray-600">
+                        {article.author?.full_name || 'Unknown'}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
                     {article.category?.name || 'Uncategorized'}
@@ -335,75 +510,83 @@ const Articles = () => {
                       {article.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {article.view_count || 0}
+                  <td className="px-6 py-4 text-center">
+                    <div className="text-sm space-y-1">
+                      <div className="flex items-center justify-center space-x-3 text-xs text-gray-500">
+                        <span><Icon name="Eye" size={12} className="inline mr-1" />{article.view_count || 0}</span>
+                        <span><Icon name="Heart" size={12} className="inline mr-1" />{article.like_count || 0}</span>
+                        <span><Icon name="Share" size={12} className="inline mr-1" />{article.share_count || 0}</span>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
-                    {new Date(article.created_at).toLocaleDateString()}
+                    {new Date(article.updated_at).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 text-right space-x-2">
-                    {/* Status Actions */}
-                    {article.status === 'draft' && (
-                      <Button
-                        size="xs"
-                        variant="outline"
-                        onClick={() => handleStatusChange(article.id, 'pending_approval')}
-                      >
-                        Submit
-                      </Button>
-                    )}
-                    {article.status === 'pending_approval' && userProfile?.role === 'admin' && (
-                      <Button
-                        size="xs"
-                        variant="success"
-                        onClick={() => handleStatusChange(article.id, 'approved')}
-                      >
-                        Approve
-                      </Button>
-                    )}
-                    {article.status === 'approved' && (
-                      <Button
-                        size="xs"
-                        variant="default"
-                        onClick={() => handleStatusChange(article.id, 'published')}
-                      >
-                        Publish
-                      </Button>
-                    )}
-                    
-                    {/* Edit/Delete */}
-                    <Button
-                      size="xs"
-                      variant="ghost"
-                      onClick={() => {
-                        setEditingArticle(article);
-                        setFormData(article);
-                        setShowEditor(true);
-                      }}
-                    >
-                      <Icon name="Edit" size={16} />
-                    </Button>
-                    
-                    {(userProfile?.role === 'admin' || article.author_id === userProfile?.id) && (
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end space-x-2">
+                      {/* Status Actions */}
+                      {article.status === 'draft' && (
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          onClick={() => handleStatusChange(article.id, 'pending_approval')}
+                        >
+                          Submit
+                        </Button>
+                      )}
+                      {article.status === 'pending_approval' && userProfile?.role === 'admin' && (
+                        <Button
+                          size="xs"
+                          variant="default"
+                          onClick={() => handleStatusChange(article.id, 'approved')}
+                          className="bg-blue-500 hover:bg-blue-600"
+                        >
+                          Approve
+                        </Button>
+                      )}
+                      {article.status === 'approved' && (
+                        <Button
+                          size="xs"
+                          variant="default"
+                          onClick={() => handleStatusChange(article.id, 'published')}
+                          className="bg-green-500 hover:bg-green-600"
+                        >
+                          Publish
+                        </Button>
+                      )}
+                      
+                      {/* Edit/Delete */}
                       <Button
                         size="xs"
                         variant="ghost"
-                        onClick={() => handleDeleteArticle(article.id)}
-                        className="text-red-600 hover:text-red-700"
+                        onClick={() => handleEditArticle(article)}
                       >
-                        <Icon name="Trash2" size={16} />
+                        <Icon name="Edit" size={16} />
                       </Button>
-                    )}
+                      
+                      {(userProfile?.role === 'admin' || article.author_id === userProfile?.id) && (
+                        <Button
+                          size="xs"
+                          variant="ghost"
+                          onClick={() => handleDeleteArticle(article.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Icon name="Trash2" size={16} />
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
 
-          {articles.length === 0 && (
+          {filteredArticles.length === 0 && (
             <div className="text-center py-12">
               <Icon name="FileText" size={48} className="mx-auto text-gray-400 mb-4" />
-              <p className="text-gray-500">No articles found</p>
+              <p className="text-gray-500">
+                {articles.length === 0 ? 'No articles found' : 'No articles match your filters'}
+              </p>
               <Button
                 variant="outline"
                 className="mt-4"
@@ -416,20 +599,29 @@ const Articles = () => {
         </div>
       </div>
 
-      {/* Article Editor Modal */}
+      {/* Enhanced Article Editor Modal */}
       {showEditor && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-heading-bold uppercase">
-                {editingArticle ? 'Edit Article' : 'New Article'}
-              </h2>
+          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b bg-gray-50">
+              <div>
+                <h2 className="text-xl font-heading-bold uppercase">
+                  {editingArticle ? 'Edit Article' : 'New Article'}
+                </h2>
+                {editingArticle && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    Last updated: {new Date(editingArticle.updated_at).toLocaleString()}
+                  </p>
+                )}
+              </div>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => {
                   setShowEditor(false);
                   setEditingArticle(null);
+                  setActiveTab('overview');
                   resetForm();
                 }}
               >
@@ -437,129 +629,411 @@ const Articles = () => {
               </Button>
             </div>
 
-            <div className="p-6 space-y-6">
-              {/* Basic Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  required
-                />
-                
-                <Input
-                  label="Slug"
-                  value={formData.slug}
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  placeholder="auto-generated-from-title"
-                />
-              </div>
+            {/* Tab Navigation */}
+            <div className="border-b bg-white">
+              <nav className="flex space-x-8 px-6">
+                {[
+                  { id: 'overview', label: 'Overview', icon: 'FileText' },
+                  { id: 'content', label: 'Content', icon: 'Edit' },
+                  { id: 'media', label: 'Media', icon: 'Image' },
+                  { id: 'seo', label: 'SEO', icon: 'Search' },
+                  { id: 'settings', label: 'Settings', icon: 'Settings' }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center space-x-2 ${
+                      activeTab === tab.id
+                        ? 'border-accent text-accent'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <Icon name={tab.icon} size={16} />
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </nav>
+            </div>
 
-              <Input
-                label="Excerpt"
-                value={formData.excerpt}
-                onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                placeholder="Brief description of the article"
-              />
+            {/* Tab Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {activeTab === 'overview' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input
+                      label="Title"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      required
+                      placeholder="Enter article title"
+                    />
+                    
+                    <Input
+                      label="Slug"
+                      value={formData.slug}
+                      onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                      placeholder="auto-generated-from-title"
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">Content</label>
-                <textarea
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  className="w-full h-64 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent"
-                  placeholder="Write your article content here..."
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Select
-                  label="Category"
-                  value={formData.category_id}
-                  onChange={(value) => setFormData({ ...formData, category_id: value })}
-                  options={categories.map(cat => ({ value: cat.id, label: cat.name }))}
-                />
-
-                <Select
-                  label="Status"
-                  value={formData.status}
-                  onChange={(value) => setFormData({ ...formData, status: value })}
-                  options={[
-                    { value: 'draft', label: 'Draft' },
-                    { value: 'pending_approval', label: 'Pending Approval' },
-                    { value: 'approved', label: 'Approved' },
-                    { value: 'published', label: 'Published' }
-                  ]}
-                />
-              </div>
-
-              <Input
-                label="Featured Image URL"
-                value={formData.featured_image}
-                onChange={(e) => setFormData({ ...formData, featured_image: e.target.value })}
-                placeholder="https://example.com/image.jpg"
-              />
-
-              <div className="space-y-3">
-                <Checkbox
-                  checked={formData.is_featured}
-                  onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })}
-                  label="Featured Article"
-                  description="Display this article prominently on the homepage"
-                />
-                
-                <Checkbox
-                  checked={formData.enable_comments}
-                  onCheckedChange={(checked) => setFormData({ ...formData, enable_comments: checked })}
-                  label="Enable Comments"
-                />
-                
-                <Checkbox
-                  checked={formData.enable_reactions}
-                  onCheckedChange={(checked) => setFormData({ ...formData, enable_reactions: checked })}
-                  label="Enable Reactions"
-                />
-              </div>
-
-              {/* SEO Fields */}
-              <div className="border-t pt-6">
-                <h3 className="font-medium mb-4">SEO Settings</h3>
-                <div className="space-y-4">
                   <Input
-                    label="Meta Title"
-                    value={formData.meta_title}
-                    onChange={(e) => setFormData({ ...formData, meta_title: e.target.value })}
-                    placeholder="SEO optimized title"
+                    label="Excerpt"
+                    value={formData.excerpt}
+                    onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+                    placeholder="Brief description of the article"
                   />
-                  
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Select
+                      label="Category"
+                      value={formData.category_id}
+                      onChange={(value) => setFormData({ ...formData, category_id: value })}
+                      options={categories.map(cat => ({ value: cat.id, label: cat.name }))}
+                    />
+
+                    <Select
+                      label="Status"
+                      value={formData.status}
+                      onChange={(value) => setFormData({ ...formData, status: value })}
+                      options={[
+                        { value: 'draft', label: 'Draft' },
+                        { value: 'pending_approval', label: 'Pending Approval' },
+                        { value: 'approved', label: 'Approved' },
+                        { value: 'published', label: 'Published' }
+                      ]}
+                    />
+                  </div>
+
+                  {/* Tags */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Tags</label>
+                    {formData.tags.map((tag, index) => (
+                      <div key={index} className="flex gap-2 mb-2">
+                        <Input
+                          value={tag}
+                          onChange={(e) => updateArrayItem('tags', index, e.target.value)}
+                          placeholder="Tag name"
+                          className="flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeArrayItem('tags', index)}
+                        >
+                          <Icon name="X" size={16} />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addArrayItem('tags')}
+                      iconName="Plus"
+                    >
+                      Add Tag
+                    </Button>
+                  </div>
+
+                  {/* Co-Authors */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Co-Authors</label>
+                    <Select
+                      value=""
+                      onChange={(value) => {
+                        if (value && !formData.co_authors.includes(value)) {
+                          setFormData({
+                            ...formData,
+                            co_authors: [...formData.co_authors, value]
+                          });
+                        }
+                      }}
+                      options={[
+                        { value: '', label: 'Select co-author...' },
+                        ...authors
+                          .filter(author => !formData.co_authors.includes(author.id))
+                          .map(author => ({ value: author.id, label: author.full_name }))
+                      ]}
+                    />
+                    {formData.co_authors.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        {formData.co_authors.map((authorId, index) => {
+                          const author = authors.find(a => a.id === authorId);
+                          return (
+                            <div key={authorId} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                              <span>{author?.full_name || 'Unknown'}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="xs"
+                                onClick={() => removeArrayItem('co_authors', index)}
+                              >
+                                <Icon name="X" size={14} />
+                              </Button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'content' && (
+                <div className="space-y-6">
+                  <ContentEditor
+                    value={formData.content}
+                    onChange={(content) => setFormData({ ...formData, content })}
+                    label="Article Content"
+                    minHeight="400px"
+                  />
+
+                  {/* Content Preview */}
+                  {formData.content && (
+                    <div className="border-t pt-6">
+                      <h3 className="font-medium mb-4">Content Preview</h3>
+                      <div className="border rounded-lg p-4 bg-gray-50 max-h-96 overflow-y-auto">
+                        <ContentDisplay content={formData.content} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'media' && (
+                <div className="space-y-6">
+                  <ImageUpload
+                    label="Featured Image"
+                    value={formData.featured_image}
+                    onChange={(value) => setFormData({ ...formData, featured_image: value })}
+                    bucket="media"
+                    folder="articles"
+                  />
+
+                  <Input
+                    label="Featured Image Alt Text"
+                    value={formData.featured_image_alt}
+                    onChange={(e) => setFormData({ ...formData, featured_image_alt: e.target.value })}
+                    placeholder="Describe the image for accessibility"
+                  />
+
+                  <Input
+                    label="Featured Video URL (optional)"
+                    value={formData.featured_video}
+                    onChange={(e) => setFormData({ ...formData, featured_video: e.target.value })}
+                    placeholder="YouTube, Vimeo, or direct video URL"
+                  />
+                </div>
+              )}
+
+              {activeTab === 'seo' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input
+                      label="Meta Title"
+                      value={formData.meta_title}
+                      onChange={(e) => setFormData({ ...formData, meta_title: e.target.value })}
+                      placeholder="SEO optimized title (60 chars max)"
+                    />
+                    
+                    <Input
+                      label="Canonical URL (optional)"
+                      value={formData.canonical_url}
+                      onChange={(e) => setFormData({ ...formData, canonical_url: e.target.value })}
+                      placeholder="https://example.com/canonical-url"
+                    />
+                  </div>
+
                   <Input
                     label="Meta Description"
                     value={formData.meta_description}
                     onChange={(e) => setFormData({ ...formData, meta_description: e.target.value })}
                     placeholder="SEO description (155-160 characters)"
                   />
+
+                  {/* Meta Keywords */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Meta Keywords</label>
+                    {formData.meta_keywords.map((keyword, index) => (
+                      <div key={index} className="flex gap-2 mb-2">
+                        <Input
+                          value={keyword}
+                          onChange={(e) => updateArrayItem('meta_keywords', index, e.target.value)}
+                          placeholder="Keyword or phrase"
+                          className="flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeArrayItem('meta_keywords', index)}
+                        >
+                          <Icon name="X" size={16} />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addArrayItem('meta_keywords')}
+                      iconName="Plus"
+                    >
+                      Add Keyword
+                    </Button>
+                  </div>
+
+                  {/* Social Media */}
+                  <div className="border-t pt-6">
+                    <h3 className="font-medium mb-4">Social Media</h3>
+                    <div className="space-y-4">
+                      <Input
+                        label="Open Graph Title"
+                        value={formData.og_title}
+                        onChange={(e) => setFormData({ ...formData, og_title: e.target.value })}
+                        placeholder="Title for social media sharing"
+                      />
+                      
+                      <Input
+                        label="Open Graph Description"
+                        value={formData.og_description}
+                        onChange={(e) => setFormData({ ...formData, og_description: e.target.value })}
+                        placeholder="Description for social media sharing"
+                      />
+
+                      <ImageUpload
+                        label="Open Graph Image"
+                        value={formData.og_image}
+                        onChange={(value) => setFormData({ ...formData, og_image: value })}
+                        bucket="media"
+                        folder="articles/social"
+                        showPreview={true}
+                      />
+
+                      <Select
+                        label="Twitter Card Type"
+                        value={formData.twitter_card}
+                        onChange={(value) => setFormData({ ...formData, twitter_card: value })}
+                        options={[
+                          { value: 'summary', label: 'Summary' },
+                          { value: 'summary_large_image', label: 'Summary Large Image' },
+                          { value: 'app', label: 'App' },
+                          { value: 'player', label: 'Player' }
+                        ]}
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {activeTab === 'settings' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <h3 className="font-medium">Publishing Options</h3>
+                      
+                      <Checkbox
+                        checked={formData.is_featured}
+                        onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })}
+                        label="Featured Article"
+                        description="Display this article prominently on the homepage"
+                      />
+                      
+                      <Checkbox
+                        checked={formData.enable_comments}
+                        onCheckedChange={(checked) => setFormData({ ...formData, enable_comments: checked })}
+                        label="Enable Comments"
+                        description="Allow readers to comment on this article"
+                      />
+                      
+                      <Checkbox
+                        checked={formData.enable_reactions}
+                        onCheckedChange={(checked) => setFormData({ ...formData, enable_reactions: checked })}
+                        label="Enable Reactions"
+                        description="Allow readers to like and share this article"
+                      />
+
+                      <Input
+                        type="datetime-local"
+                        label="Scheduled Publication (optional)"
+                        value={formData.scheduled_at}
+                        onChange={(e) => setFormData({ ...formData, scheduled_at: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      <h3 className="font-medium">Editorial Notes</h3>
+                      
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Internal Notes</label>
+                        <textarea
+                          value={formData.internal_notes}
+                          onChange={(e) => setFormData({ ...formData, internal_notes: e.target.value })}
+                          className="w-full h-24 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent"
+                          placeholder="Notes for the editorial team..."
+                        />
+                      </div>
+
+                      {formData.read_time && (
+                        <div className="bg-blue-50 p-3 rounded-lg">
+                          <p className="text-sm text-blue-800">
+                            <Icon name="Clock" size={16} className="inline mr-2" />
+                            Estimated read time: {formData.read_time} minutes
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div className="sticky bottom-0 bg-gray-50 px-6 py-4 flex justify-end space-x-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowEditor(false);
-                  setEditingArticle(null);
-                  resetForm();
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="default"
-                onClick={handleSaveArticle}
-                className="bg-accent hover:bg-accent/90"
-              >
-                {editingArticle ? 'Update Article' : 'Create Article'}
-              </Button>
+            {/* Footer Actions */}
+            <div className="border-t bg-gray-50 px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowEditor(false);
+                    setEditingArticle(null);
+                    setActiveTab('overview');
+                    resetForm();
+                  }}
+                >
+                  Cancel
+                </Button>
+                
+                {editingArticle && (
+                  <span className="text-sm text-gray-500">
+                    Draft saved automatically
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center space-x-3">
+                {formData.status === 'draft' && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setFormData({ ...formData, status: 'pending_approval' });
+                      setTimeout(handleSaveArticle, 100);
+                    }}
+                    className="bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100"
+                  >
+                    Submit for Review
+                  </Button>
+                )}
+                
+                <Button
+                  variant="default"
+                  onClick={handleSaveArticle}
+                  className="bg-accent hover:bg-accent/90"
+                  iconName="Save"
+                >
+                  {editingArticle ? 'Update Article' : 'Create Article'}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
