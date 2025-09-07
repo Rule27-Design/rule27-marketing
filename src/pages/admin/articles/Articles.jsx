@@ -1,441 +1,259 @@
-// src/pages/admin/Articles.jsx - Main Container
-import React, { useState, useEffect, useCallback } from 'react';
+// src/pages/admin/articles/Articles.jsx - Main Container (Refactored with all hooks)
+import React, { useState } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
-import ErrorBoundary from '../../components/ErrorBoundary';
-import { useToast } from '../../components/ui/Toast';
-import { 
-  validateData, 
-  validationSchemas, 
-  sanitizeData, 
-  generateSlug, 
-  cleanTimestampField,
-  useValidation 
-} from '../../utils/validation';
+import ErrorBoundary from '../../../components/ErrorBoundary';
 
+// Import all the custom hooks
+import { useArticles } from './hooks/useArticles';
+import { useArticleFilters } from './hooks/useArticleFilters';
+import { useArticleEditor } from './hooks/useArticleEditor';
+import { useArticleOperations } from './hooks/useArticleOperations';
+import { useArticleStatus } from './hooks/useArticleStatus';
+import { useArticleMetrics } from './hooks/useArticleMetrics';
+
+// Import components
 import ArticlesList from './ArticlesList';
 import ArticleEditor from './ArticleEditor';
+import { ArticleMetrics } from './components/ArticleMetrics';
 
 const Articles = () => {
   const { userProfile } = useOutletContext();
-  const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   
-  // Main state
-  const [articles, setArticles] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [authors, setAuthors] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [showEditor, setShowEditor] = useState(false);
-  const [editingArticle, setEditingArticle] = useState(null);
-  const [activeTab, setActiveTab] = useState('overview');
-
-  // Filter state
-  const [filters, setFilters] = useState({
-    status: searchParams.get('filter') || 'all',
-    search: '',
-    category: 'all',
-    author: 'all',
-    featured: 'all'
-  });
-
-  // Form state
-  const [formData, setFormData] = useState({
-    title: '',
-    slug: '',
-    excerpt: '',
-    content: null,
-    featured_image: '',
-    featured_image_alt: '',
-    featured_video: '',
-    category_id: '',
-    tags: [],
-    co_authors: [],
-    status: 'draft',
-    is_featured: false,
-    enable_comments: false,
-    enable_reactions: true,
-    scheduled_at: '',
-    meta_title: '',
-    meta_description: '',
-    meta_keywords: [],
-    og_title: '',
-    og_description: '',
-    og_image: '',
-    twitter_card: 'summary_large_image',
-    canonical_url: '',
-    read_time: null,
-    internal_notes: '',
-    schema_markup: null
-  });
-
-  // Validation hook
-  const { errors, validate, clearErrors, hasErrors } = useValidation(validationSchemas.article);
-
-  // Data fetching
-  useEffect(() => {
-    fetchArticles();
-    fetchCategories();
-    fetchAuthors();
-
-    if (searchParams.get('action') === 'new') {
-      setShowEditor(true);
-    }
-  }, []);
-
-  const fetchArticles = async () => {
-    try {
-      setLoading(true);
-      
-      let query = supabase
-        .from('articles')
-        .select(`
-          *,
-          author:profiles!articles_author_id_fkey(id, full_name, email, avatar_url),
-          category:categories!articles_category_id_fkey(id, name, slug)
-        `)
-        .order('updated_at', { ascending: false });
-
-      if (userProfile?.role === 'contributor') {
-        query = query.eq('author_id', userProfile.id);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('articles')
-          .select('*')
-          .order('updated_at', { ascending: false });
-        
-        if (fallbackError) throw fallbackError;
-        setArticles(fallbackData || []);
-        toast.warning('Articles loaded', 'Some data might be missing due to database constraints');
-      } else {
-        setArticles(data || []);
-      }
-    } catch (error) {
-      console.error('Error fetching articles:', error);
-      toast.error('Failed to load articles', error.message);
-      setArticles([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchCategories = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('type', 'article')
-        .eq('is_active', true)
-        .order('name');
-      
-      if (error) throw error;
-      setCategories(data || []);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-      toast.error('Failed to load categories', error.message);
-    }
-  };
-
-  const fetchAuthors = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name, email')
-        .in('role', ['admin', 'contributor'])
-        .eq('is_active', true)
-        .order('full_name');
-      
-      if (error) throw error;
-      setAuthors(data || []);
-    } catch (error) {
-      console.error('Error fetching authors:', error);
-      toast.error('Failed to load authors', error.message);
-    }
-  };
-
-  // Content debugging function
-  const debugAndFixContent = useCallback((content, articleTitle = 'Unknown') => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🔧 [${articleTitle}] Processing content:`, typeof content);
-    }
-    
-    if (!content) {
-      return { html: '', text: '', wordCount: 0, type: 'tiptap', version: '2.0' };
-    }
-    
-    if (typeof content === 'string') {
-      return {
-        type: 'tiptap',
-        html: content,
-        text: content.replace(/<[^>]*>/g, ''),
-        wordCount: content.replace(/<[^>]*>/g, '').split(/\s+/).filter(w => w.length > 0).length,
-        version: '1.0'
-      };
-    }
-    
-    if (typeof content === 'object') {
-      if (content.type === 'doc' && Array.isArray(content.content)) {
-        const extractTextFromTipTap = (node) => {
-          let text = '';
-          if (node.text) {
-            text += node.text;
-          }
-          if (node.content && Array.isArray(node.content)) {
-            text += node.content.map(extractTextFromTipTap).join(' ');
-          }
-          return text;
-        };
-        
-        const extractedText = extractTextFromTipTap(content);
-        const wordCount = extractedText.split(/\s+/).filter(w => w.length > 0).length;
-        
-        return {
-          type: 'tiptap',
-          json: content,
-          text: extractedText,
-          wordCount: wordCount,
-          version: '2.0'
-        };
-      }
-      
-      if (content.html || content.json) {
-        return content;
-      }
-      
-      if (content.content && typeof content.content === 'string') {
-        return {
-          type: 'tiptap',
-          html: content.content,
-          text: content.content.replace(/<[^>]*>/g, ''),
-          wordCount: content.content.replace(/<[^>]*>/g, '').split(/\s+/).filter(w => w.length > 0).length,
-          version: '1.0'
-        };
-      }
-    }
-    
-    return { html: '', text: '', wordCount: 0, type: 'tiptap', version: '2.0' };
-  }, []);
-
-  const handleEditArticle = useCallback((article) => {
-    setEditingArticle(article);
-    
-    const fixedContent = debugAndFixContent(article.content, article.title);
-    
-    setFormData({
-      title: article.title || '',
-      slug: article.slug || '',
-      excerpt: article.excerpt || '',
-      content: fixedContent,
-      featured_image: article.featured_image || '',
-      featured_image_alt: article.featured_image_alt || '',
-      featured_video: article.featured_video || '',
-      category_id: article.category_id || '',
-      tags: article.tags || [],
-      co_authors: article.co_authors || [],
-      status: article.status || 'draft',
-      is_featured: article.is_featured || false,
-      enable_comments: article.enable_comments || false,
-      enable_reactions: article.enable_reactions !== false,
-      scheduled_at: article.scheduled_at || '',
-      meta_title: article.meta_title || '',
-      meta_description: article.meta_description || '',
-      meta_keywords: article.meta_keywords || [],
-      og_title: article.og_title || '',
-      og_description: article.og_description || '',
-      og_image: article.og_image || '',
-      twitter_card: article.twitter_card || 'summary_large_image',
-      canonical_url: article.canonical_url || '',
-      read_time: article.read_time,
-      internal_notes: article.internal_notes || '',
-      schema_markup: article.schema_markup
-    });
-    
-    setShowEditor(true);
-  }, [debugAndFixContent]);
-
-  const resetForm = useCallback(() => {
-    setFormData({
-      title: '',
-      slug: '',
-      excerpt: '',
-      content: null,
-      featured_image: '',
-      featured_image_alt: '',
-      featured_video: '',
-      category_id: '',
-      tags: [],
-      co_authors: [],
-      status: 'draft',
-      is_featured: false,
-      enable_comments: false,
-      enable_reactions: true,
-      scheduled_at: '',
-      meta_title: '',
-      meta_description: '',
-      meta_keywords: [],
-      og_title: '',
-      og_description: '',
-      og_image: '',
-      twitter_card: 'summary_large_image',
-      canonical_url: '',
-      read_time: null,
-      internal_notes: '',
-      schema_markup: null
-    });
-    clearErrors();
-  }, [clearErrors]);
-
-  // Pass all necessary props and handlers to child components
-  const editorProps = {
-    showEditor,
-    editingArticle,
-    formData,
-    setFormData,
-    activeTab,
-    setActiveTab,
+  // Core article data and operations
+  const {
+    articles,
     categories,
     authors,
-    errors,
-    hasErrors,
-    saving,
-    setSaving,
-    validate,
-    clearErrors,
-    toast,
+    loading,
+    showEditor,
+    editingArticle,
+    handleEdit,
+    handleDelete,
+    handleStatusChange,
+    setShowEditor,
+    setEditingArticle,
+    debugAndFixContent,
+    refetch: refetchArticles
+  } = useArticles(userProfile);
+
+  // Filter management
+  const {
+    filters,
+    filteredArticles,
+    updateFilter,
+    setFilters,
+    clearFilters,
+    hasActiveFilters
+  } = useArticleFilters(articles);
+
+  // Editor state management
+  const editorProps = useArticleEditor(
+    editingArticle,
+    () => {
+      setShowEditor(false);
+      setEditingArticle(null);
+    },
     userProfile,
-    supabase,
+    debugAndFixContent
+  );
+
+  // Article operations (duplicate, bulk actions, etc.)
+  const {
+    duplicateArticle,
+    bulkUpdateStatus,
+    bulkDelete,
+    scheduleArticle,
+    updateSlug,
+    toggleFeatured,
+    exportArticles
+  } = useArticleOperations(userProfile);
+
+  // Status management utilities
+  const {
+    getStatusConfig,
+    getAvailableActions,
+    canTransitionTo,
+    isEditable
+  } = useArticleStatus();
+
+  // Analytics and metrics
+  const {
+    stats,
+    getTrendingArticles,
+    getTopPerformingArticles,
+    getPublishingStats,
+    getArticlesNeedingAttention,
+    getContentHealthScore
+  } = useArticleMetrics(articles);
+
+  // Handle new article creation
+  const handleNewArticle = () => {
+    setEditingArticle(null);
+    setShowEditor(true);
+  };
+
+  // Handle article operations with refetch
+  const handleDeleteWithRefetch = async (id) => {
+    await handleDelete(id);
+    // Refresh is handled in useArticles hook
+  };
+
+  const handleStatusChangeWithRefetch = async (id, newStatus) => {
+    await handleStatusChange(id, newStatus);
+    // Refresh is handled in useArticles hook
+  };
+
+  // Enhanced operations with custom hooks
+  const handleDuplicate = async (article) => {
+    await duplicateArticle(article, refetchArticles);
+  };
+
+  const handleToggleFeatured = async (articleId, currentStatus) => {
+    await toggleFeatured(articleId, currentStatus, refetchArticles);
+  };
+
+  const handleSchedule = async (articleId, scheduledDate) => {
+    await scheduleArticle(articleId, scheduledDate, refetchArticles);
+  };
+
+  const handleBulkOperations = {
+    updateStatus: async (articleIds, status) => {
+      await bulkUpdateStatus(articleIds, status, refetchArticles);
+    },
+    delete: async (articleIds) => {
+      await bulkDelete(articleIds, refetchArticles);
+    }
+  };
+
+  // Check if user accessed via URL params
+  React.useEffect(() => {
+    if (searchParams.get('action') === 'new') {
+      handleNewArticle();
+      // Clear the URL param
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
+
+  // Enhanced editor props with all hooks
+  const enhancedEditorProps = {
+    ...editorProps,
+    showEditor,
+    editingArticle,
+    categories,
+    authors,
+    userProfile,
     onClose: () => {
       setShowEditor(false);
       setEditingArticle(null);
-      setActiveTab('overview');
-      resetForm();
+      editorProps.resetForm();
     },
-    onSave: async () => {
-      try {
-        setSaving(true);
-        clearErrors();
-
-        const sanitizedData = sanitizeData(formData);
-
-        if (!sanitizedData.slug && sanitizedData.title) {
-          sanitizedData.slug = generateSlug(sanitizedData.title);
-        }
-
-        if (!sanitizedData.canonical_url && sanitizedData.slug) {
-          sanitizedData.canonical_url = `https://rule27design.com/articles/${sanitizedData.slug}`;
-        }
-
-        if (!validate(sanitizedData)) {
-          toast.error('Validation failed', 'Please fix the errors and try again');
-          return;
-        }
-
-        if (sanitizedData.content && sanitizedData.content.wordCount) {
-          sanitizedData.read_time = Math.ceil(sanitizedData.content.wordCount / 200);
-        }
-
-        const articleData = {
-          ...sanitizedData,
-          author_id: userProfile.id,
-          updated_by: userProfile.id,
-          tags: sanitizedData.tags.filter(Boolean),
-          meta_keywords: sanitizedData.meta_keywords.filter(Boolean),
-          co_authors: sanitizedData.co_authors.filter(Boolean),
-          scheduled_at: cleanTimestampField(sanitizedData.scheduled_at)
-        };
-
-        if (editingArticle) {
-          const { error } = await supabase
-            .from('articles')
-            .update(articleData)
-            .eq('id', editingArticle.id);
-
-          if (error) throw error;
-          toast.success('Article updated', 'Your changes have been saved successfully');
-        } else {
-          articleData.created_by = userProfile.id;
-          const { error } = await supabase
-            .from('articles')
-            .insert(articleData);
-
-          if (error) throw error;
-          toast.success('Article created', 'Your article has been created successfully');
-        }
-
-        await fetchArticles();
-        setShowEditor(false);
-        setEditingArticle(null);
-        setActiveTab('overview');
-        resetForm();
-      } catch (error) {
-        console.error('Error saving article:', error);
-        if (error.name === 'ValidationError') {
-          toast.error('Validation failed', Object.values(error.errors).join(', '));
-        } else {
-          toast.error('Failed to save article', error.message);
-        }
-      } finally {
-        setSaving(false);
-      }
-    }
+    onSave: () => editorProps.handleSave(refetchArticles),
+    onSaveWithStatus: (status) => editorProps.handleSaveWithStatus(status, refetchArticles),
+    // Additional operations
+    onDuplicate: handleDuplicate,
+    onSchedule: handleSchedule,
+    onUpdateSlug: updateSlug,
+    // Status utilities
+    getStatusConfig,
+    canTransitionTo,
+    isEditable: (status) => isEditable(status, userProfile?.role, editingArticle?.author_id === userProfile?.id)
   };
+
+  // Enhanced list props
+  const enhancedListProps = {
+    articles,
+    loading,
+    filters,
+    filteredArticles,
+    updateFilter,
+    setFilters,
+    clearFilters,
+    hasActiveFilters,
+    categories,
+    authors,
+    userProfile,
+    totalArticles: articles.length,
+    filteredCount: filteredArticles.length,
+    onEdit: handleEdit,
+    onDelete: handleDeleteWithRefetch,
+    onStatusChange: handleStatusChangeWithRefetch,
+    onNewArticle: handleNewArticle,
+    onRefresh: refetchArticles,
+    // Enhanced operations
+    onDuplicate: handleDuplicate,
+    onToggleFeatured: handleToggleFeatured,
+    onSchedule: handleSchedule,
+    onBulkOperations: handleBulkOperations,
+    onExport: exportArticles,
+    // Status utilities
+    getStatusConfig,
+    getAvailableActions,
+    // Analytics
+    stats,
+    getTrendingArticles,
+    getTopPerformingArticles,
+    getArticlesNeedingAttention,
+    contentHealthScore: getContentHealthScore()
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+      </div>
+    );
+  }
 
   return (
     <ErrorBoundary>
-      <div>
-        <ArticlesList
-          articles={articles}
-          loading={loading}
-          filters={filters}
-          setFilters={setFilters}
-          categories={categories}
-          authors={authors}
-          userProfile={userProfile}
-          onEdit={handleEditArticle}
-          onDelete={async (id) => {
-            if (!confirm('Are you sure you want to delete this article?')) return;
-            try {
-              const { error } = await supabase.from('articles').delete().eq('id', id);
-              if (error) throw error;
-              toast.success('Article deleted', 'The article has been permanently deleted');
-              await fetchArticles();
-            } catch (error) {
-              console.error('Error deleting article:', error);
-              toast.error('Failed to delete article', error.message);
-            }
-          }}
-          onStatusChange={async (id, newStatus) => {
-            try {
-              const updateData = { status: newStatus };
-              
-              if (newStatus === 'pending_approval') {
-                updateData.submitted_for_approval_at = new Date().toISOString();
-              } else if (newStatus === 'approved') {
-                updateData.approved_by = userProfile.id;
-                updateData.approved_at = new Date().toISOString();
-              } else if (newStatus === 'published') {
-                updateData.published_at = new Date().toISOString();
-              }
+      <div className="space-y-6">
+        {/* Analytics Dashboard - Show metrics if user has articles */}
+        {articles.length > 0 && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-heading-bold">Article Analytics</h2>
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <span>Health Score:</span>
+                <div className="flex items-center space-x-1">
+                  <div className="w-16 bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-accent h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${enhancedListProps.contentHealthScore}%` }}
+                    />
+                  </div>
+                  <span className="font-medium">{enhancedListProps.contentHealthScore}%</span>
+                </div>
+              </div>
+            </div>
+            
+            <ArticleMetrics 
+              articles={articles} 
+              variant="compact"
+              className="mb-4"
+            />
+            
+            {/* Quick insights */}
+            {getArticlesNeedingAttention().length > 0 && (
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <h3 className="text-sm font-medium text-yellow-800 mb-2">Needs Attention</h3>
+                <div className="space-y-1">
+                  {getArticlesNeedingAttention().slice(0, 2).map((issue, index) => (
+                    <div key={index} className="text-sm text-yellow-700">
+                      • {issue.message}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
-              const { error } = await supabase.from('articles').update(updateData).eq('id', id);
-              if (error) throw error;
-              toast.success('Status updated', `Article status changed to ${newStatus}`);
-              await fetchArticles();
-            } catch (error) {
-              console.error('Error updating status:', error);
-              toast.error('Failed to update status', error.message);
-            }
-          }}
-          onNewArticle={() => setShowEditor(true)}
-          onRefresh={fetchArticles}
-        />
+        {/* Main Articles List */}
+        <ArticlesList {...enhancedListProps} />
 
-        {showEditor && <ArticleEditor {...editorProps} />}
+        {/* Article Editor Modal */}
+        {showEditor && <ArticleEditor {...enhancedEditorProps} />}
       </div>
     </ErrorBoundary>
   );

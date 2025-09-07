@@ -1,4 +1,4 @@
-// src/pages/admin/articles/ArticleEditor.jsx - Tabbed Editor Modal (400 lines)
+// src/pages/admin/articles/ArticleEditor.jsx - Enhanced Editor with Hook Integration
 import React from 'react';
 import Icon from '../../../components/AdminIcon';
 import Button from '../../../components/ui/Button';
@@ -9,26 +9,39 @@ import ImageUpload from '../../../components/ui/ImageUpload';
 import TiptapContentEditor, { TiptapContentDisplay } from '../../../components/ui/TiptapContentEditor';
 
 const ArticleEditor = ({
-  showEditor,
-  editingArticle,
+  // From useArticleEditor hook
   formData,
   activeTab,
   saving,
   errors = {},
   hasErrors,
+  setActiveTab,
+  updateFormData,
+  handleContentChange,
+  addArrayItem,
+  updateArrayItem,
+  removeArrayItem,
+  getTabsWithErrors,
+  
+  // From main component
+  showEditor,
+  editingArticle,
   categories = [],
   authors = [],
   userProfile,
   onClose,
   onSave,
   onSaveWithStatus,
-  onTabChange,
-  onFormDataChange,
-  onContentChange,
-  onAddArrayItem,
-  onUpdateArrayItem,
-  onRemoveArrayItem,
-  getTabsWithErrors
+  
+  // Enhanced operations
+  onDuplicate,
+  onSchedule,
+  onUpdateSlug,
+  
+  // Status utilities
+  getStatusConfig,
+  canTransitionTo,
+  isEditable
 }) => {
 
   if (!showEditor) return null;
@@ -44,29 +57,88 @@ const ArticleEditor = ({
 
   const tabsWithErrors = getTabsWithErrors ? getTabsWithErrors(errors) : [];
 
+  // Auto-generate slug from title
+  const handleTitleChange = (value) => {
+    updateFormData({ title: value });
+    
+    // Auto-generate slug if editing new article and no custom slug set
+    if (!editingArticle && !formData.slug) {
+      const autoSlug = value
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim('-');
+      updateFormData({ slug: autoSlug });
+    }
+  };
+
+  // Handle save with status validation
+  const handleSaveWithStatusValidation = (status) => {
+    if (canTransitionTo && !canTransitionTo(formData.status, status, userProfile?.role)) {
+      return;
+    }
+    onSaveWithStatus(status);
+  };
+
+  // Enhanced form data change handler
+  const handleFormChange = (updates) => {
+    updateFormData(updates);
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col">
         
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b bg-gray-50">
-          <div>
-            <h2 className="text-xl font-heading-bold uppercase">
-              {editingArticle ? 'Edit Article' : 'New Article'}
-            </h2>
-            {editingArticle && (
-              <p className="text-sm text-gray-600 mt-1">
-                Last updated: {new Date(editingArticle.updated_at).toLocaleString()}
-              </p>
-            )}
+          <div className="flex-1">
+            <div className="flex items-center space-x-4">
+              <div>
+                <h2 className="text-xl font-heading-bold uppercase">
+                  {editingArticle ? 'Edit Article' : 'New Article'}
+                </h2>
+                {editingArticle && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    Last updated: {new Date(editingArticle.updated_at).toLocaleString()}
+                  </p>
+                )}
+              </div>
+              
+              {/* Status indicator */}
+              {editingArticle && getStatusConfig && (
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-500">Status:</span>
+                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusConfig(formData.status).bgClass} ${getStatusConfig(formData.status).textClass}`}>
+                    {getStatusConfig(formData.status).label}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-          >
-            <Icon name="X" size={24} />
-          </Button>
+          
+          <div className="flex items-center space-x-2">
+            {/* Quick actions */}
+            {editingArticle && onDuplicate && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onDuplicate(editingArticle)}
+                iconName="Copy"
+                title="Duplicate article"
+              >
+                Duplicate
+              </Button>
+            )}
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+            >
+              <Icon name="X" size={24} />
+            </Button>
+          </div>
         </div>
 
         {/* Tab Navigation with Error Indicators */}
@@ -78,8 +150,8 @@ const ArticleEditor = ({
               return (
                 <button
                   key={tab.id}
-                  onClick={() => onTabChange(tab.id)}
-                  className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center space-x-2 relative ${
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center space-x-2 relative transition-colors ${
                     activeTab === tab.id
                       ? 'border-accent text-accent'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -120,10 +192,13 @@ const ArticleEditor = ({
               errors={errors}
               categories={categories}
               authors={authors}
-              onFormDataChange={onFormDataChange}
-              onAddArrayItem={onAddArrayItem}
-              onUpdateArrayItem={onUpdateArrayItem}
-              onRemoveArrayItem={onRemoveArrayItem}
+              onFormChange={handleFormChange}
+              onTitleChange={handleTitleChange}
+              onAddArrayItem={addArrayItem}
+              onUpdateArrayItem={updateArrayItem}
+              onRemoveArrayItem={removeArrayItem}
+              onUpdateSlug={onUpdateSlug}
+              editingArticle={editingArticle}
             />
           )}
 
@@ -131,7 +206,7 @@ const ArticleEditor = ({
             <ContentTab 
               formData={formData}
               errors={errors}
-              onContentChange={onContentChange}
+              onContentChange={handleContentChange}
               editingArticle={editingArticle}
             />
           )}
@@ -139,7 +214,8 @@ const ArticleEditor = ({
           {activeTab === 'media' && (
             <MediaTab 
               formData={formData}
-              onFormDataChange={onFormDataChange}
+              errors={errors}
+              onFormChange={handleFormChange}
             />
           )}
 
@@ -147,10 +223,10 @@ const ArticleEditor = ({
             <SeoTab 
               formData={formData}
               errors={errors}
-              onFormDataChange={onFormDataChange}
-              onAddArrayItem={onAddArrayItem}
-              onUpdateArrayItem={onUpdateArrayItem}
-              onRemoveArrayItem={onRemoveArrayItem}
+              onFormChange={handleFormChange}
+              onAddArrayItem={addArrayItem}
+              onUpdateArrayItem={updateArrayItem}
+              onRemoveArrayItem={removeArrayItem}
             />
           )}
 
@@ -158,7 +234,9 @@ const ArticleEditor = ({
             <SettingsTab 
               formData={formData}
               userProfile={userProfile}
-              onFormDataChange={onFormDataChange}
+              onFormChange={handleFormChange}
+              onSchedule={onSchedule}
+              editingArticle={editingArticle}
             />
           )}
         </div>
@@ -175,7 +253,8 @@ const ArticleEditor = ({
             </Button>
             
             {hasErrors && (
-              <span className="text-sm text-red-600">
+              <span className="text-sm text-red-600 flex items-center">
+                <Icon name="AlertCircle" size={16} className="mr-2" />
                 Please fix validation errors
               </span>
             )}
@@ -187,9 +266,10 @@ const ArticleEditor = ({
              (formData.status === 'draft' || formData.status === 'pending_approval') && (
               <Button
                 variant="outline"
-                onClick={() => onSaveWithStatus('published')}
+                onClick={() => handleSaveWithStatusValidation('published')}
                 className="bg-green-50 border-green-200 text-green-800 hover:bg-green-100"
                 disabled={saving}
+                iconName="Globe"
               >
                 Save & Publish
               </Button>
@@ -199,9 +279,10 @@ const ArticleEditor = ({
             {userProfile?.role === 'contributor' && formData.status === 'draft' && (
               <Button
                 variant="outline"
-                onClick={() => onSaveWithStatus('pending_approval')}
+                onClick={() => handleSaveWithStatusValidation('pending_approval')}
                 className="bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100"
                 disabled={saving}
+                iconName="Send"
               >
                 Submit for Review
               </Button>
@@ -212,7 +293,7 @@ const ArticleEditor = ({
               onClick={onSave}
               className="bg-accent hover:bg-accent/90"
               iconName="Save"
-              disabled={saving}
+              disabled={saving || hasErrors}
             >
               {saving ? 'Saving...' : (editingArticle ? 'Update Article' : 'Save Article')}
             </Button>
@@ -229,52 +310,73 @@ const OverviewTab = ({
   errors, 
   categories, 
   authors, 
-  onFormDataChange, 
+  onFormChange,
+  onTitleChange,
   onAddArrayItem, 
   onUpdateArrayItem, 
-  onRemoveArrayItem 
+  onRemoveArrayItem,
+  onUpdateSlug,
+  editingArticle
 }) => (
   <div className="space-y-6">
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <Input
         label="Title"
         value={formData.title}
-        onChange={(e) => onFormDataChange({ title: e.target.value })}
+        onChange={(e) => onTitleChange(e.target.value)}
         required
         placeholder="Enter article title"
         error={errors.title}
       />
       
-      <Input
-        label="Slug"
-        value={formData.slug}
-        onChange={(e) => onFormDataChange({ slug: e.target.value })}
-        placeholder="auto-generated-from-title"
-        error={errors.slug}
-      />
+      <div className="relative">
+        <Input
+          label="Slug"
+          value={formData.slug}
+          onChange={(e) => onFormChange({ slug: e.target.value })}
+          placeholder="auto-generated-from-title"
+          error={errors.slug}
+        />
+        {editingArticle && onUpdateSlug && (
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={() => onUpdateSlug(editingArticle.id, formData.title)}
+            className="absolute right-2 top-8 text-xs"
+          >
+            Regenerate
+          </Button>
+        )}
+      </div>
     </div>
 
     <Input
       label="Excerpt"
       value={formData.excerpt}
-      onChange={(e) => onFormDataChange({ excerpt: e.target.value })}
+      onChange={(e) => onFormChange({ excerpt: e.target.value })}
       placeholder="Brief description of the article"
       error={errors.excerpt}
+      maxLength={300}
+      showCount
     />
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <Select
         label="Category"
         value={formData.category_id}
-        onChange={(value) => onFormDataChange({ category_id: value })}
-        options={categories.map(cat => ({ value: cat.id, label: cat.name }))}
+        onChange={(value) => onFormChange({ category_id: value })}
+        options={[
+          { value: '', label: 'Select category...' },
+          ...categories.map(cat => ({ value: cat.id, label: cat.name }))
+        ]}
         error={errors.category_id}
+        required
       />
 
       <Select
         label="Status"
         value={formData.status}
-        onChange={(value) => onFormDataChange({ status: value })}
+        onChange={(value) => onFormChange({ status: value })}
         options={[
           { value: 'draft', label: 'Draft' },
           { value: 'pending_approval', label: 'Pending Approval' },
@@ -301,7 +403,7 @@ const OverviewTab = ({
         value=""
         onChange={(value) => {
           if (value && !formData.co_authors.includes(value)) {
-            onFormDataChange({
+            onFormChange({
               co_authors: [...formData.co_authors, value]
             });
           }
@@ -347,18 +449,16 @@ const ContentTab = ({ formData, errors, onContentChange, editingArticle }) => (
       label="Article Content"
       minHeight="400px"
       error={errors.content}
+      placeholder="Start writing your article..."
     />
 
     {/* Content Preview & Stats */}
     {formData.content && (
       <div className="border-t pt-6">
-        <h3 className="font-medium mb-4">Content Preview</h3>
-        <div className="border rounded-lg p-4 bg-gray-50 max-h-96 overflow-y-auto">
-          <TiptapContentDisplay content={formData.content?.json || formData.content} />
-        </div>
+        <h3 className="font-medium mb-4">Content Preview & Statistics</h3>
         
         {/* Content Stats */}
-        <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
+        <div className="grid grid-cols-4 gap-4 text-sm mb-4">
           <div className="bg-blue-50 p-3 rounded-lg text-center">
             <div className="font-medium text-blue-900">{formData.content.wordCount || 0}</div>
             <div className="text-blue-600 text-xs">Words</div>
@@ -371,6 +471,14 @@ const ContentTab = ({ formData, errors, onContentChange, editingArticle }) => (
             <div className="font-medium text-purple-900">{Math.ceil((formData.content.wordCount || 0) / 200)}</div>
             <div className="text-purple-600 text-xs">Min Read</div>
           </div>
+          <div className="bg-orange-50 p-3 rounded-lg text-center">
+            <div className="font-medium text-orange-900">{Math.ceil((formData.content.wordCount || 0) / 100)}</div>
+            <div className="text-orange-600 text-xs">SEO Score</div>
+          </div>
+        </div>
+        
+        <div className="border rounded-lg p-4 bg-gray-50 max-h-96 overflow-y-auto">
+          <TiptapContentDisplay content={formData.content?.json || formData.content} />
         </div>
       </div>
     )}
@@ -378,48 +486,53 @@ const ContentTab = ({ formData, errors, onContentChange, editingArticle }) => (
 );
 
 // Media Tab Component
-const MediaTab = ({ formData, onFormDataChange }) => (
+const MediaTab = ({ formData, errors, onFormChange }) => (
   <div className="space-y-6">
     <ImageUpload
       label="Featured Image"
       value={formData.featured_image}
-      onChange={(value) => onFormDataChange({ featured_image: value })}
+      onChange={(value) => onFormChange({ featured_image: value })}
       bucket="media"
       folder="articles"
+      error={errors.featured_image}
     />
 
     <Input
       label="Featured Image Alt Text"
       value={formData.featured_image_alt}
-      onChange={(e) => onFormDataChange({ featured_image_alt: e.target.value })}
+      onChange={(e) => onFormChange({ featured_image_alt: e.target.value })}
       placeholder="Describe the image for accessibility"
+      error={errors.featured_image_alt}
     />
 
     <Input
       label="Featured Video URL (optional)"
       value={formData.featured_video}
-      onChange={(e) => onFormDataChange({ featured_video: e.target.value })}
+      onChange={(e) => onFormChange({ featured_video: e.target.value })}
       placeholder="YouTube, Vimeo, or direct video URL"
+      error={errors.featured_video}
     />
   </div>
 );
 
 // SEO Tab Component
-const SeoTab = ({ formData, errors, onFormDataChange, onAddArrayItem, onUpdateArrayItem, onRemoveArrayItem }) => (
+const SeoTab = ({ formData, errors, onFormChange, onAddArrayItem, onUpdateArrayItem, onRemoveArrayItem }) => (
   <div className="space-y-6">
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <Input
         label="Meta Title"
         value={formData.meta_title}
-        onChange={(e) => onFormDataChange({ meta_title: e.target.value })}
+        onChange={(e) => onFormChange({ meta_title: e.target.value })}
         placeholder="SEO optimized title (60 chars max)"
         error={errors.meta_title}
+        maxLength={60}
+        showCount
       />
       
       <Input
         label="Canonical URL (optional)"
         value={formData.canonical_url}
-        onChange={(e) => onFormDataChange({ canonical_url: e.target.value })}
+        onChange={(e) => onFormChange({ canonical_url: e.target.value })}
         placeholder={formData.slug ? `https://rule27design.com/articles/${formData.slug}` : "Will auto-generate from article slug"}
         description="Leave empty to auto-generate from article slug"
         error={errors.canonical_url}
@@ -429,9 +542,11 @@ const SeoTab = ({ formData, errors, onFormDataChange, onAddArrayItem, onUpdateAr
     <Input
       label="Meta Description"
       value={formData.meta_description}
-      onChange={(e) => onFormDataChange({ meta_description: e.target.value })}
+      onChange={(e) => onFormChange({ meta_description: e.target.value })}
       placeholder="SEO description (155-160 characters)"
       error={errors.meta_description}
+      maxLength={160}
+      showCount
     />
 
     {/* Meta Keywords */}
@@ -451,21 +566,21 @@ const SeoTab = ({ formData, errors, onFormDataChange, onAddArrayItem, onUpdateAr
         <Input
           label="Open Graph Title"
           value={formData.og_title}
-          onChange={(e) => onFormDataChange({ og_title: e.target.value })}
+          onChange={(e) => onFormChange({ og_title: e.target.value })}
           placeholder="Title for social media sharing"
         />
         
         <Input
           label="Open Graph Description"
           value={formData.og_description}
-          onChange={(e) => onFormDataChange({ og_description: e.target.value })}
+          onChange={(e) => onFormChange({ og_description: e.target.value })}
           placeholder="Description for social media sharing"
         />
 
         <ImageUpload
           label="Open Graph Image"
           value={formData.og_image}
-          onChange={(value) => onFormDataChange({ og_image: value })}
+          onChange={(value) => onFormChange({ og_image: value })}
           bucket="media"
           folder="articles/social"
           showPreview={true}
@@ -475,7 +590,7 @@ const SeoTab = ({ formData, errors, onFormDataChange, onAddArrayItem, onUpdateAr
         <Select
           label="Twitter Card Type"
           value={formData.twitter_card}
-          onChange={(value) => onFormDataChange({ twitter_card: value })}
+          onChange={(value) => onFormChange({ twitter_card: value })}
           options={[
             { value: 'summary', label: 'Summary' },
             { value: 'summary_large_image', label: 'Summary Large Image' },
@@ -489,7 +604,7 @@ const SeoTab = ({ formData, errors, onFormDataChange, onAddArrayItem, onUpdateAr
 );
 
 // Settings Tab Component
-const SettingsTab = ({ formData, userProfile, onFormDataChange }) => (
+const SettingsTab = ({ formData, userProfile, onFormChange, onSchedule, editingArticle }) => (
   <div className="space-y-6">
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="space-y-4">
@@ -497,21 +612,21 @@ const SettingsTab = ({ formData, userProfile, onFormDataChange }) => (
         
         <Checkbox
           checked={formData.is_featured}
-          onCheckedChange={(checked) => onFormDataChange({ is_featured: checked })}
+          onCheckedChange={(checked) => onFormChange({ is_featured: checked })}
           label="Featured Article"
           description="Display this article prominently on the homepage"
         />
         
         <Checkbox
           checked={formData.enable_comments}
-          onCheckedChange={(checked) => onFormDataChange({ enable_comments: checked })}
+          onCheckedChange={(checked) => onFormChange({ enable_comments: checked })}
           label="Enable Comments"
           description="Allow readers to comment on this article"
         />
         
         <Checkbox
           checked={formData.enable_reactions}
-          onCheckedChange={(checked) => onFormDataChange({ enable_reactions: checked })}
+          onCheckedChange={(checked) => onFormChange({ enable_reactions: checked })}
           label="Enable Reactions"
           description="Allow readers to like and share this article"
         />
@@ -520,8 +635,19 @@ const SettingsTab = ({ formData, userProfile, onFormDataChange }) => (
           type="datetime-local"
           label="Scheduled Publication (optional)"
           value={formData.scheduled_at}
-          onChange={(e) => onFormDataChange({ scheduled_at: e.target.value })}
+          onChange={(e) => onFormChange({ scheduled_at: e.target.value })}
         />
+        
+        {formData.scheduled_at && onSchedule && editingArticle && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onSchedule(editingArticle.id, formData.scheduled_at)}
+            iconName="Calendar"
+          >
+            Schedule Article
+          </Button>
+        )}
       </div>
 
       <div className="space-y-4">
@@ -531,7 +657,7 @@ const SettingsTab = ({ formData, userProfile, onFormDataChange }) => (
           <label className="block text-sm font-medium mb-2">Internal Notes</label>
           <textarea
             value={formData.internal_notes}
-            onChange={(e) => onFormDataChange({ internal_notes: e.target.value })}
+            onChange={(e) => onFormChange({ internal_notes: e.target.value })}
             className="w-full h-24 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent"
             placeholder="Notes for the editorial team..."
           />
