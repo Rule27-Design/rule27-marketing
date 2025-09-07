@@ -1,11 +1,7 @@
-// src/components/ui/TiptapContentEditor.jsx - Simplified version without tables
-import React, { useEffect } from 'react';
+// src/components/ui/TiptapContentEditor.jsx - Minimal version with no conflicts
+import React, { useEffect, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Image from '@tiptap/extension-image';
-import Link from '@tiptap/extension-link';
-import TextAlign from '@tiptap/extension-text-align';
-import Highlight from '@tiptap/extension-highlight';
 import Button from './Button';
 import Icon from '../AppIcon';
 import { cn } from '../../utils/cn';
@@ -18,36 +14,13 @@ const TiptapContentEditor = ({
   className = '',
   minHeight = '300px'
 }) => {
+  const [isReady, setIsReady] = useState(false);
+
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        bulletList: {
-          keepMarks: true,
-          keepAttributes: false,
-        },
-        orderedList: {
-          keepMarks: true,
-          keepAttributes: false,
-        },
-      }),
-      Image.configure({
-        inline: true,
-        allowBase64: true,
-      }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-accent underline',
-        },
-      }),
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-      Highlight.configure({
-        multicolor: true,
-      }),
+      StarterKit,
     ],
-    content: value?.html || value?.content || '',
+    content: '',
     editorProps: {
       attributes: {
         class: cn(
@@ -57,90 +30,142 @@ const TiptapContentEditor = ({
         style: `min-height: ${minHeight}`,
       },
     },
+    onCreate: ({ editor }) => {
+      setIsReady(true);
+      // Set initial content after editor is ready
+      if (value) {
+        setTimeout(() => {
+          try {
+            let content = '';
+            if (value.html) {
+              content = value.html;
+            } else if (value.content) {
+              content = typeof value.content === 'string' ? value.content : '';
+            } else if (typeof value === 'string') {
+              content = value;
+            }
+            
+            if (content && editor) {
+              editor.commands.setContent(content);
+            }
+          } catch (error) {
+            console.error('Error setting initial content:', error);
+          }
+        }, 100);
+      }
+    },
     onUpdate: ({ editor }) => {
-      const json = editor.getJSON();
-      const html = editor.getHTML();
-      const text = editor.getText();
+      if (!editor) return;
       
-      // Create structured content for JSONB storage
-      const structuredContent = {
-        type: 'tiptap',
-        json: json, // Tiptap's native JSON format
-        html: html, // HTML representation
-        text: text, // Plain text
-        wordCount: text.split(/\s+/).filter(word => word.length > 0).length,
-        characterCount: text.length,
-        lastModified: new Date().toISOString(),
-        version: '1.0'
-      };
-      
-      onChange(structuredContent);
+      try {
+        const html = editor.getHTML();
+        const text = editor.getText();
+        
+        // Create structured content for JSONB storage
+        const structuredContent = {
+          type: 'tiptap',
+          html: html,
+          text: text,
+          wordCount: text.split(/\s+/).filter(word => word.length > 0).length,
+          characterCount: text.length,
+          lastModified: new Date().toISOString(),
+          version: '1.0'
+        };
+        
+        onChange?.(structuredContent);
+      } catch (error) {
+        console.error('Error updating content:', error);
+      }
     },
   });
 
-  // Update editor when value changes externally
+  // Update editor when value changes externally (but not on first load)
   useEffect(() => {
-    if (editor && value) {
-      let content = '';
-      
-      // Handle different content formats
-      if (value.json) {
-        // Tiptap JSON format
-        if (JSON.stringify(editor.getJSON()) !== JSON.stringify(value.json)) {
-          editor.commands.setContent(value.json);
+    if (!editor || !isReady) return;
+    
+    // Only update if the content has actually changed
+    try {
+      if (value) {
+        let content = '';
+        if (value.html) {
+          content = value.html;
+        } else if (value.content) {
+          content = typeof value.content === 'string' ? value.content : '';
+        } else if (typeof value === 'string') {
+          content = value;
         }
-        return;
-      } else if (value.html) {
-        // HTML content
-        content = value.html;
-      } else if (value.content) {
-        // Legacy content format
-        content = value.content;
-      } else if (typeof value === 'string') {
-        // Plain string
-        content = value;
+        
+        const currentContent = editor.getHTML();
+        if (content && content !== currentContent) {
+          editor.commands.setContent(content);
+        }
       }
-      
-      if (content && editor.getHTML() !== content) {
-        editor.commands.setContent(content);
-      }
+    } catch (error) {
+      console.error('Error updating editor content:', error);
     }
-  }, [editor, value]);
+  }, [editor, value, isReady]);
 
-  const addImage = () => {
-    const url = window.prompt('Enter image URL:');
-    if (url && editor) {
-      editor.chain().focus().setImage({ src: url }).run();
-    }
-  };
+  // Show loading state while editor initializes
+  if (!editor || !isReady) {
+    return (
+      <div className={cn('space-y-2', className)}>
+        {label && (
+          <label className="block text-sm font-medium text-gray-700">
+            {label}
+          </label>
+        )}
+        <div className="border rounded-lg p-4 bg-gray-50 min-h-[300px] flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-2"></div>
+            <div className="text-sm text-gray-600">Loading editor...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const addLink = () => {
-    const url = window.prompt('Enter link URL:');
-    if (url && editor) {
-      if (editor.state.selection.empty) {
-        const text = window.prompt('Enter link text:');
-        if (text) {
-          editor.chain().focus().insertContent(`<a href="${url}">${text}</a>`).run();
+    if (!editor) return;
+    
+    try {
+      const url = window.prompt('Enter link URL:');
+      if (url) {
+        if (editor.state.selection.empty) {
+          const text = window.prompt('Enter link text:');
+          if (text) {
+            editor.chain().focus().insertContent(`<a href="${url}" class="text-accent underline">${text}</a>`).run();
+          }
+        } else {
+          editor.chain().focus().setLink({ href: url }).run();
         }
-      } else {
-        editor.chain().focus().setLink({ href: url }).run();
       }
+    } catch (error) {
+      console.error('Error adding link:', error);
     }
   };
 
   const removeLink = () => {
-    if (editor) {
+    if (!editor) return;
+    
+    try {
       editor.chain().focus().unsetLink().run();
+    } catch (error) {
+      console.error('Error removing link:', error);
     }
   };
 
-  if (!editor) {
-    return (
-      <div className="border rounded-lg p-4 bg-gray-50">
-        <div className="animate-pulse">Loading editor...</div>
-      </div>
-    );
-  }
+  const addImage = () => {
+    if (!editor) return;
+    
+    try {
+      const url = window.prompt('Enter image URL:');
+      if (url) {
+        editor.chain().focus().setImage({ src: url }).run();
+      }
+    } catch (error) {
+      console.error('Error adding image:', error);
+    }
+  };
 
   return (
     <div className={cn('space-y-2', className)}>
@@ -160,10 +185,10 @@ const TiptapContentEditor = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => editor.chain().focus().toggleBold().run()}
+                onClick={() => editor?.chain()?.focus()?.toggleBold()?.run()}
                 className={cn(
                   'h-8 w-8 p-0',
-                  editor.isActive('bold') ? 'bg-accent text-white' : ''
+                  editor?.isActive('bold') ? 'bg-accent text-white' : ''
                 )}
                 title="Bold (Ctrl+B)"
               >
@@ -173,10 +198,10 @@ const TiptapContentEditor = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => editor.chain().focus().toggleItalic().run()}
+                onClick={() => editor?.chain()?.focus()?.toggleItalic()?.run()}
                 className={cn(
                   'h-8 w-8 p-0',
-                  editor.isActive('italic') ? 'bg-accent text-white' : ''
+                  editor?.isActive('italic') ? 'bg-accent text-white' : ''
                 )}
                 title="Italic (Ctrl+I)"
               >
@@ -186,10 +211,10 @@ const TiptapContentEditor = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => editor.chain().focus().toggleStrike().run()}
+                onClick={() => editor?.chain()?.focus()?.toggleStrike()?.run()}
                 className={cn(
                   'h-8 w-8 p-0',
-                  editor.isActive('strike') ? 'bg-accent text-white' : ''
+                  editor?.isActive('strike') ? 'bg-accent text-white' : ''
                 )}
                 title="Strikethrough"
               >
@@ -199,14 +224,14 @@ const TiptapContentEditor = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => editor.chain().focus().toggleHighlight().run()}
+                onClick={() => editor?.chain()?.focus()?.toggleCode()?.run()}
                 className={cn(
                   'h-8 w-8 p-0',
-                  editor.isActive('highlight') ? 'bg-accent text-white' : ''
+                  editor?.isActive('code') ? 'bg-accent text-white' : ''
                 )}
-                title="Highlight"
+                title="Code"
               >
-                <Icon name="Highlighter" size={14} />
+                <Icon name="Code" size={14} />
               </Button>
             </div>
 
@@ -216,10 +241,10 @@ const TiptapContentEditor = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => editor.chain().focus().setParagraph().run()}
+                onClick={() => editor?.chain()?.focus()?.setParagraph()?.run()}
                 className={cn(
                   'h-8 w-8 p-0 text-xs',
-                  editor.isActive('paragraph') ? 'bg-accent text-white' : ''
+                  editor?.isActive('paragraph') ? 'bg-accent text-white' : ''
                 )}
                 title="Paragraph"
               >
@@ -231,10 +256,10 @@ const TiptapContentEditor = ({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => editor.chain().focus().toggleHeading({ level }).run()}
+                  onClick={() => editor?.chain()?.focus()?.toggleHeading({ level })?.run()}
                   className={cn(
                     'h-8 w-8 p-0 text-xs',
-                    editor.isActive('heading', { level }) ? 'bg-accent text-white' : ''
+                    editor?.isActive('heading', { level }) ? 'bg-accent text-white' : ''
                   )}
                   title={`Heading ${level}`}
                 >
@@ -249,10 +274,10 @@ const TiptapContentEditor = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => editor.chain().focus().toggleBulletList().run()}
+                onClick={() => editor?.chain()?.focus()?.toggleBulletList()?.run()}
                 className={cn(
                   'h-8 w-8 p-0',
-                  editor.isActive('bulletList') ? 'bg-accent text-white' : ''
+                  editor?.isActive('bulletList') ? 'bg-accent text-white' : ''
                 )}
                 title="Bullet List"
               >
@@ -262,10 +287,10 @@ const TiptapContentEditor = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                onClick={() => editor?.chain()?.focus()?.toggleOrderedList()?.run()}
                 className={cn(
                   'h-8 w-8 p-0',
-                  editor.isActive('orderedList') ? 'bg-accent text-white' : ''
+                  editor?.isActive('orderedList') ? 'bg-accent text-white' : ''
                 )}
                 title="Numbered List"
               >
@@ -275,10 +300,10 @@ const TiptapContentEditor = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                onClick={() => editor?.chain()?.focus()?.toggleBlockquote()?.run()}
                 className={cn(
                   'h-8 w-8 p-0',
-                  editor.isActive('blockquote') ? 'bg-accent text-white' : ''
+                  editor?.isActive('blockquote') ? 'bg-accent text-white' : ''
                 )}
                 title="Quote"
               >
@@ -325,54 +350,11 @@ const TiptapContentEditor = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => editor.chain().focus().setHorizontalRule().run()}
+                onClick={() => editor?.chain()?.focus()?.setHorizontalRule()?.run()}
                 className="h-8 w-8 p-0"
                 title="Horizontal Rule"
               >
                 <Icon name="Minus" size={14} />
-              </Button>
-            </div>
-
-            {/* Text Align */}
-            <div className="flex items-center space-x-1 border-r border-gray-300 pr-2 mr-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => editor.chain().focus().setTextAlign('left').run()}
-                className={cn(
-                  'h-8 w-8 p-0',
-                  editor.isActive({ textAlign: 'left' }) ? 'bg-accent text-white' : ''
-                )}
-                title="Align Left"
-              >
-                <Icon name="AlignLeft" size={14} />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => editor.chain().focus().setTextAlign('center').run()}
-                className={cn(
-                  'h-8 w-8 p-0',
-                  editor.isActive({ textAlign: 'center' }) ? 'bg-accent text-white' : ''
-                )}
-                title="Align Center"
-              >
-                <Icon name="AlignCenter" size={14} />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => editor.chain().focus().setTextAlign('right').run()}
-                className={cn(
-                  'h-8 w-8 p-0',
-                  editor.isActive({ textAlign: 'right' }) ? 'bg-accent text-white' : ''
-                )}
-                title="Align Right"
-              >
-                <Icon name="AlignRight" size={14} />
               </Button>
             </div>
 
@@ -382,8 +364,8 @@ const TiptapContentEditor = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => editor.chain().focus().undo().run()}
-                disabled={!editor.can().undo()}
+                onClick={() => editor?.chain()?.focus()?.undo()?.run()}
+                disabled={!editor?.can()?.undo()}
                 className="h-8 w-8 p-0"
                 title="Undo (Ctrl+Z)"
               >
@@ -393,8 +375,8 @@ const TiptapContentEditor = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => editor.chain().focus().redo().run()}
-                disabled={!editor.can().redo()}
+                onClick={() => editor?.chain()?.focus()?.redo()?.run()}
+                disabled={!editor?.can()?.redo()}
                 className="h-8 w-8 p-0"
                 title="Redo (Ctrl+Y)"
               >
@@ -426,12 +408,12 @@ const TiptapContentEditor = ({
           <div className="mt-2 space-y-1 pl-4 grid grid-cols-2 gap-2">
             <div><kbd className="bg-gray-100 px-1 rounded text-xs">Ctrl+B</kbd> Bold</div>
             <div><kbd className="bg-gray-100 px-1 rounded text-xs">Ctrl+I</kbd> Italic</div>
-            <div><kbd className="bg-gray-100 px-1 rounded text-xs">Ctrl+K</kbd> Link</div>
             <div><kbd className="bg-gray-100 px-1 rounded text-xs">Ctrl+Shift+8</kbd> Bullet List</div>
             <div><kbd className="bg-gray-100 px-1 rounded text-xs">Ctrl+Shift+7</kbd> Numbered List</div>
             <div><kbd className="bg-gray-100 px-1 rounded text-xs">Ctrl+Alt+1-3</kbd> Headings</div>
             <div><kbd className="bg-gray-100 px-1 rounded text-xs">Ctrl+Z</kbd> Undo</div>
             <div><kbd className="bg-gray-100 px-1 rounded text-xs">Ctrl+Y</kbd> Redo</div>
+            <div><kbd className="bg-gray-100 px-1 rounded text-xs">Ctrl+K</kbd> Link</div>
           </div>
         </details>
       </div>
