@@ -17,7 +17,7 @@ import ContactConsultationPortal from './pages/contact-consultation-portal';
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminServices from './pages/admin/Services';
-import AdminArticles from './pages/admin/Articles';
+import AdminArticles from './pages/admin/articles/Articles'
 import AdminCaseStudies from './pages/admin/CaseStudies';
 import AdminProfiles from './pages/admin/Profiles';
 import AdminLeads from './pages/admin/Leads';
