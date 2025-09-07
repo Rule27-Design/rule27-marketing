@@ -1,4 +1,4 @@
-// src/pages/admin/Articles.jsx - Complete Enhanced Version with Tiptap and Responsive Table
+// src/pages/admin/Articles.jsx - Complete Enhanced Version with Tiptap and Content Loading Fix
 import React, { useState, useEffect } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
@@ -69,6 +69,68 @@ const Articles = () => {
     schema_markup: null
   });
 
+  // CONTENT DEBUGGING AND FIXING FUNCTION
+  const debugAndFixContent = (content, articleTitle = 'Unknown') => {
+    console.log(`🔧 [${articleTitle}] Debugging content:`, content);
+    console.log(`🔧 [${articleTitle}] Content type:`, typeof content);
+    
+    // If content is null or undefined, return empty content
+    if (!content) {
+      console.log(`🔧 [${articleTitle}] No content, returning empty`);
+      return { html: '', text: '', wordCount: 0 };
+    }
+    
+    // If content is a string (likely HTML), convert to proper format
+    if (typeof content === 'string') {
+      console.log(`🔧 [${articleTitle}] Content is string, converting to object`);
+      return {
+        type: 'tiptap',
+        html: content,
+        text: content.replace(/<[^>]*>/g, ''),
+        wordCount: content.replace(/<[^>]*>/g, '').split(/\s+/).filter(w => w.length > 0).length,
+        version: '1.0'
+      };
+    }
+    
+    // If content is object, check what type
+    if (typeof content === 'object') {
+      console.log(`🔧 [${articleTitle}] Content is object with keys:`, Object.keys(content));
+      
+      // If it's already in the right format
+      if (content.html) {
+        console.log(`🔧 [${articleTitle}] Content has html property, using as-is`);
+        return content;
+      }
+      
+      // If it has nested content
+      if (content.content) {
+        console.log(`🔧 [${articleTitle}] Content has nested content property`);
+        if (typeof content.content === 'string') {
+          return {
+            type: 'tiptap',
+            html: content.content,
+            text: content.content.replace(/<[^>]*>/g, ''),
+            wordCount: content.content.replace(/<[^>]*>/g, '').split(/\s+/).filter(w => w.length > 0).length,
+            version: '1.0'
+          };
+        }
+      }
+      
+      // Last resort - try to stringify for debugging
+      console.log(`🔧 [${articleTitle}] Unrecognized format, creating debug content`);
+      return {
+        type: 'tiptap',
+        html: `<p><strong>Debug:</strong> Content format not recognized</p><pre>${JSON.stringify(content, null, 2)}</pre>`,
+        text: `Debug: ${JSON.stringify(content)}`,
+        wordCount: 5,
+        version: '1.0'
+      };
+    }
+    
+    console.log(`🔧 [${articleTitle}] Completely unknown content type`);
+    return { html: '', text: '', wordCount: 0 };
+  };
+
   useEffect(() => {
     fetchArticles();
     fetchCategories();
@@ -88,10 +150,9 @@ const Articles = () => {
 
   const fetchArticles = async () => {
     try {
-      console.log('🔍 Starting fetchArticles...');
+      console.log('🔍 Fetching articles...');
       setLoading(true);
       
-      // Use the fixed foreign key relationship names
       let query = supabase
         .from('articles')
         .select(`
@@ -110,7 +171,7 @@ const Articles = () => {
       const { data, error } = await query;
 
       if (error) {
-        console.error('Query error:', error);
+        console.error('❌ Query error:', error);
         // Fallback to simpler query if joins fail
         console.log('🔍 Trying fallback query...');
         const { data: fallbackData, error: fallbackError } = await supabase
@@ -119,14 +180,37 @@ const Articles = () => {
           .order('updated_at', { ascending: false });
         
         if (fallbackError) throw fallbackError;
+        
+        // LOG CONTENT FORMATS FOR DEBUGGING
+        if (fallbackData && fallbackData.length > 0) {
+          console.log('🔍 SAMPLE CONTENT from database:');
+          fallbackData.slice(0, 3).forEach((article, index) => {
+            console.log(`  Article ${index + 1} (${article.title}):`);
+            console.log(`    Content type: ${typeof article.content}`);
+            console.log(`    Content:`, article.content);
+          });
+        }
+        
         console.log(`🔍 Fallback query successful: ${fallbackData?.length || 0} articles`);
         setArticles(fallbackData || []);
       } else {
+        // LOG CONTENT FORMATS FOR DEBUGGING
+        if (data && data.length > 0) {
+          console.log('🔍 SAMPLE CONTENT from database:');
+          data.slice(0, 3).forEach((article, index) => {
+            console.log(`  Article ${index + 1} (${article.title}):`);
+            console.log(`    Content type: ${typeof article.content}`);
+            console.log(`    Content:`, article.content);
+          });
+        }
+        
         console.log(`🔍 Main query successful: ${data?.length || 0} articles`);
         setArticles(data || []);
       }
     } catch (error) {
-      console.error('Error fetching articles:', error);
+      console.error('❌ Error fetching articles:', error);
+      setArticles([]);
+      // TODO: Replace with proper error handling instead of alert
       alert('Error loading articles: ' + error.message);
     } finally {
       setLoading(false);
@@ -273,13 +357,22 @@ const Articles = () => {
     }
   };
 
+  // FIXED HANDLE EDIT ARTICLE FUNCTION
   const handleEditArticle = (article) => {
+    console.log('📝 EDIT ARTICLE - Starting edit for:', article.title);
+    console.log('📝 EDIT ARTICLE - Raw article data:', article);
+    
     setEditingArticle(article);
-    setFormData({
+    
+    // Fix the content format
+    const fixedContent = debugAndFixContent(article.content, article.title);
+    console.log('📝 EDIT ARTICLE - Fixed content:', fixedContent);
+    
+    const newFormData = {
       title: article.title || '',
       slug: article.slug || '',
       excerpt: article.excerpt || '',
-      content: article.content,
+      content: fixedContent, // Use the fixed content
       featured_image: article.featured_image || '',
       featured_image_alt: article.featured_image_alt || '',
       featured_video: article.featured_video || '',
@@ -302,8 +395,16 @@ const Articles = () => {
       read_time: article.read_time,
       internal_notes: article.internal_notes || '',
       schema_markup: article.schema_markup
-    });
-    setShowEditor(true);
+    };
+    
+    console.log('📝 EDIT ARTICLE - Setting form data:', newFormData);
+    setFormData(newFormData);
+    
+    // Small delay to ensure form data is set before opening editor
+    setTimeout(() => {
+      console.log('📝 EDIT ARTICLE - Opening editor with content:', newFormData.content);
+      setShowEditor(true);
+    }, 100);
   };
 
   const resetForm = () => {
@@ -869,9 +970,39 @@ const Articles = () => {
 
               {activeTab === 'content' && (
                 <div className="space-y-6">
+                  {/* Debug Section for Development */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <h4 className="font-medium text-yellow-900 mb-2">Debug Info (Development Only)</h4>
+                      <div className="text-sm space-y-1">
+                        <div><strong>Form Content Type:</strong> {typeof formData.content}</div>
+                        <div><strong>Has Content:</strong> {formData.content ? 'Yes' : 'No'}</div>
+                        <div><strong>Content Keys:</strong> {formData.content && typeof formData.content === 'object' ? Object.keys(formData.content).join(', ') : 'N/A'}</div>
+                        <div><strong>Word Count:</strong> {formData.content?.wordCount || 0}</div>
+                        {formData.content && (
+                          <details className="mt-2">
+                            <summary className="cursor-pointer text-yellow-800">Show Raw Content</summary>
+                            <pre className="mt-2 p-2 bg-white rounded text-xs overflow-auto max-h-32">
+                              {JSON.stringify(formData.content, null, 2)}
+                            </pre>
+                          </details>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* UPDATED TIPTAP CONTENT EDITOR WITH KEY AND LOGGING */}
                   <TiptapContentEditor
+                    key={`content-editor-${editingArticle?.id || 'new'}-${JSON.stringify(formData.content)?.length || 0}`} // Force re-render when content changes
                     value={formData.content}
-                    onChange={(content) => setFormData({ ...formData, content })}
+                    onChange={(content) => {
+                      console.log('📝 CONTENT CHANGED in editor:', content);
+                      setFormData(prev => {
+                        const newData = { ...prev, content };
+                        console.log('📝 UPDATING form data with new content:', newData);
+                        return newData;
+                      });
+                    }}
                     label="Article Content"
                     minHeight="400px"
                   />
