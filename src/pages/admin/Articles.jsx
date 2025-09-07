@@ -71,100 +71,65 @@ const Articles = () => {
 
   // CONTENT DEBUGGING AND FIXING FUNCTION
   const debugAndFixContent = (content, articleTitle = 'Unknown') => {
-  console.log(`🔧 [${articleTitle}] Debugging content:`, content);
-  console.log(`🔧 [${articleTitle}] Content type:`, typeof content);
-  
-  // If content is null or undefined, return empty content
-  if (!content) {
-    console.log(`🔧 [${articleTitle}] No content, returning empty`);
-    return { html: '', text: '', wordCount: 0 };
-  }
-  
-  // If content is a string (likely HTML), convert to proper format
-  if (typeof content === 'string') {
-    console.log(`🔧 [${articleTitle}] Content is string, converting to object`);
-    return {
-      type: 'tiptap',
-      html: content,
-      text: content.replace(/<[^>]*>/g, ''),
-      wordCount: content.replace(/<[^>]*>/g, '').split(/\s+/).filter(w => w.length > 0).length,
-      version: '1.0'
-    };
-  }
-  
-  // If content is object, check what type
-  if (typeof content === 'object') {
-    console.log(`🔧 [${articleTitle}] Content is object with keys:`, Object.keys(content));
+    console.log(`🔧 [${articleTitle}] Debugging content:`, content);
+    console.log(`🔧 [${articleTitle}] Content type:`, typeof content);
     
-    // *** CRITICAL FIX: Check TipTap JSON format FIRST ***
-    if (content.type === 'doc' && Array.isArray(content.content)) {
-      console.log(`🔧 [${articleTitle}] ✅ DETECTED TIPTAP JSON FORMAT!`);
-      
-      // Extract text from TipTap JSON
-      const extractTextFromTipTap = (node) => {
-        let text = '';
-        if (node.text) {
-          text += node.text;
-        }
-        if (node.content && Array.isArray(node.content)) {
-          text += node.content.map(extractTextFromTipTap).join(' ');
-        }
-        return text;
-      };
-      
-      const extractedText = extractTextFromTipTap(content);
-      const wordCount = extractedText.split(/\s+/).filter(w => w.length > 0).length;
-      
-      console.log(`🔧 [${articleTitle}] ✅ Extracted text:`, extractedText.substring(0, 100));
-      console.log(`🔧 [${articleTitle}] ✅ Word count:`, wordCount);
-      
+    // If content is null or undefined, return empty content
+    if (!content) {
+      console.log(`🔧 [${articleTitle}] No content, returning empty`);
+      return { html: '', text: '', wordCount: 0 };
+    }
+    
+    // If content is a string (likely HTML), convert to proper format
+    if (typeof content === 'string') {
+      console.log(`🔧 [${articleTitle}] Content is string, converting to object`);
       return {
         type: 'tiptap',
-        json: content, // Pass the JSON to the editor
-        text: extractedText,
-        wordCount: wordCount,
-        version: '2.0'
-      };
-    }
-    
-    // Already processed format with html
-    if (content.html) {
-      console.log(`🔧 [${articleTitle}] Content has html property, using as-is`);
-      return content;
-    }
-    
-    // Already processed format with json
-    if (content.json) {
-      console.log(`🔧 [${articleTitle}] Content has json property, using as-is`);
-      return content;
-    }
-    
-    // Legacy format - STRING content only
-    if (content.content && typeof content.content === 'string') {
-      console.log(`🔧 [${articleTitle}] Legacy string content`);
-      return {
-        type: 'tiptap',
-        html: content.content,
-        text: content.content.replace(/<[^>]*>/g, ''),
-        wordCount: content.content.replace(/<[^>]*>/g, '').split(/\s+/).filter(w => w.length > 0).length,
+        html: content,
+        text: content.replace(/<[^>]*>/g, ''),
+        wordCount: content.replace(/<[^>]*>/g, '').split(/\s+/).filter(w => w.length > 0).length,
         version: '1.0'
       };
     }
     
-    // Fallback
-    console.log(`🔧 [${articleTitle}] ❌ Unrecognized format`);
-    return {
-      type: 'tiptap',
-      html: `<p><strong>Debug:</strong> Content format not recognized</p><pre>${JSON.stringify(content, null, 2)}</pre>`,
-      text: `Debug: ${JSON.stringify(content)}`,
-      wordCount: 5,
-      version: '1.0'
-    };
-  }
-  
-  console.log(`🔧 [${articleTitle}] Unknown content type`);
-  return { html: '', text: '', wordCount: 0 };
-};
+    // If content is object, check what type
+    if (typeof content === 'object') {
+      console.log(`🔧 [${articleTitle}] Content is object with keys:`, Object.keys(content));
+      
+      // If it's already in the right format
+      if (content.html) {
+        console.log(`🔧 [${articleTitle}] Content has html property, using as-is`);
+        return content;
+      }
+      
+      // If it has nested content
+      if (content.content) {
+        console.log(`🔧 [${articleTitle}] Content has nested content property`);
+        if (typeof content.content === 'string') {
+          return {
+            type: 'tiptap',
+            html: content.content,
+            text: content.content.replace(/<[^>]*>/g, ''),
+            wordCount: content.content.replace(/<[^>]*>/g, '').split(/\s+/).filter(w => w.length > 0).length,
+            version: '1.0'
+          };
+        }
+      }
+      
+      // Last resort - try to stringify for debugging
+      console.log(`🔧 [${articleTitle}] Unrecognized format, creating debug content`);
+      return {
+        type: 'tiptap',
+        html: `<p><strong>Debug:</strong> Content format not recognized</p><pre>${JSON.stringify(content, null, 2)}</pre>`,
+        text: `Debug: ${JSON.stringify(content)}`,
+        wordCount: 5,
+        version: '1.0'
+      };
+    }
+    
+    console.log(`🔧 [${articleTitle}] Completely unknown content type`);
+    return { html: '', text: '', wordCount: 0 };
+  };
 
   useEffect(() => {
     fetchArticles();
@@ -308,15 +273,30 @@ const Articles = () => {
         formData.read_time = Math.ceil(formData.content.wordCount / 200); // 200 words per minute
       }
 
-      // Prepare data
+      // Clean up timestamp fields - convert empty strings to null
+      const cleanTimestampField = (value) => {
+        if (value === '' || value === null || value === undefined) {
+          return null;
+        }
+        return value;
+      };
+
+      // Prepare data with cleaned timestamp fields
       const articleData = {
         ...formData,
         author_id: userProfile.id,
         updated_by: userProfile.id,
         tags: formData.tags.filter(Boolean),
         meta_keywords: formData.meta_keywords.filter(Boolean),
-        co_authors: formData.co_authors.filter(Boolean)
+        co_authors: formData.co_authors.filter(Boolean),
+        // Clean timestamp fields
+        scheduled_at: cleanTimestampField(formData.scheduled_at),
+        submitted_for_approval_at: cleanTimestampField(formData.submitted_for_approval_at),
+        approved_at: cleanTimestampField(formData.approved_at),
+        published_at: cleanTimestampField(formData.published_at)
       };
+
+      console.log('💾 Saving article data:', articleData);
 
       if (editingArticle) {
         // Update existing article
@@ -326,6 +306,7 @@ const Articles = () => {
           .eq('id', editingArticle.id);
 
         if (error) throw error;
+        console.log('✅ Article updated successfully');
       } else {
         // Create new article
         articleData.created_by = userProfile.id;
@@ -334,6 +315,7 @@ const Articles = () => {
           .insert(articleData);
 
         if (error) throw error;
+        console.log('✅ Article created successfully');
       }
 
       // Refresh articles list
@@ -343,7 +325,7 @@ const Articles = () => {
       setActiveTab('overview');
       resetForm();
     } catch (error) {
-      console.error('Error saving article:', error);
+      console.error('❌ Error saving article:', error);
       alert('Error saving article: ' + error.message);
     }
   };
