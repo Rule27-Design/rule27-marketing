@@ -1,4 +1,4 @@
-// src/pages/admin/Articles.jsx - Complete Fixed Version with All Improvements
+// src/pages/admin/Articles.jsx - Complete Fixed Version with Tab Error Indicators
 import React, { useState, useEffect, useCallback } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
@@ -72,6 +72,56 @@ const Articles = () => {
 
   // Validation hook
   const { errors, validate, clearErrors, hasErrors } = useValidation(validationSchemas.article);
+
+  // Tab Error Indicator Helper Functions
+  const getFieldToTabMapping = () => ({
+    // Overview tab
+    title: 'overview',
+    slug: 'overview', 
+    excerpt: 'overview',
+    category_id: 'overview',
+    tags: 'overview',
+    co_authors: 'overview',
+    
+    // Content tab
+    content: 'content',
+    
+    // Media tab
+    featured_image: 'media',
+    featured_image_alt: 'media',
+    featured_video: 'media',
+    
+    // SEO tab
+    meta_title: 'seo',
+    meta_description: 'seo',
+    meta_keywords: 'seo',
+    og_title: 'seo',
+    og_description: 'seo',
+    og_image: 'seo',
+    twitter_card: 'seo',
+    canonical_url: 'seo',
+    
+    // Settings tab
+    is_featured: 'settings',
+    enable_comments: 'settings',
+    enable_reactions: 'settings',
+    scheduled_at: 'settings',
+    internal_notes: 'settings'
+  });
+
+  const getTabsWithErrors = (errors) => {
+    const fieldToTab = getFieldToTabMapping();
+    const tabsWithErrors = new Set();
+    
+    Object.keys(errors).forEach(field => {
+      const tab = fieldToTab[field];
+      if (tab) {
+        tabsWithErrors.add(tab);
+      }
+    });
+    
+    return Array.from(tabsWithErrors);
+  };
 
   // FIXED: Content debugging function (cleaned up for production)
   const debugAndFixContent = useCallback((content, articleTitle = 'Unknown') => {
@@ -754,7 +804,7 @@ const Articles = () => {
           </div>
         </div>
 
-        {/* FIXED: Enhanced Article Editor Modal */}
+        {/* FIXED: Enhanced Article Editor Modal with Tab Error Indicators */}
         {showEditor && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col">
@@ -784,7 +834,7 @@ const Articles = () => {
                 </Button>
               </div>
 
-              {/* Tab Navigation */}
+              {/* Tab Navigation with Error Indicators */}
               <div className="border-b bg-white">
                 <nav className="flex space-x-8 px-6">
                   {[
@@ -793,21 +843,44 @@ const Articles = () => {
                     { id: 'media', label: 'Media', icon: 'Image' },
                     { id: 'seo', label: 'SEO', icon: 'Search' },
                     { id: 'settings', label: 'Settings', icon: 'Settings' }
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center space-x-2 ${
-                        activeTab === tab.id
-                          ? 'border-accent text-accent'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      }`}
-                    >
-                      <Icon name={tab.icon} size={16} />
-                      <span>{tab.label}</span>
-                    </button>
-                  ))}
+                  ].map((tab) => {
+                    const tabHasErrors = getTabsWithErrors(errors).includes(tab.id);
+                    
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center space-x-2 relative ${
+                          activeTab === tab.id
+                            ? 'border-accent text-accent'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
+                      >
+                        <Icon name={tab.icon} size={16} />
+                        <span>{tab.label}</span>
+                        
+                        {/* Error indicator */}
+                        {tabHasErrors && (
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                        )}
+                      </button>
+                    );
+                  })}
                 </nav>
+                
+                {/* Error summary under tabs */}
+                {hasErrors && (
+                  <div className="px-6 py-2 bg-red-50 border-t border-red-200">
+                    <div className="flex items-center space-x-2">
+                      <Icon name="AlertCircle" size={16} className="text-red-600" />
+                      <span className="text-sm text-red-700">
+                        Errors in: {getTabsWithErrors(errors).map(tab => 
+                          tab.charAt(0).toUpperCase() + tab.slice(1)
+                        ).join(', ')}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Tab Content */}
