@@ -1,57 +1,164 @@
-import React from "react";
-import Icon from "./AppIcon";
+// src/components/ErrorBoundary.jsx - Enhanced version
+import React from 'react';
+import Icon from './AdminIcon';
+import Button from './ui/Button';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { 
+      hasError: false, 
+      error: null, 
+      errorInfo: null,
+      errorId: null
+    };
   }
 
   static getDerivedStateFromError(error) {
+    // Update state so the next render will show the fallback UI
     return { hasError: true };
   }
 
   componentDidCatch(error, errorInfo) {
-    error.__ErrorBoundary = true;
-    window.__COMPONENT_ERROR__?.(error, errorInfo);
-    // console.log("Error caught by ErrorBoundary:", error, errorInfo);
+    // Generate unique error ID for tracking
+    const errorId = `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    
+    this.setState({
+      error,
+      errorInfo,
+      errorId
+    });
+
+    // Log to external service (Sentry, LogRocket, etc.)
+    if (typeof window !== 'undefined' && window.Sentry) {
+      window.Sentry.captureException(error, {
+        tags: {
+          component: 'ErrorBoundary',
+          errorId: errorId
+        },
+        extra: errorInfo
+      });
+    }
+
+    // Log to console in development
+    if (process.env.NODE_ENV === 'development') {
+      console.group('🚨 Error Boundary Caught Error');
+      console.error('Error:', error);
+      console.error('Error Info:', errorInfo);
+      console.error('Component Stack:', errorInfo.componentStack);
+      console.groupEnd();
+    }
   }
 
+  handleRetry = () => {
+    this.setState({ 
+      hasError: false, 
+      error: null, 
+      errorInfo: null,
+      errorId: null 
+    });
+  };
+
+  handleReload = () => {
+    window.location.reload();
+  };
+
   render() {
-    if (this.state?.hasError) {
+    if (this.state.hasError) {
+      // Fallback UI based on props or default
+      if (this.props.fallback) {
+        return this.props.fallback(this.state.error, this.state.errorInfo, this.handleRetry);
+      }
+
+      // Default error UI
       return (
-        <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-          <div className="text-center p-8 max-w-md">
-            <div className="flex justify-center items-center mb-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="42px" height="42px" viewBox="0 0 32 33" fill="none">
-                <path d="M16 28.5C22.6274 28.5 28 23.1274 28 16.5C28 9.87258 22.6274 4.5 16 4.5C9.37258 4.5 4 9.87258 4 16.5C4 23.1274 9.37258 28.5 16 28.5Z" stroke="#343330" strokeWidth="2" strokeMiterlimit="10" />
-                <path d="M11.5 15.5C12.3284 15.5 13 14.8284 13 14C13 13.1716 12.3284 12.5 11.5 12.5C10.6716 12.5 10 13.1716 10 14C10 14.8284 10.6716 15.5 11.5 15.5Z" fill="#343330" />
-                <path d="M20.5 15.5C21.3284 15.5 22 14.8284 22 14C22 13.1716 21.3284 12.5 20.5 12.5C19.6716 12.5 19 13.1716 19 14C19 14.8284 19.6716 15.5 20.5 15.5Z" fill="#343330" />
-                <path d="M21 22.5C19.9625 20.7062 18.2213 19.5 16 19.5C13.7787 19.5 12.0375 20.7062 11 22.5" stroke="#343330" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+        <div className="min-h-[400px] flex items-center justify-center p-8">
+          <div className="max-w-md w-full text-center">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+              <Icon name="AlertTriangle" size={48} className="mx-auto text-red-500 mb-4" />
+              
+              <h2 className="text-xl font-heading-bold text-red-900 mb-2">
+                Something went wrong
+              </h2>
+              
+              <p className="text-red-700 mb-4">
+                {this.props.message || 'An unexpected error occurred. Please try again.'}
+              </p>
+
+              {this.state.errorId && (
+                <p className="text-xs text-red-600 mb-4 font-mono">
+                  Error ID: {this.state.errorId}
+                </p>
+              )}
+
+              <div className="space-y-2">
+                <Button
+                  onClick={this.handleRetry}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Try Again
+                </Button>
+                
+                <Button
+                  onClick={this.handleReload}
+                  variant="outline"
+                  className="w-full border-red-300 text-red-700 hover:bg-red-50"
+                >
+                  Reload Page
+                </Button>
+              </div>
+
+              {/* Development-only error details */}
+              {process.env.NODE_ENV === 'development' && this.state.error && (
+                <details className="mt-4 text-left">
+                  <summary className="cursor-pointer text-red-800 font-medium">
+                    Debug Details (Development Only)
+                  </summary>
+                  <div className="mt-2 p-3 bg-red-100 rounded text-xs font-mono text-red-900 overflow-auto max-h-32">
+                    <div className="mb-2">
+                      <strong>Error:</strong> {this.state.error.toString()}
+                    </div>
+                    <div>
+                      <strong>Stack:</strong>
+                      <pre className="whitespace-pre-wrap">{this.state.error.stack}</pre>
+                    </div>
+                  </div>
+                </details>
+              )}
             </div>
-            <div className="flex flex-col gap-1 text-center">
-              <h1 className="text-2xl font-medium text-neutral-800">Something went wrong</h1>
-              <p className="text-neutral-600 text-base w w-8/12 mx-auto">We encountered an unexpected error while processing your request.</p>
-            </div>
-            <div className="flex justify-center items-center mt-6">
-              <button
-                onClick={() => {
-                  window.location.href = "/";
-                }}
-                className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded flex items-center gap-2 transition-colors duration-200 shadow-sm"
-              >
-                <Icon name="ArrowLeft" size={18} color="#fff" />
-                Back
-              </button>
-            </div>
-          </div >
-        </div >
+          </div>
+        </div>
       );
     }
 
-    return this.props?.children;
+    return this.props.children;
   }
 }
+
+// Higher-order component for easier usage
+export const withErrorBoundary = (Component, errorBoundaryProps = {}) => {
+  return function WithErrorBoundaryComponent(props) {
+    return (
+      <ErrorBoundary {...errorBoundaryProps}>
+        <Component {...props} />
+      </ErrorBoundary>
+    );
+  };
+};
+
+// Hook for error reporting from functional components
+export const useErrorHandler = () => {
+  return React.useCallback((error, errorInfo = {}) => {
+    console.error('Manual error report:', error, errorInfo);
+    
+    if (typeof window !== 'undefined' && window.Sentry) {
+      window.Sentry.captureException(error, {
+        extra: errorInfo
+      });
+    }
+  }, []);
+};
 
 export default ErrorBoundary;

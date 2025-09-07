@@ -1,8 +1,11 @@
+// src/App.jsx - Updated with Toast Provider and Error Handling
 import React, { useEffect, useState } from "react";
 import Routes from "./Routes";
 import Hotjar from '@hotjar/browser';
 import ReactGA from 'react-ga4';
 import { supabase } from './lib/supabase';
+import { ToastProvider } from './components/ui/Toast';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -103,7 +106,15 @@ function App() {
     );
   }
 
-  return <Routes session={session} />;
+  return (
+    <ErrorBoundary
+      message="We're sorry, but something went wrong. Please refresh the page or try again later."
+    >
+      <ToastProvider>
+        <Routes session={session} />
+      </ToastProvider>
+    </ErrorBoundary>
+  );
 }
 
 export default App;

@@ -1,239 +1,464 @@
-// components/ui/Select.jsx - Shadcn style Select
-import React, { useState } from "react";
-import { ChevronDown, Check, Search, X } from "lucide-react";
-import { cn } from "../../utils/cn";
-import Button from "./Button";
-import Input from "./Input";
+// src/components/ui/Select.jsx - Enhanced with error support
+import React from 'react';
+import { cn } from '../../utils/cn';
 
-const Select = React.forwardRef(({
-    className,
-    options = [],
-    value,
-    defaultValue,
-    placeholder = "Select an option",
-    multiple = false,
-    disabled = false,
-    required = false,
-    label,
-    description,
-    error,
-    searchable = false,
-    clearable = false,
-    loading = false,
-    id,
-    name,
-    onChange,
-    onOpenChange,
-    ...props
+const Select = React.forwardRef(({ 
+  className, 
+  label, 
+  description, 
+  error, 
+  required = false,
+  disabled = false,
+  options = [],
+  value,
+  onChange,
+  placeholder = "Select an option...",
+  ...props 
 }, ref) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [searchTerm, setSearchTerm] = useState("");
-
-    // Generate unique ID if not provided
-    const selectId = id || `select-${Math.random()?.toString(36)?.substr(2, 9)}`;
-
-    // Filter options based on search
-    const filteredOptions = searchable && searchTerm
-        ? options?.filter(option =>
-            option?.label?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
-            (option?.value && option?.value?.toString()?.toLowerCase()?.includes(searchTerm?.toLowerCase()))
-        )
-        : options;
-
-    // Get selected option(s) for display
-    const getSelectedDisplay = () => {
-        if (!value) return placeholder;
-
-        if (multiple) {
-            const selectedOptions = options?.filter(opt => value?.includes(opt?.value));
-            if (selectedOptions?.length === 0) return placeholder;
-            if (selectedOptions?.length === 1) return selectedOptions?.[0]?.label;
-            return `${selectedOptions?.length} items selected`;
+  const selectId = React.useId();
+  
+  const handleChange = (e) => {
+    if (onChange) {
+      onChange(e.target.value);
+    }
+  };
+  
+  return (
+    <div className="w-full">
+      {label && (
+        <label 
+          htmlFor={selectId}
+          className={cn(
+            "block text-sm font-medium mb-2",
+            error ? "text-red-700" : "text-gray-700",
+            disabled && "text-gray-400"
+          )}
+        >
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+      )}
+      
+      <select
+        id={selectId}
+        value={value || ''}
+        onChange={handleChange}
+        className={cn(
+          "flex h-10 w-full rounded-md border px-3 py-2 text-sm",
+          "bg-white",
+          "focus:outline-none focus:ring-2 focus:ring-offset-2",
+          "disabled:cursor-not-allowed disabled:opacity-50",
+          "transition-colors duration-200",
+          error 
+            ? "border-red-300 focus:border-red-500 focus:ring-red-500" 
+            : "border-gray-300 focus:border-accent focus:ring-accent",
+          disabled && "bg-gray-50",
+          className
+        )}
+        ref={ref}
+        disabled={disabled}
+        aria-describedby={
+          error ? `${selectId}-error` : description ? `${selectId}-description` : undefined
         }
-
-        const selectedOption = options?.find(opt => opt?.value === value);
-        return selectedOption ? selectedOption?.label : placeholder;
-    };
-
-    const handleToggle = () => {
-        if (!disabled) {
-            const newIsOpen = !isOpen;
-            setIsOpen(newIsOpen);
-            onOpenChange?.(newIsOpen);
-            if (!newIsOpen) {
-                setSearchTerm("");
-            }
-        }
-    };
-
-    const handleOptionSelect = (option) => {
-        if (multiple) {
-            const newValue = value || [];
-            const updatedValue = newValue?.includes(option?.value)
-                ? newValue?.filter(v => v !== option?.value)
-                : [...newValue, option?.value];
-            onChange?.(updatedValue);
-        } else {
-            onChange?.(option?.value);
-            setIsOpen(false);
-            onOpenChange?.(false);
-        }
-    };
-
-    const handleClear = (e) => {
-        e?.stopPropagation();
-        onChange?.(multiple ? [] : '');
-    };
-
-    const handleSearchChange = (e) => {
-        setSearchTerm(e?.target?.value);
-    };
-
-    const isSelected = (optionValue) => {
-        if (multiple) {
-            return value?.includes(optionValue) || false;
-        }
-        return value === optionValue;
-    };
-
-    const hasValue = multiple ? value?.length > 0 : value !== undefined && value !== '';
-
-    return (
-        <div className={cn("relative", className)} style={{ zIndex: isOpen ? 999 : 'auto' }}>
-            {label && (
-                <label
-                    htmlFor={selectId}
-                    className={cn(
-                        "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mb-2 block",
-                        error ? "text-destructive" : "text-foreground"
-                    )}
-                >
-                    {label}
-                    {required && <span className="text-destructive ml-1">*</span>}
-                </label>
-            )}
-            <div className="relative">
-                <button
-                    ref={ref}
-                    id={selectId}
-                    type="button"
-                    className={cn(
-                        "flex h-10 w-full items-center justify-between rounded-md border border-input bg-white text-black px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-                        error && "border-destructive focus:ring-destructive",
-                        !hasValue && "text-muted-foreground"
-                    )}
-                    onClick={handleToggle}
-                    disabled={disabled}
-                    aria-expanded={isOpen}
-                    aria-haspopup="listbox"
-                    {...props}
-                >
-                    <span className="truncate">{getSelectedDisplay()}</span>
-
-                    <div className="flex items-center gap-1">
-                        {loading && (
-                            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                            </svg>
-                        )}
-
-                        {clearable && hasValue && !loading && (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-4 w-4"
-                                onClick={handleClear}
-                            >
-                                <X className="h-3 w-3" />
-                            </Button>
-                        )}
-
-                        <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
-                    </div>
-                </button>
-
-                {/* Hidden native select for form submission */}
-                <select
-                    name={name}
-                    value={value || ''}
-                    onChange={() => { }} // Controlled by our custom logic
-                    className="sr-only"
-                    tabIndex={-1}
-                    multiple={multiple}
-                    required={required}
-                >
-                    <option value="">Select...</option>
-                    {options?.map(option => (
-                        <option key={option?.value} value={option?.value}>
-                            {option?.label}
-                        </option>
-                    ))}
-                </select>
-
-                {/* Dropdown */}
-                {isOpen && (
-                    <div className="absolute z-50 w-full mt-1 bg-white text-black border border-border rounded-md shadow-lg overflow-visible">
-                        {searchable && (
-                            <div className="p-2 border-b">
-                                <div className="relative">
-                                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        placeholder="Search options..."
-                                        value={searchTerm}
-                                        onChange={handleSearchChange}
-                                        className="pl-8"
-                                    />
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="py-1 max-h-60 overflow-auto">
-                            {filteredOptions?.length === 0 ? (
-                                <div className="px-3 py-2 text-sm text-muted-foreground">
-                                    {searchTerm ? 'No options found' : 'No options available'}
-                                </div>
-                            ) : (
-                                filteredOptions?.map((option) => (
-                                    <div
-                                        key={option?.value}
-                                        className={cn(
-                                            "relative flex cursor-pointer select-none items-center rounded-sm px-3 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
-                                            isSelected(option?.value) && "bg-accent text-white",
-                                            option?.disabled && "pointer-events-none opacity-50"
-                                        )}
-                                        onClick={() => !option?.disabled && handleOptionSelect(option)}
-                                    >
-                                        <span className="flex-1">{option?.label}</span>
-                                        {multiple && isSelected(option?.value) && (
-                                            <Check className="h-4 w-4" />
-                                        )}
-                                        {option?.description && (
-                                            <span className="text-xs text-muted-foreground ml-2">
-                                                {option?.description}
-                                            </span>
-                                        )}
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-                )}
-            </div>
-            {description && !error && (
-                <p className="text-sm text-muted-foreground mt-1">
-                    {description}
-                </p>
-            )}
-            {error && (
-                <p className="text-sm text-destructive mt-1">
-                    {error}
-                </p>
-            )}
-        </div>
-    );
+        aria-invalid={error ? 'true' : 'false'}
+        {...props}
+      >
+        {placeholder && (
+          <option value="" disabled>
+            {placeholder}
+          </option>
+        )}
+        {options.map((option, index) => (
+          <option 
+            key={option.value || index} 
+            value={option.value}
+            disabled={option.disabled}
+          >
+            {option.label}
+          </option>
+        ))}
+      </select>
+      
+      {error && (
+        <p 
+          id={`${selectId}-error`}
+          className="mt-1 text-sm text-red-600 flex items-center"
+          role="alert"
+        >
+          <svg 
+            className="w-4 h-4 mr-1 flex-shrink-0" 
+            fill="currentColor" 
+            viewBox="0 0 20 20"
+          >
+            <path 
+              fillRule="evenodd" 
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" 
+              clipRule="evenodd" 
+            />
+          </svg>
+          {error}
+        </p>
+      )}
+      
+      {description && !error && (
+        <p 
+          id={`${selectId}-description`}
+          className="mt-1 text-sm text-gray-500"
+        >
+          {description}
+        </p>
+      )}
+    </div>
+  );
 });
 
 Select.displayName = "Select";
+
+// Multi-select component
+export const MultiSelect = React.forwardRef(({ 
+  options = [],
+  value = [],
+  onChange,
+  label,
+  description,
+  error,
+  required = false,
+  disabled = false,
+  placeholder = "Select options...",
+  className,
+  ...props 
+}, ref) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const selectRef = React.useRef();
+  const selectId = React.useId();
+  
+  const toggleOption = (optionValue) => {
+    if (disabled) return;
+    
+    const newValue = value.includes(optionValue)
+      ? value.filter(v => v !== optionValue)
+      : [...value, optionValue];
+    
+    if (onChange) {
+      onChange(newValue);
+    }
+  };
+  
+  const getSelectedLabels = () => {
+    return options
+      .filter(option => value.includes(option.value))
+      .map(option => option.label)
+      .join(', ');
+  };
+  
+  // Close on outside click
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (selectRef.current && !selectRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+  
+  return (
+    <div className="w-full" ref={selectRef}>
+      {label && (
+        <label 
+          htmlFor={selectId}
+          className={cn(
+            "block text-sm font-medium mb-2",
+            error ? "text-red-700" : "text-gray-700",
+            disabled && "text-gray-400"
+          )}
+        >
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+      )}
+      
+      <div className="relative">
+        <button
+          type="button"
+          id={selectId}
+          className={cn(
+            "flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm",
+            "bg-white text-left",
+            "focus:outline-none focus:ring-2 focus:ring-offset-2",
+            "disabled:cursor-not-allowed disabled:opacity-50",
+            "transition-colors duration-200",
+            error 
+              ? "border-red-300 focus:border-red-500 focus:ring-red-500" 
+              : "border-gray-300 focus:border-accent focus:ring-accent",
+            disabled && "bg-gray-50",
+            className
+          )}
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+          disabled={disabled}
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
+          aria-describedby={
+            error ? `${selectId}-error` : description ? `${selectId}-description` : undefined
+          }
+          {...props}
+        >
+          <span className={cn(
+            "block truncate",
+            value.length === 0 && "text-gray-400"
+          )}>
+            {value.length === 0 ? placeholder : getSelectedLabels()}
+          </span>
+          <svg
+            className={cn(
+              "h-4 w-4 transition-transform duration-200",
+              isOpen && "rotate-180"
+            )}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        
+        {isOpen && (
+          <div className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+            {options.map((option, index) => (
+              <div
+                key={option.value || index}
+                className={cn(
+                  "flex items-center px-3 py-2 text-sm cursor-pointer",
+                  "hover:bg-gray-50",
+                  value.includes(option.value) && "bg-accent/10",
+                  option.disabled && "opacity-50 cursor-not-allowed"
+                )}
+                onClick={() => !option.disabled && toggleOption(option.value)}
+              >
+                <input
+                  type="checkbox"
+                  checked={value.includes(option.value)}
+                  onChange={() => {}} // Handled by onClick
+                  className="mr-2 h-4 w-4 text-accent focus:ring-accent border-gray-300 rounded"
+                  disabled={option.disabled}
+                />
+                <span className="flex-1">{option.label}</span>
+              </div>
+            ))}
+            {options.length === 0 && (
+              <div className="px-3 py-2 text-sm text-gray-500">
+                No options available
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      
+      {error && (
+        <p 
+          id={`${selectId}-error`}
+          className="mt-1 text-sm text-red-600 flex items-center"
+          role="alert"
+        >
+          <svg 
+            className="w-4 h-4 mr-1 flex-shrink-0" 
+            fill="currentColor" 
+            viewBox="0 0 20 20"
+          >
+            <path 
+              fillRule="evenodd" 
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" 
+              clipRule="evenodd" 
+            />
+          </svg>
+          {error}
+        </p>
+      )}
+      
+      {description && !error && (
+        <p 
+          id={`${selectId}-description`}
+          className="mt-1 text-sm text-gray-500"
+        >
+          {description}
+        </p>
+      )}
+    </div>
+  );
+});
+
+MultiSelect.displayName = "MultiSelect";
+
+// Combobox (searchable select)
+export const Combobox = React.forwardRef(({ 
+  options = [],
+  value,
+  onChange,
+  label,
+  description,
+  error,
+  required = false,
+  disabled = false,
+  placeholder = "Search and select...",
+  className,
+  ...props 
+}, ref) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const comboboxRef = React.useRef();
+  const inputRef = React.useRef();
+  const comboboxId = React.useId();
+  
+  const filteredOptions = options.filter(option =>
+    option.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
+  const selectedOption = options.find(option => option.value === value);
+  
+  const selectOption = (optionValue) => {
+    if (onChange) {
+      onChange(optionValue);
+    }
+    setIsOpen(false);
+    setSearchTerm('');
+  };
+  
+  // Close on outside click
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (comboboxRef.current && !comboboxRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+  
+  return (
+    <div className="w-full" ref={comboboxRef}>
+      {label && (
+        <label 
+          htmlFor={comboboxId}
+          className={cn(
+            "block text-sm font-medium mb-2",
+            error ? "text-red-700" : "text-gray-700",
+            disabled && "text-gray-400"
+          )}
+        >
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+      )}
+      
+      <div className="relative">
+        <input
+          ref={inputRef}
+          type="text"
+          id={comboboxId}
+          className={cn(
+            "flex h-10 w-full rounded-md border px-3 py-2 text-sm",
+            "placeholder:text-gray-400",
+            "focus:outline-none focus:ring-2 focus:ring-offset-2",
+            "disabled:cursor-not-allowed disabled:opacity-50",
+            "transition-colors duration-200",
+            error 
+              ? "border-red-300 focus:border-red-500 focus:ring-red-500" 
+              : "border-gray-300 focus:border-accent focus:ring-accent",
+            disabled && "bg-gray-50",
+            className
+          )}
+          value={isOpen ? searchTerm : (selectedOption?.label || '')}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onFocus={() => setIsOpen(true)}
+          placeholder={placeholder}
+          disabled={disabled}
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
+          aria-describedby={
+            error ? `${comboboxId}-error` : description ? `${comboboxId}-description` : undefined
+          }
+          {...props}
+        />
+        
+        <button
+          type="button"
+          className="absolute inset-y-0 right-0 flex items-center pr-3"
+          onClick={() => setIsOpen(!isOpen)}
+          tabIndex={-1}
+        >
+          <svg
+            className={cn(
+              "h-4 w-4 transition-transform duration-200",
+              isOpen && "rotate-180"
+            )}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        
+        {isOpen && (
+          <div className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+            {filteredOptions.map((option, index) => (
+              <div
+                key={option.value || index}
+                className={cn(
+                  "px-3 py-2 text-sm cursor-pointer",
+                  "hover:bg-gray-50",
+                  option.value === value && "bg-accent/10",
+                  option.disabled && "opacity-50 cursor-not-allowed"
+                )}
+                onClick={() => !option.disabled && selectOption(option.value)}
+              >
+                {option.label}
+              </div>
+            ))}
+            {filteredOptions.length === 0 && (
+              <div className="px-3 py-2 text-sm text-gray-500">
+                No options found
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      
+      {error && (
+        <p 
+          id={`${comboboxId}-error`}
+          className="mt-1 text-sm text-red-600 flex items-center"
+          role="alert"
+        >
+          <svg 
+            className="w-4 h-4 mr-1 flex-shrink-0" 
+            fill="currentColor" 
+            viewBox="0 0 20 20"
+          >
+            <path 
+              fillRule="evenodd" 
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" 
+              clipRule="evenodd" 
+            />
+          </svg>
+          {error}
+        </p>
+      )}
+      
+      {description && !error && (
+        <p 
+          id={`${comboboxId}-description`}
+          className="mt-1 text-sm text-gray-500"
+        >
+          {description}
+        </p>
+      )}
+    </div>
+  );
+});
+
+Combobox.displayName = "Combobox";
 
 export default Select;
