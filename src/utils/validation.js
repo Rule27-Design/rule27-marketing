@@ -1,4 +1,6 @@
 // src/utils/validation.js
+import React from 'react';
+
 export class ValidationError extends Error {
   constructor(field, message) {
     super(message);

@@ -1,4 +1,4 @@
-// src/pages/admin/Articles.jsx - Fixed version with improvements
+// src/pages/admin/Articles.jsx - Complete Fixed Version with All Improvements
 import React, { useState, useEffect, useCallback } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
