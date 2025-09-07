@@ -240,6 +240,11 @@ const Articles = () => {
         sanitizedData.slug = generateSlug(sanitizedData.title);
       }
 
+      // AUTO-GENERATE CANONICAL URL if not provided and slug exists
+      if (!sanitizedData.canonical_url && sanitizedData.slug) {
+        sanitizedData.canonical_url = `https://rule27design.com/articles/${sanitizedData.slug}`;
+      }
+
       // Validate data
       if (!validate(sanitizedData)) {
         toast.error('Validation failed', 'Please fix the errors and try again');
@@ -1015,7 +1020,8 @@ const Articles = () => {
                         label="Canonical URL (optional)"
                         value={formData.canonical_url}
                         onChange={(e) => setFormData({ ...formData, canonical_url: e.target.value })}
-                        placeholder="https://example.com/canonical-url"
+                        placeholder={formData.slug ? `https://rule27design.com/articles/${formData.slug}` : "Will auto-generate from article slug"}
+                        description="Leave empty to auto-generate from article slug"
                         error={errors.canonical_url}
                       />
                     </div>
