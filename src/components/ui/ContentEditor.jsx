@@ -287,7 +287,7 @@ const ContentEditor = ({
 export const ContentDisplay = ({ content, className = '' }) => {
   if (!content) return null;
 
-  // Handle different content formats
+  // Handle different content formats safely
   let blocks = [];
   
   try {
@@ -296,51 +296,93 @@ export const ContentDisplay = ({ content, className = '' }) => {
       return (
         <div className={cn('prose prose-sm max-w-none', className)}>
           {content.split('\n').map((line, index) => (
-            <p key={index}>{line}</p>
+            <p key={index}>{line || '\u00A0'}</p>
           ))}
         </div>
       );
-    } else if (content.blocks && Array.isArray(content.blocks)) {
-      blocks = content.blocks;
-    } else if (content.content) {
-      // Fallback to content field
-      return (
-        <div className={cn('prose prose-sm max-w-none', className)}>
-          {content.content}
-        </div>
-      );
+    } else if (content && typeof content === 'object') {
+      if (content.blocks && Array.isArray(content.blocks)) {
+        blocks = content.blocks;
+      } else if (content.content) {
+        // Handle content object with content property
+        if (typeof content.content === 'string') {
+          return (
+            <div className={cn('prose prose-sm max-w-none', className)}>
+              {content.content.split('\n').map((line, index) => (
+                <p key={index}>{line || '\u00A0'}</p>
+              ))}
+            </div>
+          );
+        } else {
+          // Try to render as JSON if it's an object
+          return (
+            <div className={cn('prose prose-sm max-w-none', className)}>
+              <pre className="text-xs bg-gray-100 p-2 rounded">
+                {JSON.stringify(content.content, null, 2)}
+              </pre>
+            </div>
+          );
+        }
+      } else {
+        // Try to render the object as JSON
+        return (
+          <div className={cn('prose prose-sm max-w-none', className)}>
+            <pre className="text-xs bg-gray-100 p-2 rounded">
+              {JSON.stringify(content, null, 2)}
+            </pre>
+          </div>
+        );
+      }
+    } else {
+      return <div className={className}>Content could not be displayed</div>;
     }
   } catch (error) {
     console.error('Error displaying content:', error);
-    return <div className={className}>Content could not be displayed</div>;
+    return (
+      <div className={className}>
+        <p className="text-red-500 text-sm">Error displaying content</p>
+        <pre className="text-xs bg-gray-100 p-2 rounded mt-2">
+          {String(content)}
+        </pre>
+      </div>
+    );
   }
 
   return (
     <div className={cn('prose prose-sm max-w-none', className)}>
       {blocks.map((block, index) => {
-        switch (block.type) {
-          case 'heading':
-            const HeadingTag = `h${Math.min(block.level || 1, 6)}`;
-            return React.createElement(
-              HeadingTag,
-              { key: index, className: 'font-heading-bold uppercase' },
-              block.content
-            );
-          
-          case 'paragraph':
-            return <p key={index}>{block.content}</p>;
-          
-          case 'list':
-            return (
-              <ul key={index}>
-                {(block.items || []).map((item, itemIndex) => (
-                  <li key={itemIndex}>{item}</li>
-                ))}
-              </ul>
-            );
-          
-          default:
-            return <p key={index}>{block.content || ''}</p>;
+        try {
+          if (!block || typeof block !== 'object') {
+            return <p key={index}>{String(block || '')}</p>;
+          }
+
+          switch (block.type) {
+            case 'heading':
+              const HeadingTag = `h${Math.min(block.level || 1, 6)}`;
+              return React.createElement(
+                HeadingTag,
+                { key: index, className: 'font-heading-bold uppercase' },
+                block.content || ''
+              );
+            
+            case 'paragraph':
+              return <p key={index}>{block.content || ''}</p>;
+            
+            case 'list':
+              return (
+                <ul key={index}>
+                  {(block.items || []).map((item, itemIndex) => (
+                    <li key={itemIndex}>{item || ''}</li>
+                  ))}
+                </ul>
+              );
+            
+            default:
+              return <p key={index}>{block.content || String(block)}</p>;
+          }
+        } catch (blockError) {
+          console.error('Error rendering block:', blockError, block);
+          return <p key={index} className="text-red-500 text-sm">Error rendering content block</p>;
         }
       })}
     </div>
