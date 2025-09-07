@@ -1,4 +1,4 @@
-// src/pages/admin/Articles.jsx - Complete Enhanced Version with All Fixes
+// src/pages/admin/Articles.jsx - Complete Enhanced Version with Tiptap and Responsive Table
 import React, { useState, useEffect } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
@@ -8,7 +8,7 @@ import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import { Checkbox } from '../../components/ui/Checkbox';
 import ImageUpload from '../../components/ui/ImageUpload';
-import ContentEditor, { ContentDisplay } from '../../components/ui/ContentEditor';
+import TiptapContentEditor, { TiptapContentDisplay } from '../../components/ui/TiptapContentEditor';
 
 const Articles = () => {
   const { userProfile } = useOutletContext();
@@ -185,7 +185,7 @@ const Articles = () => {
       }
 
       // Calculate read time if content exists
-      if (formData.content && typeof formData.content === 'object' && formData.content.wordCount) {
+      if (formData.content && formData.content.wordCount) {
         formData.read_time = Math.ceil(formData.content.wordCount / 200); // 200 words per minute
       }
 
@@ -455,31 +455,31 @@ const Articles = () => {
         </div>
       </div>
 
-      {/* Articles Table */}
+      {/* Responsive Articles Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[1000px]">
             <thead className="bg-gray-50 border-b">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5">
                   Article
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Author
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   Category
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                   Status
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Engagement
+                <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                  Stats
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                   Updated
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Actions
                 </th>
               </tr>
@@ -487,68 +487,97 @@ const Articles = () => {
             <tbody className="divide-y divide-gray-200">
               {filteredArticles.map((article) => (
                 <tr key={article.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
+                  {/* Article Column - 40% width */}
+                  <td className="px-4 py-4 w-2/5">
                     <div className="flex items-start space-x-3">
                       {article.featured_image && (
                         <img 
                           src={article.featured_image} 
                           alt={article.title}
-                          className="w-12 h-12 object-cover rounded"
+                          className="w-16 h-12 object-cover rounded flex-shrink-0"
                         />
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 truncate">{article.title}</p>
-                        <p className="text-sm text-gray-500 truncate">{article.excerpt}</p>
-                        <div className="flex items-center space-x-2 mt-1">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-900 text-sm leading-5 line-clamp-2">{article.title}</p>
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{article.excerpt}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2 mt-2">
                           {article.is_featured && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                              <Icon name="Star" size={12} className="mr-1" />
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                              <Icon name="Star" size={10} className="mr-1" />
                               Featured
                             </span>
                           )}
                           {article.read_time && (
-                            <span className="text-xs text-gray-400">{article.read_time} min read</span>
+                            <span className="text-xs text-gray-400">{article.read_time}min</span>
                           )}
                         </div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+
+                  {/* Author Column - Compact */}
+                  <td className="px-3 py-4 w-32">
                     <div className="flex items-center space-x-2">
                       {article.author?.avatar_url && (
                         <img 
                           src={article.author.avatar_url} 
                           alt={article.author.full_name}
-                          className="w-6 h-6 rounded-full"
+                          className="w-6 h-6 rounded-full flex-shrink-0"
                         />
                       )}
-                      <span className="text-sm text-gray-600">
-                        {article.author?.full_name || 'Unknown'}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {article.category?.name || 'Uncategorized'}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadgeClass(article.status)}`}>
-                      {article.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <div className="text-sm space-y-1">
-                      <div className="flex items-center justify-center space-x-3 text-xs text-gray-500">
-                        <span><Icon name="Eye" size={12} className="inline mr-1" />{article.view_count || 0}</span>
-                        <span><Icon name="Heart" size={12} className="inline mr-1" />{article.like_count || 0}</span>
-                        <span><Icon name="Share" size={12} className="inline mr-1" />{article.share_count || 0}</span>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-xs text-gray-600 font-medium block truncate">
+                          {article.author?.full_name || 'Unknown'}
+                        </span>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {new Date(article.updated_at).toLocaleDateString()}
+
+                  {/* Category Column - Compact */}
+                  <td className="px-3 py-4 w-24">
+                    <span className="text-xs text-gray-600 truncate block">
+                      {article.category?.name || 'None'}
+                    </span>
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end space-x-2">
+
+                  {/* Status Column - Compact */}
+                  <td className="px-3 py-4 w-20">
+                    <span className={`px-2 py-1 text-xs rounded-full truncate block text-center ${getStatusBadgeClass(article.status)}`}>
+                      {article.status === 'pending_approval' ? 'Pending' : article.status}
+                    </span>
+                  </td>
+
+                  {/* Stats Column - Compact with stacked layout */}
+                  <td className="px-3 py-4 text-center w-24">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
+                        <span className="flex items-center">
+                          <Icon name="Eye" size={10} className="mr-1" />
+                          {article.view_count || 0}
+                        </span>
+                        <span className="flex items-center">
+                          <Icon name="Heart" size={10} className="mr-1" />
+                          {article.like_count || 0}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Updated Column - Compact */}
+                  <td className="px-3 py-4 text-xs text-gray-600 w-20">
+                    {new Date(article.updated_at).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </td>
+
+                  {/* Actions Column - Compact */}
+                  <td className="px-3 py-4 text-right w-32">
+                    <div className="flex items-center justify-end space-x-1">
                       {/* Status Actions - Different logic for Admins vs Contributors */}
                       {userProfile?.role === 'admin' ? (
                         // Admin can directly publish or change any status
@@ -558,37 +587,27 @@ const Articles = () => {
                               size="xs"
                               variant="default"
                               onClick={() => handleStatusChange(article.id, 'published')}
-                              className="bg-green-500 hover:bg-green-600"
+                              className="bg-green-500 hover:bg-green-600 text-xs px-2 py-1"
                             >
                               Publish
                             </Button>
                           )}
                           {article.status === 'pending_approval' && (
-                            <>
-                              <Button
-                                size="xs"
-                                variant="default"
-                                onClick={() => handleStatusChange(article.id, 'approved')}
-                                className="bg-blue-500 hover:bg-blue-600"
-                              >
-                                Approve
-                              </Button>
-                              <Button
-                                size="xs"
-                                variant="default"
-                                onClick={() => handleStatusChange(article.id, 'published')}
-                                className="bg-green-500 hover:bg-green-600"
-                              >
-                                Publish
-                              </Button>
-                            </>
+                            <Button
+                              size="xs"
+                              variant="default"
+                              onClick={() => handleStatusChange(article.id, 'published')}
+                              className="bg-green-500 hover:bg-green-600 text-xs px-2 py-1"
+                            >
+                              Publish
+                            </Button>
                           )}
                           {article.status === 'approved' && (
                             <Button
                               size="xs"
                               variant="default"
                               onClick={() => handleStatusChange(article.id, 'published')}
-                              className="bg-green-500 hover:bg-green-600"
+                              className="bg-green-500 hover:bg-green-600 text-xs px-2 py-1"
                             >
                               Publish
                             </Button>
@@ -598,7 +617,7 @@ const Articles = () => {
                               size="xs"
                               variant="outline"
                               onClick={() => handleStatusChange(article.id, 'archived')}
-                              className="border-orange-300 text-orange-600 hover:bg-orange-50"
+                              className="border-orange-300 text-orange-600 hover:bg-orange-50 text-xs px-2 py-1"
                             >
                               Archive
                             </Button>
@@ -612,8 +631,9 @@ const Articles = () => {
                               size="xs"
                               variant="outline"
                               onClick={() => handleStatusChange(article.id, 'pending_approval')}
+                              className="text-xs px-2 py-1"
                             >
-                              Submit for Review
+                              Submit
                             </Button>
                           )}
                         </>
@@ -625,8 +645,9 @@ const Articles = () => {
                         variant="ghost"
                         onClick={() => handleEditArticle(article)}
                         title="Edit article"
+                        className="p-1"
                       >
-                        <Icon name="Edit" size={16} />
+                        <Icon name="Edit" size={14} />
                       </Button>
                       
                       {(userProfile?.role === 'admin' || article.author_id === userProfile?.id) && (
@@ -634,10 +655,10 @@ const Articles = () => {
                           size="xs"
                           variant="ghost"
                           onClick={() => handleDeleteArticle(article.id)}
-                          className="text-red-600 hover:text-red-700"
+                          className="text-red-600 hover:text-red-700 p-1"
                           title="Delete article"
                         >
-                          <Icon name="Trash2" size={16} />
+                          <Icon name="Trash2" size={14} />
                         </Button>
                       )}
                     </div>
@@ -665,7 +686,7 @@ const Articles = () => {
         </div>
       </div>
 
-      {/* Enhanced Article Editor Modal */}
+      {/* Enhanced Article Editor Modal with Tiptap */}
       {showEditor && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col">
@@ -848,7 +869,7 @@ const Articles = () => {
 
               {activeTab === 'content' && (
                 <div className="space-y-6">
-                  <ContentEditor
+                  <TiptapContentEditor
                     value={formData.content}
                     onChange={(content) => setFormData({ ...formData, content })}
                     label="Article Content"
@@ -860,7 +881,23 @@ const Articles = () => {
                     <div className="border-t pt-6">
                       <h3 className="font-medium mb-4">Content Preview</h3>
                       <div className="border rounded-lg p-4 bg-gray-50 max-h-96 overflow-y-auto">
-                        <ContentDisplay content={formData.content} />
+                        <TiptapContentDisplay content={formData.content} />
+                      </div>
+                      
+                      {/* Content Stats */}
+                      <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
+                        <div className="bg-blue-50 p-3 rounded-lg text-center">
+                          <div className="font-medium text-blue-900">{formData.content.wordCount || 0}</div>
+                          <div className="text-blue-600 text-xs">Words</div>
+                        </div>
+                        <div className="bg-green-50 p-3 rounded-lg text-center">
+                          <div className="font-medium text-green-900">{formData.content.characterCount || 0}</div>
+                          <div className="text-green-600 text-xs">Characters</div>
+                        </div>
+                        <div className="bg-purple-50 p-3 rounded-lg text-center">
+                          <div className="font-medium text-purple-900">{Math.ceil((formData.content.wordCount || 0) / 200)}</div>
+                          <div className="text-purple-600 text-xs">Min Read</div>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -1041,11 +1078,11 @@ const Articles = () => {
                         />
                       </div>
 
-                      {formData.read_time && (
+                      {formData.content?.wordCount && (
                         <div className="bg-blue-50 p-3 rounded-lg">
                           <p className="text-sm text-blue-800">
                             <Icon name="Clock" size={16} className="inline mr-2" />
-                            Estimated read time: {formData.read_time} minutes
+                            Estimated read time: {Math.ceil(formData.content.wordCount / 200)} minutes
                           </p>
                         </div>
                       )}
