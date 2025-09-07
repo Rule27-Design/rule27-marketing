@@ -94,7 +94,7 @@ const Articles = () => {
         .from('articles')
         .select(`
           *,
-          author:profiles!author_id(id, full_name, email, avatar_url),
+          author:profiles!articles_author_id_fkey(id, full_name, email, avatar_url),
           category:categories!category_id(id, name, slug),
           co_authors_data:profiles!inner(id, full_name, email)
         `)
