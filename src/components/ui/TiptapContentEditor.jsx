@@ -1,13 +1,9 @@
-// src/components/ui/TiptapContentEditor.jsx
+// src/components/ui/TiptapContentEditor.jsx - Simplified version without tables
 import React, { useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
-import Table from '@tiptap/extension-table';
-import TableRow from '@tiptap/extension-table-row';
-import TableCell from '@tiptap/extension-table-cell';
-import TableHeader from '@tiptap/extension-table-header';
 import TextAlign from '@tiptap/extension-text-align';
 import Highlight from '@tiptap/extension-highlight';
 import Button from './Button';
@@ -44,12 +40,6 @@ const TiptapContentEditor = ({
           class: 'text-accent underline',
         },
       }),
-      Table.configure({
-        resizable: true,
-      }),
-      TableRow,
-      TableHeader,
-      TableCell,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
@@ -135,12 +125,6 @@ const TiptapContentEditor = ({
       } else {
         editor.chain().focus().setLink({ href: url }).run();
       }
-    }
-  };
-
-  const insertTable = () => {
-    if (editor) {
-      editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
     }
   };
 
@@ -336,16 +320,6 @@ const TiptapContentEditor = ({
                 title="Add Image"
               >
                 <Icon name="Image" size={14} />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={insertTable}
-                className="h-8 w-8 p-0"
-                title="Insert Table"
-              >
-                <Icon name="Table" size={14} />
               </Button>
               <Button
                 type="button"
