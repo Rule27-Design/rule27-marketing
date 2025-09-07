@@ -1,4 +1,4 @@
-// src/components/ui/TiptapContentEditor.jsx - Minimal version with no conflicts
+// src/components/ui/TiptapContentEditor.jsx - FIXED VERSION with better content handling
 import React, { useEffect, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -15,6 +15,72 @@ const TiptapContentEditor = ({
   minHeight = '300px'
 }) => {
   const [isReady, setIsReady] = useState(false);
+  const [debugInfo, setDebugInfo] = useState('');
+
+  // Helper function to extract content from various formats
+  const extractContent = (contentValue) => {
+    console.log('📝 TiptapEditor - Extracting content from:', contentValue);
+    
+    if (!contentValue) {
+      console.log('📝 TiptapEditor - No content value provided');
+      return '';
+    }
+
+    // If it's a string, return it directly
+    if (typeof contentValue === 'string') {
+      console.log('📝 TiptapEditor - Content is string:', contentValue.substring(0, 100) + '...');
+      return contentValue;
+    }
+
+    // If it's an object, try different properties
+    if (typeof contentValue === 'object') {
+      console.log('📝 TiptapEditor - Content is object, keys:', Object.keys(contentValue));
+      
+      // Tiptap format (preferred)
+      if (contentValue.html) {
+        console.log('📝 TiptapEditor - Using .html property');
+        return contentValue.html;
+      }
+      
+      // Legacy content format
+      if (contentValue.content) {
+        if (typeof contentValue.content === 'string') {
+          console.log('📝 TiptapEditor - Using .content string property');
+          return contentValue.content;
+        }
+        // If content.content is HTML
+        if (contentValue.content.html) {
+          console.log('📝 TiptapEditor - Using .content.html property');
+          return contentValue.content.html;
+        }
+      }
+      
+      // If it's a Tiptap document format
+      if (contentValue.type === 'doc' && contentValue.content) {
+        console.log('📝 TiptapEditor - Content appears to be Tiptap doc format');
+        // This might be a Tiptap JSON document - convert to HTML
+        try {
+          // For now, we'll try to use it as-is and let Tiptap handle it
+          return contentValue;
+        } catch (error) {
+          console.error('📝 TiptapEditor - Error with Tiptap doc format:', error);
+        }
+      }
+
+      // Text property
+      if (contentValue.text) {
+        console.log('📝 TiptapEditor - Using .text property');
+        return contentValue.text;
+      }
+
+      // If nothing else works, try to convert to JSON string for debugging
+      console.log('📝 TiptapEditor - No recognizable content format, showing debug info');
+      return `<!-- DEBUG: ${JSON.stringify(contentValue, null, 2)} -->`;
+    }
+
+    console.log('📝 TiptapEditor - Unrecognized content format:', typeof contentValue);
+    return '';
+  };
 
   const editor = useEditor({
     extensions: [
@@ -31,25 +97,23 @@ const TiptapContentEditor = ({
       },
     },
     onCreate: ({ editor }) => {
+      console.log('📝 TiptapEditor - Editor created, setting ready state');
       setIsReady(true);
+      
       // Set initial content after editor is ready
       if (value) {
         setTimeout(() => {
           try {
-            let content = '';
-            if (value.html) {
-              content = value.html;
-            } else if (value.content) {
-              content = typeof value.content === 'string' ? value.content : '';
-            } else if (typeof value === 'string') {
-              content = value;
-            }
+            const content = extractContent(value);
+            console.log('📝 TiptapEditor - Setting initial content:', content ? 'Content found' : 'No content');
             
             if (content && editor) {
               editor.commands.setContent(content);
+              console.log('📝 TiptapEditor - Initial content set successfully');
             }
           } catch (error) {
-            console.error('Error setting initial content:', error);
+            console.error('📝 TiptapEditor - Error setting initial content:', error);
+            setDebugInfo(`Error loading content: ${error.message}`);
           }
         }, 100);
       }
@@ -60,6 +124,8 @@ const TiptapContentEditor = ({
       try {
         const html = editor.getHTML();
         const text = editor.getText();
+        
+        console.log('📝 TiptapEditor - Content updated, word count:', text.split(/\s+/).filter(word => word.length > 0).length);
         
         // Create structured content for JSONB storage
         const structuredContent = {
@@ -74,34 +140,41 @@ const TiptapContentEditor = ({
         
         onChange?.(structuredContent);
       } catch (error) {
-        console.error('Error updating content:', error);
+        console.error('📝 TiptapEditor - Error updating content:', error);
+        setDebugInfo(`Error updating content: ${error.message}`);
       }
     },
   });
 
-  // Update editor when value changes externally (but not on first load)
+  // Update editor when value changes externally
   useEffect(() => {
-    if (!editor || !isReady) return;
+    if (!editor || !isReady) {
+      console.log('📝 TiptapEditor - Skipping update: editor ready?', !!editor, 'isReady?', isReady);
+      return;
+    }
     
-    // Only update if the content has actually changed
+    console.log('📝 TiptapEditor - External value changed, updating editor');
+    
     try {
       if (value) {
-        let content = '';
-        if (value.html) {
-          content = value.html;
-        } else if (value.content) {
-          content = typeof value.content === 'string' ? value.content : '';
-        } else if (typeof value === 'string') {
-          content = value;
-        }
-        
+        const content = extractContent(value);
         const currentContent = editor.getHTML();
-        if (content && content !== currentContent) {
+        
+        // Only update if content is different to avoid cursor jumping
+        if (content && content !== currentContent && content !== '<!-- DEBUG:') {
+          console.log('📝 TiptapEditor - Content changed, updating editor');
           editor.commands.setContent(content);
+        }
+      } else {
+        // Clear editor if no value
+        if (editor.getText()) {
+          console.log('📝 TiptapEditor - Clearing editor content');
+          editor.commands.clearContent();
         }
       }
     } catch (error) {
-      console.error('Error updating editor content:', error);
+      console.error('📝 TiptapEditor - Error updating editor content:', error);
+      setDebugInfo(`Error updating editor: ${error.message}`);
     }
   }, [editor, value, isReady]);
 
@@ -140,7 +213,7 @@ const TiptapContentEditor = ({
         }
       }
     } catch (error) {
-      console.error('Error adding link:', error);
+      console.error('📝 TiptapEditor - Error adding link:', error);
     }
   };
 
@@ -150,7 +223,7 @@ const TiptapContentEditor = ({
     try {
       editor.chain().focus().unsetLink().run();
     } catch (error) {
-      console.error('Error removing link:', error);
+      console.error('📝 TiptapEditor - Error removing link:', error);
     }
   };
 
@@ -163,7 +236,7 @@ const TiptapContentEditor = ({
         editor.chain().focus().setImage({ src: url }).run();
       }
     } catch (error) {
-      console.error('Error adding image:', error);
+      console.error('📝 TiptapEditor - Error adding image:', error);
     }
   };
 
@@ -173,6 +246,28 @@ const TiptapContentEditor = ({
         <label className="block text-sm font-medium text-gray-700">
           {label}
         </label>
+      )}
+
+      {/* Debug Info */}
+      {debugInfo && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+          <div className="flex items-start space-x-2">
+            <Icon name="AlertTriangle" size={16} className="text-red-600 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm text-red-800 font-medium">Editor Debug Info:</p>
+              <p className="text-xs text-red-700 mt-1">{debugInfo}</p>
+              <p className="text-xs text-red-600 mt-1">
+                Content format: {typeof value} | Has value: {!!value ? 'Yes' : 'No'}
+              </p>
+            </div>
+            <button 
+              onClick={() => setDebugInfo('')}
+              className="text-red-400 hover:text-red-600"
+            >
+              <Icon name="X" size={14} />
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Toolbar */}
@@ -401,6 +496,20 @@ const TiptapContentEditor = ({
         />
       </div>
 
+      {/* Content Debug Info */}
+      {process.env.NODE_ENV === 'development' && (
+        <details className="text-xs text-gray-500">
+          <summary className="cursor-pointer">Debug: Content Info</summary>
+          <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
+            <div><strong>Value type:</strong> {typeof value}</div>
+            <div><strong>Has value:</strong> {!!value ? 'Yes' : 'No'}</div>
+            <div><strong>Value keys:</strong> {value && typeof value === 'object' ? Object.keys(value).join(', ') : 'N/A'}</div>
+            <div><strong>Editor ready:</strong> {isReady ? 'Yes' : 'No'}</div>
+            <div><strong>Current HTML length:</strong> {editor?.getHTML()?.length || 0}</div>
+          </div>
+        </details>
+      )}
+
       {/* Help Text */}
       <div className="text-xs text-gray-500">
         <details className="cursor-pointer">
@@ -421,7 +530,7 @@ const TiptapContentEditor = ({
   );
 };
 
-// Content Display Component for viewing Tiptap content
+// Content Display Component for viewing Tiptap content - ALSO FIXED
 export const TiptapContentDisplay = ({ content, className = '' }) => {
   if (!content) return null;
 
