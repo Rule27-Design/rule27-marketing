@@ -96,28 +96,63 @@ const Articles = () => {
     if (typeof content === 'object') {
       console.log(`🔧 [${articleTitle}] Content is object with keys:`, Object.keys(content));
       
-      // If it's already in the right format
+      // *** CRITICAL FIX: Check TipTap JSON format FIRST ***
+      if (content.type === 'doc' && Array.isArray(content.content)) {
+        console.log(`🔧 [${articleTitle}] ✅ DETECTED TIPTAP JSON FORMAT!`);
+        
+        // Extract text from TipTap JSON
+        const extractTextFromTipTap = (node) => {
+          let text = '';
+          if (node.text) {
+            text += node.text;
+          }
+          if (node.content && Array.isArray(node.content)) {
+            text += node.content.map(extractTextFromTipTap).join(' ');
+          }
+          return text;
+        };
+        
+        const extractedText = extractTextFromTipTap(content);
+        const wordCount = extractedText.split(/\s+/).filter(w => w.length > 0).length;
+        
+        console.log(`🔧 [${articleTitle}] ✅ Extracted text:`, extractedText.substring(0, 100));
+        console.log(`🔧 [${articleTitle}] ✅ Word count:`, wordCount);
+        
+        return {
+          type: 'tiptap',
+          json: content, // Pass the JSON to the editor
+          text: extractedText,
+          wordCount: wordCount,
+          version: '2.0'
+        };
+      }
+      
+      // Already processed format with html
       if (content.html) {
         console.log(`🔧 [${articleTitle}] Content has html property, using as-is`);
         return content;
       }
       
-      // If it has nested content
-      if (content.content) {
-        console.log(`🔧 [${articleTitle}] Content has nested content property`);
-        if (typeof content.content === 'string') {
-          return {
-            type: 'tiptap',
-            html: content.content,
-            text: content.content.replace(/<[^>]*>/g, ''),
-            wordCount: content.content.replace(/<[^>]*>/g, '').split(/\s+/).filter(w => w.length > 0).length,
-            version: '1.0'
-          };
-        }
+      // Already processed format with json
+      if (content.json) {
+        console.log(`🔧 [${articleTitle}] Content has json property, using as-is`);
+        return content;
       }
       
-      // Last resort - try to stringify for debugging
-      console.log(`🔧 [${articleTitle}] Unrecognized format, creating debug content`);
+      // Legacy format - STRING content only
+      if (content.content && typeof content.content === 'string') {
+        console.log(`🔧 [${articleTitle}] Legacy string content`);
+        return {
+          type: 'tiptap',
+          html: content.content,
+          text: content.content.replace(/<[^>]*>/g, ''),
+          wordCount: content.content.replace(/<[^>]*>/g, '').split(/\s+/).filter(w => w.length > 0).length,
+          version: '1.0'
+        };
+      }
+      
+      // Fallback
+      console.log(`🔧 [${articleTitle}] ❌ Unrecognized format`);
       return {
         type: 'tiptap',
         html: `<p><strong>Debug:</strong> Content format not recognized</p><pre>${JSON.stringify(content, null, 2)}</pre>`,
@@ -127,7 +162,7 @@ const Articles = () => {
       };
     }
     
-    console.log(`🔧 [${articleTitle}] Completely unknown content type`);
+    console.log(`🔧 [${articleTitle}] Unknown content type`);
     return { html: '', text: '', wordCount: 0 };
   };
 
