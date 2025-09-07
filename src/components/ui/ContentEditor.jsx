@@ -1,4 +1,4 @@
-// src/components/ui/ContentEditor.jsx
+// src/components/ui/ContentEditor.jsx - FIXED VERSION
 import React, { useState, useEffect } from 'react';
 import Button from './Button';
 import Icon from '../AppIcon';
@@ -23,39 +23,60 @@ const ContentEditor = ({
         // Handle different content formats
         if (typeof value === 'string') {
           setContent(value);
-        } else if (value.blocks && Array.isArray(value.blocks)) {
-          // Convert blocks back to readable content
-          const textContent = value.blocks.map(block => {
-            if (block.type === 'paragraph') {
-              return block.content || '';
-            } else if (block.type === 'heading') {
-              return `${'#'.repeat(block.level || 1)} ${block.content || ''}`;
-            } else if (block.type === 'list') {
-              return (block.items || []).map(item => `- ${item}`).join('\n');
+        } else if (value && typeof value === 'object') {
+          if (value.blocks && Array.isArray(value.blocks)) {
+            // Convert blocks back to readable content
+            const textContent = value.blocks.map(block => {
+              if (block && typeof block === 'object') {
+                if (block.type === 'paragraph') {
+                  return block.content || '';
+                } else if (block.type === 'heading') {
+                  return `${'#'.repeat(block.level || 1)} ${block.content || ''}`;
+                } else if (block.type === 'list') {
+                  return (block.items || []).map(item => `- ${item}`).join('\n');
+                }
+                return block.content || '';
+              }
+              return String(block || '');
+            }).join('\n\n');
+            setContent(textContent);
+            setBlocks(value.blocks);
+          } else if (value.content) {
+            // Handle content object with content property
+            if (typeof value.content === 'string') {
+              setContent(value.content);
+            } else {
+              // If content is not a string, convert to JSON string for editing
+              setContent(JSON.stringify(value.content, null, 2));
             }
-            return block.content || '';
-          }).join('\n\n');
-          setContent(textContent);
-          setBlocks(value.blocks);
-        } else if (value.content) {
-          setContent(value.content);
+          } else {
+            // Try to convert the entire object to a readable format
+            setContent(JSON.stringify(value, null, 2));
+          }
+        } else {
+          // Fallback for any other type
+          setContent(String(value || ''));
         }
       } catch (error) {
         console.error('Error parsing content:', error);
         setContent('');
       }
+    } else {
+      setContent('');
     }
   }, [value]);
 
   const handleContentChange = (newContent) => {
-    setContent(newContent);
+    // Ensure newContent is always a string
+    const contentString = typeof newContent === 'string' ? newContent : String(newContent || '');
+    setContent(contentString);
     
     // Convert content to structured format
     const structuredContent = {
       type: 'doc',
-      content: newContent,
-      blocks: parseContentToBlocks(newContent),
-      wordCount: newContent.split(/\s+/).filter(word => word.length > 0).length,
+      content: contentString,
+      blocks: parseContentToBlocks(contentString),
+      wordCount: contentString.split(/\s+/).filter(word => word.length > 0).length,
       lastModified: new Date().toISOString()
     };
     
@@ -63,7 +84,10 @@ const ContentEditor = ({
   };
 
   const parseContentToBlocks = (text) => {
-    if (!text) return [];
+    // Ensure text is a string
+    if (!text || typeof text !== 'string') {
+      return [];
+    }
     
     const lines = text.split('\n').filter(line => line.trim());
     const blocks = [];
@@ -109,6 +133,8 @@ const ContentEditor = ({
 
   const insertFormatting = (format) => {
     const textarea = document.getElementById('content-editor');
+    if (!textarea) return;
+    
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = content.substring(start, end);
@@ -140,7 +166,6 @@ const ContentEditor = ({
     }
     
     const newContent = content.substring(0, start) + insertion + content.substring(end);
-    setContent(newContent);
     handleContentChange(newContent);
     
     // Set cursor position
@@ -158,6 +183,11 @@ const ContentEditor = ({
     { icon: 'List', action: 'list', title: 'List' },
     { icon: 'Link', action: 'link', title: 'Link' }
   ];
+
+  // Calculate word count safely
+  const wordCount = typeof content === 'string' 
+    ? content.split(/\s+/).filter(word => word.length > 0).length 
+    : 0;
 
   return (
     <div className={cn('space-y-2', className)}>
@@ -188,7 +218,7 @@ const ContentEditor = ({
           
           <div className="flex items-center space-x-2">
             <span className="text-xs text-gray-500">
-              {content.split(/\s+/).filter(word => word.length > 0).length} words
+              {wordCount} words
             </span>
             <div className="flex bg-white rounded border">
               <button
@@ -283,7 +313,7 @@ const ContentEditor = ({
   );
 };
 
-// Content Display Component for viewing structured content
+// Content Display Component for viewing structured content - ALSO FIXED
 export const ContentDisplay = ({ content, className = '' }) => {
   if (!content) return null;
 
