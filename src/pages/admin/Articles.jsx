@@ -1,4 +1,4 @@
-// src/pages/admin/Articles.jsx - Enhanced version
+// src/pages/admin/Articles.jsx - Complete Enhanced Version with All Fixes
 import React, { useState, useEffect } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
@@ -81,61 +81,86 @@ const Articles = () => {
   }, []);
 
   useEffect(() => {
+    // Filter articles when filters change
     const filtered = filterArticles();
-    // Only update if we have articles to filter
-    if (articles.length > 0) {
-      // This will be handled by the display logic
-    }
+    // Only update display, don't modify state here
   }, [filters, articles]);
 
   const fetchArticles = async () => {
     try {
+      console.log('🔍 Starting fetchArticles...');
+      setLoading(true);
+      
+      // Use the fixed foreign key relationship names
       let query = supabase
         .from('articles')
         .select(`
           *,
           author:profiles!articles_author_id_fkey(id, full_name, email, avatar_url),
-          category:categories!category_id(id, name, slug),
-          co_authors_data:profiles!inner(id, full_name, email)
+          category:categories!articles_category_id_fkey(id, name, slug)
         `)
         .order('updated_at', { ascending: false });
 
       // If contributor, only show their articles
       if (userProfile?.role === 'contributor') {
+        console.log('🔍 Applying contributor filter for user:', userProfile.id);
         query = query.eq('author_id', userProfile.id);
       }
 
       const { data, error } = await query;
 
-      if (error) throw error;
-      setArticles(data || []);
+      if (error) {
+        console.error('Query error:', error);
+        // Fallback to simpler query if joins fail
+        console.log('🔍 Trying fallback query...');
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('articles')
+          .select('*')
+          .order('updated_at', { ascending: false });
+        
+        if (fallbackError) throw fallbackError;
+        console.log(`🔍 Fallback query successful: ${fallbackData?.length || 0} articles`);
+        setArticles(fallbackData || []);
+      } else {
+        console.log(`🔍 Main query successful: ${data?.length || 0} articles`);
+        setArticles(data || []);
+      }
     } catch (error) {
       console.error('Error fetching articles:', error);
+      alert('Error loading articles: ' + error.message);
     } finally {
       setLoading(false);
     }
   };
 
   const fetchCategories = async () => {
-    const { data } = await supabase
-      .from('categories')
-      .select('*')
-      .eq('type', 'article')
-      .eq('is_active', true)
-      .order('name');
-    
-    setCategories(data || []);
+    try {
+      const { data } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('type', 'article')
+        .eq('is_active', true)
+        .order('name');
+      
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
   };
 
   const fetchAuthors = async () => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('id, full_name, email')
-      .in('role', ['admin', 'contributor'])
-      .eq('is_active', true)
-      .order('full_name');
-    
-    setAuthors(data || []);
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('role', ['admin', 'contributor'])
+        .eq('is_active', true)
+        .order('full_name');
+      
+      setAuthors(data || []);
+    } catch (error) {
+      console.error('Error fetching authors:', error);
+    }
   };
 
   const filterArticles = () => {
@@ -524,42 +549,82 @@ const Articles = () => {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end space-x-2">
-                      {/* Status Actions */}
-                      {article.status === 'draft' && (
-                        <Button
-                          size="xs"
-                          variant="outline"
-                          onClick={() => handleStatusChange(article.id, 'pending_approval')}
-                        >
-                          Submit
-                        </Button>
-                      )}
-                      {article.status === 'pending_approval' && userProfile?.role === 'admin' && (
-                        <Button
-                          size="xs"
-                          variant="default"
-                          onClick={() => handleStatusChange(article.id, 'approved')}
-                          className="bg-blue-500 hover:bg-blue-600"
-                        >
-                          Approve
-                        </Button>
-                      )}
-                      {article.status === 'approved' && (
-                        <Button
-                          size="xs"
-                          variant="default"
-                          onClick={() => handleStatusChange(article.id, 'published')}
-                          className="bg-green-500 hover:bg-green-600"
-                        >
-                          Publish
-                        </Button>
+                      {/* Status Actions - Different logic for Admins vs Contributors */}
+                      {userProfile?.role === 'admin' ? (
+                        // Admin can directly publish or change any status
+                        <>
+                          {article.status === 'draft' && (
+                            <Button
+                              size="xs"
+                              variant="default"
+                              onClick={() => handleStatusChange(article.id, 'published')}
+                              className="bg-green-500 hover:bg-green-600"
+                            >
+                              Publish
+                            </Button>
+                          )}
+                          {article.status === 'pending_approval' && (
+                            <>
+                              <Button
+                                size="xs"
+                                variant="default"
+                                onClick={() => handleStatusChange(article.id, 'approved')}
+                                className="bg-blue-500 hover:bg-blue-600"
+                              >
+                                Approve
+                              </Button>
+                              <Button
+                                size="xs"
+                                variant="default"
+                                onClick={() => handleStatusChange(article.id, 'published')}
+                                className="bg-green-500 hover:bg-green-600"
+                              >
+                                Publish
+                              </Button>
+                            </>
+                          )}
+                          {article.status === 'approved' && (
+                            <Button
+                              size="xs"
+                              variant="default"
+                              onClick={() => handleStatusChange(article.id, 'published')}
+                              className="bg-green-500 hover:bg-green-600"
+                            >
+                              Publish
+                            </Button>
+                          )}
+                          {article.status === 'published' && (
+                            <Button
+                              size="xs"
+                              variant="outline"
+                              onClick={() => handleStatusChange(article.id, 'archived')}
+                              className="border-orange-300 text-orange-600 hover:bg-orange-50"
+                            >
+                              Archive
+                            </Button>
+                          )}
+                        </>
+                      ) : (
+                        // Contributors follow the review process
+                        <>
+                          {article.status === 'draft' && (
+                            <Button
+                              size="xs"
+                              variant="outline"
+                              onClick={() => handleStatusChange(article.id, 'pending_approval')}
+                            >
+                              Submit for Review
+                            </Button>
+                          )}
+                        </>
                       )}
                       
-                      {/* Edit/Delete */}
+                      {/* Edit/Delete - Available to admins and article authors */}
                       <Button
                         size="xs"
                         variant="ghost"
                         onClick={() => handleEditArticle(article)}
+                        title="Edit article"
                       >
                         <Icon name="Edit" size={16} />
                       </Button>
@@ -570,6 +635,7 @@ const Articles = () => {
                           variant="ghost"
                           onClick={() => handleDeleteArticle(article.id)}
                           className="text-red-600 hover:text-red-700"
+                          title="Delete article"
                         >
                           <Icon name="Trash2" size={16} />
                         </Button>
@@ -1012,17 +1078,39 @@ const Articles = () => {
               </div>
 
               <div className="flex items-center space-x-3">
-                {formData.status === 'draft' && (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setFormData({ ...formData, status: 'pending_approval' });
-                      setTimeout(handleSaveArticle, 100);
-                    }}
-                    className="bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100"
-                  >
-                    Submit for Review
-                  </Button>
+                {/* Status-specific actions based on user role */}
+                {userProfile?.role === 'admin' ? (
+                  // Admins can directly publish
+                  <>
+                    {(formData.status === 'draft' || formData.status === 'pending_approval') && (
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setFormData({ ...formData, status: 'published' });
+                          setTimeout(handleSaveArticle, 100);
+                        }}
+                        className="bg-green-50 border-green-200 text-green-800 hover:bg-green-100"
+                      >
+                        Save & Publish
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  // Contributors submit for review
+                  <>
+                    {formData.status === 'draft' && (
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setFormData({ ...formData, status: 'pending_approval' });
+                          setTimeout(handleSaveArticle, 100);
+                        }}
+                        className="bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100"
+                      >
+                        Submit for Review
+                      </Button>
+                    )}
+                  </>
                 )}
                 
                 <Button
@@ -1031,7 +1119,7 @@ const Articles = () => {
                   className="bg-accent hover:bg-accent/90"
                   iconName="Save"
                 >
-                  {editingArticle ? 'Update Article' : 'Create Article'}
+                  {editingArticle ? 'Update Article' : 'Save Article'}
                 </Button>
               </div>
             </div>
