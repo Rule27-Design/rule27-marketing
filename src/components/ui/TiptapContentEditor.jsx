@@ -485,22 +485,12 @@ export const TiptapContentDisplay = ({ content, className = '' }) => {
   let displayContent = '';
   
   try {
+    // Priority order: HTML > text > JSON fallback
     if (content.html) {
-      // Tiptap HTML format (preferred)
+      // Tiptap HTML format (preferred for display)
       displayContent = content.html;
-    } else if (content.json && typeof content.json === 'object') {
-      // Convert TipTap JSON to HTML for display
-      // For now, we'll just show formatted text since we need the editor instance to convert
-      return (
-        <div className={cn('prose prose-sm max-w-none', className)}>
-          <div className="text-sm text-gray-600 mb-2">Content stored in TipTap format</div>
-          <pre className="text-xs bg-gray-100 p-2 rounded whitespace-pre-wrap">
-            {JSON.stringify(content.json, null, 2)}
-          </pre>
-        </div>
-      );
-    } else if (content.text) {
-      // Plain text fallback
+    } else if (content.text && content.text !== 'Debug: {' && !content.text.startsWith('Debug:')) {
+      // Plain text fallback (but not debug text)
       return (
         <div className={cn('prose prose-sm max-w-none whitespace-pre-wrap', className)}>
           {content.text}
@@ -509,27 +499,45 @@ export const TiptapContentDisplay = ({ content, className = '' }) => {
     } else if (typeof content === 'string') {
       // Legacy string content
       displayContent = content;
-    } else if (content.content) {
-      // Legacy content object
-      if (typeof content.content === 'string') {
-        displayContent = content.content;
-      } else {
-        return (
-          <div className={cn('prose prose-sm max-w-none', className)}>
-            <pre className="text-xs bg-gray-100 p-2 rounded whitespace-pre-wrap">
-              {JSON.stringify(content.content, null, 2)}
-            </pre>
-          </div>
-        );
-      }
-    } else if (content.type === 'doc' && Array.isArray(content.content)) {
-      // Direct TipTap JSON format
+    } else if (content.content && typeof content.content === 'string') {
+      // Legacy content object with string content
+      displayContent = content.content;
+    } else if (content.json && typeof content.json === 'object') {
+      // TipTap JSON format - extract text for display since we don't have HTML
+      const extractTextFromJSON = (node) => {
+        let text = '';
+        if (node.text) {
+          text += node.text;
+        }
+        if (node.content && Array.isArray(node.content)) {
+          text += node.content.map(extractTextFromJSON).join(' ');
+        }
+        return text;
+      };
+      
+      const extractedText = extractTextFromJSON(content.json);
       return (
-        <div className={cn('prose prose-sm max-w-none', className)}>
-          <div className="text-sm text-gray-600 mb-2">TipTap JSON Content</div>
-          <pre className="text-xs bg-gray-100 p-2 rounded whitespace-pre-wrap">
-            {JSON.stringify(content, null, 2)}
-          </pre>
+        <div className={cn('prose prose-sm max-w-none whitespace-pre-wrap', className)}>
+          {extractedText || 'No readable content found'}
+        </div>
+      );
+    } else if (content.type === 'doc' && Array.isArray(content.content)) {
+      // Direct TipTap JSON format - extract text for display
+      const extractTextFromJSON = (node) => {
+        let text = '';
+        if (node.text) {
+          text += node.text;
+        }
+        if (node.content && Array.isArray(node.content)) {
+          text += node.content.map(extractTextFromJSON).join(' ');
+        }
+        return text;
+      };
+      
+      const extractedText = extractTextFromJSON(content);
+      return (
+        <div className={cn('prose prose-sm max-w-none whitespace-pre-wrap', className)}>
+          {extractedText || 'No readable content found'}
         </div>
       );
     } else {
