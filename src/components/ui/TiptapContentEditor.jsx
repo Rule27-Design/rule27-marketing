@@ -288,7 +288,7 @@ const TiptapContentEditor = ({
 
             {/* Insert */}
             <div className="flex items-center space-x-1 border-r border-gray-300 pr-2 mr-2">
-              {editor.isActive('link') ? (
+              {editor?.isActive('link') ? (
                 <Button
                   type="button"
                   variant="ghost"
