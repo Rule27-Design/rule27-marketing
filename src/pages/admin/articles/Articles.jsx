@@ -1,15 +1,15 @@
-// src/pages/admin/articles/Articles.jsx - Main Container (Refactored with all hooks)
+// src/pages/admin/articles/Articles.jsx - Main Container (Fixed imports)
 import React, { useState } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import ErrorBoundary from '../../../components/ErrorBoundary';
 
-// Import all the custom hooks
-import { useArticles } from './hooks/useArticles';
-import { useArticleFilters } from './hooks/useArticleFilters';
-import { useArticleEditor } from './hooks/useArticleEditor';
-import { useArticleOperations } from './hooks/useArticleOperations';
-import { useArticleStatus } from './hooks/useArticleStatus';
-import { useArticleMetrics } from './hooks/useArticleMetrics';
+// Import all the custom hooks with explicit .js extensions
+import { useArticles } from './hooks/useArticles.js';
+import { useArticleFilters } from './hooks/useArticleFilters.js';
+import { useArticleEditor } from './hooks/useArticleEditor.js';
+import { useArticleOperations } from './hooks/useArticleOperations.js';
+import { useArticleStatus } from './hooks/useArticleStatus.js';
+import { useArticleMetrics } from './hooks/useArticleMetrics.js';
 
 // Import components
 import ArticlesList from './ArticlesList';
