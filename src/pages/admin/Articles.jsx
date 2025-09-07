@@ -1012,7 +1012,7 @@ const Articles = () => {
                     <div className="border-t pt-6">
                       <h3 className="font-medium mb-4">Content Preview</h3>
                       <div className="border rounded-lg p-4 bg-gray-50 max-h-96 overflow-y-auto">
-                        <TiptapContentDisplay content={formData.content} />
+                        <TiptapContentDisplay content={formData.content?.json || formData.content} />
                       </div>
                       
                       {/* Content Stats */}
@@ -1022,7 +1022,7 @@ const Articles = () => {
                           <div className="text-blue-600 text-xs">Words</div>
                         </div>
                         <div className="bg-green-50 p-3 rounded-lg text-center">
-                          <div className="font-medium text-green-900">{formData.content.characterCount || 0}</div>
+                          <div className="font-medium text-green-900">{formData.content.text?.length || 0}</div>
                           <div className="text-green-600 text-xs">Characters</div>
                         </div>
                         <div className="bg-purple-50 p-3 rounded-lg text-center">

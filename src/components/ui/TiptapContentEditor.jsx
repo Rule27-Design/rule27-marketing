@@ -1,4 +1,4 @@
-// src/components/ui/TiptapContentEditor.jsx - Minimal version with no conflicts
+// src/components/ui/TiptapContentEditor.jsx - Complete version with JSON format support
 import React, { useEffect, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -36,20 +36,42 @@ const TiptapContentEditor = ({
       if (value) {
         setTimeout(() => {
           try {
-            let content = '';
-            if (value.html) {
-              content = value.html;
-            } else if (value.content) {
-              content = typeof value.content === 'string' ? value.content : '';
-            } else if (typeof value === 'string') {
-              content = value;
-            }
+            console.log('🎯 TipTap Editor - Setting initial value:', value);
             
-            if (content && editor) {
+            // Handle different content formats
+            if (value.json && typeof value.json === 'object') {
+              // TipTap JSON format (preferred)
+              console.log('🎯 Using TipTap JSON format');
+              editor.commands.setContent(value.json);
+            } else if (value.html) {
+              // HTML format
+              console.log('🎯 Using HTML format');
+              editor.commands.setContent(value.html);
+            } else if (value.content) {
+              // Legacy format
+              console.log('🎯 Using legacy content format');
+              const content = typeof value.content === 'string' ? value.content : '';
               editor.commands.setContent(content);
+            } else if (typeof value === 'string') {
+              // Plain string
+              console.log('🎯 Using plain string format');
+              editor.commands.setContent(value);
+            } else if (value.type === 'doc' && Array.isArray(value.content)) {
+              // Direct TipTap JSON
+              console.log('🎯 Using direct TipTap JSON');
+              editor.commands.setContent(value);
+            } else {
+              console.log('🎯 Unknown format, using empty content');
+              editor.commands.setContent('');
             }
           } catch (error) {
-            console.error('Error setting initial content:', error);
+            console.error('❌ Error setting initial content:', error);
+            console.log('📝 Trying to set as HTML fallback');
+            try {
+              editor.commands.setContent(String(value));
+            } catch (fallbackError) {
+              console.error('❌ Fallback also failed:', fallbackError);
+            }
           }
         }, 100);
       }
@@ -60,48 +82,82 @@ const TiptapContentEditor = ({
       try {
         const html = editor.getHTML();
         const text = editor.getText();
+        const json = editor.getJSON(); // Get native TipTap JSON
         
-        // Create structured content for JSONB storage
+        console.log('📝 TipTap Editor - Content updated:', { html: html.substring(0, 100), json });
+        
+        // Create structured content for JSONB storage - include both HTML and JSON
         const structuredContent = {
           type: 'tiptap',
           html: html,
+          json: json, // Store native TipTap JSON
           text: text,
           wordCount: text.split(/\s+/).filter(word => word.length > 0).length,
           characterCount: text.length,
           lastModified: new Date().toISOString(),
-          version: '1.0'
+          version: '2.0'
         };
         
+        console.log('📝 Sending structured content:', structuredContent);
         onChange?.(structuredContent);
       } catch (error) {
-        console.error('Error updating content:', error);
+        console.error('❌ Error updating content:', error);
       }
     },
   });
 
-  // Update editor when value changes externally (but not on first load)
+  // Update editor when value changes externally
   useEffect(() => {
     if (!editor || !isReady) return;
     
     // Only update if the content has actually changed
     try {
+      console.log('🔄 TipTap Editor - External value changed:', value);
+      
       if (value) {
-        let content = '';
-        if (value.html) {
-          content = value.html;
+        // Get current content to avoid unnecessary updates
+        const currentJSON = editor.getJSON();
+        const currentHTML = editor.getHTML();
+        
+        // Determine what content to set
+        let newContent = null;
+        let contentType = 'none';
+        
+        if (value.json && typeof value.json === 'object') {
+          newContent = value.json;
+          contentType = 'json';
+        } else if (value.html) {
+          newContent = value.html;
+          contentType = 'html';
         } else if (value.content) {
-          content = typeof value.content === 'string' ? value.content : '';
+          newContent = typeof value.content === 'string' ? value.content : '';
+          contentType = 'legacy';
         } else if (typeof value === 'string') {
-          content = value;
+          newContent = value;
+          contentType = 'string';
+        } else if (value.type === 'doc' && Array.isArray(value.content)) {
+          newContent = value;
+          contentType = 'direct-json';
         }
         
-        const currentContent = editor.getHTML();
-        if (content && content !== currentContent) {
-          editor.commands.setContent(content);
+        console.log(`🔄 Content type detected: ${contentType}`, newContent);
+        
+        // Only update if content is different
+        if (newContent) {
+          const shouldUpdate = contentType === 'json' || contentType === 'direct-json' 
+            ? JSON.stringify(currentJSON) !== JSON.stringify(newContent)
+            : currentHTML !== newContent;
+          
+          if (shouldUpdate) {
+            console.log('🔄 Updating editor content');
+            editor.commands.setContent(newContent);
+          } else {
+            console.log('🔄 Content unchanged, skipping update');
+          }
         }
       }
     } catch (error) {
-      console.error('Error updating editor content:', error);
+      console.error('❌ Error updating editor content:', error);
     }
   }, [editor, value, isReady]);
 
@@ -432,6 +488,17 @@ export const TiptapContentDisplay = ({ content, className = '' }) => {
     if (content.html) {
       // Tiptap HTML format (preferred)
       displayContent = content.html;
+    } else if (content.json && typeof content.json === 'object') {
+      // Convert TipTap JSON to HTML for display
+      // For now, we'll just show formatted text since we need the editor instance to convert
+      return (
+        <div className={cn('prose prose-sm max-w-none', className)}>
+          <div className="text-sm text-gray-600 mb-2">Content stored in TipTap format</div>
+          <pre className="text-xs bg-gray-100 p-2 rounded whitespace-pre-wrap">
+            {JSON.stringify(content.json, null, 2)}
+          </pre>
+        </div>
+      );
     } else if (content.text) {
       // Plain text fallback
       return (
@@ -455,6 +522,16 @@ export const TiptapContentDisplay = ({ content, className = '' }) => {
           </div>
         );
       }
+    } else if (content.type === 'doc' && Array.isArray(content.content)) {
+      // Direct TipTap JSON format
+      return (
+        <div className={cn('prose prose-sm max-w-none', className)}>
+          <div className="text-sm text-gray-600 mb-2">TipTap JSON Content</div>
+          <pre className="text-xs bg-gray-100 p-2 rounded whitespace-pre-wrap">
+            {JSON.stringify(content, null, 2)}
+          </pre>
+        </div>
+      );
     } else {
       return (
         <div className={className}>
