@@ -235,7 +235,7 @@ const HeroSection = () => {
                 iconName="ArrowRight"
                 iconPosition="right"
               >
-                Start Your Transformation
+                Start Writing Your Rules
               </Button>
             </Link>
             <Link to="/capabilities">
@@ -246,7 +246,7 @@ const HeroSection = () => {
                 iconName="Compass"
                 iconPosition="left"
               >
-                Explore Our Universe
+                See Our Rulebook
               </Button>
             </Link>
           </div>
