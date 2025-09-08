@@ -1,6 +1,6 @@
 // src/components/providers/EventBusProvider.jsx - Provider component only
 import React, { createContext, useContext } from 'react';
-import { globalEventBus } from '../../pages/admin/articles/hooks/useArticleEvents.js';
+import { globalEventBus } from '../../lib/eventBus.js';
 
 // Event bus context for dependency injection
 const EventBusContext = createContext(globalEventBus);
