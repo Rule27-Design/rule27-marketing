@@ -1,9 +1,116 @@
-// src/pages/admin/articles/hooks/useArticles.js - Enhanced with new loading and error handling
-import { useState, useEffect, useCallback } from 'react';
+// src/pages/admin/articles/hooks/useArticles.js - Enhanced with caching and performance
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../../lib/supabase';
 import { useToast } from '../../../../components/ui/Toast';
 import { useLoadingState } from './useLoadingState.js';
 import { useErrorHandler } from './useErrorHandler.js';
+
+// Cache configuration
+const CACHE_CONFIG = {
+  TTL: 5 * 60 * 1000, // 5 minutes
+  BACKGROUND_REFRESH_THRESHOLD: 2 * 60 * 1000, // 2 minutes
+  MAX_CACHE_SIZE: 1000, // Max number of cached items
+  SELECTIVE_FIELDS: {
+    list: [
+      'id', 'title', 'slug', 'excerpt', 'status', 'is_featured',
+      'view_count', 'like_count', 'comment_count', 'read_time',
+      'created_at', 'updated_at', 'published_at', 'author_id', 'category_id'
+    ],
+    detail: '*', // Full fields for editing
+    relations: {
+      author: 'id, full_name, email, avatar_url',
+      category: 'id, name, slug'
+    }
+  }
+};
+
+// In-memory cache with timestamp validation
+class ArticleCache {
+  constructor() {
+    this.cache = new Map();
+    this.timestamps = new Map();
+    this.backgroundRefreshQueue = new Set();
+  }
+
+  set(key, data, ttl = CACHE_CONFIG.TTL) {
+    // Cleanup old entries if cache is too large
+    if (this.cache.size >= CACHE_CONFIG.MAX_CACHE_SIZE) {
+      this.cleanup();
+    }
+
+    this.cache.set(key, data);
+    this.timestamps.set(key, Date.now() + ttl);
+  }
+
+  get(key) {
+    const timestamp = this.timestamps.get(key);
+    
+    if (!timestamp || Date.now() > timestamp) {
+      this.cache.delete(key);
+      this.timestamps.delete(key);
+      return null;
+    }
+
+    // Check if we should background refresh
+    const backgroundThreshold = timestamp - CACHE_CONFIG.BACKGROUND_REFRESH_THRESHOLD;
+    if (Date.now() > backgroundThreshold) {
+      this.backgroundRefreshQueue.add(key);
+    }
+
+    return this.cache.get(key);
+  }
+
+  shouldBackgroundRefresh(key) {
+    return this.backgroundRefreshQueue.has(key);
+  }
+
+  markRefreshed(key) {
+    this.backgroundRefreshQueue.delete(key);
+  }
+
+  invalidate(key) {
+    this.cache.delete(key);
+    this.timestamps.delete(key);
+    this.backgroundRefreshQueue.delete(key);
+  }
+
+  invalidatePattern(pattern) {
+    const regex = new RegExp(pattern);
+    for (const key of this.cache.keys()) {
+      if (regex.test(key)) {
+        this.invalidate(key);
+      }
+    }
+  }
+
+  cleanup() {
+    const now = Date.now();
+    for (const [key, timestamp] of this.timestamps.entries()) {
+      if (now > timestamp) {
+        this.cache.delete(key);
+        this.timestamps.delete(key);
+        this.backgroundRefreshQueue.delete(key);
+      }
+    }
+  }
+
+  clear() {
+    this.cache.clear();
+    this.timestamps.clear();
+    this.backgroundRefreshQueue.clear();
+  }
+
+  getStats() {
+    return {
+      size: this.cache.size,
+      backgroundQueue: this.backgroundRefreshQueue.size,
+      hitRatio: this._hitRatio || 0
+    };
+  }
+}
+
+// Singleton cache instance
+const articleCache = new ArticleCache();
 
 export const useArticles = (userProfile) => {
   const [articles, setArticles] = useState([]);
@@ -11,8 +118,18 @@ export const useArticles = (userProfile) => {
   const [authors, setAuthors] = useState([]);
   const [showEditor, setShowEditor] = useState(false);
   const [editingArticle, setEditingArticle] = useState(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 50,
+    total: 0,
+    hasMore: false
+  });
+
+  // Performance tracking
+  const queryCount = useRef(0);
+  const lastFetchTime = useRef(0);
   
-  // Use new loading state management
+  // Use loading and error management hooks
   const {
     fetching,
     saving,
@@ -22,7 +139,6 @@ export const useArticles = (userProfile) => {
     isReadOnly
   } = useLoadingState();
 
-  // Use new error handling
   const {
     handleError,
     clearError,
@@ -33,7 +149,69 @@ export const useArticles = (userProfile) => {
 
   const toast = useToast();
 
-  // Content debugging function (unchanged)
+  // Generate cache keys
+  const getCacheKey = useCallback((type, params = {}) => {
+    const baseKey = `articles_${type}`;
+    const userKey = userProfile?.role === 'contributor' ? `_user_${userProfile.id}` : '';
+    const paramsKey = Object.keys(params).length > 0 ? `_${JSON.stringify(params)}` : '';
+    return `${baseKey}${userKey}${paramsKey}`;
+  }, [userProfile?.role, userProfile?.id]);
+
+  // Build optimized query
+  const buildQuery = useCallback((type = 'list', options = {}) => {
+    const { 
+      page = 1, 
+      limit = 50, 
+      includeRelations = true,
+      selectFields = CACHE_CONFIG.SELECTIVE_FIELDS.list,
+      filters = {}
+    } = options;
+
+    let query = supabase.from('articles');
+
+    // Select appropriate fields
+    if (type === 'detail') {
+      query = query.select(`
+        *,
+        author:profiles!articles_author_id_fkey(${CACHE_CONFIG.SELECTIVE_FIELDS.relations.author}),
+        category:categories!articles_category_id_fkey(${CACHE_CONFIG.SELECTIVE_FIELDS.relations.category})
+      `);
+    } else if (includeRelations) {
+      query = query.select(`
+        ${selectFields.join(', ')},
+        author:profiles!articles_author_id_fkey(${CACHE_CONFIG.SELECTIVE_FIELDS.relations.author}),
+        category:categories!articles_category_id_fkey(${CACHE_CONFIG.SELECTIVE_FIELDS.relations.category})
+      `);
+    } else {
+      query = query.select(selectFields.join(', '));
+    }
+
+    // Apply user-based filtering
+    if (userProfile?.role === 'contributor') {
+      query = query.eq('author_id', userProfile.id);
+    }
+
+    // Apply additional filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        query = query.eq(key, value);
+      }
+    });
+
+    // Add pagination
+    if (type === 'list') {
+      const from = (page - 1) * limit;
+      const to = from + limit - 1;
+      query = query.range(from, to);
+    }
+
+    // Default ordering
+    query = query.order('updated_at', { ascending: false });
+
+    return query;
+  }, [userProfile?.role, userProfile?.id]);
+
+  // Content debugging function (unchanged from original)
   const debugAndFixContent = useCallback((content, articleTitle = 'Unknown') => {
     if (process.env.NODE_ENV === 'development') {
       console.log(`🔧 [${articleTitle}] Processing content:`, typeof content);
@@ -96,63 +274,142 @@ export const useArticles = (userProfile) => {
     return { html: '', text: '', wordCount: 0, type: 'tiptap', version: '2.0' };
   }, []);
 
-  // Enhanced fetch articles with loading and error handling
-  const fetchArticles = useCallback(async () => {
+  // Enhanced fetch with caching and background refresh
+  const fetchArticles = useCallback(async (options = {}) => {
+    const { 
+      forceRefresh = false,
+      page = pagination.page,
+      limit = pagination.limit,
+      backgroundRefresh = false
+    } = options;
+
+    const cacheKey = getCacheKey('list', { page, limit });
+    
+    // Check cache first (unless forcing refresh)
+    if (!forceRefresh && !backgroundRefresh) {
+      const cached = articleCache.get(cacheKey);
+      if (cached) {
+        setArticles(cached.articles);
+        setPagination(cached.pagination);
+        
+        // Check for background refresh
+        if (articleCache.shouldBackgroundRefresh(cacheKey)) {
+          // Trigger background refresh without loading state
+          fetchArticles({ ...options, backgroundRefresh: true, forceRefresh: true });
+        }
+        
+        return cached;
+      }
+    }
+
     return withLoading('fetching', async () => {
       try {
-        // Clear any previous errors
         clearError('fetching');
-        
-        let query = supabase
-          .from('articles')
-          .select(`
-            *,
-            author:profiles!articles_author_id_fkey(id, full_name, email, avatar_url),
-            category:categories!articles_category_id_fkey(id, name, slug)
-          `)
-          .order('updated_at', { ascending: false });
+        queryCount.current++;
+        lastFetchTime.current = Date.now();
 
-        if (userProfile?.role === 'contributor') {
-          query = query.eq('author_id', userProfile.id);
-        }
-
-        const { data, error } = await query;
+        // Build and execute query
+        const query = buildQuery('list', { page, limit, includeRelations: true });
+        const { data, error, count } = await query;
 
         if (error) {
           // Try fallback query without relations
-          const { data: fallbackData, error: fallbackError } = await supabase
-            .from('articles')
-            .select('*')
-            .order('updated_at', { ascending: false });
+          const { data: fallbackData, error: fallbackError } = await buildQuery('list', { 
+            page, 
+            limit, 
+            includeRelations: false 
+          });
           
           if (fallbackError) throw fallbackError;
           
-          setArticles(fallbackData || []);
+          const result = {
+            articles: fallbackData || [],
+            pagination: {
+              page,
+              limit,
+              total: count || 0,
+              hasMore: (fallbackData?.length || 0) === limit
+            }
+          };
+
+          setArticles(result.articles);
+          setPagination(result.pagination);
+          
+          // Cache even fallback results
+          articleCache.set(cacheKey, result);
+          
           toast.warning('Articles loaded', 'Some data might be missing due to database constraints');
+          handleError('fetching', error, { isFallback: true }, false);
           
-          // Log the relation error but don't throw
-          handleError('fetching', error, { 
-            isFallback: true, 
-            userRole: userProfile?.role 
-          }, false);
-          
+          return result;
         } else {
-          setArticles(data || []);
+          const result = {
+            articles: data || [],
+            pagination: {
+              page,
+              limit,
+              total: count || 0,
+              hasMore: (data?.length || 0) === limit
+            }
+          };
+
+          setArticles(result.articles);
+          setPagination(result.pagination);
+          
+          // Cache successful results
+          articleCache.set(cacheKey, result);
+          articleCache.markRefreshed(cacheKey);
+          
+          return result;
         }
       } catch (error) {
-        // Handle critical fetch errors
         handleError('fetching', error, { 
           userRole: userProfile?.role,
-          operation: 'fetchArticles'
+          operation: 'fetchArticles',
+          queryCount: queryCount.current
         });
         setArticles([]);
-        throw error; // Re-throw for component to handle
+        throw error;
       }
     });
-  }, [userProfile?.role, userProfile?.id, withLoading, handleError, clearError, toast]);
+  }, [userProfile?.role, pagination.page, pagination.limit, getCacheKey, buildQuery, withLoading, handleError, clearError, toast]);
 
-  // Enhanced fetch categories with error handling
+  // Enhanced fetch for single article (with full content)
+  const fetchArticle = useCallback(async (id) => {
+    const cacheKey = getCacheKey('detail', { id });
+    
+    // Check cache first
+    const cached = articleCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      const query = buildQuery('detail');
+      const { data, error } = await query.eq('id', id).single();
+
+      if (error) throw error;
+
+      const result = data;
+      articleCache.set(cacheKey, result);
+      
+      return result;
+    } catch (error) {
+      handleError('fetching', error, { articleId: id, operation: 'fetchArticle' });
+      throw error;
+    }
+  }, [getCacheKey, buildQuery, handleError]);
+
+  // Enhanced categories fetch with caching
   const fetchCategories = useCallback(async () => {
+    const cacheKey = getCacheKey('categories');
+    
+    const cached = articleCache.get(cacheKey);
+    if (cached) {
+      setCategories(cached);
+      return cached;
+    }
+
     return withLoading('fetching', async () => {
       try {
         clearError('categories');
@@ -165,16 +422,30 @@ export const useArticles = (userProfile) => {
           .order('name');
         
         if (error) throw error;
-        setCategories(data || []);
+        
+        const result = data || [];
+        setCategories(result);
+        articleCache.set(cacheKey, result);
+        
+        return result;
       } catch (error) {
         handleError('categories', error, { operation: 'fetchCategories' });
         setCategories([]);
+        throw error;
       }
     });
-  }, [withLoading, handleError, clearError]);
+  }, [getCacheKey, withLoading, handleError, clearError]);
 
-  // Enhanced fetch authors with error handling
+  // Enhanced authors fetch with caching
   const fetchAuthors = useCallback(async () => {
+    const cacheKey = getCacheKey('authors');
+    
+    const cached = articleCache.get(cacheKey);
+    if (cached) {
+      setAuthors(cached);
+      return cached;
+    }
+
     return withLoading('fetching', async () => {
       try {
         clearError('authors');
@@ -187,15 +458,31 @@ export const useArticles = (userProfile) => {
           .order('full_name');
         
         if (error) throw error;
-        setAuthors(data || []);
+        
+        const result = data || [];
+        setAuthors(result);
+        articleCache.set(cacheKey, result);
+        
+        return result;
       } catch (error) {
         handleError('authors', error, { operation: 'fetchAuthors' });
         setAuthors([]);
+        throw error;
       }
     });
-  }, [withLoading, handleError, clearError]);
+  }, [getCacheKey, withLoading, handleError, clearError]);
 
-  // Enhanced handle edit with loading state
+  // Cache invalidation helpers
+  const invalidateCache = useCallback((pattern = 'articles_') => {
+    articleCache.invalidatePattern(pattern);
+  }, []);
+
+  const invalidateArticleCache = useCallback((articleId) => {
+    articleCache.invalidate(getCacheKey('detail', { id: articleId }));
+    invalidateCache('articles_list'); // Invalidate all list caches
+  }, [getCacheKey, invalidateCache]);
+
+  // Enhanced operations with cache invalidation
   const handleEdit = useCallback((article) => {
     if (isReadOnly) {
       toast.warning('System Busy', 'Please wait for current operations to complete');
@@ -206,7 +493,6 @@ export const useArticles = (userProfile) => {
     setShowEditor(true);
   }, [isReadOnly, toast]);
 
-  // Enhanced handle delete with loading and error handling
   const handleDelete = useCallback(async (id) => {
     if (isReadOnly) {
       toast.warning('System Busy', 'Please wait for current operations to complete');
@@ -226,8 +512,11 @@ export const useArticles = (userProfile) => {
 
         if (error) throw error;
         
+        // Invalidate caches
+        invalidateArticleCache(id);
+        
         toast.success('Article deleted', 'The article has been permanently deleted');
-        await fetchArticles();
+        await fetchArticles({ forceRefresh: true });
       } catch (error) {
         handleError('deleting', error, { 
           articleId: id,
@@ -236,9 +525,8 @@ export const useArticles = (userProfile) => {
         throw error;
       }
     });
-  }, [isReadOnly, withLoading, handleError, clearError, fetchArticles, toast]);
+  }, [isReadOnly, withLoading, handleError, clearError, invalidateArticleCache, fetchArticles, toast]);
 
-  // Enhanced handle status change with loading and error handling
   const handleStatusChange = useCallback(async (id, newStatus) => {
     if (isReadOnly) {
       toast.warning('System Busy', 'Please wait for current operations to complete');
@@ -267,8 +555,11 @@ export const useArticles = (userProfile) => {
 
         if (error) throw error;
         
+        // Invalidate caches
+        invalidateArticleCache(id);
+        
         toast.success('Status updated', `Article status changed to ${newStatus}`);
-        await fetchArticles();
+        await fetchArticles({ forceRefresh: true });
       } catch (error) {
         handleError('statusChange', error, { 
           articleId: id,
@@ -279,39 +570,48 @@ export const useArticles = (userProfile) => {
         throw error;
       }
     });
-  }, [isReadOnly, userProfile?.id, userProfile?.role, withLoading, handleError, clearError, fetchArticles, toast]);
+  }, [isReadOnly, userProfile?.id, userProfile?.role, withLoading, handleError, clearError, invalidateArticleCache, fetchArticles, toast]);
 
-  // Retry functions for failed operations
-  const retryFetchArticles = useCallback(() => {
-    return retryOperation('fetching', fetchArticles);
-  }, [retryOperation, fetchArticles]);
+  // Pagination helpers
+  const loadMore = useCallback(async () => {
+    if (pagination.hasMore && !fetching) {
+      await fetchArticles({ 
+        page: pagination.page + 1,
+        limit: pagination.limit
+      });
+    }
+  }, [pagination.hasMore, pagination.page, pagination.limit, fetching, fetchArticles]);
 
-  const retryFetchCategories = useCallback(() => {
-    return retryOperation('categories', fetchCategories);
-  }, [retryOperation, fetchCategories]);
+  const resetPagination = useCallback(() => {
+    setPagination(prev => ({ ...prev, page: 1 }));
+  }, []);
 
-  const retryFetchAuthors = useCallback(() => {
-    return retryOperation('authors', fetchAuthors);
-  }, [retryOperation, fetchAuthors]);
-
-  // Initialize data on mount with error handling
+  // Initialize data on mount
   useEffect(() => {
     const initializeData = async () => {
       try {
-        // Run fetches in parallel where possible
         await Promise.allSettled([
           fetchArticles(),
           fetchCategories(),
           fetchAuthors()
         ]);
       } catch (error) {
-        // Individual errors are already handled, this is for catastrophic failures
         console.error('Failed to initialize articles data:', error);
       }
     };
 
     initializeData();
   }, [fetchArticles, fetchCategories, fetchAuthors]);
+
+  // Cleanup cache on unmount
+  useEffect(() => {
+    return () => {
+      // Only clear cache if no other instances are using it
+      if (typeof window !== 'undefined' && window.articlesInstanceCount === 1) {
+        articleCache.clear();
+      }
+    };
+  }, []);
 
   return {
     // State
@@ -320,9 +620,10 @@ export const useArticles = (userProfile) => {
     authors,
     showEditor,
     editingArticle,
+    pagination,
     
     // Loading states
-    loading: fetching, // Backward compatibility
+    loading: fetching,
     fetching,
     saving,
     deleting,
@@ -345,14 +646,23 @@ export const useArticles = (userProfile) => {
     setShowEditor,
     setEditingArticle,
     
-    // Retry functions
-    retryFetchArticles,
-    retryFetchCategories,
-    retryFetchAuthors,
+    // Enhanced operations
+    fetchArticle,
+    loadMore,
+    resetPagination,
+    
+    // Cache management
+    invalidateCache,
+    invalidateArticleCache,
     
     // Utilities
     debugAndFixContent,
-    refetch: fetchArticles,
+    refetch: () => fetchArticles({ forceRefresh: true }),
+    
+    // Performance metrics
+    cacheStats: articleCache.getStats(),
+    queryCount: queryCount.current,
+    lastFetchTime: lastFetchTime.current,
     
     // Error management
     clearError,
