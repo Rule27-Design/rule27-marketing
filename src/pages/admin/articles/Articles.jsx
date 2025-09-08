@@ -1,26 +1,40 @@
-// src/pages/admin/articles/Articles.jsx - Updated with Phase 2 improvements
-import React, { useState } from 'react';
+// src/pages/admin/articles/Articles.jsx - Updated with Phase 3 command pattern integration
+import React, { useState, useCallback, useEffect } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import ErrorBoundary from '../../../components/ErrorBoundary';
+import Button from '../../../components/ui/Button';
+import Icon from '../../../components/AdminIcon';
 
-// Import enhanced hooks from Phase 2
+// Import Phase 3 services and hooks
+import { ArticleOperationsService } from './services/ArticleOperations.js';
+import { useArticleEvents, globalEventBus } from './hooks/useArticleEvents.js';
 import { useArticles } from './hooks/useArticles.js';
 import { useArticleFilters } from './hooks/useArticleFilters.js';
-import { useArticleEditor } from './hooks/useArticleEditor.js';
-import { useArticleOperations } from './hooks/useArticleOperations.js';
 import { useArticleStatus } from './hooks/useArticleStatus.js';
 import { useArticleMetrics } from './hooks/useArticleMetrics.js';
+import { useGlobalKeyboardShortcuts } from './hooks/useGlobalKeyboardShortcuts.js';
 
-// Import Phase 2 components
+// Import components
 import ArticlesContainer from './ArticlesContainer';
 import ArticleEditor from './ArticleEditor';
 import { ArticleMetrics } from './components/ArticleMetrics';
-import VirtualArticleTable from './components/VirtualArticleTable';
+import UndoRedoControls from './components/UndoRedoControls';
 
 const Articles = () => {
   const { userProfile } = useOutletContext();
   const [searchParams, setSearchParams] = useSearchParams();
   
+  // Initialize command service with event bus integration
+  const [operationsService] = useState(() => 
+    new ArticleOperationsService({ 
+      userProfile, 
+      eventBus: globalEventBus 
+    })
+  );
+
+  // Event system integration
+  const { emit, subscribe } = useArticleEvents();
+
   // Enhanced article management with caching and performance optimizations
   const {
     articles,
@@ -31,13 +45,10 @@ const Articles = () => {
     editingArticle,
     pagination,
     handleEdit,
-    handleDelete,
-    handleStatusChange,
     setShowEditor,
     setEditingArticle,
     debugAndFixContent,
     refetch: refetchArticles,
-    // New Phase 2 features
     fetchArticle,
     loadMore,
     resetPagination,
@@ -60,30 +71,6 @@ const Articles = () => {
     hasActiveFilters
   } = useArticleFilters(articles);
 
-  // Enhanced editor state management
-  const editorProps = useArticleEditor(
-    editingArticle,
-    () => {
-      setShowEditor(false);
-      setEditingArticle(null);
-      // Invalidate cache after editing
-      invalidateCache();
-    },
-    userProfile,
-    debugAndFixContent
-  );
-
-  // Enhanced article operations with cache management
-  const {
-    duplicateArticle,
-    bulkUpdateStatus,
-    bulkDelete,
-    scheduleArticle,
-    updateSlug,
-    toggleFeatured,
-    exportArticles
-  } = useArticleOperations(userProfile);
-
   // Status management utilities
   const {
     getStatusConfig,
@@ -102,103 +89,242 @@ const Articles = () => {
     getContentHealthScore
   } = useArticleMetrics(articles);
 
-  // Handle new article creation with cache invalidation
-  const handleNewArticle = () => {
-    setEditingArticle(null);
-    setShowEditor(true);
-  };
+  // Command pattern operations with automatic cache invalidation
+  const handleDeleteWithCommand = useCallback(async (id) => {
+    try {
+      const result = await operationsService.deleteArticle(id, userProfile.id);
+      if (result.success) {
+        invalidateArticleCache(id);
+        await refetchArticles();
+      }
+      return result;
+    } catch (error) {
+      console.error('Delete operation failed:', error);
+      return { success: false, error: error.message };
+    }
+  }, [operationsService, userProfile.id, invalidateArticleCache, refetchArticles]);
 
-  // Enhanced handlers with cache management
-  const handleDeleteWithCache = async (id) => {
-    await handleDelete(id);
-    invalidateArticleCache(id);
-  };
+  const handleStatusChangeWithCommand = useCallback(async (id, newStatus) => {
+    try {
+      let result;
+      
+      // Use appropriate command based on status
+      switch (newStatus) {
+        case 'published':
+          result = await operationsService.publishArticle(id, userProfile.id);
+          break;
+        case 'archived':
+          result = await operationsService.archiveArticle(id, userProfile.id);
+          break;
+        default:
+          // Use bulk update for other status changes
+          result = await operationsService.bulkUpdateArticles([id], { status: newStatus }, userProfile.id);
+      }
+      
+      if (result.success) {
+        invalidateArticleCache(id);
+        await refetchArticles();
+      }
+      return result;
+    } catch (error) {
+      console.error('Status change operation failed:', error);
+      return { success: false, error: error.message };
+    }
+  }, [operationsService, userProfile.id, invalidateArticleCache, refetchArticles]);
 
-  const handleStatusChangeWithCache = async (id, newStatus) => {
-    await handleStatusChange(id, newStatus);
-    invalidateArticleCache(id);
-  };
+  // Enhanced operations with command pattern
+  const handleDuplicateWithCommand = useCallback(async (article) => {
+    try {
+      const result = await operationsService.duplicateArticle(article.id, userProfile.id);
+      if (result.success) {
+        invalidateCache();
+        await refetchArticles();
+      }
+      return result;
+    } catch (error) {
+      console.error('Duplicate operation failed:', error);
+      return { success: false, error: error.message };
+    }
+  }, [operationsService, userProfile.id, invalidateCache, refetchArticles]);
 
-  // Enhanced operations with cache invalidation
-  const handleDuplicate = async (article) => {
-    await duplicateArticle(article, () => {
-      invalidateCache();
-      refetchArticles();
-    });
-  };
+  const handleToggleFeaturedWithCommand = useCallback(async (articleId, currentStatus) => {
+    try {
+      const result = await operationsService.bulkUpdateArticles(
+        [articleId], 
+        { is_featured: !currentStatus }, 
+        userProfile.id
+      );
+      if (result.success) {
+        invalidateArticleCache(articleId);
+        await refetchArticles();
+      }
+      return result;
+    } catch (error) {
+      console.error('Toggle featured operation failed:', error);
+      return { success: false, error: error.message };
+    }
+  }, [operationsService, userProfile.id, invalidateArticleCache, refetchArticles]);
 
-  const handleToggleFeatured = async (articleId, currentStatus) => {
-    await toggleFeatured(articleId, currentStatus, () => {
-      invalidateArticleCache(articleId);
-      refetchArticles();
-    });
-  };
-
-  const handleSchedule = async (articleId, scheduledDate) => {
-    await scheduleArticle(articleId, scheduledDate, () => {
-      invalidateArticleCache(articleId);
-      refetchArticles();
-    });
-  };
-
-  // Enhanced bulk operations with cache management
+  // Enhanced bulk operations with command pattern
   const handleBulkOperations = {
     updateStatus: async (articleIds, status) => {
-      await bulkUpdateStatus(articleIds, status, () => {
-        invalidateCache();
-        refetchArticles();
-      });
+      try {
+        const result = await operationsService.bulkUpdateArticles(articleIds, { status }, userProfile.id);
+        if (result.success) {
+          invalidateCache();
+          await refetchArticles();
+        }
+        return result;
+      } catch (error) {
+        console.error('Bulk status update failed:', error);
+        return { success: false, error: error.message };
+      }
     },
     delete: async (articleIds) => {
-      await bulkDelete(articleIds, () => {
-        invalidateCache();
-        refetchArticles();
-      });
+      try {
+        // Create individual delete commands for better undo support
+        const results = await Promise.all(
+          articleIds.map(id => operationsService.deleteArticle(id, userProfile.id))
+        );
+        
+        if (results.every(r => r.success)) {
+          invalidateCache();
+          await refetchArticles();
+        }
+        
+        return { 
+          success: results.every(r => r.success),
+          results 
+        };
+      } catch (error) {
+        console.error('Bulk delete failed:', error);
+        return { success: false, error: error.message };
+      }
     }
   };
 
+  // Undo/Redo functionality
+  const handleUndo = useCallback(async () => {
+    try {
+      const result = await operationsService.undo();
+      if (result.success) {
+        invalidateCache();
+        await refetchArticles();
+        emit('action:undone', { result });
+      }
+      return result;
+    } catch (error) {
+      console.error('Undo failed:', error);
+      return { success: false, error: error.message };
+    }
+  }, [operationsService, invalidateCache, refetchArticles, emit]);
+
+  const handleRedo = useCallback(async () => {
+    try {
+      const result = await operationsService.redo();
+      if (result.success) {
+        invalidateCache();
+        await refetchArticles();
+        emit('action:redone', { result });
+      }
+      return result;
+    } catch (error) {
+      console.error('Redo failed:', error);
+      return { success: false, error: error.message };
+    }
+  }, [operationsService, invalidateCache, refetchArticles, emit]);
+
+  // Handle new article creation with cache invalidation
+  const handleNewArticle = useCallback(() => {
+    setEditingArticle(null);
+    setShowEditor(true);
+    emit('article:editor_opened', { isNew: true });
+  }, [setEditingArticle, setShowEditor, emit]);
+
+  // Enhanced editor close handler
+  const handleEditorClose = useCallback(() => {
+    setShowEditor(false);
+    setEditingArticle(null);
+    emit('article:editor_closed', { editingArticle });
+  }, [setShowEditor, setEditingArticle, emit, editingArticle]);
+
+  // Global keyboard shortcuts
+  useGlobalKeyboardShortcuts(operationsService, {
+    onUndo: handleUndo,
+    onRedo: handleRedo,
+    onNewArticle: handleNewArticle
+  });
+
   // Handle URL parameters for direct access
-  React.useEffect(() => {
+  useEffect(() => {
     if (searchParams.get('action') === 'new') {
       handleNewArticle();
       setSearchParams({});
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, handleNewArticle]);
 
-  // Enhanced editor props with all Phase 2 features
-  const enhancedEditorProps = {
-    ...editorProps,
-    showEditor,
-    editingArticle,
-    categories,
-    authors,
-    userProfile,
-    onClose: () => {
-      setShowEditor(false);
-      setEditingArticle(null);
-      editorProps.resetForm();
-      // Clear any editor-specific cache
-      invalidateCache();
-    },
-    onSave: () => editorProps.handleSave(() => {
-      invalidateCache();
-      refetchArticles();
-    }),
-    onSaveWithStatus: (status) => editorProps.handleSaveWithStatus(status, () => {
-      invalidateCache();
-      refetchArticles();
-    }),
-    // Enhanced operations
-    onDuplicate: handleDuplicate,
-    onSchedule: handleSchedule,
-    onUpdateSlug: updateSlug,
-    // Status utilities
-    getStatusConfig,
-    canTransitionTo,
-    isEditable: (status) => isEditable(status, userProfile?.role, editingArticle?.author_id === userProfile?.id)
-  };
+  // Event listeners for real-time updates and user feedback
+  useEffect(() => {
+    const unsubscribers = [];
 
-  // Enhanced container props with all Phase 2 features
+    // Listen for successful operations
+    unsubscribers.push(
+      subscribe('article:published', ({ article }) => {
+        // Could show notification or update UI
+        console.log(`Article "${article.title}" published successfully`);
+      })
+    );
+
+    unsubscribers.push(
+      subscribe('article:archived', ({ article }) => {
+        console.log(`Article "${article.title}" archived successfully`);
+      })
+    );
+
+    unsubscribers.push(
+      subscribe('articles:bulk_updated', ({ count, updates }) => {
+        console.log(`${count} articles updated:`, updates);
+      })
+    );
+
+    unsubscribers.push(
+      subscribe('command:executed', ({ command, canUndo, canRedo }) => {
+        // Could update undo/redo button states or show feedback
+        console.log(`Command executed: ${command}`, { canUndo, canRedo });
+      })
+    );
+
+    unsubscribers.push(
+      subscribe('command:undone', ({ command }) => {
+        console.log(`Command undone: ${command}`);
+      })
+    );
+
+    unsubscribers.push(
+      subscribe('command:redone', ({ command }) => {
+        console.log(`Command redone: ${command}`);
+      })
+    );
+
+    // Performance monitoring
+    unsubscribers.push(
+      subscribe('performance:cache_hit', () => {
+        // Track cache performance
+      })
+    );
+
+    unsubscribers.push(
+      subscribe('performance:cache_miss', () => {
+        // Track cache misses
+      })
+    );
+
+    return () => {
+      unsubscribers.forEach(unsubscribe => unsubscribe());
+    };
+  }, [subscribe]);
+
+  // Enhanced container props with all Phase 3 features
   const enhancedContainerProps = {
     // Core data
     articles,
@@ -211,7 +337,7 @@ const Articles = () => {
     totalArticles: articles.length,
     filteredCount: filteredArticles.length,
     
-    // Pagination (new in Phase 2)
+    // Pagination
     pagination,
     onLoadMore: loadMore,
     onResetPagination: resetPagination,
@@ -222,19 +348,17 @@ const Articles = () => {
     clearFilters,
     hasActiveFilters,
     
-    // Article operations
+    // Command pattern operations
     onEdit: handleEdit,
-    onDelete: handleDeleteWithCache,
-    onStatusChange: handleStatusChangeWithCache,
+    onDelete: handleDeleteWithCommand,
+    onStatusChange: handleStatusChangeWithCommand,
     onNewArticle: handleNewArticle,
     onRefresh: refetchArticles,
     
-    // Enhanced operations (Phase 2)
-    onDuplicate: handleDuplicate,
-    onToggleFeatured: handleToggleFeatured,
-    onSchedule: handleSchedule,
+    // Enhanced operations with commands
+    onDuplicate: handleDuplicateWithCommand,
+    onToggleFeatured: handleToggleFeaturedWithCommand,
     onBulkOperations: handleBulkOperations,
-    onExport: exportArticles,
     
     // Utility functions
     getStatusConfig,
@@ -247,7 +371,7 @@ const Articles = () => {
     getTopPerformingArticles,
     getArticlesNeedingAttention,
     
-    // Performance metrics (new in Phase 2)
+    // Performance metrics
     cacheStats,
     performanceMetrics: {
       queryCount,
@@ -258,7 +382,33 @@ const Articles = () => {
     }
   };
 
-  // Error handling for Phase 2 components
+  // Enhanced editor props with command pattern integration
+  const enhancedEditorProps = {
+    showEditor,
+    editingArticle,
+    categories,
+    authors,
+    userProfile,
+    onClose: handleEditorClose,
+    onSave: () => {
+      invalidateCache();
+      refetchArticles();
+    },
+    onSaveWithStatus: () => {
+      invalidateCache();
+      refetchArticles();
+    },
+    // Enhanced operations
+    onDuplicate: handleDuplicateWithCommand,
+    // Status utilities
+    getStatusConfig,
+    canTransitionTo,
+    isEditable: (status) => isEditable(status, userProfile?.role, editingArticle?.author_id === userProfile?.id),
+    // Debug function
+    debugAndFixContent
+  };
+
+  // Error handling for command operations
   if (hasErrors) {
     return (
       <ErrorBoundary>
@@ -317,11 +467,45 @@ const Articles = () => {
   return (
     <ErrorBoundary>
       <div className="space-y-6">
-        {/* Enhanced Analytics Dashboard - Phase 2 improvements */}
+        {/* Command History & Undo/Redo Controls */}
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <h2 className="text-lg font-heading-bold">Article Management</h2>
+              {process.env.NODE_ENV === 'development' && (
+                <div className="text-sm text-gray-500">
+                  Commands: {operationsService.commandManager.history.length} | 
+                  Cache: {cacheStats.size} items
+                </div>
+              )}
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              {/* Undo/Redo Controls */}
+              <UndoRedoControls 
+                operationsService={operationsService}
+                onUndo={handleUndo}
+                onRedo={handleRedo}
+              />
+              
+              {/* Quick actions */}
+              <Button
+                variant="outline"
+                onClick={handleNewArticle}
+                iconName="Plus"
+                size="sm"
+              >
+                New Article
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced Analytics Dashboard with Command Pattern Insights */}
         {articles.length > 0 && (
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-heading-bold">Article Analytics</h2>
+              <h2 className="text-lg font-heading-bold">Analytics & Command History</h2>
               <div className="flex items-center space-x-4 text-sm text-gray-600">
                 {/* Performance indicators */}
                 <div className="flex items-center space-x-2">
@@ -343,6 +527,13 @@ const Articles = () => {
                     <span className="font-medium">{enhancedContainerProps.contentHealthScore}%</span>
                   </div>
                 </div>
+
+                <div className="flex items-center space-x-2">
+                  <span>Commands:</span>
+                  <span className="font-medium text-blue-600">
+                    {operationsService.commandManager.history.length}
+                  </span>
+                </div>
               </div>
             </div>
             
@@ -352,8 +543,8 @@ const Articles = () => {
               className="mb-4"
             />
             
-            {/* Enhanced insights with performance data */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            {/* Command history summary */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
               {/* Performance metrics */}
               {process.env.NODE_ENV === 'development' && (
                 <div className="bg-blue-50 p-3 rounded-lg">
@@ -365,6 +556,16 @@ const Articles = () => {
                   </div>
                 </div>
               )}
+              
+              {/* Command insights */}
+              <div className="bg-purple-50 p-3 rounded-lg">
+                <h3 className="text-sm font-medium text-purple-900 mb-2">Commands</h3>
+                <div className="space-y-1 text-xs text-purple-700">
+                  <div>History: {operationsService.commandManager.history.length}</div>
+                  <div>Can Undo: {operationsService.canUndo() ? 'Yes' : 'No'}</div>
+                  <div>Can Redo: {operationsService.canRedo() ? 'Yes' : 'No'}</div>
+                </div>
+              </div>
               
               {/* Quick insights */}
               {getArticlesNeedingAttention().length > 0 && (
@@ -393,10 +594,10 @@ const Articles = () => {
           </div>
         )}
 
-        {/* Phase 2 Enhanced Articles Container */}
+        {/* Enhanced Articles Container with Command Pattern */}
         <ArticlesContainer {...enhancedContainerProps} />
 
-        {/* Enhanced Article Editor Modal with Phase 2 features */}
+        {/* Enhanced Article Editor Modal with Command Integration */}
         {showEditor && <ArticleEditor {...enhancedEditorProps} />}
       </div>
     </ErrorBoundary>
