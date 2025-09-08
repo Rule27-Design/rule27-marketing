@@ -1,4 +1,4 @@
-// src/pages/admin/articles/Articles.jsx - Updated with Phase 3 command pattern integration
+// src/pages/admin/articles/Articles.jsx - Enhanced with Phase 4 UX improvements
 import React, { useState, useCallback, useEffect } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import ErrorBoundary from '../../../components/ErrorBoundary';
@@ -14,15 +14,37 @@ import { useArticleStatus } from './hooks/useArticleStatus.js';
 import { useArticleMetrics } from './hooks/useArticleMetrics.js';
 import { useGlobalKeyboardShortcuts } from './hooks/useGlobalKeyboardShortcuts.js';
 
-// Import components
+// Import existing components
 import ArticlesContainer from './ArticlesContainer';
 import ArticleEditor from './ArticleEditor';
 import { ArticleMetrics } from './components/ArticleMetrics';
 import UndoRedoControls from './components/UndoRedoControls';
 
+// Import Phase 4 UX Enhancement components
+import ArticlePreview from './components/ArticlePreview';
+import ArticleQuickActions from './components/ArticleQuickActions';
+import { 
+  ArticleTableSkeleton, 
+  ArticleToolbarSkeleton, 
+  ArticleMetricsSkeleton,
+  ProgressiveArticlesSkeleton 
+} from './components/SkeletonComponents';
+import { 
+  ShortcutHints, 
+  KeyboardShortcutsModal, 
+  ContextualShortcuts 
+} from './components/KeyboardShortcutsUI';
+
 const Articles = () => {
   const { userProfile } = useOutletContext();
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Phase 4 UX state
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewArticle, setPreviewArticle] = useState(null);
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+  const [showShortcutHints, setShowShortcutHints] = useState(true);
+  const [uiAnimationsEnabled, setUiAnimationsEnabled] = useState(true);
   
   // Initialize command service with event bus integration
   const [operationsService] = useState(() => 
@@ -89,7 +111,101 @@ const Articles = () => {
     getContentHealthScore
   } = useArticleMetrics(articles);
 
-  // Command pattern operations with automatic cache invalidation
+  // Phase 4: Enhanced Quick Actions handlers
+  const handleQuickPublish = useCallback(async (articleIds) => {
+    try {
+      const result = await operationsService.bulkUpdateArticles(
+        articleIds, 
+        { status: 'published' }, 
+        userProfile.id
+      );
+      if (result.success) {
+        invalidateCache();
+        await refetchArticles();
+        emit('quick_action:bulk_publish', { count: articleIds.length });
+      }
+      return result;
+    } catch (error) {
+      console.error('Quick publish failed:', error);
+      return { success: false, error: error.message };
+    }
+  }, [operationsService, userProfile.id, invalidateCache, refetchArticles, emit]);
+
+  const handleQuickArchive = useCallback(async (articleIds) => {
+    try {
+      const result = await operationsService.bulkUpdateArticles(
+        articleIds, 
+        { status: 'archived' }, 
+        userProfile.id
+      );
+      if (result.success) {
+        invalidateCache();
+        await refetchArticles();
+        emit('quick_action:bulk_archive', { count: articleIds.length });
+      }
+      return result;
+    } catch (error) {
+      console.error('Quick archive failed:', error);
+      return { success: false, error: error.message };
+    }
+  }, [operationsService, userProfile.id, invalidateCache, refetchArticles, emit]);
+
+  const handleQuickDelete = useCallback(async (articleIds) => {
+    if (!confirm(`Are you sure you want to delete ${articleIds.length} article(s)?`)) {
+      return { success: false, cancelled: true };
+    }
+
+    try {
+      const results = await Promise.all(
+        articleIds.map(id => operationsService.deleteArticle(id, userProfile.id))
+      );
+      
+      if (results.every(r => r.success)) {
+        invalidateCache();
+        await refetchArticles();
+        emit('quick_action:bulk_delete', { count: articleIds.length });
+      }
+      
+      return { 
+        success: results.every(r => r.success),
+        results 
+      };
+    } catch (error) {
+      console.error('Quick delete failed:', error);
+      return { success: false, error: error.message };
+    }
+  }, [operationsService, userProfile.id, invalidateCache, refetchArticles, emit]);
+
+  // Phase 4: Enhanced Preview handlers
+  const handlePreviewArticle = useCallback(async (article) => {
+    try {
+      // Fetch full article data if needed
+      const fullArticle = article.content ? article : await fetchArticle(article.id);
+      setPreviewArticle(fullArticle);
+      setShowPreview(true);
+      emit('ui:preview_opened', { articleId: article.id });
+    } catch (error) {
+      console.error('Failed to load article for preview:', error);
+    }
+  }, [fetchArticle, emit]);
+
+  const handlePreviewPublish = useCallback(async (articleId) => {
+    try {
+      const result = await operationsService.publishArticle(articleId, userProfile.id);
+      if (result.success) {
+        invalidateArticleCache(articleId);
+        await refetchArticles();
+        setShowPreview(false);
+        emit('preview:quick_publish', { articleId });
+      }
+      return result;
+    } catch (error) {
+      console.error('Preview publish failed:', error);
+      return { success: false, error: error.message };
+    }
+  }, [operationsService, userProfile.id, invalidateArticleCache, refetchArticles, emit]);
+
+  // Enhanced operations with command pattern
   const handleDeleteWithCommand = useCallback(async (id) => {
     try {
       const result = await operationsService.deleteArticle(id, userProfile.id);
@@ -108,7 +224,6 @@ const Articles = () => {
     try {
       let result;
       
-      // Use appropriate command based on status
       switch (newStatus) {
         case 'published':
           result = await operationsService.publishArticle(id, userProfile.id);
@@ -117,7 +232,6 @@ const Articles = () => {
           result = await operationsService.archiveArticle(id, userProfile.id);
           break;
         default:
-          // Use bulk update for other status changes
           result = await operationsService.bulkUpdateArticles([id], { status: newStatus }, userProfile.id);
       }
       
@@ -132,7 +246,6 @@ const Articles = () => {
     }
   }, [operationsService, userProfile.id, invalidateArticleCache, refetchArticles]);
 
-  // Enhanced operations with command pattern
   const handleDuplicateWithCommand = useCallback(async (article) => {
     try {
       const result = await operationsService.duplicateArticle(article.id, userProfile.id);
@@ -165,44 +278,6 @@ const Articles = () => {
     }
   }, [operationsService, userProfile.id, invalidateArticleCache, refetchArticles]);
 
-  // Enhanced bulk operations with command pattern
-  const handleBulkOperations = {
-    updateStatus: async (articleIds, status) => {
-      try {
-        const result = await operationsService.bulkUpdateArticles(articleIds, { status }, userProfile.id);
-        if (result.success) {
-          invalidateCache();
-          await refetchArticles();
-        }
-        return result;
-      } catch (error) {
-        console.error('Bulk status update failed:', error);
-        return { success: false, error: error.message };
-      }
-    },
-    delete: async (articleIds) => {
-      try {
-        // Create individual delete commands for better undo support
-        const results = await Promise.all(
-          articleIds.map(id => operationsService.deleteArticle(id, userProfile.id))
-        );
-        
-        if (results.every(r => r.success)) {
-          invalidateCache();
-          await refetchArticles();
-        }
-        
-        return { 
-          success: results.every(r => r.success),
-          results 
-        };
-      } catch (error) {
-        console.error('Bulk delete failed:', error);
-        return { success: false, error: error.message };
-      }
-    }
-  };
-
   // Undo/Redo functionality
   const handleUndo = useCallback(async () => {
     try {
@@ -234,89 +309,78 @@ const Articles = () => {
     }
   }, [operationsService, invalidateCache, refetchArticles, emit]);
 
-  // Handle new article creation with cache invalidation
   const handleNewArticle = useCallback(() => {
     setEditingArticle(null);
     setShowEditor(true);
     emit('article:editor_opened', { isNew: true });
   }, [setEditingArticle, setShowEditor, emit]);
 
-  // Enhanced editor close handler
   const handleEditorClose = useCallback(() => {
     setShowEditor(false);
     setEditingArticle(null);
     emit('article:editor_closed', { editingArticle });
   }, [setShowEditor, setEditingArticle, emit, editingArticle]);
 
-  // Global keyboard shortcuts
-  useGlobalKeyboardShortcuts(operationsService, {
+  // Phase 4: Global keyboard shortcuts with enhanced UI integration
+  const { showHelp } = useGlobalKeyboardShortcuts(operationsService, {
     onUndo: handleUndo,
     onRedo: handleRedo,
-    onNewArticle: handleNewArticle
+    onNewArticle: handleNewArticle,
+    onRefresh: refetchArticles,
+    onHelp: () => setShowShortcutsModal(true)
   });
+
+  // Phase 4: Export functionality
+  const handleExport = useCallback((articleIds = null, format = 'json') => {
+    // This would implement the export functionality
+    emit('ui:export_requested', { articleIds, format });
+  }, [emit]);
 
   // Handle URL parameters for direct access
   useEffect(() => {
-    if (searchParams.get('action') === 'new') {
+    const action = searchParams.get('action');
+    const articleId = searchParams.get('article');
+    
+    if (action === 'new') {
       handleNewArticle();
       setSearchParams({});
+    } else if (action === 'preview' && articleId) {
+      const article = articles.find(a => a.id === articleId);
+      if (article) {
+        handlePreviewArticle(article);
+      }
+      setSearchParams({});
     }
-  }, [searchParams, setSearchParams, handleNewArticle]);
+  }, [searchParams, setSearchParams, handleNewArticle, articles, handlePreviewArticle]);
 
-  // Event listeners for real-time updates and user feedback
+  // Phase 4: Enhanced event listeners for UI feedback
   useEffect(() => {
     const unsubscribers = [];
 
-    // Listen for successful operations
+    // Listen for UI events
     unsubscribers.push(
-      subscribe('article:published', ({ article }) => {
-        // Could show notification or update UI
-        console.log(`Article "${article.title}" published successfully`);
+      subscribe('ui:preview_opened', ({ articleId }) => {
+        console.log(`Preview opened for article: ${articleId}`);
       })
     );
 
     unsubscribers.push(
-      subscribe('article:archived', ({ article }) => {
-        console.log(`Article "${article.title}" archived successfully`);
+      subscribe('quick_action:bulk_publish', ({ count }) => {
+        console.log(`Quick published ${count} articles`);
       })
     );
 
+    // Dismiss shortcut hints after user has used enough shortcuts
     unsubscribers.push(
-      subscribe('articles:bulk_updated', ({ count, updates }) => {
-        console.log(`${count} articles updated:`, updates);
-      })
-    );
-
-    unsubscribers.push(
-      subscribe('command:executed', ({ command, canUndo, canRedo }) => {
-        // Could update undo/redo button states or show feedback
-        console.log(`Command executed: ${command}`, { canUndo, canRedo });
-      })
-    );
-
-    unsubscribers.push(
-      subscribe('command:undone', ({ command }) => {
-        console.log(`Command undone: ${command}`);
-      })
-    );
-
-    unsubscribers.push(
-      subscribe('command:redone', ({ command }) => {
-        console.log(`Command redone: ${command}`);
-      })
-    );
-
-    // Performance monitoring
-    unsubscribers.push(
-      subscribe('performance:cache_hit', () => {
-        // Track cache performance
-      })
-    );
-
-    unsubscribers.push(
-      subscribe('performance:cache_miss', () => {
-        // Track cache misses
-      })
+      subscribe('shortcut:executed', (() => {
+        let shortcutCount = 0;
+        return () => {
+          shortcutCount++;
+          if (shortcutCount >= 5) {
+            setShowShortcutHints(false);
+          }
+        };
+      })())
     );
 
     return () => {
@@ -324,7 +388,7 @@ const Articles = () => {
     };
   }, [subscribe]);
 
-  // Enhanced container props with all Phase 3 features
+  // Enhanced container props with Phase 4 features
   const enhancedContainerProps = {
     // Core data
     articles,
@@ -358,7 +422,9 @@ const Articles = () => {
     // Enhanced operations with commands
     onDuplicate: handleDuplicateWithCommand,
     onToggleFeatured: handleToggleFeaturedWithCommand,
-    onBulkOperations: handleBulkOperations,
+    
+    // Phase 4: Preview integration
+    onPreview: handlePreviewArticle,
     
     // Utility functions
     getStatusConfig,
@@ -398,13 +464,10 @@ const Articles = () => {
       invalidateCache();
       refetchArticles();
     },
-    // Enhanced operations
     onDuplicate: handleDuplicateWithCommand,
-    // Status utilities
     getStatusConfig,
     canTransitionTo,
     isEditable: (status) => isEditable(status, userProfile?.role, editingArticle?.author_id === userProfile?.id),
-    // Debug function
     debugAndFixContent
   };
 
@@ -449,17 +512,13 @@ const Articles = () => {
     );
   }
 
-  // Loading state for initial load
+  // Phase 4: Enhanced loading state with progressive skeletons
   if (loading && articles.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading articles...</p>
-          <div className="text-xs text-gray-500 mt-2">
-            {cacheStats.size > 0 && `Using cached data (${cacheStats.size} items)`}
-          </div>
-        </div>
+      <div className="space-y-6">
+        <ArticleToolbarSkeleton />
+        <ArticleMetricsSkeleton variant="compact" />
+        <ProgressiveArticlesSkeleton />
       </div>
     );
   }
@@ -467,6 +526,9 @@ const Articles = () => {
   return (
     <ErrorBoundary>
       <div className="space-y-6">
+        {/* Phase 4: Contextual Shortcuts */}
+        <ContextualShortcuts context={showEditor ? 'editor' : 'list'} />
+
         {/* Command History & Undo/Redo Controls */}
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center justify-between">
@@ -497,17 +559,27 @@ const Articles = () => {
               >
                 New Article
               </Button>
+
+              {/* Phase 4: Keyboard shortcuts button */}
+              <Button
+                variant="ghost"
+                onClick={() => setShowShortcutsModal(true)}
+                iconName="Keyboard"
+                size="sm"
+                title="Keyboard shortcuts (?)"
+              >
+                Shortcuts
+              </Button>
             </div>
           </div>
         </div>
 
-        {/* Enhanced Analytics Dashboard with Command Pattern Insights */}
+        {/* Enhanced Analytics Dashboard */}
         {articles.length > 0 && (
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-heading-bold">Analytics & Command History</h2>
+              <h2 className="text-lg font-heading-bold">Analytics & Performance</h2>
               <div className="flex items-center space-x-4 text-sm text-gray-600">
-                {/* Performance indicators */}
                 <div className="flex items-center space-x-2">
                   <span>Cache:</span>
                   <span className="font-medium text-green-600">
@@ -527,13 +599,6 @@ const Articles = () => {
                     <span className="font-medium">{enhancedContainerProps.contentHealthScore}%</span>
                   </div>
                 </div>
-
-                <div className="flex items-center space-x-2">
-                  <span>Commands:</span>
-                  <span className="font-medium text-blue-600">
-                    {operationsService.commandManager.history.length}
-                  </span>
-                </div>
               </div>
             </div>
             
@@ -542,63 +607,62 @@ const Articles = () => {
               variant="compact"
               className="mb-4"
             />
-            
-            {/* Command history summary */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-              {/* Performance metrics */}
-              {process.env.NODE_ENV === 'development' && (
-                <div className="bg-blue-50 p-3 rounded-lg">
-                  <h3 className="text-sm font-medium text-blue-900 mb-2">Performance</h3>
-                  <div className="space-y-1 text-xs text-blue-700">
-                    <div>Queries: {queryCount}</div>
-                    <div>Memory: {enhancedContainerProps.performanceMetrics.memoryUsage}MB</div>
-                    <div>Cache Hit: {Math.round(cacheStats.hitRatio || 0)}%</div>
-                  </div>
-                </div>
-              )}
-              
-              {/* Command insights */}
-              <div className="bg-purple-50 p-3 rounded-lg">
-                <h3 className="text-sm font-medium text-purple-900 mb-2">Commands</h3>
-                <div className="space-y-1 text-xs text-purple-700">
-                  <div>History: {operationsService.commandManager.history.length}</div>
-                  <div>Can Undo: {operationsService.canUndo() ? 'Yes' : 'No'}</div>
-                  <div>Can Redo: {operationsService.canRedo() ? 'Yes' : 'No'}</div>
-                </div>
-              </div>
-              
-              {/* Quick insights */}
-              {getArticlesNeedingAttention().length > 0 && (
-                <div className="bg-yellow-50 p-3 rounded-lg">
-                  <h3 className="text-sm font-medium text-yellow-800 mb-2">Needs Attention</h3>
-                  <div className="space-y-1">
-                    {getArticlesNeedingAttention().slice(0, 2).map((issue, index) => (
-                      <div key={index} className="text-sm text-yellow-700">
-                        • {issue.message}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {/* Publishing stats */}
-              <div className="bg-green-50 p-3 rounded-lg">
-                <h3 className="text-sm font-medium text-green-800 mb-2">Publishing</h3>
-                <div className="space-y-1 text-xs text-green-700">
-                  <div>This month: {getPublishingStats().thisMonth}</div>
-                  <div>Weekly avg: {getPublishingStats().weeklyAverage}</div>
-                  <div>Trend: {getPublishingStats().publishingTrend}</div>
-                </div>
-              </div>
-            </div>
           </div>
         )}
 
-        {/* Enhanced Articles Container with Command Pattern */}
+        {/* Enhanced Articles Container */}
         <ArticlesContainer {...enhancedContainerProps} />
 
-        {/* Enhanced Article Editor Modal with Command Integration */}
+        {/* Phase 4: Quick Actions Floating Button */}
+        <ArticleQuickActions
+          selectedArticles={[]} // This would come from ArticlesContainer selection state
+          userProfile={userProfile}
+          onNewArticle={handleNewArticle}
+          onBulkPublish={handleQuickPublish}
+          onBulkArchive={handleQuickArchive}
+          onBulkDelete={handleQuickDelete}
+          onExport={handleExport}
+          onRefresh={refetchArticles}
+          onShowKeyboardShortcuts={() => setShowShortcutsModal(true)}
+        />
+
+        {/* Phase 4: Shortcut Hints */}
+        {showShortcutHints && (
+          <ShortcutHints
+            visible={true}
+            position="bottom-left"
+            onDismiss={() => setShowShortcutHints(false)}
+          />
+        )}
+
+        {/* Enhanced Article Editor Modal */}
         {showEditor && <ArticleEditor {...enhancedEditorProps} />}
+
+        {/* Phase 4: Article Preview Modal */}
+        {showPreview && previewArticle && (
+          <ArticlePreview
+            article={previewArticle}
+            isOpen={showPreview}
+            onClose={() => {
+              setShowPreview(false);
+              setPreviewArticle(null);
+            }}
+            onEdit={(article) => {
+              setShowPreview(false);
+              handleEdit(article);
+            }}
+            onPublish={handlePreviewPublish}
+            userProfile={userProfile}
+          />
+        )}
+
+        {/* Phase 4: Keyboard Shortcuts Modal */}
+        {showShortcutsModal && (
+          <KeyboardShortcutsModal
+            isOpen={showShortcutsModal}
+            onClose={() => setShowShortcutsModal(false)}
+          />
+        )}
       </div>
     </ErrorBoundary>
   );

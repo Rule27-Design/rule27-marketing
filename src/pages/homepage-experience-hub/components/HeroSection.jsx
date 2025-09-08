@@ -180,7 +180,7 @@ const HeroSection = () => {
         {/* Main Headline with Typewriter Effect - Using Steelfish */}
         <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading-regular text-white mb-6 uppercase tracking-wider">
-            <span className="block mb-2">The 27th Rule:</span>
+            <span className="block mb-2"></span>
             <span className="block text-center md:text-left">
               <span className="block md:inline">Where Creative{' '}</span>
               <span className="relative inline-block min-w-[200px] md:min-w-[320px] text-center md:text-left">

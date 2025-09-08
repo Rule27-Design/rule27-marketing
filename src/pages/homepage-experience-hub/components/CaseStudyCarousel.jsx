@@ -56,8 +56,8 @@ const CaseStudyCarousel = ({ caseStudies = [] }) => {
             <span className="text-accent block mt-2 font-heading-regular uppercase">Speak for Themselves</span>
           </h2>
           <p className="text-xl text-text-secondary max-w-3xl mx-auto font-sans">
-            Real results from real partnerships. See how we've helped ambitious brands 
-            break through their limitations and achieve extraordinary outcomes.
+            Whether it’s a new logo or a full-scale system redesign, the Rule of Transformation is the same:
+defy expectations, break conventions, and deliver extraordinary results.
           </p>
         </div>
 
@@ -213,7 +213,7 @@ const CaseStudyCarousel = ({ caseStudies = [] }) => {
               iconName="Eye"
               iconPosition="left"
             >
-              Explore All Success Stories
+              Witness the Transformation
             </Button>
           </Link>
         </div>
