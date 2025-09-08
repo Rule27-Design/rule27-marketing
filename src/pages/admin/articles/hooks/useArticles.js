@@ -13,7 +13,7 @@ const CACHE_CONFIG = {
   SELECTIVE_FIELDS: {
     list: [
       'id', 'title', 'slug', 'excerpt', 'status', 'is_featured',
-      'view_count', 'like_count', 'comment_count', 'read_time',
+      'view_count', 'like_count', 'read_time',
       'created_at', 'updated_at', 'published_at', 'author_id', 'category_id'
     ],
     detail: '*', // Full fields for editing
