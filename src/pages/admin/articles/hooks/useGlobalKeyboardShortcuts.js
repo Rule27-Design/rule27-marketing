@@ -1,4 +1,4 @@
-// src/pages/admin/articles/hooks/useGlobalKeyboardShortcuts.js - Global keyboard shortcuts
+// src/pages/admin/articles/hooks/useGlobalKeyboardShortcuts.js - Fixed scoping issue
 import { useEffect, useCallback, useRef } from 'react';
 import { useArticleEvents } from './useArticleEvents.js';
 
@@ -93,14 +93,94 @@ export const useGlobalKeyboardShortcuts = (operationsService, handlers = {}) => 
     return false;
   }, [emit, onHelp]);
 
-  // Main keyboard event handler
+  // Show keyboard shortcuts help modal
+  const showKeyboardShortcutsHelp = useCallback(() => {
+    const shortcuts = [
+      { key: 'Ctrl+Z', description: 'Undo last action' },
+      { key: 'Ctrl+Y', description: 'Redo last action' },
+      { key: 'Ctrl+N', description: 'Create new article' },
+      { key: 'Ctrl+R', description: 'Refresh page' },
+      { key: 'Ctrl+/', description: 'Focus search' },
+      { key: 'Ctrl+Shift+F', description: 'Advanced search' },
+      { key: 'c', description: 'Create new article (when not typing)' },
+      { key: 'r', description: 'Refresh (when not typing)' },
+      { key: '/', description: 'Focus search (when not typing)' },
+      { key: 'j', description: 'Scroll down' },
+      { key: 'k', description: 'Scroll up' },
+      { key: 'gg', description: 'Go to top' },
+      { key: 'G', description: 'Go to bottom' },
+      { key: '?', description: 'Show this help' },
+      { key: 'Escape', description: 'Close modal or clear focus' }
+    ];
+
+    // Create and show help modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold">Keyboard Shortcuts</h2>
+            <button class="text-gray-400 hover:text-gray-600" data-close>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ${shortcuts.map(shortcut => `
+              <div class="flex items-center justify-between p-2 rounded hover:bg-gray-50">
+                <span class="text-gray-600">${shortcut.description}</span>
+                <kbd class="px-2 py-1 bg-gray-100 rounded text-sm font-mono">${shortcut.key}</kbd>
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+            <p class="text-sm text-blue-800">
+              <strong>Tip:</strong> Most single-key shortcuts only work when you're not typing in an input field.
+              Modifier-based shortcuts (Ctrl+Key) work everywhere.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Add event listeners
+    const closeModal = () => {
+      document.body.removeChild(modal);
+      document.removeEventListener('keydown', handleEscape);
+    };
+
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    };
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal || e.target.hasAttribute('data-close')) {
+        closeModal();
+      }
+    });
+
+    document.addEventListener('keydown', handleEscape);
+    document.body.appendChild(modal);
+
+    emit('shortcut:help_shown', { shortcuts });
+  }, [emit]);
+
+  // Main keyboard event handler - FIXED SCOPING ISSUE
   const handleKeyDown = useCallback((event) => {
     // Skip processing if we shouldn't handle this key
     if (!shouldProcessKey(event)) {
       return;
     }
 
-    const isInputFocused = isInInputField();
+    // Get current state - define these at the top to ensure they're always available
+    const currentIsInputFocused = isInInputField();
     const hasModifier = isModifierPressed(event);
 
     // Handle modifier-based shortcuts (work everywhere)
@@ -180,7 +260,7 @@ export const useGlobalKeyboardShortcuts = (operationsService, handlers = {}) => 
     }
 
     // Handle non-modifier shortcuts (only when not in input fields)
-    if (!isInputFocused && !hasModifier) {
+    if (!currentIsInputFocused && !hasModifier) {
       switch (event.key) {
         case 'Escape':
           // Close any open modals or clear focus
@@ -248,7 +328,7 @@ export const useGlobalKeyboardShortcuts = (operationsService, handlers = {}) => 
     }
   }, [
     shouldProcessKey,
-    isInputFocused,
+    isInInputField,
     isModifierPressed,
     handleKeySequence,
     onUndo,
@@ -259,85 +339,6 @@ export const useGlobalKeyboardShortcuts = (operationsService, handlers = {}) => 
     operationsService,
     emit
   ]);
-
-  // Show keyboard shortcuts help modal
-  const showKeyboardShortcutsHelp = useCallback(() => {
-    const shortcuts = [
-      { key: 'Ctrl+Z', description: 'Undo last action' },
-      { key: 'Ctrl+Y', description: 'Redo last action' },
-      { key: 'Ctrl+N', description: 'Create new article' },
-      { key: 'Ctrl+R', description: 'Refresh page' },
-      { key: 'Ctrl+/', description: 'Focus search' },
-      { key: 'Ctrl+Shift+F', description: 'Advanced search' },
-      { key: 'c', description: 'Create new article (when not typing)' },
-      { key: 'r', description: 'Refresh (when not typing)' },
-      { key: '/', description: 'Focus search (when not typing)' },
-      { key: 'j', description: 'Scroll down' },
-      { key: 'k', description: 'Scroll up' },
-      { key: 'gg', description: 'Go to top' },
-      { key: 'G', description: 'Go to bottom' },
-      { key: '?', description: 'Show this help' },
-      { key: 'Escape', description: 'Close modal or clear focus' }
-    ];
-
-    // Create and show help modal
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
-    modal.innerHTML = `
-      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-semibold">Keyboard Shortcuts</h2>
-            <button class="text-gray-400 hover:text-gray-600" data-close>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            ${shortcuts.map(shortcut => `
-              <div class="flex items-center justify-between p-2 rounded hover:bg-gray-50">
-                <span class="text-gray-600">${shortcut.description}</span>
-                <kbd class="px-2 py-1 bg-gray-100 rounded text-sm font-mono">${shortcut.key}</kbd>
-              </div>
-            `).join('')}
-          </div>
-          
-          <div class="mt-6 p-4 bg-blue-50 rounded-lg">
-            <p class="text-sm text-blue-800">
-              <strong>Tip:</strong> Most single-key shortcuts only work when you're not typing in an input field.
-              Modifier-based shortcuts (Ctrl+Key) work everywhere.
-            </p>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Add event listeners
-    const closeModal = () => {
-      document.body.removeChild(modal);
-      document.removeEventListener('keydown', handleEscape);
-    };
-
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') {
-        closeModal();
-      }
-    };
-
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal || e.target.hasAttribute('data-close')) {
-        closeModal();
-      }
-    });
-
-    document.addEventListener('keydown', handleEscape);
-    document.body.appendChild(modal);
-
-    emit('shortcut:help_shown', { shortcuts });
-  }, [emit]);
 
   // Set up global event listener
   useEffect(() => {
