@@ -1,4 +1,4 @@
-// src/App.jsx - Updated with Toast Provider and Error Handling
+// src/App.jsx - Updated with EventBusProvider and enhanced error handling
 import React, { useEffect, useState } from "react";
 import Routes from "./Routes";
 import Hotjar from '@hotjar/browser';
@@ -6,6 +6,7 @@ import ReactGA from 'react-ga4';
 import { supabase } from './lib/supabase';
 import { ToastProvider } from './components/ui/Toast';
 import ErrorBoundary from './components/ErrorBoundary';
+import { EventBusProvider } from './pages/admin/articles/hooks/useArticleEvents.js';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -111,7 +112,10 @@ function App() {
       message="We're sorry, but something went wrong. Please refresh the page or try again later."
     >
       <ToastProvider>
-        <Routes session={session} />
+        {/* Wrap Routes with EventBusProvider for event-driven communication */}
+        <EventBusProvider>
+          <Routes session={session} />
+        </EventBusProvider>
       </ToastProvider>
     </ErrorBoundary>
   );
