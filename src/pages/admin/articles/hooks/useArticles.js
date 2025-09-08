@@ -1,4 +1,4 @@
-// src/pages/admin/articles/hooks/useArticles.js - Enhanced with caching and performance
+// src/pages/admin/articles/hooks/useArticles.js - Fixed with better error handling and fallback queries
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../../lib/supabase';
 import { useToast } from '../../../../components/ui/Toast';
@@ -157,32 +157,69 @@ export const useArticles = (userProfile) => {
     return `${baseKey}${userKey}${paramsKey}`;
   }, [userProfile?.role, userProfile?.id]);
 
-  // Build optimized query
+  // Check if foreign tables exist (helper function)
+  const checkTableAccess = useCallback(async () => {
+    try {
+      // Try to query a single row from each related table
+      const profilesCheck = await supabase
+        .from('profiles')
+        .select('id')
+        .limit(1);
+        
+      const categoriesCheck = await supabase
+        .from('categories')
+        .select('id')
+        .limit(1);
+
+      return {
+        hasProfiles: !profilesCheck.error,
+        hasCategories: !categoriesCheck.error,
+        profilesError: profilesCheck.error,
+        categoriesError: categoriesCheck.error
+      };
+    } catch (error) {
+      return {
+        hasProfiles: false,
+        hasCategories: false,
+        error
+      };
+    }
+  }, []);
+
+  // Build optimized query with better error handling
   const buildQuery = useCallback((type = 'list', options = {}) => {
     const { 
       page = 1, 
       limit = 50, 
       includeRelations = true,
       selectFields = CACHE_CONFIG.SELECTIVE_FIELDS.list,
-      filters = {}
+      filters = {},
+      forceBasic = false
     } = options;
 
     let query = supabase.from('articles');
 
     // Select appropriate fields
     if (type === 'detail') {
-      query = query.select(`
-        *,
-        author:profiles!articles_author_id_fkey(${CACHE_CONFIG.SELECTIVE_FIELDS.relations.author}),
-        category:categories!articles_category_id_fkey(${CACHE_CONFIG.SELECTIVE_FIELDS.relations.category})
-      `);
-    } else if (includeRelations) {
+      if (includeRelations && !forceBasic) {
+        // Try full query with relations first
+        query = query.select(`
+          *,
+          author:profiles!articles_author_id_fkey(id, full_name, email, avatar_url),
+          category:categories!articles_category_id_fkey(id, name, slug)
+        `);
+      } else {
+        query = query.select('*');
+      }
+    } else if (includeRelations && !forceBasic) {
+      // Try query with relations
       query = query.select(`
         ${selectFields.join(', ')},
-        author:profiles!articles_author_id_fkey(${CACHE_CONFIG.SELECTIVE_FIELDS.relations.author}),
-        category:categories!articles_category_id_fkey(${CACHE_CONFIG.SELECTIVE_FIELDS.relations.category})
+        author:profiles!articles_author_id_fkey(id, full_name, email, avatar_url),
+        category:categories!articles_category_id_fkey(id, name, slug)
       `);
     } else {
+      // Basic query without relations
       query = query.select(selectFields.join(', '));
     }
 
@@ -274,7 +311,7 @@ export const useArticles = (userProfile) => {
     return { html: '', text: '', wordCount: 0, type: 'tiptap', version: '2.0' };
   }, []);
 
-  // Enhanced fetch with caching and background refresh
+  // Enhanced fetch with multiple fallback strategies
   const fetchArticles = useCallback(async (options = {}) => {
     const { 
       forceRefresh = false,
@@ -308,42 +345,20 @@ export const useArticles = (userProfile) => {
         queryCount.current++;
         lastFetchTime.current = Date.now();
 
-        // Build and execute query
-        const query = buildQuery('list', { page, limit, includeRelations: true });
-        const { data, error, count } = await query;
+        let result = null;
+        let usedFallback = false;
 
-        if (error) {
-          // Try fallback query without relations
-          const { data: fallbackData, error: fallbackError } = await buildQuery('list', { 
-            page, 
-            limit, 
-            includeRelations: false 
-          });
-          
-          if (fallbackError) throw fallbackError;
-          
-          const result = {
-            articles: fallbackData || [],
-            pagination: {
-              page,
-              limit,
-              total: count || 0,
-              hasMore: (fallbackData?.length || 0) === limit
-            }
-          };
+        // Strategy 1: Try with relations
+        try {
+          const query = buildQuery('list', { page, limit, includeRelations: true });
+          const { data, error, count } = await query;
 
-          setArticles(result.articles);
-          setPagination(result.pagination);
-          
-          // Cache even fallback results
-          articleCache.set(cacheKey, result);
-          
-          toast.warning('Articles loaded', 'Some data might be missing due to database constraints');
-          handleError('fetching', error, { isFallback: true }, false);
-          
-          return result;
-        } else {
-          const result = {
+          if (error) {
+            console.warn('Query with relations failed:', error.message);
+            throw error;
+          }
+
+          result = {
             articles: data || [],
             pagination: {
               page,
@@ -352,27 +367,121 @@ export const useArticles = (userProfile) => {
               hasMore: (data?.length || 0) === limit
             }
           };
+        } catch (relationError) {
+          console.warn('Relations query failed, trying basic query:', relationError.message);
+          usedFallback = true;
 
-          setArticles(result.articles);
-          setPagination(result.pagination);
-          
-          // Cache successful results
-          articleCache.set(cacheKey, result);
-          articleCache.markRefreshed(cacheKey);
-          
-          return result;
+          // Strategy 2: Try without relations
+          try {
+            const basicQuery = buildQuery('list', { 
+              page, 
+              limit, 
+              includeRelations: false,
+              forceBasic: true
+            });
+            const { data, error, count } = await basicQuery;
+
+            if (error) {
+              console.error('Basic query also failed:', error.message);
+              throw error;
+            }
+
+            result = {
+              articles: data || [],
+              pagination: {
+                page,
+                limit,
+                total: count || 0,
+                hasMore: (data?.length || 0) === limit
+              }
+            };
+
+            // Fetch related data separately if basic query succeeded
+            if (result.articles.length > 0) {
+              await fetchRelatedDataSeparately(result.articles);
+            }
+
+          } catch (basicError) {
+            console.error('All query strategies failed:', basicError.message);
+            throw basicError;
+          }
         }
+
+        // Update state
+        setArticles(result.articles);
+        setPagination(result.pagination);
+        
+        // Cache successful results
+        articleCache.set(cacheKey, result);
+        articleCache.markRefreshed(cacheKey);
+
+        // Show warning if using fallback
+        if (usedFallback && !backgroundRefresh) {
+          toast.warning(
+            'Limited Data Loaded', 
+            'Some related information may be missing due to database configuration.'
+          );
+        }
+        
+        return result;
+
       } catch (error) {
+        console.error('All fetch strategies failed:', error);
         handleError('fetching', error, { 
           userRole: userProfile?.role,
           operation: 'fetchArticles',
-          queryCount: queryCount.current
+          queryCount: queryCount.current,
+          hasRelatedTables: await checkTableAccess()
         });
         setArticles([]);
         throw error;
       }
     });
-  }, [userProfile?.role, pagination.page, pagination.limit, getCacheKey, buildQuery, withLoading, handleError, clearError, toast]);
+  }, [userProfile?.role, pagination.page, pagination.limit, getCacheKey, buildQuery, withLoading, handleError, clearError, toast, checkTableAccess]);
+
+  // Fetch related data separately when main query fails
+  const fetchRelatedDataSeparately = useCallback(async (articlesData) => {
+    try {
+      // Fetch authors
+      const authorIds = [...new Set(articlesData.map(a => a.author_id).filter(Boolean))];
+      if (authorIds.length > 0) {
+        const { data: authorsData } = await supabase
+          .from('profiles')
+          .select('id, full_name, email, avatar_url')
+          .in('id', authorIds);
+
+        if (authorsData) {
+          // Map authors back to articles
+          articlesData.forEach(article => {
+            if (article.author_id) {
+              article.author = authorsData.find(author => author.id === article.author_id);
+            }
+          });
+        }
+      }
+
+      // Fetch categories
+      const categoryIds = [...new Set(articlesData.map(a => a.category_id).filter(Boolean))];
+      if (categoryIds.length > 0) {
+        const { data: categoriesData } = await supabase
+          .from('categories')
+          .select('id, name, slug')
+          .in('id', categoryIds);
+
+        if (categoriesData) {
+          // Map categories back to articles
+          articlesData.forEach(article => {
+            if (article.category_id) {
+              article.category = categoriesData.find(cat => cat.id === article.category_id);
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to fetch related data separately:', error.message);
+      // Don't throw - this is a best-effort enhancement
+    }
+  }, []);
 
   // Enhanced fetch for single article (with full content)
   const fetchArticle = useCallback(async (id) => {
@@ -385,22 +494,41 @@ export const useArticles = (userProfile) => {
     }
 
     try {
-      const query = buildQuery('detail');
-      const { data, error } = await query.eq('id', id).single();
+      let result = null;
 
-      if (error) throw error;
+      // Try with relations first
+      try {
+        const query = buildQuery('detail', { includeRelations: true });
+        const { data, error } = await query.eq('id', id).single();
 
-      const result = data;
+        if (error) throw error;
+        result = data;
+      } catch (relationError) {
+        console.warn('Detail query with relations failed, trying basic:', relationError.message);
+        
+        // Fallback to basic query
+        const basicQuery = buildQuery('detail', { includeRelations: false, forceBasic: true });
+        const { data, error } = await basicQuery.eq('id', id).single();
+
+        if (error) throw error;
+        result = data;
+
+        // Fetch related data separately
+        if (result) {
+          await fetchRelatedDataSeparately([result]);
+        }
+      }
+
       articleCache.set(cacheKey, result);
-      
       return result;
+
     } catch (error) {
       handleError('fetching', error, { articleId: id, operation: 'fetchArticle' });
       throw error;
     }
-  }, [getCacheKey, buildQuery, handleError]);
+  }, [getCacheKey, buildQuery, handleError, fetchRelatedDataSeparately]);
 
-  // Enhanced categories fetch with caching
+  // Enhanced categories fetch with better error handling
   const fetchCategories = useCallback(async () => {
     const cacheKey = getCacheKey('categories');
     
@@ -421,7 +549,17 @@ export const useArticles = (userProfile) => {
           .eq('is_active', true)
           .order('name');
         
-        if (error) throw error;
+        if (error) {
+          // If categories table doesn't exist or has different structure, provide fallback
+          if (error.code === 'PGRST116' || error.message.includes('does not exist')) {
+            console.warn('Categories table not found, using empty array');
+            const fallbackData = [];
+            setCategories(fallbackData);
+            articleCache.set(cacheKey, fallbackData);
+            return fallbackData;
+          }
+          throw error;
+        }
         
         const result = data || [];
         setCategories(result);
@@ -429,14 +567,18 @@ export const useArticles = (userProfile) => {
         
         return result;
       } catch (error) {
+        console.warn('Categories fetch failed:', error.message);
         handleError('categories', error, { operation: 'fetchCategories' });
-        setCategories([]);
-        throw error;
+        
+        // Provide empty fallback instead of throwing
+        const fallbackData = [];
+        setCategories(fallbackData);
+        return fallbackData;
       }
     });
   }, [getCacheKey, withLoading, handleError, clearError]);
 
-  // Enhanced authors fetch with caching
+  // Enhanced authors fetch with better error handling
   const fetchAuthors = useCallback(async () => {
     const cacheKey = getCacheKey('authors');
     
@@ -457,7 +599,21 @@ export const useArticles = (userProfile) => {
           .eq('is_active', true)
           .order('full_name');
         
-        if (error) throw error;
+        if (error) {
+          // If profiles table doesn't exist or has different structure, provide fallback
+          if (error.code === 'PGRST116' || error.message.includes('does not exist')) {
+            console.warn('Profiles table not found or has different structure, using current user as fallback');
+            const fallbackData = userProfile ? [{ 
+              id: userProfile.id, 
+              full_name: userProfile.full_name || userProfile.email || 'Current User',
+              email: userProfile.email 
+            }] : [];
+            setAuthors(fallbackData);
+            articleCache.set(cacheKey, fallbackData);
+            return fallbackData;
+          }
+          throw error;
+        }
         
         const result = data || [];
         setAuthors(result);
@@ -465,12 +621,20 @@ export const useArticles = (userProfile) => {
         
         return result;
       } catch (error) {
+        console.warn('Authors fetch failed:', error.message);
         handleError('authors', error, { operation: 'fetchAuthors' });
-        setAuthors([]);
-        throw error;
+        
+        // Provide current user as fallback
+        const fallbackData = userProfile ? [{ 
+          id: userProfile.id, 
+          full_name: userProfile.full_name || userProfile.email || 'Current User',
+          email: userProfile.email 
+        }] : [];
+        setAuthors(fallbackData);
+        return fallbackData;
       }
     });
-  }, [getCacheKey, withLoading, handleError, clearError]);
+  }, [getCacheKey, withLoading, handleError, clearError, userProfile]);
 
   // Cache invalidation helpers
   const invalidateCache = useCallback((pattern = 'articles_') => {
@@ -586,22 +750,37 @@ export const useArticles = (userProfile) => {
     setPagination(prev => ({ ...prev, page: 1 }));
   }, []);
 
-  // Initialize data on mount
+  // Initialize data on mount with better error handling
   useEffect(() => {
     const initializeData = async () => {
       try {
-        await Promise.allSettled([
+        // Check table access first
+        const tableAccess = await checkTableAccess();
+        console.log('Table access check:', tableAccess);
+
+        // Run fetches in parallel but handle failures gracefully
+        const results = await Promise.allSettled([
           fetchArticles(),
           fetchCategories(),
           fetchAuthors()
         ]);
+
+        // Log any failures for debugging
+        results.forEach((result, index) => {
+          const operations = ['articles', 'categories', 'authors'];
+          if (result.status === 'rejected') {
+            console.warn(`Failed to fetch ${operations[index]}:`, result.reason);
+          }
+        });
+
       } catch (error) {
         console.error('Failed to initialize articles data:', error);
+        // Don't throw - let individual components handle their errors
       }
     };
 
     initializeData();
-  }, [fetchArticles, fetchCategories, fetchAuthors]);
+  }, [fetchArticles, fetchCategories, fetchAuthors, checkTableAccess]);
 
   // Cleanup cache on unmount
   useEffect(() => {
