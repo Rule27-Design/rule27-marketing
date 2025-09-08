@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../../lib/supabase';
 import { useToast } from '../../../../components/ui/Toast';
-import { useLoadingState } from './useLoadingState.js';
+import { useLoadingState } from './useLoadingState.jsx';
 import { useErrorHandler } from './useErrorHandler.js';
 
 // Cache configuration
