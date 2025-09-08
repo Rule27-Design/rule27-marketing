@@ -6,7 +6,7 @@ import ReactGA from 'react-ga4';
 import { supabase } from './lib/supabase';
 import { ToastProvider } from './components/ui/Toast';
 import ErrorBoundary from './components/ErrorBoundary';
-import { EventBusProvider } from './pages/admin/articles/hooks/useArticleEvents.js';
+import { EventBusProvider } from './components/providers/EventBusProvider.jsx';
 
 function App() {
   const [session, setSession] = useState(null);

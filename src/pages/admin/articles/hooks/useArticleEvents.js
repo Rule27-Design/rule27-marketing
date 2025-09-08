@@ -1,5 +1,6 @@
 // src/pages/admin/articles/hooks/useArticleEvents.js - Event-driven communication system
-import { useState, useEffect, useCallback, useRef, createContext, useContext } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useEventBus } from '../../../../components/providers/EventBusProvider.jsx';
 
 /**
  * Event Bus - Centralized event management
@@ -198,28 +199,7 @@ class EventBus {
 }
 
 // Global event bus instance
-const globalEventBus = new EventBus();
-
-// Event bus context for dependency injection
-const EventBusContext = createContext(globalEventBus);
-
-/**
- * Provider component for event bus
- */
-export const EventBusProvider = ({ children, eventBus = globalEventBus }) => {
-  return (
-    <EventBusContext.Provider value={eventBus}>
-      {children}
-    </EventBusContext.Provider>
-  );
-};
-
-/**
- * Hook for accessing the event bus
- */
-export const useEventBus = () => {
-  return useContext(EventBusContext);
-};
+export const globalEventBus = new EventBus();
 
 /**
  * Main hook for article events
@@ -540,9 +520,6 @@ export const useNotificationEvents = () => {
     dismissNotification
   };
 };
-
-// Export the global event bus for direct access
-export { globalEventBus };
 
 // Event name constants for better maintainability
 export const ARTICLE_EVENTS = {
