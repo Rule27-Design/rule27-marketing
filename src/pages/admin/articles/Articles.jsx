@@ -3,13 +3,13 @@ import React, { useState } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import ErrorBoundary from '../../../components/ErrorBoundary';
 
-// Import all the custom hooks WITHOUT .js extensions
-import { useArticles } from './hooks/useArticles';
-import { useArticleFilters } from './hooks/useArticleFilters';
-import { useArticleEditor } from './hooks/useArticleEditor';
-import { useArticleOperations } from './hooks/useArticleOperations';
-import { useArticleStatus } from './hooks/useArticleStatus';
-import { useArticleMetrics } from './hooks/useArticleMetrics';
+// Import all the custom hooks WITH .js extensions for proper module resolution
+import { useArticles } from './hooks/useArticles.js';
+import { useArticleFilters } from './hooks/useArticleFilters.js';
+import { useArticleEditor } from './hooks/useArticleEditor.js';
+import { useArticleOperations } from './hooks/useArticleOperations.js';
+import { useArticleStatus } from './hooks/useArticleStatus.js';
+import { useArticleMetrics } from './hooks/useArticleMetrics.js';
 
 // Import components
 import ArticlesList from './ArticlesList';

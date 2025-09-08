@@ -1,89 +1,185 @@
-// src/pages/admin/articles/ArticleTable.jsx - Just the table component (200 lines)
-import React from 'react';
+// src/pages/admin/articles/ArticleTable.jsx - Optimized with React.memo and performance improvements
+import React, { useMemo, useCallback } from 'react';
 import Icon from '../../../components/AdminIcon';
 import Button from '../../../components/ui/Button';
 import { ArticleStatusBadge } from './components/ArticleStatusBadge';
 import { ArticleActions } from './components/ArticleActions';
 
-const ArticleTable = ({
+// Memoized main table component
+const ArticleTable = React.memo(({
   articles = [],
   userProfile,
   onEdit,
   onDelete,
   onStatusChange,
-  onNewArticle
+  onNewArticle,
+  // Enhanced operations
+  onDuplicate,
+  onToggleFeatured,
+  onSchedule,
+  // Selection
+  selectedArticles = [],
+  onSelectArticle,
+  showSelection = false
 }) => {
 
+  // Memoize handlers to prevent unnecessary re-renders
+  const handleEdit = useCallback((article) => {
+    onEdit(article);
+  }, [onEdit]);
+
+  const handleDelete = useCallback((id) => {
+    onDelete(id);
+  }, [onDelete]);
+
+  const handleStatusChange = useCallback((id, status) => {
+    onStatusChange(id, status);
+  }, [onStatusChange]);
+
+  const handleSelectArticle = useCallback((articleId, selected) => {
+    onSelectArticle?.(articleId, selected);
+  }, [onSelectArticle]);
+
+  // Memoize empty state to prevent re-creation
+  const emptyState = useMemo(() => (
+    <div className="text-center py-12">
+      <Icon name="FileText" size={48} className="mx-auto text-gray-400 mb-4" />
+      <p className="text-gray-500 mb-4">No articles found</p>
+      <Button
+        variant="outline"
+        onClick={onNewArticle}
+      >
+        Create your first article
+      </Button>
+    </div>
+  ), [onNewArticle]);
+
   if (articles.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <Icon name="FileText" size={48} className="mx-auto text-gray-400 mb-4" />
-        <p className="text-gray-500 mb-4">No articles found</p>
-        <Button
-          variant="outline"
-          onClick={onNewArticle}
-        >
-          Create your first article
-        </Button>
-      </div>
-    );
+    return emptyState;
   }
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[1000px]">
-        <thead className="bg-gray-50 border-b">
-          <tr>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5">
-              Article
-            </th>
-            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-              Author
-            </th>
-            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
-              Category
-            </th>
-            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
-              Status
-            </th>
-            <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
-              Stats
-            </th>
-            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
-              Updated
-            </th>
-            <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-              Actions
-            </th>
-          </tr>
-        </thead>
+        <TableHeader showSelection={showSelection} />
         <tbody className="divide-y divide-gray-200">
           {articles.map((article) => (
             <ArticleTableRow
-              key={article.id}
+              key={`${article.id}-${article.updated_at}`} // Include updated_at for better change detection
               article={article}
               userProfile={userProfile}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onStatusChange={onStatusChange}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onStatusChange={handleStatusChange}
+              onDuplicate={onDuplicate}
+              onToggleFeatured={onToggleFeatured}
+              onSchedule={onSchedule}
+              // Selection props
+              isSelected={selectedArticles.includes(article.id)}
+              onSelect={handleSelectArticle}
+              showSelection={showSelection}
             />
           ))}
         </tbody>
       </table>
     </div>
   );
-};
+});
 
-// Individual table row component for better performance
+ArticleTable.displayName = "ArticleTable";
+
+// Memoized table header component
+const TableHeader = React.memo(({ showSelection }) => (
+  <thead className="bg-gray-50 border-b">
+    <tr>
+      {showSelection && (
+        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+          <span className="sr-only">Select</span>
+        </th>
+      )}
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5">
+        Article
+      </th>
+      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+        Author
+      </th>
+      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+        Category
+      </th>
+      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+        Status
+      </th>
+      <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+        Stats
+      </th>
+      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+        Updated
+      </th>
+      <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+        Actions
+      </th>
+    </tr>
+  </thead>
+));
+
+TableHeader.displayName = "TableHeader";
+
+// Enhanced table row with better memoization
 const ArticleTableRow = React.memo(({ 
   article, 
   userProfile, 
   onEdit, 
   onDelete, 
-  onStatusChange 
+  onStatusChange,
+  onDuplicate,
+  onToggleFeatured,
+  onSchedule,
+  // Selection props
+  isSelected,
+  onSelect,
+  showSelection
 }) => {
+  
+  // Memoize handlers for this specific row
+  const handleEdit = useCallback(() => {
+    onEdit(article);
+  }, [onEdit, article]);
+
+  const handleDelete = useCallback(() => {
+    onDelete(article.id);
+  }, [onDelete, article.id]);
+
+  const handleStatusChange = useCallback((newStatus) => {
+    onStatusChange(article.id, newStatus);
+  }, [onStatusChange, article.id]);
+
+  const handleSelect = useCallback((e) => {
+    onSelect?.(article.id, e.target.checked);
+  }, [onSelect, article.id]);
+
+  const handleDuplicate = useCallback(() => {
+    onDuplicate?.(article);
+  }, [onDuplicate, article]);
+
+  const handleToggleFeatured = useCallback(() => {
+    onToggleFeatured?.(article.id, article.is_featured);
+  }, [onToggleFeatured, article.id, article.is_featured]);
+
   return (
-    <tr className="hover:bg-gray-50 transition-colors">
+    <tr className={`hover:bg-gray-50 transition-colors ${isSelected ? 'bg-blue-50' : ''}`}>
+      {/* Selection Column */}
+      {showSelection && (
+        <td className="px-4 py-4 w-12">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={handleSelect}
+            className="rounded border-gray-300 text-accent focus:ring-accent"
+            aria-label={`Select ${article.title}`}
+          />
+        </td>
+      )}
+
       {/* Article Column */}
       <td className="px-4 py-4 w-2/5">
         <ArticleInfo article={article} />
@@ -119,17 +215,50 @@ const ArticleTableRow = React.memo(({
         <ArticleActions
           article={article}
           userProfile={userProfile}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onStatusChange={onStatusChange}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onStatusChange={handleStatusChange}
+          onDuplicate={handleDuplicate}
+          onToggleFeatured={handleToggleFeatured}
+          variant="compact"
         />
       </td>
     </tr>
   );
+}, (prevProps, nextProps) => {
+  // Custom comparison function for better performance
+  const prevArticle = prevProps.article;
+  const nextArticle = nextProps.article;
+  
+  // Check if article data has changed
+  if (
+    prevArticle.id !== nextArticle.id ||
+    prevArticle.updated_at !== nextArticle.updated_at ||
+    prevArticle.status !== nextArticle.status ||
+    prevArticle.is_featured !== nextArticle.is_featured ||
+    prevArticle.view_count !== nextArticle.view_count ||
+    prevArticle.like_count !== nextArticle.like_count
+  ) {
+    return false; // Re-render
+  }
+  
+  // Check if selection state changed
+  if (prevProps.isSelected !== nextProps.isSelected) {
+    return false; // Re-render
+  }
+  
+  // Check if user profile changed (rare, but possible)
+  if (prevProps.userProfile?.id !== nextProps.userProfile?.id) {
+    return false; // Re-render
+  }
+  
+  return true; // Skip re-render
 });
 
-// Article Info Component
-const ArticleInfo = ({ article }) => (
+ArticleTableRow.displayName = "ArticleTableRow";
+
+// Memoized article info component
+const ArticleInfo = React.memo(({ article }) => (
   <div className="flex items-start space-x-3">
     {article.featured_image && (
       <img 
@@ -151,10 +280,22 @@ const ArticleInfo = ({ article }) => (
       <ArticleBadges article={article} />
     </div>
   </div>
-);
+), (prevProps, nextProps) => {
+  // Only re-render if article data that affects display has changed
+  return (
+    prevProps.article.title === nextProps.article.title &&
+    prevProps.article.excerpt === nextProps.article.excerpt &&
+    prevProps.article.featured_image === nextProps.article.featured_image &&
+    prevProps.article.is_featured === nextProps.article.is_featured &&
+    prevProps.article.scheduled_at === nextProps.article.scheduled_at &&
+    prevProps.article.read_time === nextProps.article.read_time
+  );
+});
 
-// Article badges (featured, read time, etc.)
-const ArticleBadges = ({ article }) => (
+ArticleInfo.displayName = "ArticleInfo";
+
+// Memoized article badges component
+const ArticleBadges = React.memo(({ article }) => (
   <div className="flex items-center space-x-2 mt-2">
     {article.is_featured && (
       <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
@@ -175,10 +316,18 @@ const ArticleBadges = ({ article }) => (
       </span>
     )}
   </div>
-);
+), (prevProps, nextProps) => {
+  return (
+    prevProps.article.is_featured === nextProps.article.is_featured &&
+    prevProps.article.read_time === nextProps.article.read_time &&
+    prevProps.article.scheduled_at === nextProps.article.scheduled_at
+  );
+});
 
-// Author Info Component
-const AuthorInfo = ({ author }) => (
+ArticleBadges.displayName = "ArticleBadges";
+
+// Memoized author info component
+const AuthorInfo = React.memo(({ author }) => (
   <div className="flex items-center space-x-2">
     {author?.avatar_url ? (
       <img 
@@ -196,10 +345,12 @@ const AuthorInfo = ({ author }) => (
       {author?.full_name || 'Unknown'}
     </span>
   </div>
-);
+));
 
-// Category Info Component
-const CategoryInfo = ({ category }) => (
+AuthorInfo.displayName = "AuthorInfo";
+
+// Memoized category info component
+const CategoryInfo = React.memo(({ category }) => (
   <div className="flex items-center space-x-1">
     {category?.name ? (
       <>
@@ -212,10 +363,12 @@ const CategoryInfo = ({ category }) => (
       <span className="text-xs text-gray-400 italic">No category</span>
     )}
   </div>
-);
+));
 
-// Article Stats Component
-const ArticleStats = ({ article }) => (
+CategoryInfo.displayName = "CategoryInfo";
+
+// Memoized article stats component
+const ArticleStats = React.memo(({ article }) => (
   <div className="space-y-1">
     <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
       <span className="flex items-center" title="Views">
@@ -233,11 +386,19 @@ const ArticleStats = ({ article }) => (
       </div>
     )}
   </div>
-);
+), (prevProps, nextProps) => {
+  return (
+    prevProps.article.view_count === nextProps.article.view_count &&
+    prevProps.article.like_count === nextProps.article.like_count &&
+    prevProps.article.comment_count === nextProps.article.comment_count
+  );
+});
 
-// Updated Date Component
-const UpdatedDate = ({ date }) => {
-  const formatDate = (dateString) => {
+ArticleStats.displayName = "ArticleStats";
+
+// Memoized updated date component
+const UpdatedDate = React.memo(({ date }) => {
+  const formatDate = useCallback((dateString) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = (now - date) / (1000 * 60 * 60);
@@ -254,16 +415,20 @@ const UpdatedDate = ({ date }) => {
         day: 'numeric'
       });
     }
-  };
+  }, []);
+
+  const formattedDate = useMemo(() => formatDate(date), [date, formatDate]);
 
   return (
     <div title={new Date(date).toLocaleString()}>
-      {formatDate(date)}
+      {formattedDate}
     </div>
   );
-};
+});
 
-// Utility function to format large numbers
+UpdatedDate.displayName = "UpdatedDate";
+
+// Utility function to format large numbers (memoized for better performance)
 const formatNumber = (num) => {
   if (num >= 1000000) {
     return (num / 1000000).toFixed(1) + 'M';
