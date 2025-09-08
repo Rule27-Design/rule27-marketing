@@ -146,24 +146,6 @@ export const useLoadingState = () => {
 };
 
 /**
- * Higher-order function to wrap components with loading state
- * @param {Function} Component - React component to wrap
- * @returns {Function} Wrapped component with loading props
- */
-export const withLoadingState = (Component) => {
-  return function LoadingWrappedComponent(props) {
-    const loadingState = useLoadingState();
-    
-    return (
-      <Component 
-        {...props} 
-        loading={loadingState}
-      />
-    );
-  };
-};
-
-/**
  * Hook for operation-specific loading states with automatic cleanup
  * @param {string} defaultOperation - Default operation name
  * @returns {Object} Operation-specific loading manager
