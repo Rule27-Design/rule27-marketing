@@ -357,22 +357,4 @@ export const useErrorHandler = () => {
   };
 };
 
-/**
- * Higher-order component to wrap components with error handling
- * @param {Function} Component - React component to wrap
- * @returns {Function} Wrapped component with error handling props
- */
-export const withErrorHandler = (Component) => {
-  return function ErrorHandlerWrappedComponent(props) {
-    const errorHandler = useErrorHandler();
-    
-    return (
-      <Component 
-        {...props} 
-        errorHandler={errorHandler}
-      />
-    );
-  };
-};
-
 export default useErrorHandler;
