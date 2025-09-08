@@ -19,7 +19,7 @@ export const EventBusProvider = ({ children, eventBus = globalEventBus }) => {
   );
 };
 
-/**
+/** 
  * Hook for accessing the event bus from context
  * @returns {EventBus} The event bus instance
  */
