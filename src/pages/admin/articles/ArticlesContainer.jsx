@@ -1,11 +1,11 @@
-// src/pages/admin/articles/ArticlesContainer.jsx - Main container with focused responsibilities
+// src/pages/admin/articles/ArticlesContainer.jsx - Fixed imports
 import React, { useState, useMemo } from 'react';
 import ErrorBoundary from '../../../components/ErrorBoundary';
 import ArticlesToolbar from './components/ArticlesToolbar';
 import ArticlesTable from './ArticleTable';
 import ArticlesBulkActions from './components/ArticlesBulkActions';
-import ArticlesEmptyState from './components/ArticlesEmptyState';
-import ArticlesErrorState from './components/ArticlesErrorState';
+// Fixed: Import both components from the same file
+import { ArticlesEmptyState, ArticlesErrorState } from './components/ArticlesEmptyState';
 import { useVirtualization } from './hooks/useVirtualization.js';
 
 const ArticlesContainer = ({
