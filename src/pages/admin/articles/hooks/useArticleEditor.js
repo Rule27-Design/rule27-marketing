@@ -1,270 +1,450 @@
-// src/pages/admin/articles/hooks/useArticleEditor.js - Editor state & validation (100 lines)
-import { useState, useCallback, useEffect } from 'react';
-import { supabase } from '../../../../lib/supabase';
-import { useToast } from '../../../../components/ui/Toast';
-import { 
-  sanitizeData, 
-  generateSlug, 
-  cleanTimestampField,
-  useValidation,
-  validationSchemas 
-} from '../../../../utils/validation';
+// src/pages/admin/articles/hooks/useArticleEditor.js - Refactored to compose smaller hooks
+import { useCallback, useEffect } from 'react';
+import { useFormState } from './useFormState.js';
+import { useTabNavigation } from './useTabNavigation.js';
+import { useArticlePersistence } from './useArticlePersistence.js';
+import { useArticleEvents } from './useArticleEvents.js';
+import { useValidation, validationSchemas } from '../../../../utils/validation';
 
-const defaultFormData = {
-  title: '',
-  slug: '',
-  excerpt: '',
-  content: null,
-  featured_image: '',
-  featured_image_alt: '',
-  featured_video: '',
-  category_id: '',
-  tags: [],
-  co_authors: [],
-  status: 'draft',
-  is_featured: false,
-  enable_comments: false,
-  enable_reactions: true,
-  scheduled_at: '',
-  meta_title: '',
-  meta_description: '',
-  meta_keywords: [],
-  og_title: '',
-  og_description: '',
-  og_image: '',
-  twitter_card: 'summary_large_image',
-  canonical_url: '',
-  read_time: null,
-  internal_notes: '',
-  schema_markup: null
-};
-
+/**
+ * Composed article editor hook that orchestrates form state, tab navigation, and persistence
+ * @param {Object} editingArticle - Article being edited (null for new article)
+ * @param {Function} onClose - Callback when editor is closed
+ * @param {Object} userProfile - Current user profile
+ * @param {Function} debugAndFixContent - Function to fix content format issues
+ * @returns {Object} Complete article editor state and methods
+ */
 export const useArticleEditor = (editingArticle, onClose, userProfile, debugAndFixContent) => {
-  const [formData, setFormData] = useState(defaultFormData);
-  const [activeTab, setActiveTab] = useState('overview');
-  const [saving, setSaving] = useState(false);
-  const toast = useToast();
-  
-  // Validation hook
-  const { errors, validate, clearErrors, hasErrors } = useValidation(validationSchemas.article);
-
-  // Tab Error Indicator Helper Functions
-  const getFieldToTabMapping = () => ({
-    title: 'overview',
-    slug: 'overview', 
-    excerpt: 'overview',
-    category_id: 'overview',
-    tags: 'overview',
-    co_authors: 'overview',
-    content: 'content',
-    featured_image: 'media',
-    featured_image_alt: 'media',
-    featured_video: 'media',
-    meta_title: 'seo',
-    meta_description: 'seo',
-    meta_keywords: 'seo',
-    og_title: 'seo',
-    og_description: 'seo',
-    og_image: 'seo',
-    twitter_card: 'seo',
-    canonical_url: 'seo',
-    is_featured: 'settings',
-    enable_comments: 'settings',
-    enable_reactions: 'settings',
-    scheduled_at: 'settings',
-    internal_notes: 'settings'
-  });
-
-  const getTabsWithErrors = useCallback((errors) => {
-    const fieldToTab = getFieldToTabMapping();
-    const tabsWithErrors = new Set();
-    
-    Object.keys(errors).forEach(field => {
-      const tab = fieldToTab[field];
-      if (tab) {
-        tabsWithErrors.add(tab);
-      }
-    });
-    
-    return Array.from(tabsWithErrors);
-  }, []);
-
-  // Reset form to default state
-  const resetForm = useCallback(() => {
-    setFormData(defaultFormData);
-    setActiveTab('overview');
-    clearErrors();
-  }, [clearErrors]);
-
-  // Load article data into form when editing
-  useEffect(() => {
-    if (editingArticle && debugAndFixContent) {
-      const fixedContent = debugAndFixContent(editingArticle.content, editingArticle.title);
-      
-      setFormData({
-        title: editingArticle.title || '',
-        slug: editingArticle.slug || '',
-        excerpt: editingArticle.excerpt || '',
-        content: fixedContent,
-        featured_image: editingArticle.featured_image || '',
-        featured_image_alt: editingArticle.featured_image_alt || '',
-        featured_video: editingArticle.featured_video || '',
-        category_id: editingArticle.category_id || '',
-        tags: editingArticle.tags || [],
-        co_authors: editingArticle.co_authors || [],
-        status: editingArticle.status || 'draft',
-        is_featured: editingArticle.is_featured || false,
-        enable_comments: editingArticle.enable_comments || false,
-        enable_reactions: editingArticle.enable_reactions !== false,
-        scheduled_at: editingArticle.scheduled_at || '',
-        meta_title: editingArticle.meta_title || '',
-        meta_description: editingArticle.meta_description || '',
-        meta_keywords: editingArticle.meta_keywords || [],
-        og_title: editingArticle.og_title || '',
-        og_description: editingArticle.og_description || '',
-        og_image: editingArticle.og_image || '',
-        twitter_card: editingArticle.twitter_card || 'summary_large_image',
-        canonical_url: editingArticle.canonical_url || '',
-        read_time: editingArticle.read_time,
-        internal_notes: editingArticle.internal_notes || '',
-        schema_markup: editingArticle.schema_markup
-      });
-    } else if (!editingArticle) {
-      resetForm();
-    }
-  }, [editingArticle, resetForm, debugAndFixContent]);
-
-  // Handle form field updates
-  const updateFormData = useCallback((updates) => {
-    setFormData(prev => ({ ...prev, ...updates }));
-  }, []);
-
-  // Content change handler
-  const handleContentChange = useCallback((content) => {
-    setFormData(prev => ({ ...prev, content }));
-  }, []);
-
-  // Array manipulation helpers
-  const addArrayItem = useCallback((field) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: [...(prev[field] || []), '']
-    }));
-  }, []);
-
-  const updateArrayItem = useCallback((field, index, value) => {
-    setFormData(prev => {
-      const newArray = [...(prev[field] || [])];
-      newArray[index] = value;
-      return { ...prev, [field]: newArray };
-    });
-  }, []);
-
-  const removeArrayItem = useCallback((field, index) => {
-    setFormData(prev => {
-      const newArray = (prev[field] || []).filter((_, i) => i !== index);
-      return { ...prev, [field]: newArray };
-    });
-  }, []);
-
-  // Save article
-  const handleSave = useCallback(async (refetchArticles) => {
-    try {
-      setSaving(true);
-      clearErrors();
-
-      const sanitizedData = sanitizeData(formData);
-
-      // Generate slug if not provided
-      if (!sanitizedData.slug && sanitizedData.title) {
-        sanitizedData.slug = generateSlug(sanitizedData.title);
-      }
-
-      // Auto-generate canonical URL if not provided
-      if (!sanitizedData.canonical_url && sanitizedData.slug) {
-        sanitizedData.canonical_url = `https://rule27design.com/articles/${sanitizedData.slug}`;
-      }
-
-      // Validate data
-      if (!validate(sanitizedData)) {
-        toast.error('Validation failed', 'Please fix the errors and try again');
-        return;
-      }
-
-      // Calculate read time if content exists
-      if (sanitizedData.content && sanitizedData.content.wordCount) {
-        sanitizedData.read_time = Math.ceil(sanitizedData.content.wordCount / 200);
-      }
-
-      // Prepare data for database
-      const articleData = {
-        ...sanitizedData,
-        author_id: userProfile.id,
-        updated_by: userProfile.id,
-        tags: sanitizedData.tags.filter(Boolean),
-        meta_keywords: sanitizedData.meta_keywords.filter(Boolean),
-        co_authors: sanitizedData.co_authors.filter(Boolean),
-        scheduled_at: cleanTimestampField(sanitizedData.scheduled_at)
-      };
-
-      if (editingArticle) {
-        const { error } = await supabase
-          .from('articles')
-          .update(articleData)
-          .eq('id', editingArticle.id);
-
-        if (error) throw error;
-        toast.success('Article updated', 'Your changes have been saved successfully');
-      } else {
-        articleData.created_by = userProfile.id;
-        const { error } = await supabase
-          .from('articles')
-          .insert(articleData);
-
-        if (error) throw error;
-        toast.success('Article created', 'Your article has been created successfully');
-      }
-
-      await refetchArticles();
-      onClose();
-    } catch (error) {
-      console.error('Error saving article:', error);
-      if (error.name === 'ValidationError') {
-        toast.error('Validation failed', Object.values(error.errors).join(', '));
-      } else {
-        toast.error('Failed to save article', error.message);
-      }
-    } finally {
-      setSaving(false);
-    }
-  }, [formData, editingArticle, userProfile, validate, clearErrors, toast, onClose]);
-
-  // Handle save with status change
-  const handleSaveWithStatus = useCallback(async (status, refetchArticles) => {
-    updateFormData({ status });
-    setTimeout(() => handleSave(refetchArticles), 100);
-  }, [updateFormData, handleSave]);
-
-  return {
-    // Form state
+  // Form state management
+  const {
     formData,
-    activeTab,
-    saving,
-    errors,
-    hasErrors,
-    
-    // Actions
-    setActiveTab,
+    isDirty,
+    initialData,
     updateFormData,
     handleContentChange,
     addArrayItem,
     updateArrayItem,
     removeArrayItem,
+    resetForm,
+    resetToInitial,
+    isFieldDirty,
+    getFormSummary
+  } = useFormState(editingArticle, debugAndFixContent);
+
+  // Validation
+  const { 
+    errors: validationErrors, 
+    validate, 
+    clearErrors, 
+    hasErrors: hasValidationErrors 
+  } = useValidation(validationSchemas.article);
+
+  // Tab navigation with error handling
+  const {
+    activeTab,
+    visitedTabs,
+    switchToTab,
+    goToNextTab,
+    goToPreviousTab,
+    goToFirstErrorTab,
+    getTabsWithErrors,
+    tabHasErrors,
+    getTabErrorCount,
+    areAllTabsValid,
+    getTabCompletionStatus,
+    handleKeyboardNavigation,
+    hasErrors: hasTabErrors,
+    completionRate
+  } = useTabNavigation(validationErrors, 'overview');
+
+  // Article persistence
+  const {
+    saving,
+    lastSaved,
+    saveConflict,
+    autoSaveEnabled,
+    saveArticle,
+    saveWithStatus,
+    forceSave,
+    scheduleAutoSave,
+    cancelAutoSave,
+    setAutoSaveEnabled,
+    canSave,
+    getSaveStatus,
+    cleanup: cleanupPersistence
+  } = useArticlePersistence(
+    editingArticle,
+    userProfile,
+    (savedArticle, isUpdate) => {
+      // On successful save
+      emit('article:saved', { 
+        article: savedArticle, 
+        isUpdate, 
+        formData,
+        editingArticle 
+      });
+    },
+    (error) => {
+      // On save error
+      emit('article:save_error', { 
+        error, 
+        formData, 
+        editingArticle 
+      });
+    }
+  );
+
+  // Event system integration
+  const { emit, subscribe } = useArticleEvents();
+
+  // Enhanced form change handler with auto-save
+  const handleFormChange = useCallback((updates) => {
+    updateFormData(updates);
+    
+    // Schedule auto-save if enabled and form is dirty
+    if (autoSaveEnabled && editingArticle) {
+      const newFormData = { ...formData, ...updates };
+      scheduleAutoSave(newFormData);
+    }
+    
+    // Emit form change event
+    emit('article:form_changed', { 
+      updates, 
+      formData: { ...formData, ...updates },
+      isDirty: true 
+    });
+  }, [updateFormData, autoSaveEnabled, editingArticle, formData, scheduleAutoSave, emit]);
+
+  // Enhanced content change handler
+  const handleContentChangeWithEvents = useCallback((content) => {
+    handleContentChange(content);
+    
+    // Emit content change event for collaboration
+    emit('article:content_changed', { 
+      content, 
+      articleId: editingArticle?.id,
+      userId: userProfile?.id 
+    });
+  }, [handleContentChange, emit, editingArticle?.id, userProfile?.id]);
+
+  // Save handlers with event integration
+  const handleSave = useCallback(async (onSuccessCallback) => {
+    try {
+      // Validate form
+      if (!validate(formData)) {
+        goToFirstErrorTab();
+        return false;
+      }
+
+      // Emit save start event
+      emit('article:save_start', { formData, editingArticle });
+
+      // Attempt save
+      const result = await saveArticle(formData);
+      
+      if (result.success) {
+        // Emit success event
+        emit('article:save_success', { 
+          article: result.data, 
+          isUpdate: result.isUpdate,
+          formData 
+        });
+        
+        // Call callback
+        onSuccessCallback?.(result.data);
+        
+        // Close editor
+        onClose();
+        return true;
+      } else if (result.conflict) {
+        // Handle save conflict
+        emit('article:save_conflict', { 
+          conflict: result.conflict, 
+          formData 
+        });
+        return false;
+      }
+      
+      return false;
+    } catch (error) {
+      emit('article:save_error', { error, formData, editingArticle });
+      return false;
+    }
+  }, [formData, validate, goToFirstErrorTab, emit, editingArticle, saveArticle, onClose]);
+
+  // Save with status handler
+  const handleSaveWithStatus = useCallback(async (status, onSuccessCallback) => {
+    try {
+      // Validate form
+      if (!validate(formData)) {
+        goToFirstErrorTab();
+        return false;
+      }
+
+      // Emit status change start event
+      emit('article:status_change_start', { 
+        formData, 
+        newStatus: status, 
+        oldStatus: formData.status,
+        editingArticle 
+      });
+
+      // Save with new status
+      const result = await saveWithStatus(formData, status);
+      
+      if (result.success) {
+        // Emit status change success event
+        emit('article:status_changed', { 
+          article: result.data, 
+          newStatus: status,
+          oldStatus: formData.status,
+          formData 
+        });
+        
+        // Call callback
+        onSuccessCallback?.(result.data);
+        
+        // Close editor
+        onClose();
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      emit('article:status_change_error', { 
+        error, 
+        status, 
+        formData, 
+        editingArticle 
+      });
+      return false;
+    }
+  }, [formData, validate, goToFirstErrorTab, emit, editingArticle, saveWithStatus, onClose]);
+
+  // Enhanced close handler with dirty check
+  const handleClose = useCallback(() => {
+    if (isDirty && !window.confirm('You have unsaved changes. Are you sure you want to close?')) {
+      return false;
+    }
+    
+    // Cancel any pending auto-save
+    cancelAutoSave();
+    
+    // Emit close event
+    emit('article:editor_closed', { 
+      formData, 
+      isDirty, 
+      editingArticle 
+    });
+    
+    // Reset form and close
+    resetForm();
+    onClose();
+    return true;
+  }, [isDirty, cancelAutoSave, emit, formData, editingArticle, resetForm, onClose]);
+
+  // Keyboard shortcuts handler
+  const handleKeyboardShortcuts = useCallback((event) => {
+    // Handle tab navigation
+    handleKeyboardNavigation(event);
+    
+    // Handle save shortcuts
+    if (event.ctrlKey || event.metaKey) {
+      switch (event.key) {
+        case 's':
+          event.preventDefault();
+          if (canSave(formData)) {
+            handleSave();
+          }
+          break;
+        case 'Enter':
+          if (event.shiftKey) {
+            event.preventDefault();
+            // Quick publish for admins
+            if (userProfile?.role === 'admin') {
+              handleSaveWithStatus('published');
+            }
+          }
+          break;
+        case 'Escape':
+          event.preventDefault();
+          handleClose();
+          break;
+      }
+    }
+  }, [
+    handleKeyboardNavigation, 
+    canSave, 
+    formData, 
+    handleSave, 
+    handleSaveWithStatus, 
+    handleClose, 
+    userProfile?.role
+  ]);
+
+  // Auto-save management
+  useEffect(() => {
+    if (autoSaveEnabled && isDirty && editingArticle && canSave(formData)) {
+      scheduleAutoSave(formData);
+    }
+    
+    return () => {
+      cancelAutoSave();
+    };
+  }, [autoSaveEnabled, isDirty, editingArticle, formData, canSave, scheduleAutoSave, cancelAutoSave]);
+
+  // Event listeners setup
+  useEffect(() => {
+    // Listen for external events that might affect the editor
+    const unsubscribers = [];
+
+    // Listen for collaboration events
+    unsubscribers.push(
+      subscribe('collaboration:edit', ({ articleId, userId, field, value }) => {
+        if (articleId === editingArticle?.id && userId !== userProfile?.id) {
+          // Another user is editing - show indicator
+          emit('article:collaboration_detected', { 
+            otherUserId: userId, 
+            field, 
+            value 
+          });
+        }
+      })
+    );
+
+    // Listen for save conflicts
+    unsubscribers.push(
+      subscribe('article:save_conflict', ({ conflict }) => {
+        // Handle conflict UI updates
+        emit('article:conflict_ui_update', { conflict });
+      })
+    );
+
+    // Cleanup
+    return () => {
+      unsubscribers.forEach(unsubscribe => unsubscribe());
+    };
+  }, [subscribe, emit, editingArticle?.id, userProfile?.id]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanupPersistence();
+      cancelAutoSave();
+      
+      // Emit cleanup event
+      emit('article:editor_cleanup', { 
+        editingArticle, 
+        formData, 
+        isDirty 
+      });
+    };
+  }, [cleanupPersistence, cancelAutoSave, emit, editingArticle, formData, isDirty]);
+
+  // Get comprehensive editor status
+  const getEditorStatus = useCallback(() => {
+    const formSummary = getFormSummary();
+    const saveStatus = getSaveStatus();
+    const tabCompletion = getTabCompletionStatus();
+    
+    return {
+      // Form state
+      isDirty,
+      isValid: areAllTabsValid(),
+      completionRate,
+      formSummary,
+      
+      // Save state
+      ...saveStatus,
+      canSave: canSave(formData),
+      
+      // Tab state
+      activeTab,
+      visitedTabs,
+      tabCompletion,
+      
+      // Validation
+      hasValidationErrors,
+      hasTabErrors,
+      errorCount: Object.keys(validationErrors).length,
+      
+      // General state
+      isNew: !editingArticle,
+      isEditing: Boolean(editingArticle)
+    };
+  }, [
+    getFormSummary,
+    getSaveStatus,
+    getTabCompletionStatus,
+    isDirty,
+    areAllTabsValid,
+    completionRate,
+    canSave,
+    formData,
+    activeTab,
+    visitedTabs,
+    hasValidationErrors,
+    hasTabErrors,
+    validationErrors,
+    editingArticle
+  ]);
+
+  return {
+    // Form state
+    formData,
+    isDirty,
+    initialData,
+    
+    // Tab navigation
+    activeTab,
+    visitedTabs,
+    setActiveTab: switchToTab,
+    goToNextTab,
+    goToPreviousTab,
+    goToFirstErrorTab,
+    
+    // Form manipulation
+    updateFormData: handleFormChange,
+    handleContentChange: handleContentChangeWithEvents,
+    addArrayItem,
+    updateArrayItem,
+    removeArrayItem,
+    resetForm,
+    resetToInitial,
+    
+    // Save operations
     handleSave,
     handleSaveWithStatus,
-    resetForm,
+    forceSave,
+    saving,
+    lastSaved,
+    saveConflict,
+    
+    // Auto-save
+    autoSaveEnabled,
+    setAutoSaveEnabled,
+    scheduleAutoSave,
+    cancelAutoSave,
+    
+    // Validation and errors
+    errors: validationErrors,
+    hasErrors: hasValidationErrors || hasTabErrors,
+    getTabsWithErrors,
+    tabHasErrors,
+    getTabErrorCount,
+    areAllTabsValid,
+    
+    // UI handlers
+    handleClose,
+    handleKeyboardShortcuts,
     
     // Utilities
-    getTabsWithErrors
+    isFieldDirty,
+    canSave: canSave(formData),
+    getEditorStatus,
+    
+    // Event integration
+    emit,
+    subscribe
   };
 };
