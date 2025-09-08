@@ -1,5 +1,5 @@
 // src/pages/admin/articles/hooks/useLoadingState.js - Centralized loading state management
-import { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 
 /**
  * Centralized loading state management for articles
@@ -142,24 +142,6 @@ export const useLoadingState = () => {
     isOperational: !states.fetching && !states.saving,
     isReadOnly: states.fetching || states.saving || states.deleting,
     isBusy: isAnyLoading()
-  };
-};
-
-/**
- * Higher-order function to wrap components with loading state
- * @param {Function} Component - React component to wrap
- * @returns {Function} Wrapped component with loading props
- */
-export const withLoadingState = (Component) => {
-  return function LoadingWrappedComponent(props) {
-    const loadingState = useLoadingState();
-    
-    return (
-      <Component 
-        {...props} 
-        loading={loadingState}
-      />
-    );
   };
 };
 
