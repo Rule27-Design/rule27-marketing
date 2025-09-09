@@ -31,7 +31,7 @@ import {
 } from './components/SkeletonComponents';
 import { 
   ShortcutHints, 
-  KeyboardShortcutsModal, 
+  KeyboardShortcutsModal,
   ContextualShortcuts 
 } from './components/KeyboardShortcutsUI';
 
