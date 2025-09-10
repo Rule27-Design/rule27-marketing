@@ -23,13 +23,10 @@ export const useArticles = (initialFilters = {}) => {
     setError(null);
 
     try {
+      // First, get the basic articles data
       let query = supabase
         .from('articles')
-        .select(`
-            *,
-            author:profiles!articles_author_id_fkey(id, full_name, avatar_url),
-            category:categories!articles_category_id_fkey(id, name, slug)
-        `, { count: 'exact' });
+        .select('*', { count: 'exact' });
 
       // Apply filters
       if (filters.status && filters.status !== 'all') {
@@ -62,11 +59,46 @@ export const useArticles = (initialFilters = {}) => {
       // Default ordering
       query = query.order('updated_at', { ascending: false });
 
-      const { data, error: fetchError, count } = await query;
+      const { data: articlesData, error: fetchError, count } = await query;
 
       if (fetchError) throw fetchError;
 
-      setArticles(data || []);
+      // If we have articles, fetch related data
+      if (articlesData && articlesData.length > 0) {
+        // Get unique author IDs and category IDs
+        const authorIds = [...new Set(articlesData.map(a => a.author_id).filter(Boolean))];
+        const categoryIds = [...new Set(articlesData.map(a => a.category_id).filter(Boolean))];
+        const coAuthorIds = [...new Set(articlesData.flatMap(a => a.co_authors || []))];
+        const allAuthorIds = [...new Set([...authorIds, ...coAuthorIds])];
+
+        // Fetch profiles and categories
+        const [profilesResponse, categoriesResponse] = await Promise.all([
+          allAuthorIds.length > 0 
+            ? supabase.from('profiles').select('id, full_name, avatar_url').in('id', allAuthorIds)
+            : { data: [] },
+          categoryIds.length > 0
+            ? supabase.from('categories').select('id, name, slug').in('id', categoryIds)
+            : { data: [] }
+        ]);
+
+        const profiles = profilesResponse.data || [];
+        const categories = categoriesResponse.data || [];
+
+        // Map the related data back to articles
+        const enrichedArticles = articlesData.map(article => ({
+          ...article,
+          author: profiles.find(p => p.id === article.author_id) || null,
+          category: categories.find(c => c.id === article.category_id) || null,
+          co_authors_data: article.co_authors 
+            ? article.co_authors.map(id => profiles.find(p => p.id === id)).filter(Boolean)
+            : []
+        }));
+
+        setArticles(enrichedArticles);
+      } else {
+        setArticles([]);
+      }
+
       setPagination(prev => ({
         ...prev,
         total: count || 0,

@@ -20,7 +20,17 @@ const SearchBar = ({
 }) => {
   const [searchValue, setSearchValue] = useState(defaultValue);
   const [isFocused, setIsFocused] = useState(false);
+  const [isDebouncing, setIsDebouncing] = useState(false); // FIX: Added this state
   const debouncedSearchValue = useDebounce(searchValue, debounceMs);
+
+  // Track debouncing state
+  useEffect(() => {
+    if (searchValue !== debouncedSearchValue) {
+      setIsDebouncing(true);
+    } else {
+      setIsDebouncing(false);
+    }
+  }, [searchValue, debouncedSearchValue]);
 
   useEffect(() => {
     if (debouncedSearchValue !== undefined) {
@@ -46,6 +56,7 @@ const SearchBar = ({
   const handleClear = () => {
     setSearchValue('');
     onSearch('');
+    setIsDebouncing(false); // Reset debouncing state
   };
 
   const sizeClasses = {
@@ -115,7 +126,7 @@ const SearchBar = ({
       </div>
 
       {/* Search Results Dropdown */}
-      {showResults && isFocused && results.length > 0 && (
+      {showResults && isFocused && results && results.length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg max-h-96 overflow-y-auto z-50">
           {results.map((result, index) => (
             <button

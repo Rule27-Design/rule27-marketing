@@ -22,7 +22,9 @@ const FilterBar = ({
   useEffect(() => {
     const initialFilters = {};
     filters.forEach(filter => {
-      initialFilters[filter.id] = filter.defaultValue || '';
+      if (filter && filter.id) { // FIX: Added safety check
+        initialFilters[filter.id] = filter.defaultValue || '';
+      }
     });
     setActiveFilters(initialFilters);
   }, [filters]);
@@ -41,7 +43,9 @@ const FilterBar = ({
   const handleReset = () => {
     const resetFilters = {};
     filters.forEach(filter => {
-      resetFilters[filter.id] = filter.defaultValue || '';
+      if (filter && filter.id) { // FIX: Added safety check
+        resetFilters[filter.id] = filter.defaultValue || '';
+      }
     });
     setActiveFilters(resetFilters);
     setSearchValue('');
@@ -95,21 +99,25 @@ const FilterBar = ({
               </div>
             )}
 
-            {filters.map((filter) => (
-              <div key={filter.id} className="min-w-[150px]">
-                <Select
-                  value={activeFilters[filter.id] || ''}
-                  onChange={(e) => handleFilterChange(filter.id, e.target.value)}
-                >
-                  <option value="">{filter.placeholder || `All ${filter.label}`}</option>
-                  {filter.options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-            ))}
+            {filters && filters.map((filter) => {
+              if (!filter || !filter.id) return null; // FIX: Added safety check
+              
+              return (
+                <div key={filter.id} className="min-w-[150px]">
+                  <Select
+                    value={activeFilters[filter.id] || ''}
+                    onChange={(e) => handleFilterChange(filter.id, e.target.value)}
+                  >
+                    <option value="">{filter.placeholder || `All ${filter.label}`}</option>
+                    {filter.options && filter.options.map((option) => ( // FIX: Added safety check
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+              );
+            })}
 
             {hasActiveFilters && (
               <Button
@@ -128,14 +136,16 @@ const FilterBar = ({
             <div className="mt-3 flex flex-wrap gap-2">
               {Object.entries(activeFilters).map(([key, value]) => {
                 if (!value || value === 'all') return null;
-                const filter = filters.find(f => f.id === key);
-                const option = filter?.options.find(o => o.value === value);
+                const filter = filters.find(f => f && f.id === key); // FIX: Added safety check
+                if (!filter) return null; // FIX: Added safety check
+                const option = filter.options && filter.options.find(o => o.value === value); // FIX: Added safety check
+                
                 return (
                   <span
                     key={key}
                     className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-sm rounded-full"
                   >
-                    <span className="text-gray-600">{filter?.label}:</span>
+                    <span className="text-gray-600">{filter.label}:</span>
                     <span className="font-medium">{option?.label || value}</span>
                     <button
                       onClick={() => handleFilterChange(key, '')}
