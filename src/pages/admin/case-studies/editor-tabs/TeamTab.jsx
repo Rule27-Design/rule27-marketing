@@ -28,7 +28,7 @@ const TeamTab = ({ formData, errors, onChange, userProfile }) => {
   const fetchTestimonials = async () => {
     const { data } = await supabase
       .from('testimonials')
-      .select('id, author_name, author_title, company')
+      .select('id, client_name, client_title, client_company')
       .eq('status', 'approved')
       .order('created_at', { ascending: false });
     setTestimonials(data || []);
