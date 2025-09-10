@@ -4,6 +4,7 @@ import Input from '../../../../components/ui/Input';
 import ImageUpload, { GalleryUpload } from '../../../../components/ui/ImageUpload';
 import Button from '../../../../components/ui/Button';
 import Icon from '../../../../components/AdminIcon';
+import { cn } from '../../../../utils';
 
 const MediaTab = ({ formData, errors, onChange }) => {
   // Handle tools
@@ -122,7 +123,10 @@ const MediaTab = ({ formData, errors, onChange }) => {
         
         <div className="space-y-3">
           {(formData.tools_used || []).map((tool, index) => (
-            <div key={index} className="p-3 bg-gray-50 rounded-lg">
+            <div key={index} className={cn(
+              "p-3 rounded-lg",
+              "bg-gray-50"
+            )}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <Input
                   type="text"
@@ -159,6 +163,16 @@ const MediaTab = ({ formData, errors, onChange }) => {
             </div>
           ))}
         </div>
+        
+        {(!formData.tools_used || formData.tools_used.length === 0) && (
+          <div className={cn(
+            "text-center py-6 border-2 border-dashed rounded-lg",
+            "border-gray-300"
+          )}>
+            <Icon name="Tool" size={32} className="mx-auto text-gray-400 mb-2" />
+            <p className="text-sm text-gray-500">No tools added yet</p>
+          </div>
+        )}
       </div>
 
       {/* Technologies */}
@@ -179,7 +193,10 @@ const MediaTab = ({ formData, errors, onChange }) => {
         
         <div className="flex flex-wrap gap-2">
           {(formData.technologies || []).map((tech, index) => (
-            <div key={index} className="flex items-center space-x-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+            <div key={index} className={cn(
+              "flex items-center space-x-1 px-3 py-1 rounded-full",
+              "bg-blue-100 text-blue-800"
+            )}>
               <input
                 type="text"
                 value={tech}
@@ -195,6 +212,12 @@ const MediaTab = ({ formData, errors, onChange }) => {
               </button>
             </div>
           ))}
+          
+          {(!formData.technologies || formData.technologies.length === 0) && (
+            <span className="text-sm text-gray-500">
+              Click "Add Technology" to start adding technologies
+            </span>
+          )}
         </div>
       </div>
 
@@ -216,7 +239,10 @@ const MediaTab = ({ formData, errors, onChange }) => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {(formData.integrations || []).map((integration, index) => (
-            <div key={index} className="p-3 bg-gray-50 rounded-lg">
+            <div key={index} className={cn(
+              "p-3 rounded-lg",
+              "bg-gray-50"
+            )}>
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Input
@@ -253,7 +279,66 @@ const MediaTab = ({ formData, errors, onChange }) => {
             </div>
           ))}
         </div>
+        
+        {(!formData.integrations || formData.integrations.length === 0) && (
+          <div className={cn(
+            "text-center py-6 border-2 border-dashed rounded-lg",
+            "border-gray-300"
+          )}>
+            <Icon name="Plug" size={32} className="mx-auto text-gray-400 mb-2" />
+            <p className="text-sm text-gray-500">No integrations added yet</p>
+          </div>
+        )}
       </div>
+
+      {/* Media Preview */}
+      {(formData.hero_image || formData.gallery?.length > 0) && (
+        <div className={cn(
+          "border rounded-lg p-4",
+          "bg-gray-50"
+        )}>
+          <h4 className="text-sm font-medium text-gray-700 mb-3">Media Preview</h4>
+          
+          {formData.hero_image && (
+            <div className="mb-4">
+              <p className="text-xs text-gray-500 mb-2">Hero Image</p>
+              <img
+                src={formData.hero_image}
+                alt="Hero"
+                className="w-full rounded-lg"
+              />
+            </div>
+          )}
+          
+          {formData.gallery?.length > 0 && (
+            <div>
+              <p className="text-xs text-gray-500 mb-2">
+                Gallery ({formData.gallery.length} images)
+              </p>
+              <div className="grid grid-cols-4 gap-2">
+                {formData.gallery.slice(0, 8).map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={img}
+                    alt={`Gallery ${idx + 1}`}
+                    className="w-full h-20 object-cover rounded"
+                  />
+                ))}
+                {formData.gallery.length > 8 && (
+                  <div className={cn(
+                    "w-full h-20 rounded flex items-center justify-center",
+                    "bg-gray-200"
+                  )}>
+                    <span className="text-gray-600 text-sm">
+                      +{formData.gallery.length - 8}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

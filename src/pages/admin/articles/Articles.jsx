@@ -22,7 +22,7 @@ import { useArticles } from './hooks/useArticles';
 import { useArticleEvents } from './hooks/useArticleEvents';
 import { articleOperations } from './services/ArticleOperations';
 import { useToast } from '../../../components/ui/Toast';
-import { format } from 'date-fns';
+import { formatDate } from '../../../utils';
 
 const Articles = () => {
   const { userProfile } = useOutletContext();
@@ -283,7 +283,7 @@ const Articles = () => {
       header: 'Modified',
       cell: (article) => (
         <div className="text-xs text-text-secondary">
-          {format(new Date(article.updated_at), 'MMM d, yyyy')}
+          {formatDate(article.updated_at, 'MMM d, yyyy')}
         </div>
       ),
       width: 100

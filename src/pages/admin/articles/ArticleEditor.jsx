@@ -77,7 +77,6 @@ const ArticleEditor = ({
       [field]: value
     }));
     
-    // Clear error for this field
     clearError(field);
 
     // Auto-generate slug from title
@@ -187,7 +186,6 @@ const ArticleEditor = ({
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        saveStatus={saveStatus}
         isDirty={JSON.stringify(formData) !== JSON.stringify(initialData)}
         actions={[
           {

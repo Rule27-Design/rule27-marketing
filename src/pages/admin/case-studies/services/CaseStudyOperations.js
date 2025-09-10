@@ -1,14 +1,17 @@
 // src/pages/admin/case-studies/services/CaseStudyOperations.js
 import { supabase } from '../../../../lib/supabase';
+import { sanitizeData } from '../../../../utils';
 
 export class CaseStudyOperationsService {
   // Create case study
   async create(data) {
     try {
+      const cleanData = sanitizeData(data);
+
       const { data: caseStudy, error } = await supabase
         .from('case_studies')
         .insert([{
-          ...data,
+          ...cleanData,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }])
@@ -27,10 +30,12 @@ export class CaseStudyOperationsService {
   // Update case study
   async update(id, data) {
     try {
+      const cleanData = sanitizeData(data);
+
       const { data: caseStudy, error } = await supabase
         .from('case_studies')
         .update({
-          ...data,
+          ...cleanData,
           updated_at: new Date().toISOString()
         })
         .eq('id', id)

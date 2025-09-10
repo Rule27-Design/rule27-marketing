@@ -22,7 +22,7 @@ import { useCaseStudies } from './hooks/useCaseStudies';
 import { useCaseStudyEvents } from './hooks/useCaseStudyEvents';
 import { caseStudyOperations } from './services/CaseStudyOperations';
 import { useToast } from '../../../components/ui/Toast';
-import { format } from 'date-fns';
+import { formatDate } from '../../../utils';
 
 const CaseStudies = () => {
   const { userProfile } = useOutletContext();
@@ -312,7 +312,7 @@ const CaseStudies = () => {
       header: 'Modified',
       cell: (caseStudy) => (
         <div className="text-xs text-text-secondary">
-          {format(new Date(caseStudy.updated_at), 'MMM d, yyyy')}
+          {formatDate(caseStudy.updated_at, 'MMM d, yyyy')}
         </div>
       ),
       width: 100

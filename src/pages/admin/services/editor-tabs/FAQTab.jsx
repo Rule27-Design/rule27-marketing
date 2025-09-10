@@ -5,6 +5,7 @@ import Button from '../../../../components/ui/Button';
 import Icon from '../../../../components/AdminIcon';
 import TiptapContentEditor from '../../../../components/ui/TiptapContentEditor';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { cn } from '../../../../utils';
 
 const FAQTab = ({ formData, errors, onChange }) => {
   const [expandedFAQ, setExpandedFAQ] = useState(null);
@@ -100,9 +101,11 @@ const FAQTab = ({ formData, errors, onChange }) => {
                     <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
-                      className={`bg-white border rounded-lg ${
-                        snapshot.isDragging ? 'shadow-lg opacity-90' : ''
-                      } ${expandedFAQ === index ? 'ring-2 ring-accent' : ''}`}
+                      className={cn(
+                        "bg-white border rounded-lg",
+                        snapshot.isDragging ? 'shadow-lg opacity-90' : '',
+                        expandedFAQ === index ? 'ring-2 ring-accent' : ''
+                      )}
                     >
                       {/* FAQ Header */}
                       <div className="p-4">
@@ -145,6 +148,12 @@ const FAQTab = ({ formData, errors, onChange }) => {
                             {faq.is_featured && (
                               <Icon name="Star" size={16} className="text-yellow-500" />
                             )}
+                            <span className={cn(
+                              "text-xs px-2 py-1 rounded-full",
+                              "bg-gray-100 text-gray-600"
+                            )}>
+                              {faqCategories.find(c => c.value === faq.category)?.label || 'General'}
+                            </span>
                             <button
                               onClick={() => toggleExpand(index)}
                               className="text-gray-400 hover:text-gray-600"
@@ -226,6 +235,25 @@ const FAQTab = ({ formData, errors, onChange }) => {
       {errors.faqs && (
         <p className="text-xs text-red-500">{errors.faqs}</p>
       )}
+      
+      {/* Empty State */}
+      {(!formData.faqs || formData.faqs.length === 0) && (
+        <div className={cn(
+          "text-center py-8 border-2 border-dashed rounded-lg",
+          "border-gray-300"
+        )}>
+          <Icon name="HelpCircle" size={32} className="mx-auto text-gray-400 mb-2" />
+          <p className="text-sm text-gray-500">No FAQs added yet</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={addFAQ}
+            className="mt-2"
+          >
+            Add First FAQ
+          </Button>
+        </div>
+      )}
 
       {/* FAQ Categories Summary */}
       {formData.faqs?.length > 0 && (
@@ -234,10 +262,20 @@ const FAQTab = ({ formData, errors, onChange }) => {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {faqCategories.map(category => {
               const count = groupedFAQs[category.value]?.length || 0;
+              const featured = groupedFAQs[category.value]?.filter(f => f.is_featured).length || 0;
+              
               return (
-                <div key={category.value} className="text-center p-3 bg-gray-50 rounded-lg">
+                <div key={category.value} className={cn(
+                  "text-center p-3 rounded-lg",
+                  "bg-gray-50"
+                )}>
                   <div className="text-2xl font-bold text-gray-900">{count}</div>
                   <div className="text-xs text-gray-500">{category.label}</div>
+                  {featured > 0 && (
+                    <div className="text-xs text-yellow-600 mt-1">
+                      {featured} featured
+                    </div>
+                  )}
                 </div>
               );
             })}

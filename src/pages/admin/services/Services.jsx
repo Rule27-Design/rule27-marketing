@@ -22,8 +22,7 @@ import { useServices } from './hooks/useServices';
 import { useServiceEvents } from './hooks/useServiceEvents';
 import { serviceOperations } from './services/ServiceOperations';
 import { useToast } from '../../../components/ui/Toast';
-import { format } from 'date-fns';
-import { cn } from '../../../utils/cn';
+import { formatDate, cn } from '../../../utils';
 
 const Services = () => {
   const { userProfile } = useOutletContext();
@@ -45,8 +44,7 @@ const Services = () => {
     setSelectedItems,
     pagination,
     changePage,
-    refreshServices,
-    serviceStats // Added stats
+    refreshServices
   } = useServices({
     status: searchParams.get('status') || 'all',
     zone: searchParams.get('zone') || 'all'
@@ -79,7 +77,7 @@ const Services = () => {
     if (groupBy === 'none') return { all: services };
     
     return services.reduce((acc, service) => {
-      const key = groupBy === 'zone' ? service.zone : service.category;
+      const key = groupBy === 'zone' ? (service.zone || 'uncategorized') : (service.category || 'uncategorized');
       if (!acc[key]) acc[key] = [];
       acc[key].push(service);
       return acc;
@@ -140,7 +138,222 @@ const Services = () => {
     }
   ];
 
-  // Service card for grid view with zone
+  // Bulk action configuration
+  const bulkActionConfig = [
+    {
+      id: 'publish',
+      label: 'Publish',
+      icon: 'Send',
+      variant: 'primary',
+      requireConfirm: true
+    },
+    {
+      id: 'archive',
+      label: 'Archive',
+      icon: 'Archive',
+      variant: 'ghost'
+    },
+    {
+      id: 'export',
+      label: 'Export',
+      icon: 'Download',
+      variant: 'ghost'
+    },
+    {
+      id: 'delete',
+      label: 'Delete',
+      icon: 'Trash2',
+      variant: 'ghost',
+      className: 'text-red-600',
+      requireConfirm: true
+    }
+  ];
+
+  // Handle bulk actions
+  const handleBulkAction = async (actionId, selectedIds) => {
+    try {
+      let result;
+      
+      switch (actionId) {
+        case 'publish':
+          result = await serviceOperations.bulkPublish(selectedIds);
+          if (result.success) {
+            toast.success('Services published', `${selectedIds.length} services have been published`);
+          }
+          break;
+          
+        case 'archive':
+          result = await serviceOperations.bulkArchive(selectedIds);
+          if (result.success) {
+            toast.success('Services archived', `${selectedIds.length} services have been archived`);
+          }
+          break;
+          
+        case 'delete':
+          result = await serviceOperations.bulkDelete(selectedIds);
+          if (result.success) {
+            toast.success('Services deleted', `${selectedIds.length} services have been deleted`);
+          }
+          break;
+          
+        case 'export':
+          result = await serviceOperations.exportServices(selectedIds);
+          if (result.success) {
+            toast.success('Export complete', 'Services have been exported to CSV');
+          }
+          break;
+      }
+
+      if (result && !result.success) {
+        toast.error('Action failed', result.error);
+      } else {
+        setSelectedItems([]);
+        await refreshServices();
+      }
+    } catch (error) {
+      console.error('Bulk action error:', error);
+      toast.error('Action failed', error.message);
+    }
+  };
+
+  // Table columns configuration
+  const tableColumns = [
+    {
+      key: 'select',
+      header: () => (
+        <Checkbox
+          checked={services.length > 0 && selectedItems.length === services.length}
+          onChange={(checked) => {
+            setSelectedItems(checked ? services.map(s => s.id) : []);
+          }}
+        />
+      ),
+      cell: (service) => (
+        <Checkbox
+          checked={selectedItems.includes(service.id)}
+          onChange={(checked) => {
+            setSelectedItems(prev =>
+              checked 
+                ? [...prev, service.id]
+                : prev.filter(id => id !== service.id)
+            );
+          }}
+        />
+      ),
+      width: 40
+    },
+    {
+      key: 'name',
+      header: 'Service',
+      cell: (service) => {
+        const zone = serviceZones.find(z => z.id === service.zone);
+        return (
+          <div className="flex items-center space-x-3">
+            {service.icon && (
+              <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                <span className="text-lg">{service.icon}</span>
+              </div>
+            )}
+            <div>
+              <div className="font-medium text-text-primary">
+                {service.name}
+                {service.is_featured && (
+                  <Icon name="Star" size={12} className="inline ml-1 text-yellow-500" />
+                )}
+              </div>
+              <div className="text-xs text-text-secondary">
+                {zone?.name} • {service.category}
+              </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      cell: (service) => <StatusBadge status={service.status} size="xs" />,
+      width: 120
+    },
+    {
+      key: 'pricing',
+      header: 'Pricing',
+      cell: (service) => (
+        <div className="text-sm">
+          {service.starting_price ? (
+            <span className="font-medium">${service.starting_price}</span>
+          ) : (
+            <span className="text-gray-500">Custom</span>
+          )}
+          {service.pricing_tiers?.length > 0 && (
+            <span className="text-xs text-gray-500 ml-1">
+              ({service.pricing_tiers.length} tiers)
+            </span>
+          )}
+        </div>
+      ),
+      width: 120
+    },
+    {
+      key: 'metrics',
+      header: 'Performance',
+      cell: (service) => (
+        <MetricsDisplay
+          metrics={[
+            { value: service.view_count || 0, icon: 'Eye' },
+            { value: service.inquiry_count || 0, icon: 'MessageSquare' }
+          ]}
+          compact
+        />
+      ),
+      width: 150
+    },
+    {
+      key: 'date',
+      header: 'Modified',
+      cell: (service) => (
+        <div className="text-xs text-text-secondary">
+          {formatDate(service.updated_at, 'MMM d, yyyy')}
+        </div>
+      ),
+      width: 100
+    },
+    {
+      key: 'actions',
+      header: '',
+      cell: (service) => (
+        <div className="flex items-center space-x-1">
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={() => {
+              setEditingService(service);
+              setShowEditor(true);
+            }}
+            iconName="Edit2"
+          />
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={async () => {
+              if (window.confirm('Are you sure you want to delete this service?')) {
+                const result = await serviceOperations.delete(service.id);
+                if (result.success) {
+                  toast.success('Service deleted');
+                  refreshServices();
+                }
+              }
+            }}
+            iconName="Trash2"
+            className="text-red-500"
+          />
+        </div>
+      ),
+      width: 100
+    }
+  ];
+
+  // Service card for grid view
   const ServiceCard = ({ service }) => {
     const zone = serviceZones.find(z => z.id === service.zone);
     
@@ -161,7 +374,7 @@ const Services = () => {
           <div className="flex items-center space-x-3">
             {service.icon && (
               <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-                <Icon name={service.icon} size={24} className="text-accent" />
+                <span className="text-2xl">{service.icon}</span>
               </div>
             )}
             <div>
@@ -181,6 +394,11 @@ const Services = () => {
                 Popular
               </span>
             )}
+            {service.is_new && (
+              <span className="text-xs bg-green-100 text-green-600 px-1.5 py-0.5 rounded">
+                New
+              </span>
+            )}
           </div>
         </div>
         
@@ -191,8 +409,8 @@ const Services = () => {
         <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
           <span>{service.category}</span>
           <span>
-            {service.pricing_tiers?.length > 0 
-              ? `${service.pricing_tiers.length} pricing tiers`
+            {service.starting_price 
+              ? `From $${service.starting_price}`
               : 'Custom pricing'}
           </span>
         </div>
@@ -467,6 +685,7 @@ const Services = () => {
               { key: 'category', label: 'Category' },
               { key: 'status', label: 'Status' },
               { key: 'short_description', label: 'Description' },
+              { key: 'starting_price', label: 'Starting Price' },
               { key: 'created_at', label: 'Created' }
             ]}
           />
