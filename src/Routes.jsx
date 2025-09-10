@@ -1,10 +1,14 @@
-// src/Routes.jsx - Updated with event integration and enhanced auth handling
+// src/Routes.jsx - Updated with correct import paths for admin modules
 import React, { useEffect } from "react";
 import { BrowserRouter, Routes as RouterRoutes, Route, Navigate, useNavigate } from "react-router-dom";
 import ScrollToTop from "components/ScrollToTop";
 import ErrorBoundary from "components/ErrorBoundary";
 import NotFound from "pages/NotFound";
-import { useArticleEvents, ARTICLE_EVENTS } from './pages/admin/articles/hooks/useArticleEvents.js';
+
+// Import event systems for all admin modules
+import { useArticleEvents, ARTICLE_EVENTS } from './pages/admin/articles/hooks/useArticleEvents';
+import { useCaseStudyEvents, CASE_STUDY_EVENTS } from './pages/admin/case-studies/hooks/useCaseStudyEvents';
+import { useServiceEvents, SERVICE_EVENTS } from './pages/admin/services/hooks/useServiceEvents';
 
 // Public Pages
 import HomepageExperienceHub from './pages/homepage-experience-hub';
@@ -16,12 +20,12 @@ import ArticlesHub from './pages/articles-hub';
 import AboutProcessStudio from './pages/about-process-studio';
 import ContactConsultationPortal from './pages/contact-consultation-portal';
 
-// Admin Pages
+// Admin Pages - Updated import paths
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/Dashboard';
-import AdminServices from './pages/admin/Services';
-import AdminArticles from './pages/admin/articles/Articles'
-import AdminCaseStudies from './pages/admin/CaseStudies';
+import AdminServices from './pages/admin/services/Services'; // Updated path
+import AdminArticles from './pages/admin/articles/Articles'; // Already correct
+import AdminCaseStudies from './pages/admin/case-studies/CaseStudies'; // Updated path
 import AdminProfiles from './pages/admin/Profiles';
 import AdminLeads from './pages/admin/Leads';
 import AdminAnalytics from './pages/admin/Analytics';
@@ -36,7 +40,9 @@ import { supabase } from './lib/supabase';
 // Auth Callback Component with Event Integration
 const AuthCallback = () => {
   const navigate = useNavigate();
-  const { emit } = useArticleEvents();
+  const { emit: emitArticle } = useArticleEvents();
+  const { emit: emitCaseStudy } = useCaseStudyEvents();
+  const { emit: emitService } = useServiceEvents();
 
   React.useEffect(() => {
     handleAuthCallback();
@@ -44,15 +50,19 @@ const AuthCallback = () => {
 
   const handleAuthCallback = async () => {
     try {
-      // Emit authentication start event
-      emit('auth:callback_started', { timestamp: Date.now() });
+      // Emit authentication start events to all modules
+      emitArticle('auth:callback_started', { timestamp: Date.now() });
+      emitCaseStudy('auth:callback_started', { timestamp: Date.now() });
+      emitService('auth:callback_started', { timestamp: Date.now() });
 
       // Get the session from the URL
       const { data: { session }, error } = await supabase.auth.getSession();
       
       if (error) {
         console.error('Session error:', error);
-        emit('auth:callback_failed', { error: error.message });
+        emitArticle('auth:callback_failed', { error: error.message });
+        emitCaseStudy('auth:callback_failed', { error: error.message });
+        emitService('auth:callback_failed', { error: error.message });
         navigate('/admin/login');
         return;
       }
@@ -60,11 +70,14 @@ const AuthCallback = () => {
       if (session) {
         console.log('Session found for:', session.user.email);
         
-        // Emit successful authentication event
-        emit('auth:session_found', { 
+        // Emit successful authentication events
+        const authData = { 
           userId: session.user.id, 
           email: session.user.email 
-        });
+        };
+        emitArticle('auth:session_found', authData);
+        emitCaseStudy('auth:session_found', authData);
+        emitService('auth:session_found', authData);
         
         // Wait a moment for the trigger to create/update the profile
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -83,7 +96,10 @@ const AuthCallback = () => {
         // If no profile exists, create one
         if (!profile) {
           console.log('Creating profile for new user');
-          emit('auth:profile_creating', { userId: session.user.id });
+          const profileCreatingData = { userId: session.user.id };
+          emitArticle('auth:profile_creating', profileCreatingData);
+          emitCaseStudy('auth:profile_creating', profileCreatingData);
+          emitService('auth:profile_creating', profileCreatingData);
           
           const userData = session.user.user_metadata;
           const { data: newProfile, error: createError } = await supabase
@@ -102,10 +118,13 @@ const AuthCallback = () => {
           
           if (createError) {
             console.error('Profile creation error:', createError);
-            emit('auth:profile_creation_failed', { 
+            const errorData = { 
               userId: session.user.id, 
               error: createError.message 
-            });
+            };
+            emitArticle('auth:profile_creation_failed', errorData);
+            emitCaseStudy('auth:profile_creation_failed', errorData);
+            emitService('auth:profile_creation_failed', errorData);
             
             // Try to fetch existing profile by email
             const { data: existingProfile } = await supabase
@@ -121,27 +140,42 @@ const AuthCallback = () => {
                 .update({ auth_user_id: session.user.id })
                 .eq('id', existingProfile.id);
               
-              emit('auth:profile_linked', { profileId: existingProfile.id });
+              const linkedData = { profileId: existingProfile.id };
+              emitArticle('auth:profile_linked', linkedData);
+              emitCaseStudy('auth:profile_linked', linkedData);
+              emitService('auth:profile_linked', linkedData);
               handleNavigation(session, existingProfile);
             } else {
               navigate('/admin/login');
             }
           } else {
-            emit('auth:profile_created', { profileId: newProfile.id });
+            const createdData = { profileId: newProfile.id };
+            emitArticle('auth:profile_created', createdData);
+            emitCaseStudy('auth:profile_created', createdData);
+            emitService('auth:profile_created', createdData);
             handleNavigation(session, newProfile);
           }
         } else {
-          emit('auth:profile_found', { profileId: profile.id, role: profile.role });
+          const foundData = { profileId: profile.id, role: profile.role };
+          emitArticle('auth:profile_found', foundData);
+          emitCaseStudy('auth:profile_found', foundData);
+          emitService('auth:profile_found', foundData);
           handleNavigation(session, profile);
         }
       } else {
         console.log('No session found');
-        emit('auth:no_session', {});
+        const noSessionData = {};
+        emitArticle('auth:no_session', noSessionData);
+        emitCaseStudy('auth:no_session', noSessionData);
+        emitService('auth:no_session', noSessionData);
         navigate('/admin/login');
       }
     } catch (error) {
       console.error('Auth callback error:', error);
-      emit('auth:callback_error', { error: error.message });
+      const errorData = { error: error.message };
+      emitArticle('auth:callback_error', errorData);
+      emitCaseStudy('auth:callback_error', errorData);
+      emitService('auth:callback_error', errorData);
       navigate('/admin/login');
     }
   };
@@ -159,44 +193,59 @@ const AuthCallback = () => {
       role: profile.role
     });
 
-    // Emit navigation decision event
-    emit('auth:navigation_decision', {
+    // Emit navigation decision events
+    const navData = {
       userId: session.user.id,
       profileId: profile.id,
       hasPassword,
       isFirstLogin,
       profileCompleted,
       role: profile.role
-    });
+    };
+    emitArticle('auth:navigation_decision', navData);
+    emitCaseStudy('auth:navigation_decision', navData);
+    emitService('auth:navigation_decision', navData);
     
     // STEP 1: Password setup (for invited users who haven't set password)
     if (!hasPassword && isFirstLogin) {
       console.log('Redirecting to password setup');
-      emit('auth:redirect_password_setup', { userId: session.user.id });
+      const redirectData = { userId: session.user.id };
+      emitArticle('auth:redirect_password_setup', redirectData);
+      emitCaseStudy('auth:redirect_password_setup', redirectData);
+      emitService('auth:redirect_password_setup', redirectData);
       navigate('/admin/setup-profile?step=password');
     }
     // STEP 2: Profile setup (if password is set but profile not complete)
     else if (!profileCompleted) {
       console.log('Redirecting to profile setup');
-      emit('auth:redirect_profile_setup', { userId: session.user.id });
+      const redirectData = { userId: session.user.id };
+      emitArticle('auth:redirect_profile_setup', redirectData);
+      emitCaseStudy('auth:redirect_profile_setup', redirectData);
+      emitService('auth:redirect_profile_setup', redirectData);
       navigate('/admin/setup-profile?step=profile');
     }
     // STEP 3: Check role access
     else if (profile.role === 'admin' || profile.role === 'contributor') {
       console.log('Redirecting to admin dashboard');
-      emit('auth:redirect_admin', { 
+      const redirectData = { 
         userId: session.user.id, 
         role: profile.role 
-      });
+      };
+      emitArticle('auth:redirect_admin', redirectData);
+      emitCaseStudy('auth:redirect_admin', redirectData);
+      emitService('auth:redirect_admin', redirectData);
       navigate('/admin');
     }
     // STEP 4: No admin access
     else {
       console.log('User has standard role, no admin access');
-      emit('auth:redirect_home', { 
+      const redirectData = { 
         userId: session.user.id, 
         role: profile.role 
-      });
+      };
+      emitArticle('auth:redirect_home', redirectData);
+      emitCaseStudy('auth:redirect_home', redirectData);
+      emitService('auth:redirect_home', redirectData);
       navigate('/');
     }
   };
@@ -212,19 +261,24 @@ const AuthCallback = () => {
   );
 };
 
-// Enhanced Routes Component with Event Integration
+// Enhanced Routes Component with Event Integration for all modules
 const Routes = ({ session }) => {
-  const { emit, subscribe } = useArticleEvents();
+  const { emit: emitArticle, subscribeToEvents: subscribeArticle } = useArticleEvents();
+  const { emit: emitCaseStudy, subscribeToEvents: subscribeCaseStudy } = useCaseStudyEvents();
+  const { emit: emitService, subscribeToEvents: subscribeService } = useServiceEvents();
 
   // Set up global route change tracking
   useEffect(() => {
     // Track route changes for analytics
     const handleRouteChange = () => {
-      emit('navigation:route_changed', {
+      const routeData = {
         path: window.location.pathname,
         timestamp: Date.now(),
         session: session?.user?.id || null
-      });
+      };
+      emitArticle('navigation:route_changed', routeData);
+      emitCaseStudy('navigation:route_changed', routeData);
+      emitService('navigation:route_changed', routeData);
     };
 
     // Listen for popstate events (back/forward navigation)
@@ -236,32 +290,49 @@ const Routes = ({ session }) => {
     return () => {
       window.removeEventListener('popstate', handleRouteChange);
     };
-  }, [emit, session]);
+  }, [emitArticle, emitCaseStudy, emitService, session]);
 
   // Set up session change tracking
   useEffect(() => {
     if (session) {
-      emit('session:established', {
+      const sessionData = {
         userId: session.user.id,
         email: session.user.email,
         timestamp: Date.now()
-      });
+      };
+      emitArticle('session:established', sessionData);
+      emitCaseStudy('session:established', sessionData);
+      emitService('session:established', sessionData);
     } else {
-      emit('session:cleared', {
+      const clearedData = {
         timestamp: Date.now()
-      });
+      };
+      emitArticle('session:cleared', clearedData);
+      emitCaseStudy('session:cleared', clearedData);
+      emitService('session:cleared', clearedData);
     }
-  }, [session, emit]);
+  }, [session, emitArticle, emitCaseStudy, emitService]);
 
   // Set up global error handling for admin routes
   useEffect(() => {
-    const unsubscribe = subscribe('admin:error', (error) => {
-      console.error('Admin error detected:', error);
-      // Could implement global error handling here
+    const unsubscribeArticle = subscribeArticle('admin:error', (error) => {
+      console.error('Admin error detected (articles):', error);
     });
 
-    return unsubscribe;
-  }, [subscribe]);
+    const unsubscribeCaseStudy = subscribeCaseStudy('admin:error', (error) => {
+      console.error('Admin error detected (case studies):', error);
+    });
+
+    const unsubscribeService = subscribeService('admin:error', (error) => {
+      console.error('Admin error detected (services):', error);
+    });
+
+    return () => {
+      unsubscribeArticle();
+      unsubscribeCaseStudy();
+      unsubscribeService();
+    };
+  }, [subscribeArticle, subscribeCaseStudy, subscribeService]);
 
   return (
     <BrowserRouter>
@@ -287,7 +358,7 @@ const Routes = ({ session }) => {
           <Route path="/admin/forgot-password" element={<ForgotPassword />} />
           <Route path="/admin/reset-password" element={<ResetPassword />} />
           
-          {/* Protected Admin Routes - Event-enabled */}
+          {/* Protected Admin Routes - All event-enabled */}
           <Route path="/admin" element={
             <ProtectedRoute session={session}>
               <AdminLayout />
@@ -295,7 +366,6 @@ const Routes = ({ session }) => {
           }>
             <Route index element={<AdminDashboard />} />
             <Route path="services" element={<AdminServices />} />
-            {/* Articles route - fully event-enabled */}
             <Route path="articles" element={<AdminArticles />} />
             <Route path="case-studies" element={<AdminCaseStudies />} />
             <Route path="profiles" element={<AdminProfiles />} />
