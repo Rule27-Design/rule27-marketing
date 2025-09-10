@@ -1,6 +1,6 @@
 // src/pages/admin/case-studies/editor-tabs/TeamTab.jsx
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../../../../lib/supabase';
+import { supabase } from '../../../../lib/supabase';
 import Input from '../../../../components/ui/Input';
 import Select from '../../../../components/ui/Select';
 import Button from '../../../../components/ui/Button';

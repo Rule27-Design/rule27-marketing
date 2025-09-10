@@ -1,6 +1,6 @@
 // src/pages/admin/articles/editor-tabs/AnalyticsTab.jsx
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../../../../lib/supabase';
+import { supabase } from '../../../../lib/supabase';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatDate } from '../../../../utils';
 import { cn } from '../../../../utils';
