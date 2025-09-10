@@ -1,7 +1,8 @@
-// src/components/ErrorBoundary.jsx - Enhanced version
+// src/components/ErrorBoundary.jsx - Enhanced version with EventBus integration
 import React from 'react';
 import Icon from './AdminIcon';
 import Button from './ui/Button';
+import { globalEventBus } from '../services/EventBus';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -31,6 +32,17 @@ class ErrorBoundary extends React.Component {
       errorId
     });
 
+    // Emit to EventBus for application-wide error tracking
+    globalEventBus.emit('error:boundary', {
+      errorId,
+      error: error.toString(),
+      message: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+      timestamp: Date.now(),
+      props: this.props.errorMetadata || {}
+    });
+
     // Log to external service (Sentry, LogRocket, etc.)
     if (typeof window !== 'undefined' && window.Sentry) {
       window.Sentry.captureException(error, {
@@ -48,11 +60,23 @@ class ErrorBoundary extends React.Component {
       console.error('Error:', error);
       console.error('Error Info:', errorInfo);
       console.error('Component Stack:', errorInfo.componentStack);
+      console.error('Error ID:', errorId);
       console.groupEnd();
+    }
+
+    // Call optional error callback
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo, errorId);
     }
   }
 
   handleRetry = () => {
+    // Emit retry event
+    globalEventBus.emit('error:boundary:retry', {
+      errorId: this.state.errorId,
+      timestamp: Date.now()
+    });
+
     this.setState({ 
       hasError: false, 
       error: null, 
@@ -62,6 +86,12 @@ class ErrorBoundary extends React.Component {
   };
 
   handleReload = () => {
+    // Emit reload event before reloading
+    globalEventBus.emit('error:boundary:reload', {
+      errorId: this.state.errorId,
+      timestamp: Date.now()
+    });
+
     window.location.reload();
   };
 
@@ -124,6 +154,12 @@ class ErrorBoundary extends React.Component {
                       <strong>Stack:</strong>
                       <pre className="whitespace-pre-wrap">{this.state.error.stack}</pre>
                     </div>
+                    {this.state.errorInfo && (
+                      <div className="mt-2">
+                        <strong>Component Stack:</strong>
+                        <pre className="whitespace-pre-wrap">{this.state.errorInfo.componentStack}</pre>
+                      </div>
+                    )}
                   </div>
                 </details>
               )}
@@ -148,17 +184,82 @@ export const withErrorBoundary = (Component, errorBoundaryProps = {}) => {
   };
 };
 
-// Hook for error reporting from functional components
-export const useErrorHandler = () => {
+/**
+ * Hook for manually reporting errors to tracking services
+ * Note: This is different from the comprehensive useErrorHandler in src/hooks/useErrorHandler.js
+ * This one is specifically for manual error reporting to external services
+ */
+export const useErrorReporter = () => {
   return React.useCallback((error, errorInfo = {}) => {
+    // Generate error ID for tracking
+    const errorId = `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
     console.error('Manual error report:', error, errorInfo);
     
+    // Emit to EventBus
+    globalEventBus.emit('error:manual', {
+      errorId,
+      error: error.toString(),
+      message: error.message || 'Manual error report',
+      stack: error.stack,
+      info: errorInfo,
+      timestamp: Date.now()
+    });
+    
+    // Send to Sentry if available
     if (typeof window !== 'undefined' && window.Sentry) {
       window.Sentry.captureException(error, {
+        tags: {
+          type: 'manual',
+          errorId
+        },
         extra: errorInfo
       });
     }
+    
+    return errorId;
   }, []);
+};
+
+/**
+ * Component to wrap specific sections with error boundaries
+ * Useful for isolating errors to specific parts of the app
+ */
+export const SectionErrorBoundary = ({ children, section, fallback }) => {
+  return (
+    <ErrorBoundary
+      message={`An error occurred in the ${section} section.`}
+      errorMetadata={{ section }}
+      fallback={fallback}
+      onError={(error, errorInfo, errorId) => {
+        // Log section-specific errors
+        globalEventBus.emit('error:section', {
+          section,
+          errorId,
+          error: error.toString(),
+          timestamp: Date.now()
+        });
+      }}
+    >
+      {children}
+    </ErrorBoundary>
+  );
+};
+
+/**
+ * Hook to listen for error boundary events
+ * Useful for showing notifications or logging
+ */
+export const useErrorBoundaryListener = (onError) => {
+  React.useEffect(() => {
+    if (!onError) return;
+
+    const unsubscribe = globalEventBus.on('error:boundary', (data) => {
+      onError(data);
+    });
+
+    return unsubscribe;
+  }, [onError]);
 };
 
 export default ErrorBoundary;
