@@ -21,11 +21,13 @@ export const useFormValidation = () => {
           error = 'Slug is required';
         } else if (!/^[a-z0-9-]+$/.test(value)) {
           error = 'Slug can only contain lowercase letters, numbers, and hyphens';
+        } else if (value.length > 100) {
+          error = 'Slug must be less than 100 characters';
         }
         break;
 
       case 'content':
-        if (!value || value.trim().length === 0) {
+        if (!value || (typeof value === 'object' && !value.html?.trim())) {
           error = 'Content is required';
         }
         break;
@@ -33,6 +35,12 @@ export const useFormValidation = () => {
       case 'excerpt':
         if (value && value.length > 300) {
           error = 'Excerpt must be less than 300 characters';
+        }
+        break;
+
+      case 'category_id':
+        if (!value) {
+          error = 'Category is required';
         }
         break;
 
@@ -45,6 +53,21 @@ export const useFormValidation = () => {
       case 'meta_description':
         if (value && value.length > 160) {
           error = 'Meta description should be less than 160 characters for SEO';
+        }
+        break;
+
+      case 'canonical_url':
+        if (value && !/^https?:\/\/.+/.test(value)) {
+          error = 'Please enter a valid URL';
+        }
+        break;
+
+      case 'scheduled_at':
+        if (value) {
+          const scheduledDate = new Date(value);
+          if (scheduledDate <= new Date()) {
+            error = 'Scheduled date must be in the future';
+          }
         }
         break;
 
@@ -70,35 +93,50 @@ export const useFormValidation = () => {
     // Required fields
     if (!formData.title?.trim()) {
       newErrors.title = 'Title is required';
+    } else if (formData.title.length > 200) {
+      newErrors.title = 'Title must be less than 200 characters';
     }
+
     if (!formData.slug?.trim()) {
       newErrors.slug = 'Slug is required';
+    } else if (!/^[a-z0-9-]+$/.test(formData.slug)) {
+      newErrors.slug = 'Slug can only contain lowercase letters, numbers, and hyphens';
     }
-    if (!formData.content?.trim()) {
+
+    if (!formData.content || (typeof formData.content === 'object' && !formData.content.html?.trim())) {
       newErrors.content = 'Content is required';
     }
 
-    // Length validations
-    if (formData.title?.length > 200) {
-      newErrors.title = 'Title must be less than 200 characters';
+    if (!formData.category_id) {
+      newErrors.category_id = 'Category is required';
     }
+
+    // Optional field validations
     if (formData.excerpt?.length > 300) {
       newErrors.excerpt = 'Excerpt must be less than 300 characters';
     }
+
     if (formData.meta_title?.length > 60) {
       newErrors.meta_title = 'Meta title should be less than 60 characters';
     }
+
     if (formData.meta_description?.length > 160) {
       newErrors.meta_description = 'Meta description should be less than 160 characters';
     }
 
-    // Format validations
-    if (formData.slug && !/^[a-z0-9-]+$/.test(formData.slug)) {
-      newErrors.slug = 'Slug can only contain lowercase letters, numbers, and hyphens';
+    if (formData.canonical_url && !/^https?:\/\/.+/.test(formData.canonical_url)) {
+      newErrors.canonical_url = 'Please enter a valid URL';
+    }
+
+    if (formData.scheduled_at) {
+      const scheduledDate = new Date(formData.scheduled_at);
+      if (scheduledDate <= new Date()) {
+        newErrors.scheduled_at = 'Scheduled date must be in the future';
+      }
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return newErrors;
   }, []);
 
   const clearError = useCallback((field) => {
@@ -112,11 +150,24 @@ export const useFormValidation = () => {
     setErrors({});
   }, []);
 
+  const getTabErrors = useCallback((tab, errors) => {
+    const tabFieldMap = {
+      content: ['title', 'slug', 'excerpt', 'content', 'category_id', 'tags'],
+      media: ['featured_image', 'featured_video', 'featured_image_alt'],
+      seo: ['meta_title', 'meta_description', 'meta_keywords', 'canonical_url', 'og_title', 'og_description', 'og_image'],
+      settings: ['status', 'scheduled_at', 'is_featured', 'enable_comments', 'enable_reactions']
+    };
+
+    const tabFields = tabFieldMap[tab] || [];
+    return Object.keys(errors).filter(field => tabFields.includes(field));
+  }, []);
+
   return {
     errors,
     validateField,
     validateForm,
     clearError,
-    clearAllErrors
+    clearAllErrors,
+    getTabErrors
   };
 };

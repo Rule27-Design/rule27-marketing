@@ -14,8 +14,14 @@ const MediaTab = ({ formData, errors, onChange }) => {
         <ImageUpload
           value={formData.featured_image}
           onChange={(url) => onChange('featured_image', url)}
+          bucket="media"
+          folder="articles"
           className="w-full"
         />
+        {errors.featured_image && (
+          <p className="text-xs text-red-500 mt-1">{errors.featured_image}</p>
+        )}
+        
         {formData.featured_image && (
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -41,6 +47,7 @@ const MediaTab = ({ formData, errors, onChange }) => {
           value={formData.featured_video || ''}
           onChange={(e) => onChange('featured_video', e.target.value)}
           placeholder="https://youtube.com/watch?v=..."
+          error={errors.featured_video}
         />
         <p className="mt-1 text-xs text-gray-500">
           Supports YouTube, Vimeo, and direct video URLs
@@ -72,3 +79,5 @@ const MediaTab = ({ formData, errors, onChange }) => {
     </div>
   );
 };
+
+export default MediaTab;

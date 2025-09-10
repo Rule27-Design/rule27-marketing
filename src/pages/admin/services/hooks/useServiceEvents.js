@@ -1,4 +1,4 @@
-// src/pages/admin/articles/hooks/useArticleEvents.js
+// src/pages/admin/services/hooks/useServiceEvents.js
 import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../../../../lib/supabase';
 
@@ -12,7 +12,7 @@ class EventBus {
       this.events[event] = [];
     }
     this.events[event].push(callback);
-    return () => this.off(event, callback); // Return unsubscribe function
+    return () => this.off(event, callback);
   }
 
   off(event, callback) {
@@ -26,36 +26,33 @@ class EventBus {
   }
 }
 
-// Global event bus for article events
-export const articleEventBus = new EventBus();
+export const serviceEventBus = new EventBus();
 
-export const useArticleEvents = () => {
+export const useServiceEvents = () => {
   const subscriptionRef = useRef(null);
 
   useEffect(() => {
     // Subscribe to realtime changes
     subscriptionRef.current = supabase
-      .channel('articles_changes')
+      .channel('services_changes')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'articles' },
+        { event: '*', schema: 'public', table: 'services' },
         (payload) => {
           switch (payload.eventType) {
             case 'INSERT':
-              articleEventBus.emit('article:created', payload.new);
+              serviceEventBus.emit('service:created', payload.new);
               break;
             case 'UPDATE':
-              articleEventBus.emit('article:updated', payload.new);
+              serviceEventBus.emit('service:updated', payload.new);
               if (payload.old?.status !== payload.new.status) {
                 if (payload.new.status === 'published') {
-                  articleEventBus.emit('article:published', payload.new);
-                } else if (payload.new.status === 'archived') {
-                  articleEventBus.emit('article:archived', payload.new);
+                  serviceEventBus.emit('service:published', payload.new);
                 }
               }
               break;
             case 'DELETE':
-              articleEventBus.emit('article:deleted', payload.old);
+              serviceEventBus.emit('service:deleted', payload.old);
               break;
           }
         }
@@ -70,26 +67,24 @@ export const useArticleEvents = () => {
   }, []);
 
   const subscribeToEvents = useCallback((event, callback) => {
-    return articleEventBus.on(event, callback);
+    return serviceEventBus.on(event, callback);
   }, []);
 
   const emitEvent = useCallback((event, data) => {
-    articleEventBus.emit(event, data);
+    serviceEventBus.emit(event, data);
   }, []);
 
   return {
     subscribeToEvents,
     emitEvent,
-    eventBus: articleEventBus
+    eventBus: serviceEventBus
   };
 };
 
-// Export event types
-export const ARTICLE_EVENTS = {
-  CREATED: 'article:created',
-  UPDATED: 'article:updated',
-  DELETED: 'article:deleted',
-  PUBLISHED: 'article:published',
-  ARCHIVED: 'article:archived',
-  BULK_ACTION: 'article:bulk_action'
+export const SERVICE_EVENTS = {
+  CREATED: 'service:created',
+  UPDATED: 'service:updated',
+  DELETED: 'service:deleted',
+  PUBLISHED: 'service:published',
+  BULK_ACTION: 'service:bulk_action'
 };
