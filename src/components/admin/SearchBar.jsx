@@ -20,17 +20,9 @@ const SearchBar = ({
 }) => {
   const [searchValue, setSearchValue] = useState(defaultValue);
   const [isFocused, setIsFocused] = useState(false);
-  const [isDebouncing, setIsDebouncing] = useState(false); // FIX: Added this state
-  const debouncedSearchValue = useDebounce(searchValue, debounceMs);
-
-  // Track debouncing state
-  useEffect(() => {
-    if (searchValue !== debouncedSearchValue) {
-      setIsDebouncing(true);
-    } else {
-      setIsDebouncing(false);
-    }
-  }, [searchValue, debouncedSearchValue]);
+  
+  // FIX: Properly destructure the useDebounce return value
+  const [debouncedSearchValue, { isDebouncing }] = useDebounce(searchValue, debounceMs);
 
   useEffect(() => {
     if (debouncedSearchValue !== undefined) {
@@ -56,7 +48,6 @@ const SearchBar = ({
   const handleClear = () => {
     setSearchValue('');
     onSearch('');
-    setIsDebouncing(false); // Reset debouncing state
   };
 
   const sizeClasses = {
