@@ -5,6 +5,7 @@ import Input from '../../../../components/ui/Input';
 import Select from '../../../../components/ui/Select';
 import Button from '../../../../components/ui/Button';
 import Icon from '../../../../components/AdminIcon';
+import { cn } from '../../../../utils';
 
 const TeamTab = ({ formData, errors, onChange, userProfile }) => {
   const [availableProfiles, setAvailableProfiles] = useState([]);
@@ -18,10 +19,9 @@ const TeamTab = ({ formData, errors, onChange, userProfile }) => {
   const fetchProfiles = async () => {
     const { data } = await supabase
       .from('profiles')
-      .select('id, full_name, title, avatar_url')
+      .select('id, full_name, role, avatar_url')
       .in('role', ['admin', 'contributor'])
       .order('full_name');
-    
     setAvailableProfiles(data || []);
   };
 
@@ -29,19 +29,17 @@ const TeamTab = ({ formData, errors, onChange, userProfile }) => {
     const { data } = await supabase
       .from('testimonials')
       .select('id, author_name, author_title, company')
-      .eq('is_active', true)
+      .eq('status', 'approved')
       .order('created_at', { ascending: false });
-    
     setTestimonials(data || []);
   };
 
-  // Handle team members
   const addTeamMember = () => {
     const newMembers = [...(formData.team_members || [])];
-    newMembers.push({ 
-      profile_id: '', 
-      role: '', 
-      responsibilities: [] 
+    newMembers.push({
+      profile_id: '',
+      role: '',
+      responsibilities: []
     });
     onChange('team_members', newMembers);
   };
@@ -53,29 +51,22 @@ const TeamTab = ({ formData, errors, onChange, userProfile }) => {
   };
 
   const removeTeamMember = (index) => {
-    const newMembers = formData.team_members.filter((_, i) => i !== index);
-    onChange('team_members', newMembers);
+    onChange('team_members', formData.team_members.filter((_, i) => i !== index));
   };
 
-  // Handle responsibilities
-  const addResponsibility = (memberIndex) => {
-    const newMembers = [...formData.team_members];
-    if (!newMembers[memberIndex].responsibilities) {
-      newMembers[memberIndex].responsibilities = [];
-    }
-    newMembers[memberIndex].responsibilities.push('');
-    onChange('team_members', newMembers);
-  };
-
-  const updateResponsibility = (memberIndex, respIndex, value) => {
-    const newMembers = [...formData.team_members];
-    newMembers[memberIndex].responsibilities[respIndex] = value;
+  const addResponsibility = (memberIndex, responsibility) => {
+    if (!responsibility.trim()) return;
+    
+    const newMembers = [...(formData.team_members || [])];
+    const currentResp = newMembers[memberIndex].responsibilities || [];
+    newMembers[memberIndex].responsibilities = [...currentResp, responsibility];
     onChange('team_members', newMembers);
   };
 
   const removeResponsibility = (memberIndex, respIndex) => {
-    const newMembers = [...formData.team_members];
-    newMembers[memberIndex].responsibilities.splice(respIndex, 1);
+    const newMembers = [...(formData.team_members || [])];
+    newMembers[memberIndex].responsibilities = 
+      newMembers[memberIndex].responsibilities.filter((_, i) => i !== respIndex);
     onChange('team_members', newMembers);
   };
 
@@ -90,20 +81,20 @@ const TeamTab = ({ formData, errors, onChange, userProfile }) => {
           value={formData.project_lead || ''}
           onChange={(value) => onChange('project_lead', value)}
           options={[
-            { value: '', label: 'Select project lead...' },
-            ...availableProfiles.map(profile => ({
-              value: profile.id,
-              label: `${profile.full_name} - ${profile.title}`
-            }))
+            { value: '', label: 'Select project lead' },
+            { value: userProfile?.id, label: `${userProfile?.full_name} (Me)` },
+            ...availableProfiles
+              .filter(p => p.id !== userProfile?.id)
+              .map(profile => ({
+                value: profile.id,
+                label: profile.full_name
+              }))
           ]}
         />
-        {errors.project_lead && (
-          <p className="text-xs text-red-500 mt-1">{errors.project_lead}</p>
-        )}
       </div>
 
       {/* Team Members */}
-      <div className="border-t pt-6">
+      <div>
         <div className="flex items-center justify-between mb-3">
           <label className="text-sm font-medium text-gray-700">
             Team Members
@@ -118,86 +109,108 @@ const TeamTab = ({ formData, errors, onChange, userProfile }) => {
           </Button>
         </div>
         
-        <div className="space-y-4">
-          {(formData.team_members || []).map((member, memberIndex) => (
-            <div key={memberIndex} className="p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Select
-                    value={member.profile_id || ''}
-                    onChange={(value) => updateTeamMember(memberIndex, 'profile_id', value)}
-                    options={[
-                      { value: '', label: 'Select team member...' },
-                      ...availableProfiles
-                        .filter(p => p.id !== formData.project_lead)
-                        .map(profile => ({
-                          value: profile.id,
-                          label: profile.full_name
-                        }))
-                    ]}
-                    size="sm"
-                  />
-                  
+        <div className="space-y-3">
+          {(formData.team_members || []).map((member, index) => {
+            const profile = availableProfiles.find(p => p.id === member.profile_id);
+            
+            return (
+              <div key={index} className={cn(
+                "p-4 border rounded-lg",
+                "bg-gray-50"
+              )}>
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    {profile?.avatar_url && (
+                      <img
+                        src={profile.avatar_url}
+                        alt={profile.full_name}
+                        className="w-10 h-10 rounded-full"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <Select
+                        value={member.profile_id || ''}
+                        onChange={(value) => updateTeamMember(index, 'profile_id', value)}
+                        options={[
+                          { value: '', label: 'Select team member' },
+                          ...availableProfiles
+                            .filter(p => !formData.team_members.some(
+                              (m, i) => i !== index && m.profile_id === p.id
+                            ))
+                            .map(profile => ({
+                              value: profile.id,
+                              label: profile.full_name
+                            }))
+                        ]}
+                        size="sm"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={() => removeTeamMember(index)}
+                    className="text-red-500"
+                  >
+                    <Icon name="X" size={16} />
+                  </Button>
+                </div>
+                
+                <div className="space-y-2">
                   <Input
                     type="text"
                     value={member.role || ''}
-                    onChange={(e) => updateTeamMember(memberIndex, 'role', e.target.value)}
-                    placeholder="Role in project"
+                    onChange={(e) => updateTeamMember(index, 'role', e.target.value)}
+                    placeholder="Role in project (e.g., Lead Developer)"
                     size="sm"
                   />
-                </div>
-                
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  onClick={() => removeTeamMember(memberIndex)}
-                  className="text-red-500 ml-2"
-                >
-                  <Icon name="Trash2" size={16} />
-                </Button>
-              </div>
-              
-              {/* Responsibilities */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs text-gray-600">Responsibilities</label>
-                  <button
-                    onClick={() => addResponsibility(memberIndex)}
-                    className="text-xs text-accent hover:text-accent/80"
-                  >
-                    + Add
-                  </button>
-                </div>
-                
-                <div className="space-y-1">
-                  {(member.responsibilities || []).map((resp, respIndex) => (
-                    <div key={respIndex} className="flex items-center space-x-2">
-                      <span className="text-gray-400">•</span>
+                  
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">
+                      Responsibilities
+                    </label>
+                    <div className="flex items-center space-x-2">
                       <Input
                         type="text"
-                        value={resp}
-                        onChange={(e) => updateResponsibility(memberIndex, respIndex, e.target.value)}
-                        placeholder="Responsibility"
-                        size="xs"
+                        placeholder="Add responsibility..."
+                        size="sm"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addResponsibility(index, e.target.value);
+                            e.target.value = '';
+                          }
+                        }}
                       />
-                      <button
-                        onClick={() => removeResponsibility(memberIndex, respIndex)}
-                        className="text-red-500 hover:text-red-600"
-                      >
-                        ×
-                      </button>
                     </div>
-                  ))}
+                    
+                    {member.responsibilities?.length > 0 && (
+                      <ul className="mt-2 space-y-1">
+                        {member.responsibilities.map((resp, respIdx) => (
+                          <li key={respIdx} className="flex items-center justify-between text-sm">
+                            <span>• {resp}</span>
+                            <button
+                              onClick={() => removeResponsibility(index, respIdx)}
+                              className="text-red-500 hover:text-red-600"
+                            >
+                              ×
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         
-        {(formData.team_members || []).length === 0 && (
-          <p className="text-sm text-gray-500 text-center py-4">
-            No team members added yet
-          </p>
+        {(!formData.team_members || formData.team_members.length === 0) && (
+          <div className="text-center py-6 border-2 border-dashed border-gray-300 rounded-lg">
+            <Icon name="Users" size={32} className="mx-auto text-gray-400 mb-2" />
+            <p className="text-sm text-gray-500">No team members added yet</p>
+          </div>
         )}
       </div>
 
@@ -210,79 +223,17 @@ const TeamTab = ({ formData, errors, onChange, userProfile }) => {
           value={formData.testimonial_id || ''}
           onChange={(value) => onChange('testimonial_id', value)}
           options={[
-            { value: '', label: 'Select testimonial...' },
-            { value: 'new', label: '+ Create new testimonial' },
+            { value: '', label: 'Select testimonial (optional)' },
             ...testimonials.map(test => ({
               value: test.id,
-              label: `${test.author_name} - ${test.company}`
+              label: `${test.author_name} - ${test.author_title} at ${test.company}`
             }))
           ]}
         />
-        
-        {formData.testimonial_id === 'new' && (
-          <div className="mt-3 p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800">
-              You can create a new testimonial from the Testimonials section after saving this case study.
-            </p>
-          </div>
-        )}
-        
-        {formData.testimonial_id && formData.testimonial_id !== 'new' && (
-          <div className="mt-3 p-4 bg-green-50 rounded-lg">
-            <p className="text-sm text-green-800">
-              ✓ Testimonial linked to this case study
-            </p>
-          </div>
-        )}
+        <p className="text-xs text-gray-500 mt-1">
+          Link an existing testimonial to this case study
+        </p>
       </div>
-
-      {/* Team Preview */}
-      {(formData.project_lead || formData.team_members?.length > 0) && (
-        <div className="border-t pt-6">
-          <h3 className="text-sm font-medium text-gray-700 mb-3">Team Preview</h3>
-          
-          <div className="space-y-2">
-            {formData.project_lead && (
-              <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border">
-                <div className="w-10 h-10 bg-accent text-white rounded-full flex items-center justify-center">
-                  <Icon name="Star" size={16} />
-                </div>
-                <div>
-                  <p className="font-medium text-sm">
-                    {availableProfiles.find(p => p.id === formData.project_lead)?.full_name}
-                  </p>
-                  <p className="text-xs text-gray-500">Project Lead</p>
-                </div>
-              </div>
-            )}
-            
-            {formData.team_members?.map((member, index) => {
-              const profile = availableProfiles.find(p => p.id === member.profile_id);
-              if (!profile) return null;
-              
-              return (
-                <div key={index} className="flex items-center space-x-3 p-3 bg-white rounded-lg border">
-                  <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                    {profile.avatar_url ? (
-                      <img 
-                        src={profile.avatar_url} 
-                        alt={profile.full_name}
-                        className="w-full h-full rounded-full object-cover"
-                      />
-                    ) : (
-                      <Icon name="User" size={16} />
-                    )}
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{profile.full_name}</p>
-                    <p className="text-xs text-gray-500">{member.role || 'Team Member'}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

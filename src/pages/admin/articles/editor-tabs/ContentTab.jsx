@@ -1,164 +1,93 @@
 // src/pages/admin/articles/editor-tabs/ContentTab.jsx
-import React, { useEffect, useState } from 'react';
-import { supabase } from '../../../../lib/supabase';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../../../../lib/supabase';
 import Input from '../../../../components/ui/Input';
 import Select from '../../../../components/ui/Select';
 import TiptapContentEditor from '../../../../components/ui/TiptapContentEditor';
+import Button from '../../../../components/ui/Button';
 import Icon from '../../../../components/AdminIcon';
+import { cn } from '../../../../utils';
 
 const ContentTab = ({ formData, errors, onChange, userProfile }) => {
   const [categories, setCategories] = useState([]);
-  const [authors, setAuthors] = useState([]);
+  const [coAuthors, setCoAuthors] = useState([]);
   const [tags, setTags] = useState([]);
 
   useEffect(() => {
-    fetchOptions();
+    fetchCategories();
+    fetchCoAuthors();
+    fetchTags();
   }, []);
 
-  const fetchOptions = async () => {
-    // Fetch categories
-    const { data: categoriesData } = await supabase
+  const fetchCategories = async () => {
+    const { data } = await supabase
       .from('categories')
       .select('id, name')
       .eq('type', 'article')
-      .eq('is_active', true)
       .order('name');
-    
-    setCategories(categoriesData || []);
+    setCategories(data || []);
+  };
 
-    // Fetch potential co-authors
-    const { data: authorsData } = await supabase
+  const fetchCoAuthors = async () => {
+    const { data } = await supabase
       .from('profiles')
-      .select('id, full_name')
+      .select('id, full_name, email')
       .in('role', ['admin', 'contributor'])
-      .neq('id', userProfile?.id)
       .order('full_name');
-    
-    setAuthors(authorsData || []);
+    setCoAuthors(data || []);
+  };
 
-    // Fetch available tags
-    const { data: tagsData } = await supabase
+  const fetchTags = async () => {
+    const { data } = await supabase
       .from('tags')
-      .select('name')
-      .eq('is_active', true)
+      .select('id, name')
       .order('name');
+    setTags(data || []);
+  };
+
+  const handleAddTag = (tagName) => {
+    if (!tagName.trim()) return;
     
-    setTags(tagsData?.map(t => t.name) || []);
-  };
-
-  const handleTagInput = (e) => {
-    if (e.key === 'Enter' && e.target.value.trim()) {
-      e.preventDefault();
-      const newTag = e.target.value.trim();
-      if (!formData.tags.includes(newTag)) {
-        onChange('tags', [...formData.tags, newTag]);
-      }
-      e.target.value = '';
+    const existingTag = tags.find(t => t.name.toLowerCase() === tagName.toLowerCase());
+    const currentTags = formData.tags || [];
+    
+    if (existingTag && !currentTags.includes(existingTag.id)) {
+      onChange('tags', [...currentTags, existingTag.id]);
+    } else if (!existingTag) {
+      // Create new tag (would need backend support)
+      const tempId = `new-${Date.now()}`;
+      onChange('tags', [...currentTags, tempId]);
     }
-  };
-
-  const removeTag = (tagToRemove) => {
-    onChange('tags', formData.tags.filter(tag => tag !== tagToRemove));
   };
 
   return (
     <div className="space-y-6">
-      {/* Title & Slug */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Title <span className="text-red-500">*</span>
-          </label>
-          <Input
-            type="text"
-            value={formData.title || ''}
-            onChange={(e) => onChange('title', e.target.value)}
-            placeholder="Enter article title"
-            error={errors.title}
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Slug <span className="text-red-500">*</span>
-          </label>
-          <Input
-            type="text"
-            value={formData.slug || ''}
-            onChange={(e) => onChange('slug', e.target.value)}
-            placeholder="article-url-slug"
-            error={errors.slug}
-          />
-        </div>
+      {/* Title */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Title *
+        </label>
+        <Input
+          type="text"
+          value={formData.title || ''}
+          onChange={(e) => onChange('title', e.target.value)}
+          placeholder="Enter article title"
+          error={errors.title}
+        />
       </div>
 
-      {/* Category & Co-authors */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Category <span className="text-red-500">*</span>
-          </label>
-          <Select
-            value={formData.category_id || ''}
-            onChange={(value) => onChange('category_id', value)}
-            options={[
-              { value: '', label: 'Select category...' },
-              ...categories.map(cat => ({
-                value: cat.id,
-                label: cat.name
-              }))
-            ]}
-            error={errors.category_id}
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Co-authors
-          </label>
-          <Select
-            value=""
-            onChange={(value) => {
-              if (value && !formData.co_authors.includes(value)) {
-                onChange('co_authors', [...formData.co_authors, value]);
-              }
-            }}
-            options={[
-              { value: '', label: 'Add co-author...' },
-              ...authors
-                .filter(a => !formData.co_authors.includes(a.id))
-                .map(author => ({
-                  value: author.id,
-                  label: author.full_name
-                }))
-            ]}
-          />
-          
-          {/* Selected co-authors */}
-          {formData.co_authors.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {formData.co_authors.map(authorId => {
-                const author = authors.find(a => a.id === authorId);
-                return author ? (
-                  <span
-                    key={authorId}
-                    className="inline-flex items-center px-2 py-1 bg-gray-100 rounded-md text-xs"
-                  >
-                    {author.full_name}
-                    <button
-                      onClick={() => onChange('co_authors', 
-                        formData.co_authors.filter(id => id !== authorId)
-                      )}
-                      className="ml-1 text-gray-500 hover:text-red-500"
-                    >
-                      <Icon name="X" size={12} />
-                    </button>
-                  </span>
-                ) : null;
-              })}
-            </div>
-          )}
-        </div>
+      {/* Slug */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Slug *
+        </label>
+        <Input
+          type="text"
+          value={formData.slug || ''}
+          onChange={(e) => onChange('slug', e.target.value)}
+          placeholder="article-url-slug"
+          error={errors.slug}
+        />
       </div>
 
       {/* Excerpt */}
@@ -169,38 +98,119 @@ const ContentTab = ({ formData, errors, onChange, userProfile }) => {
         <textarea
           value={formData.excerpt || ''}
           onChange={(e) => onChange('excerpt', e.target.value)}
-          placeholder="Brief description of the article (appears in listings)"
+          placeholder="Brief description of the article"
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-accent focus:border-accent"
-          maxLength={300}
+          className={cn(
+            "w-full px-3 py-2 border rounded-md",
+            errors.excerpt ? 'border-red-500' : 'border-gray-300'
+          )}
         />
-        <p className="text-xs text-gray-500 mt-1">
-          {formData.excerpt?.length || 0}/300 characters
-        </p>
         {errors.excerpt && (
           <p className="text-xs text-red-500 mt-1">{errors.excerpt}</p>
         )}
       </div>
 
-      {/* Content Editor */}
+      {/* Content */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Content <span className="text-red-500">*</span>
+          Content *
         </label>
         <TiptapContentEditor
           content={formData.content}
           onChange={(content) => onChange('content', content)}
-          placeholder="Start writing your article..."
+          placeholder="Write your article content..."
+          error={errors.content}
         />
-        {errors.content && (
-          <p className="text-xs text-red-500 mt-1">{errors.content}</p>
-        )}
+      </div>
+
+      {/* Category and Author */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Category *
+          </label>
+          <Select
+            value={formData.category_id || ''}
+            onChange={(value) => onChange('category_id', value)}
+            options={[
+              { value: '', label: 'Select category' },
+              ...categories.map(cat => ({ value: cat.id, label: cat.name }))
+            ]}
+            error={errors.category_id}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Author
+          </label>
+          <Select
+            value={formData.author_id || userProfile?.id || ''}
+            onChange={(value) => onChange('author_id', value)}
+            options={[
+              { value: userProfile?.id, label: 'Me' },
+              ...coAuthors
+                .filter(a => a.id !== userProfile?.id)
+                .map(author => ({
+                  value: author.id,
+                  label: author.full_name
+                }))
+            ]}
+          />
+        </div>
+      </div>
+
+      {/* Co-Authors */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Co-Authors
+        </label>
+        <Select
+          value=""
+          onChange={(value) => {
+            const current = formData.co_authors || [];
+            if (!current.includes(value)) {
+              onChange('co_authors', [...current, value]);
+            }
+          }}
+          options={[
+            { value: '', label: 'Add co-author...' },
+            ...coAuthors
+              .filter(a => 
+                a.id !== userProfile?.id && 
+                a.id !== formData.author_id &&
+                !(formData.co_authors || []).includes(a.id)
+              )
+              .map(author => ({
+                value: author.id,
+                label: author.full_name
+              }))
+          ]}
+        />
         
-        {/* Word count */}
-        {formData.content?.wordCount && (
-          <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
-            <span>{formData.content.wordCount} words</span>
-            <span>~{Math.ceil(formData.content.wordCount / 200)} min read</span>
+        {formData.co_authors?.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-2">
+            {formData.co_authors.map(authorId => {
+              const author = coAuthors.find(a => a.id === authorId);
+              return (
+                <span
+                  key={authorId}
+                  className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100"
+                >
+                  {author?.full_name}
+                  <button
+                    onClick={() => {
+                      onChange('co_authors', 
+                        formData.co_authors.filter(id => id !== authorId)
+                      );
+                    }}
+                    className="ml-2 text-gray-500 hover:text-red-500"
+                  >
+                    ×
+                  </button>
+                </span>
+              );
+            })}
           </div>
         )}
       </div>
@@ -210,36 +220,52 @@ const ContentTab = ({ formData, errors, onChange, userProfile }) => {
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Tags
         </label>
-        <input
-          type="text"
-          placeholder="Type tag and press Enter"
-          onKeyDown={handleTagInput}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-accent focus:border-accent"
-          list="tags-list"
-        />
-        <datalist id="tags-list">
-          {tags.map(tag => (
-            <option key={tag} value={tag} />
-          ))}
-        </datalist>
+        <div className="flex items-center space-x-2">
+          <Input
+            type="text"
+            placeholder="Add tags..."
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAddTag(e.target.value);
+                e.target.value = '';
+              }
+            }}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const input = document.querySelector('input[placeholder="Add tags..."]');
+              handleAddTag(input.value);
+              input.value = '';
+            }}
+          >
+            Add
+          </Button>
+        </div>
         
-        {/* Selected tags */}
-        {formData.tags.length > 0 && (
+        {formData.tags?.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-2">
-            {formData.tags.map(tag => (
-              <span
-                key={tag}
-                className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs"
-              >
-                {tag}
-                <button
-                  onClick={() => removeTag(tag)}
-                  className="ml-1 text-blue-600 hover:text-red-500"
+            {formData.tags.map(tagId => {
+              const tag = tags.find(t => t.id === tagId) || { name: tagId };
+              return (
+                <span
+                  key={tagId}
+                  className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-700"
                 >
-                  <Icon name="X" size={12} />
-                </button>
-              </span>
-            ))}
+                  #{tag.name}
+                  <button
+                    onClick={() => {
+                      onChange('tags', formData.tags.filter(id => id !== tagId));
+                    }}
+                    className="ml-2 hover:text-red-500"
+                  >
+                    ×
+                  </button>
+                </span>
+              );
+            })}
           </div>
         )}
       </div>

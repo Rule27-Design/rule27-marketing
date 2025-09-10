@@ -1,19 +1,25 @@
 // src/pages/admin/services/editor-tabs/FeaturesTab.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import Input from '../../../../components/ui/Input';
 import Button from '../../../../components/ui/Button';
 import Icon from '../../../../components/AdminIcon';
+import TiptapContentEditor from '../../../../components/ui/TiptapContentEditor';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { cn } from '../../../../utils';
 
 const FeaturesTab = ({ formData, errors, onChange }) => {
-  // Handle features list
+  const [expandedFeature, setExpandedFeature] = useState(null);
+
+  // Handle Features
   const addFeature = () => {
-    onChange('features', [...(formData.features || []), '']);
+    const newFeatures = [...(formData.features || [])];
+    newFeatures.push({ title: '', description: '', icon: '' });
+    onChange('features', newFeatures);
   };
 
-  const updateFeature = (index, value) => {
+  const updateFeature = (index, field, value) => {
     const newFeatures = [...(formData.features || [])];
-    newFeatures[index] = value;
+    newFeatures[index] = { ...newFeatures[index], [field]: value };
     onChange('features', newFeatures);
   };
 
@@ -28,14 +34,16 @@ const FeaturesTab = ({ formData, errors, onChange }) => {
     onChange('features', result);
   };
 
-  // Handle benefits
+  // Handle Benefits
   const addBenefit = () => {
-    onChange('benefits', [...(formData.benefits || []), { title: '', description: '' }]);
+    const newBenefits = [...(formData.benefits || [])];
+    newBenefits.push('');
+    onChange('benefits', newBenefits);
   };
 
-  const updateBenefit = (index, field, value) => {
+  const updateBenefit = (index, value) => {
     const newBenefits = [...(formData.benefits || [])];
-    newBenefits[index] = { ...newBenefits[index], [field]: value };
+    newBenefits[index] = value;
     onChange('benefits', newBenefits);
   };
 
@@ -43,11 +51,17 @@ const FeaturesTab = ({ formData, errors, onChange }) => {
     onChange('benefits', formData.benefits.filter((_, i) => i !== index));
   };
 
-  // Handle key features
+  // Handle Key Features
   const addKeyFeature = () => {
-    onChange('key_features', [...(formData.key_features || []), 
-      { title: '', description: '', icon: 'Star' }
-    ]);
+    const newKeyFeatures = [...(formData.key_features || [])];
+    newKeyFeatures.push({
+      title: '',
+      description: '',
+      icon: '',
+      is_highlighted: false
+    });
+    onChange('key_features', newKeyFeatures);
+    setExpandedFeature(newKeyFeatures.length - 1);
   };
 
   const updateKeyFeature = (index, field, value) => {
@@ -58,32 +72,159 @@ const FeaturesTab = ({ formData, errors, onChange }) => {
 
   const removeKeyFeature = (index) => {
     onChange('key_features', formData.key_features.filter((_, i) => i !== index));
+    if (expandedFeature === index) {
+      setExpandedFeature(null);
+    }
   };
 
-  // Handle USPs
-  const addUSP = () => {
-    onChange('unique_selling_points', [...(formData.unique_selling_points || []), '']);
-  };
-
-  const updateUSP = (index, value) => {
-    const newUSPs = [...(formData.unique_selling_points || [])];
-    newUSPs[index] = value;
-    onChange('unique_selling_points', newUSPs);
-  };
-
-  const removeUSP = (index) => {
-    onChange('unique_selling_points', 
-      formData.unique_selling_points.filter((_, i) => i !== index)
-    );
-  };
+  const featureIcons = ['✓', '★', '⚡', '🎯', '🚀', '💡', '🛡️', '📊'];
 
   return (
     <div className="space-y-6">
-      {/* Main Features */}
+      {/* Key Features */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <label className="text-sm font-medium text-gray-700">
-            Features
+            Key Features
+          </label>
+          <Button
+            variant="outline"
+            size="xs"
+            onClick={addKeyFeature}
+            iconName="Plus"
+          >
+            Add Key Feature
+          </Button>
+        </div>
+        
+        <div className="space-y-3">
+          {(formData.key_features || []).map((feature, index) => (
+            <div
+              key={index}
+              className={cn(
+                "border rounded-lg",
+                expandedFeature === index ? 'ring-2 ring-accent' : ''
+              )}
+            >
+              <div
+                className="p-3 cursor-pointer"
+                onClick={() => setExpandedFeature(expandedFeature === index ? null : index)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    {feature.icon && (
+                      <span className="text-2xl">{feature.icon}</span>
+                    )}
+                    <div>
+                      <h4 className="font-medium text-gray-900">
+                        {feature.title || 'Untitled Feature'}
+                      </h4>
+                      {feature.description && !expandedFeature && (
+                        <p className="text-xs text-gray-500 line-clamp-1">
+                          {feature.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {feature.is_highlighted && (
+                      <Icon name="Star" size={16} className="text-yellow-500" />
+                    )}
+                    <Icon
+                      name={expandedFeature === index ? 'ChevronUp' : 'ChevronDown'}
+                      size={16}
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {expandedFeature === index && (
+                <div className="p-3 border-t space-y-3">
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Title</label>
+                    <Input
+                      type="text"
+                      value={feature.title || ''}
+                      onChange={(e) => updateKeyFeature(index, 'title', e.target.value)}
+                      placeholder="Feature title"
+                      size="sm"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Description</label>
+                    <textarea
+                      value={feature.description || ''}
+                      onChange={(e) => updateKeyFeature(index, 'description', e.target.value)}
+                      placeholder="Feature description"
+                      rows={2}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Icon</label>
+                    <div className="flex items-center space-x-2">
+                      <div className="flex gap-1">
+                        {featureIcons.map((icon) => (
+                          <button
+                            key={icon}
+                            type="button"
+                            onClick={() => updateKeyFeature(index, 'icon', icon)}
+                            className={cn(
+                              "w-8 h-8 rounded border flex items-center justify-center",
+                              feature.icon === icon
+                                ? "border-accent bg-accent/10"
+                                : "border-gray-200"
+                            )}
+                          >
+                            {icon}
+                          </button>
+                        ))}
+                      </div>
+                      <Input
+                        type="text"
+                        value={feature.icon || ''}
+                        onChange={(e) => updateKeyFeature(index, 'icon', e.target.value)}
+                        placeholder="Custom"
+                        size="sm"
+                        className="w-24"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={feature.is_highlighted || false}
+                        onChange={(e) => updateKeyFeature(index, 'is_highlighted', e.target.checked)}
+                        className="rounded"
+                      />
+                      <span className="text-sm">Highlight this feature</span>
+                    </label>
+                    
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      onClick={() => removeKeyFeature(index)}
+                      className="text-red-500"
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Standard Features */}
+      <div className="border-t pt-6">
+        <div className="flex items-center justify-between mb-3">
+          <label className="text-sm font-medium text-gray-700">
+            Standard Features
           </label>
           <Button
             variant="outline"
@@ -108,19 +249,29 @@ const FeaturesTab = ({ formData, errors, onChange }) => {
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className={`flex items-center space-x-2 ${
-                          snapshot.isDragging ? 'opacity-50' : ''
-                        }`}
+                        className={cn(
+                          "flex items-center space-x-2 p-2 bg-gray-50 rounded",
+                          snapshot.isDragging ? 'shadow-lg' : ''
+                        )}
                       >
-                        <div {...provided.dragHandleProps} className="cursor-move">
+                        <div {...provided.dragHandleProps}>
                           <Icon name="GripVertical" size={16} className="text-gray-400" />
                         </div>
                         <Input
                           type="text"
-                          value={feature}
-                          onChange={(e) => updateFeature(index, e.target.value)}
-                          placeholder="Feature description"
+                          value={feature.title || ''}
+                          onChange={(e) => updateFeature(index, 'title', e.target.value)}
+                          placeholder="Feature title"
                           size="sm"
+                          className="flex-1"
+                        />
+                        <Input
+                          type="text"
+                          value={feature.description || ''}
+                          onChange={(e) => updateFeature(index, 'description', e.target.value)}
+                          placeholder="Short description"
+                          size="sm"
+                          className="flex-1"
                         />
                         <Button
                           variant="ghost"
@@ -139,84 +290,13 @@ const FeaturesTab = ({ formData, errors, onChange }) => {
             )}
           </Droppable>
         </DragDropContext>
-        
-        {errors.features && (
-          <p className="text-xs text-red-500 mt-1">{errors.features}</p>
-        )}
-      </div>
-
-      {/* Key Features (with icons) */}
-      <div className="border-t pt-6">
-        <div className="flex items-center justify-between mb-3">
-          <label className="text-sm font-medium text-gray-700">
-            Key Features (with icons)
-          </label>
-          <Button
-            variant="outline"
-            size="xs"
-            onClick={addKeyFeature}
-            iconName="Plus"
-          >
-            Add Key Feature
-          </Button>
-        </div>
-        
-        <div className="space-y-3">
-          {(formData.key_features || []).map((keyFeature, index) => (
-            <div key={index} className="p-4 bg-gray-50 rounded-lg">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <Input
-                  type="text"
-                  value={keyFeature.icon || ''}
-                  onChange={(e) => updateKeyFeature(index, 'icon', e.target.value)}
-                  placeholder="Icon name"
-                  size="sm"
-                />
-                <Input
-                  type="text"
-                  value={keyFeature.title || ''}
-                  onChange={(e) => updateKeyFeature(index, 'title', e.target.value)}
-                  placeholder="Feature title"
-                  size="sm"
-                />
-                <div className="flex items-center space-x-2">
-                  <Input
-                    type="text"
-                    value={keyFeature.description || ''}
-                    onChange={(e) => updateKeyFeature(index, 'description', e.target.value)}
-                    placeholder="Short description"
-                    size="sm"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => removeKeyFeature(index)}
-                    className="text-red-500"
-                  >
-                    <Icon name="Trash2" size={16} />
-                  </Button>
-                </div>
-              </div>
-              
-              {keyFeature.icon && (
-                <div className="mt-2 flex items-center space-x-2">
-                  <span className="text-xs text-gray-500">Preview:</span>
-                  <div className="w-8 h-8 bg-white rounded flex items-center justify-center">
-                    <Icon name={keyFeature.icon} size={16} />
-                  </div>
-                  <span className="text-sm font-medium">{keyFeature.title}</span>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* Benefits */}
       <div className="border-t pt-6">
         <div className="flex items-center justify-between mb-3">
           <label className="text-sm font-medium text-gray-700">
-            Benefits
+            Key Benefits
           </label>
           <Button
             variant="outline"
@@ -228,71 +308,22 @@ const FeaturesTab = ({ formData, errors, onChange }) => {
           </Button>
         </div>
         
-        <div className="space-y-3">
-          {(formData.benefits || []).map((benefit, index) => (
-            <div key={index} className="p-3 bg-gray-50 rounded-lg">
-              <div className="space-y-2">
-                <Input
-                  type="text"
-                  value={benefit.title || ''}
-                  onChange={(e) => updateBenefit(index, 'title', e.target.value)}
-                  placeholder="Benefit title"
-                  size="sm"
-                />
-                <div className="flex items-start space-x-2">
-                  <textarea
-                    value={benefit.description || ''}
-                    onChange={(e) => updateBenefit(index, 'description', e.target.value)}
-                    placeholder="Benefit description"
-                    rows={2}
-                    className="flex-1 px-3 py-1 border border-gray-300 rounded-md text-sm"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => removeBenefit(index)}
-                    className="text-red-500 mt-1"
-                  >
-                    <Icon name="X" size={16} />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Unique Selling Points */}
-      <div className="border-t pt-6">
-        <div className="flex items-center justify-between mb-3">
-          <label className="text-sm font-medium text-gray-700">
-            Unique Selling Points
-          </label>
-          <Button
-            variant="outline"
-            size="xs"
-            onClick={addUSP}
-            iconName="Plus"
-          >
-            Add USP
-          </Button>
-        </div>
-        
         <div className="space-y-2">
-          {(formData.unique_selling_points || []).map((usp, index) => (
+          {(formData.benefits || []).map((benefit, index) => (
             <div key={index} className="flex items-center space-x-2">
               <Icon name="CheckCircle" size={16} className="text-green-500" />
               <Input
                 type="text"
-                value={usp}
-                onChange={(e) => updateUSP(index, e.target.value)}
-                placeholder="What makes this service unique?"
+                value={benefit}
+                onChange={(e) => updateBenefit(index, e.target.value)}
+                placeholder="Enter benefit"
                 size="sm"
+                className="flex-1"
               />
               <Button
                 variant="ghost"
                 size="xs"
-                onClick={() => removeUSP(index)}
+                onClick={() => removeBenefit(index)}
                 className="text-red-500"
               >
                 <Icon name="X" size={16} />

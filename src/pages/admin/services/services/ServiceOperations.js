@@ -1,14 +1,17 @@
 // src/pages/admin/services/services/ServiceOperations.js
 import { supabase } from '../../../../lib/supabase';
+import { sanitizeData } from '../../../../utils';
 
 export class ServiceOperationsService {
   // Create service
   async create(data) {
     try {
+      const cleanData = sanitizeData(data);
+
       const { data: service, error } = await supabase
         .from('services')
         .insert([{
-          ...data,
+          ...cleanData,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }])
@@ -27,10 +30,12 @@ export class ServiceOperationsService {
   // Update service
   async update(id, data) {
     try {
+      const cleanData = sanitizeData(data);
+
       const { data: service, error } = await supabase
         .from('services')
         .update({
-          ...data,
+          ...cleanData,
           updated_at: new Date().toISOString()
         })
         .eq('id', id)
@@ -207,6 +212,7 @@ export class ServiceOperationsService {
     const headers = [
       'name',
       'category',
+      'zone',
       'status',
       'short_description',
       'starting_price',
@@ -225,6 +231,56 @@ export class ServiceOperationsService {
     });
 
     return [csvHeaders, ...csvRows].join('\n');
+  }
+
+  // Update metrics
+  async updateViewCount(id) {
+    try {
+      const { data: service } = await supabase
+        .from('services')
+        .select('view_count')
+        .eq('id', id)
+        .single();
+
+      await supabase
+        .from('services')
+        .update({
+          view_count: (service?.view_count || 0) + 1
+        })
+        .eq('id', id);
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating view count:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async updateInquiryCount(id) {
+    try {
+      const { data: service } = await supabase
+        .from('services')
+        .select('inquiry_count, view_count')
+        .eq('id', id)
+        .single();
+
+      const newInquiryCount = (service?.inquiry_count || 0) + 1;
+      const viewCount = service?.view_count || 1;
+      const conversionRate = (newInquiryCount / viewCount) * 100;
+
+      await supabase
+        .from('services')
+        .update({
+          inquiry_count: newInquiryCount,
+          conversion_rate: Math.round(conversionRate * 100) / 100
+        })
+        .eq('id', id);
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating inquiry count:', error);
+      return { success: false, error: error.message };
+    }
   }
 }
 

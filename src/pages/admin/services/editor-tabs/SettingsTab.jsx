@@ -5,6 +5,7 @@ import Input from '../../../../components/ui/Input';
 import Select from '../../../../components/ui/Select';
 import { Checkbox } from '../../../../components/ui/Checkbox';
 import Icon from '../../../../components/AdminIcon';
+import { cn, formatDate } from '../../../../utils';
 
 const SettingsTab = ({ formData, errors, onChange }) => {
   const [relatedServices, setRelatedServices] = useState([]);
@@ -146,7 +147,10 @@ const SettingsTab = ({ formData, errors, onChange }) => {
               if (!service) return null;
               
               return (
-                <div key={serviceId} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                <div key={serviceId} className={cn(
+                  "flex items-center justify-between p-2 rounded",
+                  "bg-gray-50"
+                )}>
                   <span className="text-sm">{service.name}</span>
                   <button
                     onClick={() => removeRelatedService(serviceId)}
@@ -221,6 +225,80 @@ const SettingsTab = ({ formData, errors, onChange }) => {
               {formData.meta_description?.length || 0}/160 characters
             </p>
           </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Meta Keywords
+            </label>
+            <Input
+              type="text"
+              value={(formData.meta_keywords || []).join(', ')}
+              onChange={(e) => {
+                const keywords = e.target.value
+                  .split(',')
+                  .map(k => k.trim())
+                  .filter(Boolean);
+                onChange('meta_keywords', keywords);
+              }}
+              placeholder="keyword1, keyword2, keyword3"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Open Graph Settings */}
+      <div className="border-t pt-6">
+        <h3 className="text-sm font-medium text-gray-700 mb-4">Social Media Settings</h3>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Open Graph Title
+            </label>
+            <Input
+              type="text"
+              value={formData.og_title || ''}
+              onChange={(e) => onChange('og_title', e.target.value)}
+              placeholder={formData.name || 'Title for social media sharing'}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Open Graph Description
+            </label>
+            <textarea
+              value={formData.og_description || ''}
+              onChange={(e) => onChange('og_description', e.target.value)}
+              placeholder={formData.short_description || 'Description for social media sharing'}
+              rows={2}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Open Graph Image
+            </label>
+            <Input
+              type="url"
+              value={formData.og_image || ''}
+              onChange={(e) => onChange('og_image', e.target.value)}
+              placeholder={formData.hero_image || 'Image URL for social sharing'}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Canonical URL
+            </label>
+            <Input
+              type="url"
+              value={formData.canonical_url || ''}
+              onChange={(e) => onChange('canonical_url', e.target.value)}
+              placeholder="https://example.com/services/service-slug"
+            />
+          </div>
         </div>
       </div>
 
@@ -238,27 +316,54 @@ const SettingsTab = ({ formData, errors, onChange }) => {
 
       {/* Service Stats (Read-only) */}
       {formData.id && (
-        <div className="border-t pt-6">
-          <h3 className="text-sm font-medium text-gray-700 mb-4">Service Statistics</h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
+        <div className={cn(
+          "border rounded-lg p-4",
+          "bg-gray-50"
+        )}>
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Service Statistics</h3>
+          
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="text-center p-3 bg-white rounded-lg">
               <div className="text-2xl font-bold text-gray-900">
                 {formData.view_count || 0}
               </div>
               <div className="text-xs text-gray-500">Views</div>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
+            <div className="text-center p-3 bg-white rounded-lg">
               <div className="text-2xl font-bold text-gray-900">
                 {formData.inquiry_count || 0}
               </div>
               <div className="text-xs text-gray-500">Inquiries</div>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
+            <div className="text-center p-3 bg-white rounded-lg">
               <div className="text-2xl font-bold text-gray-900">
                 {formData.conversion_rate || 0}%
               </div>
               <div className="text-xs text-gray-500">Conversion</div>
             </div>
+          </div>
+          
+          <div className="space-y-2 text-sm border-t pt-4">
+            {formData.created_at && (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Created:</span>
+                <span>{formatDate(formData.created_at, 'PPP')}</span>
+              </div>
+            )}
+            
+            {formData.updated_at && (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Last Updated:</span>
+                <span>{formatDate(formData.updated_at, 'PPP')}</span>
+              </div>
+            )}
+            
+            {formData.published_at && (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Published:</span>
+                <span>{formatDate(formData.published_at, 'PPP')}</span>
+              </div>
+            )}
           </div>
         </div>
       )}

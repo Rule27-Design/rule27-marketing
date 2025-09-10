@@ -2,6 +2,7 @@
 import React from 'react';
 import Input from '../../../../components/ui/Input';
 import ImageUpload, { GalleryUpload } from '../../../../components/ui/ImageUpload';
+import { cn } from '../../../../utils';
 
 const MediaTab = ({ formData, errors, onChange }) => {
   return (
@@ -9,7 +10,7 @@ const MediaTab = ({ formData, errors, onChange }) => {
       {/* Hero Image */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Hero Image
+          Hero Image *
         </label>
         <ImageUpload
           value={formData.hero_image}
@@ -39,7 +40,7 @@ const MediaTab = ({ formData, errors, onChange }) => {
       </div>
 
       {/* Project Gallery */}
-      <div className="border-t pt-6">
+      <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Project Gallery
         </label>
@@ -55,10 +56,44 @@ const MediaTab = ({ formData, errors, onChange }) => {
         </p>
       </div>
 
-      {/* Preview */}
-      {(formData.hero_image || formData.hero_video || formData.gallery?.length > 0) && (
-        <div className="border-t pt-6">
-          <h3 className="text-sm font-medium text-gray-700 mb-3">Media Preview</h3>
+      {/* Process Steps Images */}
+      {formData.process_steps?.length > 0 && (
+        <div>
+          <h3 className="text-sm font-medium text-gray-700 mb-3">
+            Process Step Images
+          </h3>
+          <div className="space-y-3">
+            {formData.process_steps.map((step, idx) => (
+              <div key={idx} className={cn(
+                "p-3 border rounded-lg",
+                "bg-gray-50"
+              )}>
+                <div className="mb-2">
+                  <span className="text-sm font-medium">
+                    Step {idx + 1}: {step.title || 'Untitled'}
+                  </span>
+                </div>
+                <ImageUpload
+                  value={step.image}
+                  onChange={(url) => {
+                    const newSteps = [...formData.process_steps];
+                    newSteps[idx].image = url;
+                    onChange('process_steps', newSteps);
+                  }}
+                  bucket="media"
+                  folder="case-studies/process"
+                  aspectRatio="16:9"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Preview Section */}
+      {(formData.hero_image || formData.gallery?.length > 0) && (
+        <div className="border rounded-lg p-4 bg-gray-50">
+          <h4 className="text-sm font-medium text-gray-700 mb-3">Media Preview</h4>
           
           {formData.hero_image && (
             <div className="mb-4">
@@ -66,14 +101,16 @@ const MediaTab = ({ formData, errors, onChange }) => {
               <img
                 src={formData.hero_image}
                 alt="Hero"
-                className="w-full max-w-md h-48 object-cover rounded-lg"
+                className="w-full rounded-lg"
               />
             </div>
           )}
           
           {formData.gallery?.length > 0 && (
             <div>
-              <p className="text-xs text-gray-500 mb-2">Gallery ({formData.gallery.length} images)</p>
+              <p className="text-xs text-gray-500 mb-2">
+                Gallery ({formData.gallery.length} images)
+              </p>
               <div className="grid grid-cols-4 gap-2">
                 {formData.gallery.slice(0, 8).map((img, idx) => (
                   <img
@@ -84,8 +121,10 @@ const MediaTab = ({ formData, errors, onChange }) => {
                   />
                 ))}
                 {formData.gallery.length > 8 && (
-                  <div className="w-full h-20 bg-gray-100 rounded flex items-center justify-center text-sm text-gray-500">
-                    +{formData.gallery.length - 8} more
+                  <div className="w-full h-20 bg-gray-200 rounded flex items-center justify-center">
+                    <span className="text-gray-600 text-sm">
+                      +{formData.gallery.length - 8}
+                    </span>
                   </div>
                 )}
               </div>
