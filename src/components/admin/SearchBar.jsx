@@ -21,11 +21,12 @@ const SearchBar = ({
   const [searchValue, setSearchValue] = useState(defaultValue);
   const [isFocused, setIsFocused] = useState(false);
   
-  // FIX: Properly destructure the useDebounce return value
+  // Properly destructure the useDebounce return value
   const [debouncedSearchValue, { isDebouncing }] = useDebounce(searchValue, debounceMs);
 
   useEffect(() => {
-    if (debouncedSearchValue !== undefined) {
+    // FIX: Add safety check for onSearch
+    if (debouncedSearchValue !== undefined && typeof onSearch === 'function') {
       onSearch(debouncedSearchValue);
     }
   }, [debouncedSearchValue, onSearch]);
@@ -47,7 +48,10 @@ const SearchBar = ({
 
   const handleClear = () => {
     setSearchValue('');
-    onSearch('');
+    // FIX: Add safety check for onSearch
+    if (typeof onSearch === 'function') {
+      onSearch('');
+    }
   };
 
   const sizeClasses = {
@@ -123,7 +127,10 @@ const SearchBar = ({
             <button
               key={result.id || index}
               onClick={() => {
-                onResultClick && onResultClick(result);
+                // FIX: Add safety check for onResultClick
+                if (typeof onResultClick === 'function') {
+                  onResultClick(result);
+                }
                 setIsFocused(false);
               }}
               className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors border-b last:border-b-0"
