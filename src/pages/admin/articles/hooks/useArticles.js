@@ -26,10 +26,9 @@ export const useArticles = (initialFilters = {}) => {
       let query = supabase
         .from('articles')
         .select(`
-          *,
-          author:profiles!author_id(id, full_name, avatar_url),
-          category:categories(id, name, slug),
-          co_authors:profiles!co_authors(id, full_name, avatar_url)
+            *,
+            author:profiles!articles_author_id_fkey(id, full_name, avatar_url),
+            category:categories!articles_category_id_fkey(id, name, slug)
         `, { count: 'exact' });
 
       // Apply filters
