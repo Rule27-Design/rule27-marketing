@@ -16,7 +16,6 @@ import FeaturesTab from './editor-tabs/FeaturesTab';
 import PricingTab from './editor-tabs/PricingTab';
 import ProcessTab from './editor-tabs/ProcessTab';
 import MediaTab from './editor-tabs/MediaTab';
-import FAQTab from './editor-tabs/FAQTab';
 import SettingsTab from './editor-tabs/SettingsTab';
 
 const ServiceEditor = ({
@@ -281,14 +280,6 @@ const ServiceEditor = ({
         
         {activeTab === 'media' && (
           <MediaTab
-            formData={formData}
-            errors={errors}
-            onChange={handleFieldChange}
-          />
-        )}
-        
-        {activeTab === 'faq' && (
-          <FAQTab
             formData={formData}
             errors={errors}
             onChange={handleFieldChange}
