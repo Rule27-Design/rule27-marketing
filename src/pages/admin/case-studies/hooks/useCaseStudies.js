@@ -26,13 +26,20 @@ export const useCaseStudies = (initialFilters = {}) => {
       let query = supabase
         .from('case_studies')
         .select(`
-          *,
-          team_members,
-          key_metrics,
-          gallery,
-          technologies_used,
-          deliverables,
-          testimonial:testimonials(id, client_name, client_title, client_company, quote, rating)
+            *,
+            team_members,
+            key_metrics,
+            gallery,
+            technologies_used,
+            deliverables,
+            testimonial:testimonials!testimonial_id(
+            id,
+            client_name,
+            client_title,
+            client_company,
+            quote,
+            rating
+            )
         `, { count: 'exact' });
 
       // Apply filters
