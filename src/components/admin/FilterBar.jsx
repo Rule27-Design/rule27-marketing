@@ -1,217 +1,169 @@
-import React, { useState, useMemo } from 'react';
-import Icon from '../../../components/AppIcon';
-import Button from '../../../components/ui/Button';
+// src/components/admin/FilterBar.jsx
+import React, { useState, useEffect } from 'react';
+import Select from '../ui/Select';
+import Input from '../ui/Input';
+import Button from '../ui/Button';
+import Icon from '../AdminIcon';
+import { cn } from '../../utils/cn';
 
-const ArticleFilterBar = React.memo(({ 
-  filters, 
-  activeFilters, 
-  onFilterChange, 
-  onClearFilters, 
-  searchQuery, 
-  onSearchChange,
-  sortBy,
-  onSortChange 
+const FilterBar = ({
+  filters = [],
+  onFilterChange,
+  onReset,
+  className = '',
+  showSearch = true,
+  searchPlaceholder = 'Search...',
+  compact = false
 }) => {
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [activeFilters, setActiveFilters] = useState({});
+  const [searchValue, setSearchValue] = useState('');
+  const [isExpanded, setIsExpanded] = useState(!compact);
 
-  const filterCategories = useMemo(() => [
-    {
-      key: 'category',
-      label: 'Category',
-      icon: 'Folder',
-      options: filters?.categories || []
-    },
-    {
-      key: 'topic',
-      label: 'Topics',
-      icon: 'Tag',
-      options: filters?.topics || []
-    },
-    {
-      key: 'readTime',
-      label: 'Read Time',
-      icon: 'Clock',
-      options: filters?.readTimes || []
-    }
-  ], [filters]);
+  useEffect(() => {
+    const initialFilters = {};
+    filters.forEach(filter => {
+      initialFilters[filter.id] = filter.defaultValue || '';
+    });
+    setActiveFilters(initialFilters);
+  }, [filters]);
 
-  const sortOptions = [
-    { value: 'newest', label: 'Newest First' },
-    { value: 'oldest', label: 'Oldest First' },
-    { value: 'popular', label: 'Most Popular' },
-    { value: 'readTime', label: 'Quick Reads' }
-  ];
+  const handleFilterChange = (filterId, value) => {
+    const newFilters = { ...activeFilters, [filterId]: value };
+    setActiveFilters(newFilters);
+    onFilterChange(newFilters);
+  };
 
-  const hasActiveFilters = useMemo(() => 
-    Object.values(activeFilters)?.some(filters => filters?.length > 0) || searchQuery,
-  [activeFilters, searchQuery]);
-  
-  const activeFilterCount = useMemo(() => 
-    Object.values(activeFilters)?.flat()?.length,
-  [activeFilters]);
+  const handleSearchChange = (value) => {
+    setSearchValue(value);
+    onFilterChange({ ...activeFilters, search: value });
+  };
+
+  const handleReset = () => {
+    const resetFilters = {};
+    filters.forEach(filter => {
+      resetFilters[filter.id] = filter.defaultValue || '';
+    });
+    setActiveFilters(resetFilters);
+    setSearchValue('');
+    onReset && onReset();
+  };
+
+  const hasActiveFilters = Object.values(activeFilters).some(value => value && value !== 'all') || searchValue;
 
   return (
-    <div className="bg-white border-b border-border sticky top-16 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
-        <div className="flex flex-col gap-3">
-          {/* Search and Sort Row */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            {/* Search - Using Helvetica */}
-            <div className="relative flex-1">
-              <Icon 
-                name="Search" 
-                size={20} 
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" 
-              />
-              <input
-                type="text"
-                placeholder="Search articles..."
-                value={searchQuery}
-                onChange={(e) => onSearchChange(e?.target?.value)}
-                className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base font-sans"
-              />
-            </div>
+    <div className={cn('bg-white border rounded-lg', className)}>
+      {compact && (
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Icon name="Filter" size={16} />
+            <span className="font-medium">Filters</span>
+            {hasActiveFilters && (
+              <span className="bg-accent text-white text-xs px-2 py-0.5 rounded-full">
+                Active
+              </span>
+            )}
+          </div>
+          <Icon name={isExpanded ? 'ChevronUp' : 'ChevronDown'} size={16} />
+        </button>
+      )}
 
-            {/* Mobile: Filter Toggle & Sort */}
-            <div className="flex gap-2">
-              {/* Mobile Filter Toggle - Using Steelfish */}
-              <Button
-                variant="outline"
-                onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
-                className="md:hidden flex items-center gap-2 flex-1 font-heading-regular tracking-wider uppercase"
-                iconName="Filter"
-                iconPosition="left"
-              >
-                Filters
-                {activeFilterCount > 0 && (
-                  <span className="bg-accent text-white text-xs px-2 py-0.5 rounded-full font-heading-regular">
-                    {activeFilterCount}
-                  </span>
-                )}
-              </Button>
-
-              {/* Sort Dropdown - Fixed to hide native arrow */}
-              <div className="flex items-center gap-2 flex-1 sm:flex-initial">
-                <Icon name="ArrowUpDown" size={18} className="text-text-secondary hidden sm:block" />
+      <div className={cn(
+        'transition-all duration-200',
+        compact && !isExpanded && 'hidden'
+      )}>
+        <div className="p-4">
+          <div className="flex flex-wrap gap-3">
+            {showSearch && (
+              <div className="flex-1 min-w-[200px]">
                 <div className="relative">
-                  <select
-                    value={sortBy}
-                    onChange={(e) => onSortChange(e?.target?.value)}
-                    className="appearance-none w-full sm:w-auto border border-border rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base bg-white font-sans cursor-pointer"
-                    style={{
-                      /* Hide native arrow in all browsers */
-                      WebkitAppearance: 'none',
-                      MozAppearance: 'none',
-                      appearance: 'none'
-                    }}
-                  >
-                    {sortOptions?.map((option) => (
-                      <option key={option?.value} value={option?.value}>
-                        {option?.label}
-                      </option>
-                    ))}
-                  </select>
-                  {/* Custom arrow icon */}
                   <Icon 
-                    name="ChevronDown" 
+                    name="Search" 
                     size={16} 
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none" 
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+                  <Input
+                    type="text"
+                    value={searchValue}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    placeholder={searchPlaceholder}
+                    className="pl-9"
                   />
                 </div>
               </div>
-            </div>
-          </div>
+            )}
 
-          {/* Desktop Filter Categories - Using Steelfish for labels */}
-          <div className="hidden md:flex flex-wrap gap-4">
-            {filterCategories?.map((category) => (
-              <div key={category?.key} className="flex flex-wrap items-center gap-2">
-                <div className="flex items-center space-x-1 text-sm font-heading-regular text-text-secondary tracking-wider uppercase">
-                  <Icon name={category?.icon} size={16} />
-                  <span>{category?.label}:</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {category?.options?.map((option) => {
-                    const isActive = activeFilters?.[category?.key]?.includes(option);
-                    return (
-                      <button
-                        key={option}
-                        onClick={() => onFilterChange(category?.key, option)}
-                        className={`px-3 py-1 text-sm rounded-full transition-all duration-300 font-sans ${
-                          isActive
-                            ? 'bg-accent text-white' 
-                            : 'bg-muted text-text-secondary hover:bg-accent/10 hover:text-accent'
-                        }`}
-                      >
-                        {option}
-                      </button>
-                    );
-                  })}
-                </div>
+            {filters.map((filter) => (
+              <div key={filter.id} className="min-w-[150px]">
+                <Select
+                  value={activeFilters[filter.id] || ''}
+                  onChange={(e) => handleFilterChange(filter.id, e.target.value)}
+                >
+                  <option value="">{filter.placeholder || `All ${filter.label}`}</option>
+                  {filter.options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
               </div>
             ))}
-          </div>
 
-          {/* Mobile Filter Panel */}
-          {mobileFiltersOpen && (
-            <div className="md:hidden bg-gray-50 rounded-lg p-3 space-y-3 max-h-64 overflow-y-auto">
-              {filterCategories?.map((category) => (
-                <div key={category?.key}>
-                  <div className="flex items-center space-x-1 text-xs font-heading-regular text-text-secondary mb-1.5 tracking-wider uppercase">
-                    <Icon name={category?.icon} size={14} />
-                    <span>{category?.label}</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {category?.options?.map((option) => {
-                      const isActive = activeFilters?.[category?.key]?.includes(option);
-                      return (
-                        <button
-                          key={option}
-                          onClick={() => onFilterChange(category?.key, option)}
-                          className={`px-2 py-1 text-[11px] rounded-full transition-all duration-300 font-sans ${
-                            isActive
-                              ? 'bg-accent text-white' 
-                              : 'bg-white border border-border text-text-secondary hover:bg-accent/10 hover:text-accent'
-                          }`}
-                        >
-                          {option}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Active Filters and Clear */}
-          {hasActiveFilters && (
-            <div className="flex items-center justify-between py-2 border-t border-gray-100">
-              <div className="flex items-center space-x-2 text-xs md:text-sm text-text-secondary">
-                <Icon name="Filter" size={14} className="md:w-4 md:h-4" />
-                <span className="font-sans">
-                  <span className="font-heading-regular tracking-wider">{activeFilterCount}</span> filter{activeFilterCount !== 1 ? 's' : ''}
-                  {searchQuery && ` • "${searchQuery}"`}
-                </span>
-              </div>
+            {hasActiveFilters && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={onClearFilters}
-                className="text-accent hover:text-accent/80 text-xs md:text-sm font-heading-regular tracking-wider uppercase"
-                iconName="X"
-                iconPosition="left"
+                onClick={handleReset}
+                className="whitespace-nowrap"
               >
-                Clear All
+                <Icon name="X" size={14} />
+                Clear filters
               </Button>
+            )}
+          </div>
+
+          {hasActiveFilters && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {Object.entries(activeFilters).map(([key, value]) => {
+                if (!value || value === 'all') return null;
+                const filter = filters.find(f => f.id === key);
+                const option = filter?.options.find(o => o.value === value);
+                return (
+                  <span
+                    key={key}
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-sm rounded-full"
+                  >
+                    <span className="text-gray-600">{filter?.label}:</span>
+                    <span className="font-medium">{option?.label || value}</span>
+                    <button
+                      onClick={() => handleFilterChange(key, '')}
+                      className="ml-1 hover:text-red-600"
+                    >
+                      <Icon name="X" size={12} />
+                    </button>
+                  </span>
+                );
+              })}
+              {searchValue && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-sm rounded-full">
+                  <span className="text-gray-600">Search:</span>
+                  <span className="font-medium">{searchValue}</span>
+                  <button
+                    onClick={() => handleSearchChange('')}
+                    className="ml-1 hover:text-red-600"
+                  >
+                    <Icon name="X" size={12} />
+                  </button>
+                </span>
+              )}
             </div>
           )}
         </div>
       </div>
     </div>
   );
-});
+};
 
-ArticleFilterBar.displayName = 'ArticleFilterBar';
-
-export default ArticleFilterBar;
+export default FilterBar;
