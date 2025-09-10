@@ -78,7 +78,7 @@ export const useCaseStudyEvents = () => {
 
   return {
     subscribeToEvents,
-    emitEvent,
+    emit: emitEvent,
     eventBus: caseStudyEventBus
   };
 };

@@ -76,7 +76,7 @@ export const useServiceEvents = () => {
 
   return {
     subscribeToEvents,
-    emitEvent,
+    emit: emitEvent,
     eventBus: serviceEventBus
   };
 };
