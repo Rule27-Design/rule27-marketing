@@ -32,7 +32,7 @@ export const useCaseStudies = (initialFilters = {}) => {
           gallery,
           technologies_used,
           deliverables,
-          testimonial:testimonials(id, author_name, content)
+          testimonial:testimonials(id, client_name, client_title, client_company, quote, rating)
         `, { count: 'exact' });
 
       // Apply filters
