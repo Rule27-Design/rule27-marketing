@@ -79,7 +79,7 @@ export const useArticleEvents = () => {
 
   return {
     subscribeToEvents,
-    emitEvent,
+    emit: emitEvent,
     eventBus: articleEventBus
   };
 };
