@@ -60,7 +60,6 @@ export const useServices = (initialFilters = {}) => {
       // Default ordering
       query = query
         .order('is_featured', { ascending: false })
-        .order('sort_order', { ascending: true })
         .order('updated_at', { ascending: false });
 
       const { data, error: fetchError, count } = await query;
