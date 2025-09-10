@@ -23,6 +23,7 @@ import { useServiceEvents } from './hooks/useServiceEvents';
 import { serviceOperations } from './services/ServiceOperations';
 import { useToast } from '../../../components/ui/Toast';
 import { format } from 'date-fns';
+import { cn } from '../../../utils/cn';
 
 const Services = () => {
   const { userProfile } = useOutletContext();
@@ -32,6 +33,7 @@ const Services = () => {
   const [showEditor, setShowEditor] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [viewMode, setViewMode] = useState('grid'); // grid | table
+  const [groupBy, setGroupBy] = useState('none'); // none | zone | category
   
   const {
     services,
@@ -43,12 +45,24 @@ const Services = () => {
     setSelectedItems,
     pagination,
     changePage,
-    refreshServices
+    refreshServices,
+    serviceStats // Added stats
   } = useServices({
-    status: searchParams.get('status') || 'all'
+    status: searchParams.get('status') || 'all',
+    zone: searchParams.get('zone') || 'all'
   });
 
   const { subscribeToEvents } = useServiceEvents();
+
+  // Service zones configuration
+  const serviceZones = [
+    { id: 'discovery', name: 'Discovery', color: 'blue', icon: 'Search' },
+    { id: 'strategy', name: 'Strategy', color: 'purple', icon: 'Target' },
+    { id: 'design', name: 'Design', color: 'pink', icon: 'Palette' },
+    { id: 'development', name: 'Development', color: 'green', icon: 'Code' },
+    { id: 'growth', name: 'Growth', color: 'orange', icon: 'TrendingUp' },
+    { id: 'support', name: 'Support', color: 'gray', icon: 'Headphones' }
+  ];
 
   // Subscribe to real-time updates
   useEffect(() => {
@@ -60,7 +74,19 @@ const Services = () => {
     return unsubscribe;
   }, [subscribeToEvents, refreshServices, toast]);
 
-  // Filter configuration
+  // Group services by zone or category
+  const groupedServices = React.useMemo(() => {
+    if (groupBy === 'none') return { all: services };
+    
+    return services.reduce((acc, service) => {
+      const key = groupBy === 'zone' ? service.zone : service.category;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(service);
+      return acc;
+    }, {});
+  }, [services, groupBy]);
+
+  // Filter configuration with zones
   const filterConfig = [
     {
       id: 'status',
@@ -72,6 +98,19 @@ const Services = () => {
         { value: 'draft', label: 'Draft' },
         { value: 'published', label: 'Published' },
         { value: 'archived', label: 'Archived' }
+      ]
+    },
+    {
+      id: 'zone',
+      label: 'Zone',
+      type: 'select',
+      defaultValue: 'all',
+      options: [
+        { value: 'all', label: 'All Zones' },
+        ...serviceZones.map(zone => ({
+          value: zone.id,
+          label: zone.name
+        }))
       ]
     },
     {
@@ -101,344 +140,86 @@ const Services = () => {
     }
   ];
 
-  // Bulk action configuration
-  const bulkActionConfig = [
-    {
-      id: 'publish',
-      label: 'Publish',
-      icon: 'Send',
-      variant: 'primary',
-      requireConfirm: true
-    },
-    {
-      id: 'archive',
-      label: 'Archive',
-      icon: 'Archive',
-      variant: 'ghost'
-    },
-    {
-      id: 'duplicate',
-      label: 'Duplicate',
-      icon: 'Copy',
-      variant: 'ghost'
-    },
-    {
-      id: 'export',
-      label: 'Export',
-      icon: 'Download',
-      variant: 'ghost'
-    },
-    {
-      id: 'delete',
-      label: 'Delete',
-      icon: 'Trash2',
-      variant: 'ghost',
-      className: 'text-red-600',
-      requireConfirm: true
-    }
-  ];
-
-  // Handle bulk actions
-  const handleBulkAction = async (actionId, selectedIds) => {
-    try {
-      let result;
-      
-      switch (actionId) {
-        case 'publish':
-          result = await serviceOperations.bulkPublish(selectedIds);
-          if (result.success) {
-            toast.success('Services published', `${selectedIds.length} services have been published`);
-          }
-          break;
-          
-        case 'archive':
-          result = await serviceOperations.bulkArchive(selectedIds);
-          if (result.success) {
-            toast.success('Services archived', `${selectedIds.length} services have been archived`);
-          }
-          break;
-          
-        case 'duplicate':
-          for (const id of selectedIds) {
-            await serviceOperations.duplicate(id);
-          }
-          toast.success('Services duplicated', `${selectedIds.length} services have been duplicated`);
-          break;
-          
-        case 'delete':
-          result = await serviceOperations.bulkDelete(selectedIds);
-          if (result.success) {
-            toast.success('Services deleted', `${selectedIds.length} services have been deleted`);
-          }
-          break;
-          
-        case 'export':
-          result = await serviceOperations.exportServices(selectedIds);
-          if (result.success) {
-            toast.success('Export complete', 'Services have been exported to CSV');
-          }
-          break;
-      }
-
-      if (result && !result.success) {
-        toast.error('Action failed', result.error);
-      } else {
-        setSelectedItems([]);
-        await refreshServices();
-      }
-    } catch (error) {
-      console.error('Bulk action error:', error);
-      toast.error('Action failed', error.message);
-    }
-  };
-
-  // Table columns configuration
-  const tableColumns = [
-    {
-      key: 'select',
-      header: () => (
-        <Checkbox
-          checked={services.length > 0 && selectedItems.length === services.length}
-          onChange={(checked) => {
-            setSelectedItems(checked ? services.map(s => s.id) : []);
-          }}
-        />
-      ),
-      cell: (service) => (
-        <Checkbox
-          checked={selectedItems.includes(service.id)}
-          onChange={(checked) => {
-            setSelectedItems(prev =>
-              checked 
-                ? [...prev, service.id]
-                : prev.filter(id => id !== service.id)
-            );
-          }}
-        />
-      ),
-      width: 40
-    },
-    {
-      key: 'name',
-      header: 'Service',
-      cell: (service) => (
-        <div className="flex items-center space-x-3">
-          {service.icon && (
-            <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-              <Icon name={service.icon} size={20} className="text-accent" />
-            </div>
-          )}
-          <div>
-            <div className="font-medium text-text-primary">
-              {service.name}
-              {service.is_featured && (
-                <Icon name="Star" size={12} className="inline ml-1 text-yellow-500" />
-              )}
-              {service.is_popular && (
-                <span className="ml-2 text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded">
-                  Popular
-                </span>
-              )}
-            </div>
-            <div className="text-xs text-text-secondary line-clamp-1">
-              {service.short_description}
-            </div>
+  // Service card for grid view with zone
+  const ServiceCard = ({ service }) => {
+    const zone = serviceZones.find(z => z.id === service.zone);
+    
+    return (
+      <div className="bg-white rounded-lg border hover:shadow-lg transition-shadow p-6">
+        {/* Zone indicator */}
+        {zone && (
+          <div className={cn(
+            'inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs mb-3',
+            `bg-${zone.color}-100 text-${zone.color}-700`
+          )}>
+            <Icon name={zone.icon} size={12} />
+            <span>{zone.name}</span>
           </div>
-        </div>
-      )
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      cell: (service) => <StatusBadge status={service.status} size="xs" />,
-      width: 120
-    },
-    {
-      key: 'category',
-      header: 'Category',
-      cell: (service) => (
-        <div className="text-sm text-text-secondary capitalize">
-          {service.category || '-'}
-        </div>
-      ),
-      width: 120
-    },
-    {
-      key: 'pricing',
-      header: 'Starting Price',
-      cell: (service) => {
-        const lowestPrice = service.pricing_tiers?.reduce((min, tier) => {
-          return tier.price < min ? tier.price : min;
-        }, Infinity);
+        )}
         
-        return (
-          <div className="text-sm font-medium">
-            {lowestPrice && lowestPrice !== Infinity 
-              ? `$${lowestPrice.toLocaleString()}`
-              : 'Custom'}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            {service.icon && (
+              <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
+                <Icon name={service.icon} size={24} className="text-accent" />
+              </div>
+            )}
+            <div>
+              <h3 className="font-medium text-text-primary">
+                {service.name}
+              </h3>
+              <StatusBadge status={service.status} size="xs" />
+            </div>
           </div>
-        );
-      },
-      width: 120
-    },
-    {
-      key: 'stats',
-      header: 'Stats',
-      cell: (service) => (
-        <MetricsDisplay
-          metrics={[
-            { value: service.view_count || 0, icon: 'Eye' },
-            { value: service.inquiry_count || 0, icon: 'MessageSquare' },
-            { value: service.conversion_rate || '0%', icon: 'TrendingUp' }
-          ]}
-          compact
-        />
-      ),
-      width: 150
-    },
-    {
-      key: 'date',
-      header: 'Modified',
-      cell: (service) => (
-        <div className="text-xs text-text-secondary">
-          {format(new Date(service.updated_at), 'MMM d, yyyy')}
+          
+          <div className="flex items-center space-x-1">
+            {service.is_featured && (
+              <Icon name="Star" size={16} className="text-yellow-500" />
+            )}
+            {service.is_popular && (
+              <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded">
+                Popular
+              </span>
+            )}
+          </div>
         </div>
-      ),
-      width: 100
-    },
-    {
-      key: 'actions',
-      header: '',
-      cell: (service) => (
-        <div className="flex items-center space-x-1">
+        
+        <p className="text-sm text-text-secondary line-clamp-2 mb-4">
+          {service.short_description}
+        </p>
+        
+        <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+          <span>{service.category}</span>
+          <span>
+            {service.pricing_tiers?.length > 0 
+              ? `${service.pricing_tiers.length} pricing tiers`
+              : 'Custom pricing'}
+          </span>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <MetricsDisplay
+            metrics={[
+              { value: service.view_count || 0, icon: 'Eye' },
+              { value: service.inquiry_count || 0, icon: 'MessageSquare' }
+            ]}
+            compact
+          />
+          
           <Button
-            variant="ghost"
+            variant="outline"
             size="xs"
             onClick={() => {
               setEditingService(service);
               setShowEditor(true);
             }}
-            iconName="Edit2"
-          />
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={async () => {
-              const result = await serviceOperations.duplicate(service.id);
-              if (result.success) {
-                toast.success('Service duplicated');
-                refreshServices();
-              }
-            }}
-            iconName="Copy"
-          />
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={async () => {
-              if (window.confirm('Are you sure you want to delete this service?')) {
-                const result = await serviceOperations.delete(service.id);
-                if (result.success) {
-                  toast.success('Service deleted');
-                  refreshServices();
-                }
-              }
-            }}
-            iconName="Trash2"
-            className="text-red-500"
-          />
-        </div>
-      ),
-      width: 120
-    }
-  ];
-
-  // Quick actions
-  const quickActionsConfig = [
-    {
-      id: 'new',
-      label: 'New Service',
-      icon: 'Plus',
-      variant: 'primary',
-      onClick: () => {
-        setEditingService(null);
-        setShowEditor(true);
-      }
-    },
-    {
-      id: 'view-toggle',
-      label: viewMode === 'grid' ? 'Table View' : 'Grid View',
-      icon: viewMode === 'grid' ? 'List' : 'Grid',
-      variant: 'ghost',
-      onClick: () => setViewMode(viewMode === 'grid' ? 'table' : 'grid')
-    }
-  ];
-
-  // Service card for grid view
-  const ServiceCard = ({ service }) => (
-    <div className="bg-white rounded-lg border hover:shadow-lg transition-shadow p-6">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          {service.icon && (
-            <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-              <Icon name={service.icon} size={24} className="text-accent" />
-            </div>
-          )}
-          <div>
-            <h3 className="font-medium text-text-primary">
-              {service.name}
-            </h3>
-            <StatusBadge status={service.status} size="xs" />
-          </div>
-        </div>
-        
-        <div className="flex items-center space-x-1">
-          {service.is_featured && (
-            <Icon name="Star" size={16} className="text-yellow-500" />
-          )}
-          {service.is_popular && (
-            <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded">
-              Popular
-            </span>
-          )}
+          >
+            Edit
+          </Button>
         </div>
       </div>
-      
-      <p className="text-sm text-text-secondary line-clamp-2 mb-4">
-        {service.short_description}
-      </p>
-      
-      <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-        <span>{service.category}</span>
-        <span>
-          {service.pricing_tiers?.length > 0 
-            ? `${service.pricing_tiers.length} pricing tiers`
-            : 'Custom pricing'}
-        </span>
-      </div>
-      
-      <div className="flex items-center justify-between">
-        <MetricsDisplay
-          metrics={[
-            { value: service.view_count || 0, icon: 'Eye' },
-            { value: service.inquiry_count || 0, icon: 'MessageSquare' }
-          ]}
-          compact
-        />
-        
-        <Button
-          variant="outline"
-          size="xs"
-          onClick={() => {
-            setEditingService(service);
-            setShowEditor(true);
-          }}
-        >
-          Edit
-        </Button>
-      </div>
-    </div>
-  );
+    );
+  };
 
   // Loading state
   if (loading && services.length === 0) {
@@ -458,16 +239,124 @@ const Services = () => {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-heading-bold uppercase tracking-wider">Services</h1>
-          <p className="text-sm text-text-secondary mt-1">
-            Manage your service offerings and pricing
-          </p>
+      {/* Header with Services Management title and count */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h1 className="text-2xl font-heading-bold uppercase tracking-wider">
+              Services Management
+            </h1>
+          </div>
+          <Button
+            variant="default"
+            iconName="Plus"
+            iconPosition="left"
+            onClick={() => {
+              setEditingService(null);
+              setShowEditor(true);
+            }}
+          >
+            New Service
+          </Button>
         </div>
-        <QuickActions actions={quickActionsConfig} />
+        
+        {/* Services count and view options */}
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-text-secondary">
+            All Services ({services.length})
+          </p>
+          
+          {/* Group By Options */}
+          <div className="flex items-center space-x-2">
+            <span className="text-xs text-gray-500">Group by:</span>
+            <div className="flex items-center bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setGroupBy('none')}
+                className={cn(
+                  'px-3 py-1 text-xs rounded transition-colors',
+                  groupBy === 'none' 
+                    ? 'bg-white text-accent shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                )}
+              >
+                None
+              </button>
+              <button
+                onClick={() => setGroupBy('zone')}
+                className={cn(
+                  'px-3 py-1 text-xs rounded transition-colors',
+                  groupBy === 'zone' 
+                    ? 'bg-white text-accent shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                )}
+              >
+                By Zone
+              </button>
+              <button
+                onClick={() => setGroupBy('category')}
+                className={cn(
+                  'px-3 py-1 text-xs rounded transition-colors',
+                  groupBy === 'category' 
+                    ? 'bg-white text-accent shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                )}
+              >
+                By Category
+              </button>
+            </div>
+            
+            <div className="flex items-center bg-gray-100 rounded-lg p-1 ml-4">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={cn(
+                  'p-1.5 rounded transition-colors',
+                  viewMode === 'grid' 
+                    ? 'bg-white text-accent shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                )}
+              >
+                <Icon name="Grid" size={16} />
+              </button>
+              <button
+                onClick={() => setViewMode('table')}
+                className={cn(
+                  'p-1.5 rounded transition-colors',
+                  viewMode === 'table' 
+                    ? 'bg-white text-accent shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                )}
+              >
+                <Icon name="List" size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Zone Stats Cards */}
+      {groupBy === 'zone' && (
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
+          {serviceZones.map(zone => {
+            const zoneServices = services.filter(s => s.zone === zone.id);
+            return (
+              <button
+                key={zone.id}
+                onClick={() => setFilters({ ...filters, zone: zone.id })}
+                className={cn(
+                  'p-3 rounded-lg border transition-all',
+                  filters.zone === zone.id 
+                    ? 'border-accent bg-accent/5' 
+                    : 'border-gray-200 hover:border-gray-300'
+                )}
+              >
+                <Icon name={zone.icon} size={20} className={`text-${zone.color}-500 mb-2`} />
+                <div className="text-sm font-medium">{zone.name}</div>
+                <div className="text-xs text-gray-500">{zoneServices.length} services</div>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Search and Filters */}
       <div className="mb-4 space-y-3">
@@ -485,12 +374,14 @@ const Services = () => {
       </div>
 
       {/* Bulk Actions */}
-      <BulkActions
-        selectedItems={selectedItems}
-        actions={bulkActionConfig}
-        onAction={handleBulkAction}
-        position="top"
-      />
+      {selectedItems.length > 0 && (
+        <BulkActions
+          selectedItems={selectedItems}
+          actions={bulkActionConfig}
+          onAction={handleBulkAction}
+          position="top"
+        />
+      )}
 
       {/* Services Display */}
       {services.length === 0 ? (
@@ -506,28 +397,62 @@ const Services = () => {
             }
           }}
         />
-      ) : viewMode === 'grid' ? (
-        // Grid View
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {services.map(service => (
-            <ServiceCard key={service.id} service={service} />
-          ))}
-        </div>
       ) : (
-        // Table View
-        <VirtualTable
-          data={services}
-          columns={tableColumns}
-          rowHeight={80}
-          onRowClick={(service) => {
-            setEditingService(service);
-            setShowEditor(true);
-          }}
-          pagination={{
-            ...pagination,
-            onPageChange: changePage
-          }}
-        />
+        <>
+          {/* Display based on grouping */}
+          {groupBy !== 'none' ? (
+            // Grouped View
+            <div className="space-y-6">
+              {Object.entries(groupedServices).map(([group, groupServices]) => (
+                <div key={group}>
+                  <h3 className="text-lg font-medium text-gray-900 mb-3 capitalize">
+                    {group} ({groupServices.length})
+                  </h3>
+                  {viewMode === 'grid' ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {groupServices.map(service => (
+                        <ServiceCard key={service.id} service={service} />
+                      ))}
+                    </div>
+                  ) : (
+                    <VirtualTable
+                      data={groupServices}
+                      columns={tableColumns}
+                      rowHeight={80}
+                      onRowClick={(service) => {
+                        setEditingService(service);
+                        setShowEditor(true);
+                      }}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            // Regular View (No Grouping)
+            viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {services.map(service => (
+                  <ServiceCard key={service.id} service={service} />
+                ))}
+              </div>
+            ) : (
+              <VirtualTable
+                data={services}
+                columns={tableColumns}
+                rowHeight={80}
+                onRowClick={(service) => {
+                  setEditingService(service);
+                  setShowEditor(true);
+                }}
+                pagination={{
+                  ...pagination,
+                  onPageChange: changePage
+                }}
+              />
+            )
+          )}
+        </>
       )}
 
       {/* Export Button */}
@@ -538,6 +463,7 @@ const Services = () => {
             filename="services"
             columns={[
               { key: 'name', label: 'Name' },
+              { key: 'zone', label: 'Zone' },
               { key: 'category', label: 'Category' },
               { key: 'status', label: 'Status' },
               { key: 'short_description', label: 'Description' },
