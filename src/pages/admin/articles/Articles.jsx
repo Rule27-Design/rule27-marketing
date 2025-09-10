@@ -1,78 +1,101 @@
-// src/pages/admin/articles/ArticlesContainer.jsx
-import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+// src/pages/admin/articles/Articles.jsx
+import React, { useState, useEffect } from 'react';
+import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { 
   FilterBar,
-  SearchBar,
   BulkActions,
   StatusBadge,
   EmptyState,
   ErrorState,
   ExportButton,
   VirtualTable,
-  SkeletonTable
+  SkeletonTable,
+  MetricsDisplay,
+  SearchBar,
+  QuickActions
 } from '../../../components/admin';
 import { Checkbox } from '../../../components/ui/Checkbox';
 import Button from '../../../components/ui/Button';
 import Icon from '../../../components/AdminIcon';
-import { formatDistanceToNow } from '../../../utils/dateUtils';
-import { cn } from '../../../utils/cn';
+import ArticleEditor from './ArticleEditor';
+import { useArticles } from './hooks/useArticles';
+import { useArticleEvents } from './hooks/useArticleEvents';
+import { articleOperations } from './services/ArticleOperations';
+import { useToast } from '../../../components/ui/Toast';
+import { format } from 'date-fns';
 
-const ArticlesContainer = ({
-  articles = [],
-  loading = false,
-  error = null,
-  filters = {},
-  onFiltersChange,
-  selectedArticles = [],
-  onSelectionChange,
-  onEdit,
-  onBulkAction,
-  userProfile
-}) => {
-  const [viewMode, setViewMode] = useState('table'); // table | grid
-  const [sortConfig, setSortConfig] = useState({ key: 'updated_at', direction: 'desc' });
+const Articles = () => {
+  const { userProfile } = useOutletContext();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const toast = useToast();
+  
+  const [showEditor, setShowEditor] = useState(false);
+  const [editingArticle, setEditingArticle] = useState(null);
+  
+  const {
+    articles,
+    loading,
+    error,
+    filters,
+    setFilters,
+    selectedArticles,
+    setSelectedArticles,
+    pagination,
+    changePage,
+    refreshArticles
+  } = useArticles({
+    status: searchParams.get('status') || 'all'
+  });
 
-  // Filter configuration
+  const { subscribeToEvents } = useArticleEvents();
+
+  // Subscribe to real-time updates
+  useEffect(() => {
+    const unsubscribe = subscribeToEvents('article:updated', (article) => {
+      refreshArticles();
+      toast.info('Article updated', `"${article.title}" has been updated`);
+    });
+
+    return unsubscribe;
+  }, [subscribeToEvents, refreshArticles, toast]);
+
+  // Filter configuration for FilterBar
   const filterConfig = [
     {
       id: 'status',
       label: 'Status',
+      type: 'select',
       defaultValue: 'all',
       options: [
         { value: 'all', label: 'All Status' },
         { value: 'draft', label: 'Draft' },
-        { value: 'pending_approval', label: 'Pending Approval' },
-        { value: 'approved', label: 'Approved' },
         { value: 'published', label: 'Published' },
+        { value: 'scheduled', label: 'Scheduled' },
         { value: 'archived', label: 'Archived' }
       ]
     },
     {
       id: 'category',
       label: 'Category',
+      type: 'select',
       defaultValue: 'all',
-      options: [
-        { value: 'all', label: 'All Categories' },
-        // These would be dynamically loaded
-        { value: 'news', label: 'News' },
-        { value: 'blog', label: 'Blog' },
-        { value: 'tutorial', label: 'Tutorial' }
-      ]
-    },
-    {
-      id: 'author',
-      label: 'Author',
-      defaultValue: 'all',
-      options: [
-        { value: 'all', label: 'All Authors' },
-        { value: 'me', label: 'My Articles' }
-        // Add more authors dynamically
-      ]
+      async: true,
+      loadOptions: async () => {
+        // Load categories from database
+        const { data } = await supabase
+          .from('categories')
+          .select('id, name')
+          .eq('type', 'article');
+        return [
+          { value: 'all', label: 'All Categories' },
+          ...data.map(cat => ({ value: cat.id, label: cat.name }))
+        ];
+      }
     },
     {
       id: 'featured',
       label: 'Featured',
+      type: 'select',
       defaultValue: 'all',
       options: [
         { value: 'all', label: 'All Articles' },
@@ -82,342 +105,352 @@ const ArticlesContainer = ({
     }
   ];
 
-  // Apply filters and search
-  const filteredArticles = useMemo(() => {
-    let filtered = [...articles];
-
-    // Status filter
-    if (filters.status && filters.status !== 'all') {
-      filtered = filtered.filter(article => article.status === filters.status);
+  // Bulk action configuration
+  const bulkActionConfig = [
+    {
+      id: 'publish',
+      label: 'Publish',
+      icon: 'Send',
+      variant: 'primary',
+      requireConfirm: true
+    },
+    {
+      id: 'archive',
+      label: 'Archive',
+      icon: 'Archive',
+      variant: 'ghost'
+    },
+    {
+      id: 'export',
+      label: 'Export',
+      icon: 'Download',
+      variant: 'ghost'
+    },
+    {
+      id: 'delete',
+      label: 'Delete',
+      icon: 'Trash2',
+      variant: 'ghost',
+      className: 'text-red-600',
+      requireConfirm: true
     }
+  ];
 
-    // Category filter
-    if (filters.category && filters.category !== 'all') {
-      filtered = filtered.filter(article => article.category_id === filters.category);
-    }
-
-    // Author filter
-    if (filters.author === 'me') {
-      filtered = filtered.filter(article => article.author_id === userProfile?.id);
-    } else if (filters.author && filters.author !== 'all') {
-      filtered = filtered.filter(article => article.author_id === filters.author);
-    }
-
-    // Featured filter
-    if (filters.featured === 'featured') {
-      filtered = filtered.filter(article => article.is_featured);
-    } else if (filters.featured === 'not-featured') {
-      filtered = filtered.filter(article => !article.is_featured);
-    }
-
-    // Search filter
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter(article => 
-        article.title?.toLowerCase().includes(searchLower) ||
-        article.excerpt?.toLowerCase().includes(searchLower) ||
-        article.tags?.some(tag => tag.toLowerCase().includes(searchLower))
-      );
-    }
-
-    // Sort
-    filtered.sort((a, b) => {
-      const aValue = a[sortConfig.key];
-      const bValue = b[sortConfig.key];
+  // Handle bulk actions from BulkActions component
+  const handleBulkAction = async (actionId, selectedIds) => {
+    try {
+      let result;
       
-      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-      return 0;
-    });
+      switch (actionId) {
+        case 'publish':
+          result = await articleOperations.bulkPublish(selectedIds);
+          if (result.success) {
+            toast.success('Articles published', `${selectedIds.length} articles have been published`);
+          }
+          break;
+          
+        case 'archive':
+          result = await articleOperations.bulkArchive(selectedIds);
+          if (result.success) {
+            toast.success('Articles archived', `${selectedIds.length} articles have been archived`);
+          }
+          break;
+          
+        case 'delete':
+          result = await articleOperations.bulkDelete(selectedIds);
+          if (result.success) {
+            toast.success('Articles deleted', `${selectedIds.length} articles have been deleted`);
+          }
+          break;
+          
+        case 'export':
+          result = await articleOperations.exportArticles(selectedIds);
+          if (result.success) {
+            toast.success('Export complete', 'Articles have been exported to CSV');
+          }
+          break;
+      }
 
-    return filtered;
-  }, [articles, filters, sortConfig, userProfile]);
-
-  // Handle functions
-  const handleSelectAll = () => {
-    if (selectedArticles.length === filteredArticles.length) {
-      onSelectionChange([]);
-    } else {
-      onSelectionChange(filteredArticles.map(a => a.id));
+      if (result && !result.success) {
+        toast.error('Action failed', result.error);
+      } else {
+        setSelectedArticles([]);
+        await refreshArticles();
+      }
+    } catch (error) {
+      console.error('Bulk action error:', error);
+      toast.error('Action failed', error.message);
     }
   };
 
-  const handleSelectArticle = (articleId) => {
-    if (selectedArticles.includes(articleId)) {
-      onSelectionChange(selectedArticles.filter(id => id !== articleId));
-    } else {
-      onSelectionChange([...selectedArticles, articleId]);
-    }
-  };
-
-  const handleSort = (key, direction) => {
-    setSortConfig({ key, direction });
-  };
-
-  const handleQuickAction = async (action, article) => {
-    switch (action) {
-      case 'edit':
-        onEdit(article);
-        break;
-      case 'preview':
-        window.open(`/blog/${article.slug}`, '_blank');
-        break;
-      case 'duplicate':
-        await onBulkAction('duplicate', [article.id]);
-        break;
-      case 'delete':
-        if (confirm('Are you sure you want to delete this article?')) {
-          await onBulkAction('delete', [article.id]);
-        }
-        break;
-    }
-  };
-
-  // Table columns configuration
+  // Table columns configuration for VirtualTable
   const tableColumns = [
     {
+      key: 'select',
+      header: () => (
+        <Checkbox
+          checked={articles.length > 0 && selectedArticles.length === articles.length}
+          onChange={(checked) => {
+            setSelectedArticles(checked ? articles.map(a => a.id) : []);
+          }}
+        />
+      ),
+      cell: (article) => (
+        <Checkbox
+          checked={selectedArticles.includes(article.id)}
+          onChange={(checked) => {
+            setSelectedArticles(prev =>
+              checked 
+                ? [...prev, article.id]
+                : prev.filter(id => id !== article.id)
+            );
+          }}
+        />
+      ),
+      width: 40
+    },
+    {
       key: 'title',
-      label: 'Title',
-      sortable: true,
-      render: (value, article) => (
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-900">{value}</span>
-            {article.is_featured && (
-              <Icon name="Star" size={14} className="text-yellow-500 fill-current" />
+      header: 'Title',
+      cell: (article) => (
+        <div className="flex items-center space-x-3">
+          {article.featured_image && (
+            <img
+              src={article.featured_image}
+              alt=""
+              className="w-10 h-10 rounded object-cover"
+            />
+          )}
+          <div>
+            <div className="font-medium text-text-primary">
+              {article.title}
+              {article.is_featured && (
+                <Icon name="Star" size={12} className="inline ml-1 text-yellow-500" />
+              )}
+            </div>
+            {article.excerpt && (
+              <div className="text-xs text-text-secondary line-clamp-1">
+                {article.excerpt}
+              </div>
             )}
           </div>
-          {article.excerpt && (
-            <p className="text-sm text-gray-600 truncate max-w-md">
-              {article.excerpt}
-            </p>
-          )}
         </div>
       )
     },
     {
       key: 'status',
-      label: 'Status',
-      sortable: true,
-      width: '150',
-      render: (value) => <StatusBadge status={value} />
+      header: 'Status',
+      cell: (article) => <StatusBadge status={article.status} size="xs" />,
+      width: 120
     },
     {
       key: 'author',
-      label: 'Author',
-      sortable: true,
-      width: '200',
-      render: (value, article) => (
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-            {article.author?.avatar_url ? (
-              <img 
-                src={article.author.avatar_url} 
-                alt={article.author.full_name}
-                className="w-full h-full rounded-full object-cover"
-              />
-            ) : (
-              <Icon name="User" size={16} className="text-gray-600" />
-            )}
-          </div>
-          <span className="text-sm">
-            {article.author?.full_name || 'Unknown'}
-          </span>
+      header: 'Author',
+      cell: (article) => (
+        <div className="text-sm">
+          {article.author?.full_name || 'Unknown'}
         </div>
-      )
+      ),
+      width: 150
     },
     {
-      key: 'views',
-      label: 'Views',
-      sortable: true,
-      width: '100',
-      render: (value) => (
-        <span className="text-sm text-gray-600">
-          {value?.toLocaleString() || 0}
-        </span>
-      )
+      key: 'category',
+      header: 'Category',
+      cell: (article) => (
+        <div className="text-sm text-text-secondary">
+          {article.category?.name || '-'}
+        </div>
+      ),
+      width: 120
     },
     {
-      key: 'updated_at',
-      label: 'Last Updated',
-      sortable: true,
-      width: '150',
-      render: (value) => (
-        <span className="text-sm text-gray-600">
-          {value ? formatDistanceToNow(new Date(value), { addSuffix: true }) : 'Never'}
-        </span>
-      )
+      key: 'metrics',
+      header: 'Metrics',
+      cell: (article) => (
+        <MetricsDisplay
+          metrics={[
+            { value: article.view_count || 0, icon: 'Eye' },
+            { value: article.like_count || 0, icon: 'Heart' },
+            { value: article.share_count || 0, icon: 'Share2' }
+          ]}
+          compact
+        />
+      ),
+      width: 150
+    },
+    {
+      key: 'date',
+      header: 'Modified',
+      cell: (article) => (
+        <div className="text-xs text-text-secondary">
+          {format(new Date(article.updated_at), 'MMM d, yyyy')}
+        </div>
+      ),
+      width: 100
     },
     {
       key: 'actions',
-      label: '',
-      width: '100',
-      render: (_, article) => (
-        <div className="flex items-center gap-1">
+      header: '',
+      cell: (article) => (
+        <div className="flex items-center space-x-1">
           <Button
-            size="xs"
             variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleQuickAction('edit', article);
+            size="xs"
+            onClick={() => {
+              setEditingArticle(article);
+              setShowEditor(true);
             }}
-          >
-            <Icon name="Edit" size={14} />
-          </Button>
+            iconName="Edit2"
+          />
           <Button
-            size="xs"
             variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleQuickAction('preview', article);
-            }}
-          >
-            <Icon name="Eye" size={14} />
-          </Button>
-          <Button
             size="xs"
-            variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleQuickAction('delete', article);
+            onClick={async () => {
+              if (window.confirm('Are you sure you want to delete this article?')) {
+                const result = await articleOperations.delete(article.id);
+                if (result.success) {
+                  toast.success('Article deleted');
+                  refreshArticles();
+                }
+              }
             }}
-            className="text-red-600"
-          >
-            <Icon name="Trash2" size={14} />
-          </Button>
+            iconName="Trash2"
+            className="text-red-500"
+          />
         </div>
-      )
+      ),
+      width: 100
+    }
+  ];
+
+  // Quick actions for the header
+  const quickActionsConfig = [
+    {
+      id: 'new',
+      label: 'New Article',
+      icon: 'Plus',
+      variant: 'primary',
+      onClick: () => {
+        setEditingArticle(null);
+        setShowEditor(true);
+      }
     }
   ];
 
   // Loading state
-  if (loading) {
-    return <SkeletonTable rows={5} columns={5} />;
+  if (loading && articles.length === 0) {
+    return <SkeletonTable rows={10} />;
   }
 
   // Error state
   if (error) {
     return (
       <ErrorState
-        error={error}
         title="Failed to load articles"
-        onRetry={() => window.location.reload()}
-      />
-    );
-  }
-
-  // Empty state
-  if (articles.length === 0 && !filters.search) {
-    return (
-      <EmptyState
-        icon="FileText"
-        title="No articles yet"
-        description="Create your first article to get started"
-        action={{
-          label: 'Create Article',
-          icon: 'Plus',
-          onClick: () => onEdit(null)
-        }}
+        message={error}
+        onRetry={refreshArticles}
       />
     );
   }
 
   return (
-    <div className="space-y-4">
-      {/* Filters and Search */}
-      <div className="bg-white border rounded-lg p-4">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex-1 min-w-[300px]">
-            <SearchBar
-              placeholder="Search articles..."
-              onSearch={(value) => onFiltersChange({ ...filters, search: value })}
-              defaultValue={filters.search}
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant={viewMode === 'table' ? 'primary' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('table')}
-            >
-              <Icon name="List" size={16} />
-            </Button>
-            <Button
-              variant={viewMode === 'grid' ? 'primary' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('grid')}
-            >
-              <Icon name="Grid" size={16} />
-            </Button>
-          </div>
-          <ExportButton
-            data={filteredArticles}
-            filename="articles"
-            formats={['csv', 'json']}
-          />
+    <div className="h-full flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-heading-bold uppercase tracking-wider">Articles</h1>
+          <p className="text-sm text-text-secondary mt-1">
+            Manage and publish your content
+          </p>
         </div>
+        <QuickActions actions={quickActionsConfig} />
       </div>
 
-      {/* Advanced Filters */}
-      <FilterBar
-        filters={filterConfig}
-        onFilterChange={onFiltersChange}
-        onReset={() => onFiltersChange({})}
-        compact={true}
-      />
+      {/* Search and Filters */}
+      <div className="mb-4 space-y-3">
+        <SearchBar
+          value={filters.search || ''}
+          onChange={(value) => setFilters({ ...filters, search: value })}
+          placeholder="Search articles..."
+        />
+        
+        <FilterBar
+          filters={filterConfig}
+          onFilterChange={setFilters}
+          onReset={() => setFilters({})}
+        />
+      </div>
 
       {/* Bulk Actions */}
-      {selectedArticles.length > 0 && (
-        <BulkActions
-          selectedItems={selectedArticles}
-          onAction={onBulkAction}
-        />
-      )}
+      <BulkActions
+        selectedItems={selectedArticles}
+        actions={bulkActionConfig}
+        onAction={handleBulkAction}
+        position="top"
+      />
 
-      {/* Results count */}
-      {filteredArticles.length > 0 && (
-        <div className="text-sm text-gray-600">
-          Showing {filteredArticles.length} of {articles.length} articles
-        </div>
-      )}
-
-      {/* Articles Display */}
-      {viewMode === 'table' ? (
-        <VirtualTable
-          data={filteredArticles}
-          columns={tableColumns}
-          selectedRows={selectedArticles}
-          onSelectionChange={onSelectionChange}
-          onSort={handleSort}
-          sortable={true}
-          onRowClick={(article) => onEdit(article)}
-          rowHeight={80}
-          visibleRows={10}
+      {/* Articles Table or Empty State */}
+      {articles.length === 0 ? (
+        <EmptyState
+          icon="FileText"
+          title="No articles found"
+          message="Create your first article to get started"
+          action={{
+            label: 'Create Article',
+            onClick: () => {
+              setEditingArticle(null);
+              setShowEditor(true);
+            }
+          }}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredArticles.map((article) => (
-            <ArticleCard
-              key={article.id}
-              article={article}
-              isSelected={selectedArticles.includes(article.id)}
-              onSelect={() => handleSelectArticle(article.id)}
-              onEdit={() => onEdit(article)}
-              onQuickAction={(action) => handleQuickAction(action, article)}
-            />
-          ))}
+        <VirtualTable
+          data={articles}
+          columns={tableColumns}
+          rowHeight={80}
+          onRowClick={(article) => {
+            setEditingArticle(article);
+            setShowEditor(true);
+          }}
+          pagination={{
+            ...pagination,
+            onPageChange: changePage
+          }}
+        />
+      )}
+
+      {/* Export Button */}
+      {articles.length > 0 && (
+        <div className="mt-4 flex justify-end">
+          <ExportButton
+            data={articles}
+            filename="articles"
+            columns={[
+              { key: 'title', label: 'Title' },
+              { key: 'status', label: 'Status' },
+              { key: 'author.full_name', label: 'Author' },
+              { key: 'category.name', label: 'Category' },
+              { key: 'view_count', label: 'Views' },
+              { key: 'created_at', label: 'Created' }
+            ]}
+          />
         </div>
       )}
 
-      {/* No results */}
-      {filteredArticles.length === 0 && filters.search && (
-        <EmptyState
-          icon="Search"
-          title="No articles found"
-          description={`No articles match "${filters.search}"`}
-          action={{
-            label: 'Clear search',
-            onClick: () => onFiltersChange({ ...filters, search: '' })
+      {/* Editor Modal */}
+      {showEditor && (
+        <ArticleEditor
+          article={editingArticle}
+          userProfile={userProfile}
+          isOpen={showEditor}
+          onClose={() => {
+            setShowEditor(false);
+            setEditingArticle(null);
+          }}
+          onSave={() => {
+            refreshArticles();
+            setShowEditor(false);
+            setEditingArticle(null);
           }}
         />
       )}
@@ -425,85 +458,4 @@ const ArticlesContainer = ({
   );
 };
 
-// Article Card Component for Grid View
-const ArticleCard = ({ article, isSelected, onSelect, onEdit, onQuickAction }) => {
-  return (
-    <div className={cn(
-      'bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-all',
-      isSelected && 'ring-2 ring-accent'
-    )}>
-      {/* Checkbox */}
-      <div className="p-3 border-b bg-gray-50">
-        <div className="flex items-center justify-between">
-          <Checkbox
-            checked={isSelected}
-            onChange={onSelect}
-          />
-          <StatusBadge status={article.status} size="xs" />
-        </div>
-      </div>
-
-      {/* Featured Image */}
-      {article.featured_image && (
-        <div className="aspect-video bg-gray-100">
-          <img
-            src={article.featured_image}
-            alt={article.featured_image_alt || article.title}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
-
-      {/* Content */}
-      <div className="p-4 space-y-3">
-        <h3 className="font-semibold text-gray-900 line-clamp-2">
-          {article.title}
-          {article.is_featured && (
-            <Icon name="Star" size={14} className="inline-block ml-2 text-yellow-500 fill-current" />
-          )}
-        </h3>
-        
-        {article.excerpt && (
-          <p className="text-sm text-gray-600 line-clamp-3">
-            {article.excerpt}
-          </p>
-        )}
-
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>{article.view_count || 0} views</span>
-          <span>{formatDistanceToNow(new Date(article.updated_at), { addSuffix: true })}</span>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2 pt-2">
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={onEdit}
-            className="flex-1"
-          >
-            <Icon name="Edit" size={14} />
-            Edit
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onQuickAction('preview')}
-          >
-            <Icon name="Eye" size={14} />
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onQuickAction('delete')}
-            className="text-red-600"
-          >
-            <Icon name="Trash2" size={14} />
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default ArticlesContainer;
+export default Articles;

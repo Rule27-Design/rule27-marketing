@@ -76,7 +76,7 @@ export const useArticles = (initialFilters = {}) => {
     } catch (err) {
       console.error('Error fetching articles:', err);
       setError(err.message);
-      toast.error('Failed to load articles');
+      toast.error('Failed to load articles', err.message);
     } finally {
       setLoading(false);
     }
@@ -120,11 +120,6 @@ export const useArticles = (initialFilters = {}) => {
     });
   }, []);
 
-  // Get selected articles data
-  const getSelectedArticlesData = useCallback(() => {
-    return articles.filter(article => selectedArticles.includes(article.id));
-  }, [articles, selectedArticles]);
-
   return {
     articles,
     loading,
@@ -139,9 +134,6 @@ export const useArticles = (initialFilters = {}) => {
     refreshArticles,
     selectAll,
     deselectAll,
-    toggleSelection,
-    getSelectedArticlesData
+    toggleSelection
   };
 };
-
-export default useArticles;

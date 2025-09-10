@@ -1,22 +1,21 @@
 // src/pages/admin/articles/editor-tabs/SEOTab.jsx
 import React from 'react';
 import Input from '../../../../components/ui/Input';
-import ImageUpload from '../../../../components/ui/ImageUpload';
 
 const SEOTab = ({ formData, errors, onChange }) => {
-  const handleAddKeyword = (e) => {
+  const handleKeywordInput = (e) => {
     if (e.key === 'Enter' && e.target.value.trim()) {
       e.preventDefault();
-      const keyword = e.target.value.trim().toLowerCase();
-      if (!formData.meta_keywords?.includes(keyword)) {
-        onChange('meta_keywords', [...(formData.meta_keywords || []), keyword]);
+      const newKeyword = e.target.value.trim();
+      if (!formData.meta_keywords.includes(newKeyword)) {
+        onChange('meta_keywords', [...formData.meta_keywords, newKeyword]);
       }
       e.target.value = '';
     }
   };
 
-  const handleRemoveKeyword = (keyword) => {
-    onChange('meta_keywords', formData.meta_keywords?.filter(k => k !== keyword) || []);
+  const removeKeyword = (keyword) => {
+    onChange('meta_keywords', formData.meta_keywords.filter(k => k !== keyword));
   };
 
   return (
@@ -28,16 +27,14 @@ const SEOTab = ({ formData, errors, onChange }) => {
         </label>
         <Input
           type="text"
-          value={formData.meta_title || formData.title || ''}
+          value={formData.meta_title || ''}
           onChange={(e) => onChange('meta_title', e.target.value)}
-          placeholder="SEO title (defaults to article title)"
+          placeholder={formData.title || 'Page title for search engines'}
           maxLength={60}
+          error={errors.meta_title}
         />
-        {errors.meta_title && (
-          <p className="mt-1 text-sm text-red-600">{errors.meta_title}</p>
-        )}
-        <p className="mt-1 text-xs text-gray-500">
-          {formData.meta_title?.length || formData.title?.length || 0}/60 characters (recommended)
+        <p className="text-xs text-gray-500 mt-1">
+          {formData.meta_title?.length || 0}/60 characters (recommended)
         </p>
       </div>
 
@@ -47,19 +44,19 @@ const SEOTab = ({ formData, errors, onChange }) => {
           Meta Description
         </label>
         <textarea
-          value={formData.meta_description || formData.excerpt || ''}
+          value={formData.meta_description || ''}
           onChange={(e) => onChange('meta_description', e.target.value)}
-          placeholder="SEO description (defaults to excerpt)"
+          placeholder={formData.excerpt || 'Page description for search engines'}
           rows={3}
-          className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
           maxLength={160}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-accent focus:border-accent"
         />
-        {errors.meta_description && (
-          <p className="mt-1 text-sm text-red-600">{errors.meta_description}</p>
-        )}
-        <p className="mt-1 text-xs text-gray-500">
-          {formData.meta_description?.length || formData.excerpt?.length || 0}/160 characters (recommended)
+        <p className="text-xs text-gray-500 mt-1">
+          {formData.meta_description?.length || 0}/160 characters (recommended)
         </p>
+        {errors.meta_description && (
+          <p className="text-xs text-red-500 mt-1">{errors.meta_description}</p>
+        )}
       </div>
 
       {/* Meta Keywords */}
@@ -67,23 +64,24 @@ const SEOTab = ({ formData, errors, onChange }) => {
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Meta Keywords
         </label>
-        <Input
+        <input
           type="text"
-          onKeyDown={handleAddKeyword}
-          placeholder="Type a keyword and press Enter"
+          placeholder="Type keyword and press Enter"
+          onKeyDown={handleKeywordInput}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-accent focus:border-accent"
         />
-        {formData.meta_keywords?.length > 0 && (
+        
+        {formData.meta_keywords.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-2">
             {formData.meta_keywords.map(keyword => (
               <span
                 key={keyword}
-                className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm"
+                className="inline-flex items-center px-2 py-1 bg-gray-100 rounded-md text-xs"
               >
                 {keyword}
                 <button
-                  type="button"
-                  onClick={() => handleRemoveKeyword(keyword)}
-                  className="text-purple-600 hover:text-red-600"
+                  onClick={() => removeKeyword(keyword)}
+                  className="ml-1 text-gray-500 hover:text-red-500"
                 >
                   ×
                 </button>
@@ -91,50 +89,6 @@ const SEOTab = ({ formData, errors, onChange }) => {
             ))}
           </div>
         )}
-      </div>
-
-      {/* Open Graph */}
-      <div className="space-y-4 border-t pt-4">
-        <h3 className="font-medium text-gray-900">Social Media Preview</h3>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            OG Title
-          </label>
-          <Input
-            type="text"
-            value={formData.og_title || ''}
-            onChange={(e) => onChange('og_title', e.target.value)}
-            placeholder="Defaults to meta title"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            OG Description
-          </label>
-          <textarea
-            value={formData.og_description || ''}
-            onChange={(e) => onChange('og_description', e.target.value)}
-            placeholder="Defaults to meta description"
-            rows={2}
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            OG Image
-          </label>
-          <ImageUpload
-            value={formData.og_image}
-            onChange={(url) => onChange('og_image', url)}
-            className="w-full"
-          />
-          <p className="mt-1 text-xs text-gray-500">
-            Recommended: 1200x630px for best display on social media
-          </p>
-        </div>
       </div>
 
       {/* Canonical URL */}
@@ -146,12 +100,78 @@ const SEOTab = ({ formData, errors, onChange }) => {
           type="url"
           value={formData.canonical_url || ''}
           onChange={(e) => onChange('canonical_url', e.target.value)}
-          placeholder="https://example.com/original-article"
+          placeholder={`https://rule27design.com/articles/${formData.slug || 'article-slug'}`}
+          error={errors.canonical_url}
         />
-        <p className="mt-1 text-xs text-gray-500">
-          Only set if this content exists elsewhere
+        <p className="text-xs text-gray-500 mt-1">
+          Leave empty to auto-generate from slug
         </p>
+      </div>
+
+      {/* Open Graph */}
+      <div className="border-t pt-6">
+        <h3 className="text-sm font-medium text-gray-700 mb-4">Open Graph / Social Media</h3>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              OG Title
+            </label>
+            <Input
+              type="text"
+              value={formData.og_title || ''}
+              onChange={(e) => onChange('og_title', e.target.value)}
+              placeholder={formData.meta_title || formData.title || 'Social media title'}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              OG Description
+            </label>
+            <textarea
+              value={formData.og_description || ''}
+              onChange={(e) => onChange('og_description', e.target.value)}
+              placeholder={formData.meta_description || formData.excerpt || 'Social media description'}
+              rows={2}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-accent focus:border-accent"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              OG Image
+            </label>
+            <Input
+              type="url"
+              value={formData.og_image || ''}
+              onChange={(e) => onChange('og_image', e.target.value)}
+              placeholder={formData.featured_image || 'https://example.com/image.jpg'}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Recommended: 1200×630 pixels
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* SEO Preview */}
+      <div className="border-t pt-6">
+        <h3 className="text-sm font-medium text-gray-700 mb-4">Search Engine Preview</h3>
+        <div className="p-4 bg-white border rounded-lg">
+          <div className="text-blue-600 text-lg hover:underline cursor-pointer">
+            {formData.meta_title || formData.title || 'Article Title'}
+          </div>
+          <div className="text-green-700 text-sm mt-1">
+            https://rule27design.com/articles/{formData.slug || 'article-slug'}
+          </div>
+          <div className="text-gray-600 text-sm mt-1">
+            {formData.meta_description || formData.excerpt || 'Article description will appear here...'}
+          </div>
+        </div>
       </div>
     </div>
   );
 };
+
+export default SEOTab;

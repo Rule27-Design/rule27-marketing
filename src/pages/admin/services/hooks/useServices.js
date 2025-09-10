@@ -1,10 +1,10 @@
-// src/pages/admin/case-studies/hooks/useCaseStudies.js
+// src/pages/admin/services/hooks/useServices.js
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../../lib/supabase';
 import { useToast } from '../../../../components/ui/Toast';
 
-export const useCaseStudies = (initialFilters = {}) => {
-  const [caseStudies, setCaseStudies] = useState([]);
+export const useServices = (initialFilters = {}) => {
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState(initialFilters);
@@ -17,22 +17,21 @@ export const useCaseStudies = (initialFilters = {}) => {
   });
   const toast = useToast();
 
-  // Fetch case studies with filters
-  const fetchCaseStudies = useCallback(async () => {
+  // Fetch services with filters
+  const fetchServices = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
       let query = supabase
-        .from('case_studies')
+        .from('services')
         .select(`
           *,
-          team_members,
-          key_metrics,
-          gallery,
-          technologies_used,
-          deliverables,
-          testimonial:testimonials(id, author_name, content)
+          pricing_tiers,
+          process_steps,
+          features,
+          faqs,
+          related_services
         `, { count: 'exact' });
 
       // Apply filters
@@ -40,25 +39,20 @@ export const useCaseStudies = (initialFilters = {}) => {
         query = query.eq('status', filters.status);
       }
 
-      if (filters.industry && filters.industry !== 'all') {
-        query = query.eq('industry', filters.industry);
-      }
-
-      if (filters.service_type && filters.service_type !== 'all') {
-        query = query.eq('service_type', filters.service_type);
+      if (filters.category && filters.category !== 'all') {
+        query = query.eq('category', filters.category);
       }
 
       if (filters.featured === 'featured') {
         query = query.eq('is_featured', true);
-      } else if (filters.featured === 'not-featured') {
-        query = query.eq('is_featured', false);
+      } else if (filters.featured === 'popular') {
+        query = query.eq('is_popular', true);
       }
 
       if (filters.search) {
         query = query.or(`
-          title.ilike.%${filters.search}%,
-          client_name.ilike.%${filters.search}%,
-          description.ilike.%${filters.search}%
+          name.ilike.%${filters.search}%,
+          short_description.ilike.%${filters.search}%
         `);
       }
 
@@ -77,16 +71,16 @@ export const useCaseStudies = (initialFilters = {}) => {
 
       if (fetchError) throw fetchError;
 
-      setCaseStudies(data || []);
+      setServices(data || []);
       setPagination(prev => ({
         ...prev,
         total: count || 0,
         totalPages: Math.ceil((count || 0) / prev.pageSize)
       }));
     } catch (err) {
-      console.error('Error fetching case studies:', err);
+      console.error('Error fetching services:', err);
       setError(err.message);
-      toast.error('Failed to load case studies', err.message);
+      toast.error('Failed to load services', err.message);
     } finally {
       setLoading(false);
     }
@@ -94,13 +88,13 @@ export const useCaseStudies = (initialFilters = {}) => {
 
   // Initial fetch
   useEffect(() => {
-    fetchCaseStudies();
-  }, [fetchCaseStudies]);
+    fetchServices();
+  }, [fetchServices]);
 
-  // Refresh case studies
-  const refreshCaseStudies = useCallback(() => {
-    fetchCaseStudies();
-  }, [fetchCaseStudies]);
+  // Refresh services
+  const refreshServices = useCallback(() => {
+    fetchServices();
+  }, [fetchServices]);
 
   // Change page
   const changePage = useCallback((page) => {
@@ -108,7 +102,7 @@ export const useCaseStudies = (initialFilters = {}) => {
   }, []);
 
   return {
-    caseStudies,
+    services,
     loading,
     error,
     filters,
@@ -117,6 +111,6 @@ export const useCaseStudies = (initialFilters = {}) => {
     setSelectedItems,
     pagination,
     changePage,
-    refreshCaseStudies
+    refreshServices
   };
 };
