@@ -26,12 +26,8 @@ export const useServices = (initialFilters = {}) => {
       let query = supabase
         .from('services')
         .select(`
-          *,
-          pricing_tiers,
-          process_steps,
-          features,
-          faqs,
-          related_services
+            *,
+            zone:service_zones!zone_id(*)
         `, { count: 'exact' });
 
       // Apply filters

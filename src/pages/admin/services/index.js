@@ -8,7 +8,6 @@ export { default as FeaturesTab } from './editor-tabs/FeaturesTab';
 export { default as PricingTab } from './editor-tabs/PricingTab';
 export { default as ProcessTab } from './editor-tabs/ProcessTab';
 export { default as MediaTab } from './editor-tabs/MediaTab';
-export { default as FAQTab } from './editor-tabs/FAQTab';
 export { default as SettingsTab } from './editor-tabs/SettingsTab';
 
 // Export services
