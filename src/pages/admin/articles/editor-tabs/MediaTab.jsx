@@ -1,84 +1,102 @@
 // src/pages/admin/articles/editor-tabs/MediaTab.jsx
 import React from 'react';
-import Input from '../../../../components/ui/Input';
 import ImageUpload from '../../../../components/ui/ImageUpload';
-import { cn } from '../../../../utils';
+import Input from '../../../../components/ui/Input';
 
 const MediaTab = ({ formData, errors, onChange }) => {
   return (
     <div className="space-y-6">
       {/* Featured Image */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Featured Image
-        </label>
         <ImageUpload
+          label="Featured Image"
           value={formData.featured_image}
-          onChange={(url) => onChange('featured_image', url)}
+          onChange={(value) => onChange('featured_image', value)}
           bucket="media"
           folder="articles"
+          error={errors.featured_image}
+          showPreview={true}
+          acceptedFormats={['image/jpeg', 'image/png', 'image/webp']}
+          maxSizeMB={5}
         />
-        {errors.featured_image && (
-          <p className="text-xs text-red-500 mt-1">{errors.featured_image}</p>
+        
+        {formData.featured_image && (
+          <div className="mt-4">
+            <Input
+              label="Featured Image Alt Text"
+              value={formData.featured_image_alt}
+              onChange={(e) => onChange('featured_image_alt', e.target.value)}
+              placeholder="Describe the image for accessibility"
+              error={errors.featured_image_alt}
+              required
+            />
+          </div>
         )}
       </div>
 
-      {/* Featured Image Alt Text */}
-      {formData.featured_image && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Alt Text
-          </label>
-          <Input
-            type="text"
-            value={formData.featured_image_alt || ''}
-            onChange={(e) => onChange('featured_image_alt', e.target.value)}
-            placeholder="Describe the image for accessibility"
-          />
-        </div>
-      )}
-
       {/* Featured Video */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Featured Video URL
-        </label>
         <Input
-          type="url"
-          value={formData.featured_video || ''}
+          label="Featured Video URL (Optional)"
+          value={formData.featured_video}
           onChange={(e) => onChange('featured_video', e.target.value)}
-          placeholder="https://youtube.com/watch?v=... or Vimeo URL"
+          placeholder="YouTube, Vimeo, or direct video URL"
+          error={errors.featured_video}
         />
-        <p className="text-xs text-gray-500 mt-1">
-          Optional: Add a video to complement your article
-        </p>
+        
+        {formData.featured_video && (
+          <div className="mt-2 aspect-video bg-gray-100 rounded-lg overflow-hidden">
+            {/* Video preview would go here */}
+            <div className="flex items-center justify-center h-full text-gray-400">
+              Video Preview
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Preview */}
-      {(formData.featured_image || formData.featured_video) && (
-        <div className={cn(
-          "border rounded-lg p-4",
-          "bg-gray-50"
-        )}>
-          <h4 className="text-sm font-medium text-gray-700 mb-3">Preview</h4>
-          
-          {formData.featured_image && (
-            <div className="mb-4">
+      {/* Gallery Images */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Gallery Images (Optional)
+        </label>
+        <div className="grid grid-cols-3 gap-4">
+          {(formData.gallery_images || []).map((image, index) => (
+            <div key={index} className="relative">
               <img
-                src={formData.featured_image}
-                alt={formData.featured_image_alt || 'Featured image'}
-                className="w-full rounded-lg"
+                src={image}
+                alt=""
+                className="w-full h-32 object-cover rounded-lg"
               />
+              <button
+                onClick={() => {
+                  const newGallery = [...(formData.gallery_images || [])];
+                  newGallery.splice(index, 1);
+                  onChange('gallery_images', newGallery);
+                }}
+                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+              >
+                ×
+              </button>
             </div>
-          )}
+          ))}
           
-          {formData.featured_video && (
-            <div className="aspect-video bg-black rounded-lg flex items-center justify-center">
-              <span className="text-white">Video: {formData.featured_video}</span>
+          <ImageUpload
+            value=""
+            onChange={(value) => {
+              onChange('gallery_images', [...(formData.gallery_images || []), value]);
+            }}
+            bucket="media"
+            folder="articles/gallery"
+            showPreview={false}
+            className="h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:border-gray-400"
+          >
+            <div className="text-center">
+              <Icon name="Plus" size={24} className="mx-auto text-gray-400" />
+              <span className="text-sm text-gray-500">Add Image</span>
             </div>
-          )}
+          </ImageUpload>
         </div>
-      )}
+      </div>
     </div>
   );
 };
