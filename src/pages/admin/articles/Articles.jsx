@@ -184,144 +184,137 @@ const Articles = () => {
   };
 
   // Table columns configuration for VirtualTable
-  const tableColumns = [
+    const tableColumns = [
     {
-      key: 'select',
-      header: () => (
+        key: 'select',
+        label: '', // Changed from 'header' to 'label'
+        render: (value, article) => ( // Changed from 'cell' to 'render'
         <Checkbox
-          checked={articles.length > 0 && selectedArticles.length === articles.length}
-          onChange={(checked) => {
-            setSelectedArticles(checked ? articles.map(a => a.id) : []);
-          }}
-        />
-      ),
-      cell: (article) => (
-        <Checkbox
-          checked={selectedArticles.includes(article.id)}
-          onChange={(checked) => {
+            checked={selectedArticles.includes(article.id)}
+            onChange={(checked) => {
             setSelectedArticles(prev =>
-              checked 
+                checked 
                 ? [...prev, article.id]
                 : prev.filter(id => id !== article.id)
             );
-          }}
+            }}
         />
-      ),
-      width: 40
+        ),
+        width: 40
     },
     {
-      key: 'title',
-      header: 'Title',
-      cell: (article) => (
+        key: 'title',
+        label: 'Title',
+        render: (value, article) => (
         <div className="flex items-center space-x-3">
-          {article.featured_image && (
+            {article.featured_image && (
             <img
-              src={article.featured_image}
-              alt=""
-              className="w-10 h-10 rounded object-cover"
+                src={article.featured_image}
+                alt=""
+                className="w-10 h-10 rounded object-cover"
             />
-          )}
-          <div>
+            )}
+            <div>
             <div className="font-medium text-text-primary">
-              {article.title}
-              {article.is_featured && (
+                {article.title}
+                {article.is_featured && (
                 <Icon name="Star" size={12} className="inline ml-1 text-yellow-500" />
-              )}
+                )}
             </div>
             {article.excerpt && (
-              <div className="text-xs text-text-secondary line-clamp-1">
+                <div className="text-xs text-text-secondary line-clamp-1">
                 {article.excerpt}
-              </div>
+                </div>
             )}
-          </div>
+            </div>
         </div>
-      )
+        )
     },
     {
-      key: 'status',
-      header: 'Status',
-      cell: (article) => <StatusBadge status={article.status} size="xs" />,
-      width: 120
+        key: 'status',
+        label: 'Status',
+        render: (value, article) => <StatusBadge status={article.status} size="xs" />,
+        width: 120
     },
     {
-      key: 'author',
-      header: 'Author',
-      cell: (article) => (
+        key: 'author',
+        label: 'Author',
+        render: (value, article) => (
         <div className="text-sm">
-          {article.author?.full_name || 'Unknown'}
+            {article.author?.full_name || 'Unknown'}
         </div>
-      ),
-      width: 150
+        ),
+        width: 150
     },
     {
-      key: 'category',
-      header: 'Category',
-      cell: (article) => (
+        key: 'category',
+        label: 'Category',
+        render: (value, article) => (
         <div className="text-sm text-text-secondary">
-          {article.category?.name || '-'}
+            {article.category?.name || '-'}
         </div>
-      ),
-      width: 120
+        ),
+        width: 120
     },
     {
-      key: 'metrics',
-      header: 'Metrics',
-      cell: (article) => (
+        key: 'metrics',
+        label: 'Metrics',
+        render: (value, article) => (
         <MetricsDisplay
-          metrics={[
+            metrics={[
             { value: article.view_count || 0, icon: 'Eye' },
             { value: article.like_count || 0, icon: 'Heart' },
             { value: article.share_count || 0, icon: 'Share2' }
-          ]}
-          compact
+            ]}
+            compact
         />
-      ),
-      width: 150
+        ),
+        width: 150
     },
     {
-      key: 'date',
-      header: 'Modified',
-      cell: (article) => (
+        key: 'date',
+        label: 'Modified',
+        render: (value, article) => (
         <div className="text-xs text-text-secondary">
-          {formatDate(article.updated_at, 'MMM d, yyyy')}
+            {formatDate(article.updated_at, 'MMM d, yyyy')}
         </div>
-      ),
-      width: 100
+        ),
+        width: 100
     },
     {
-      key: 'actions',
-      header: '',
-      cell: (article) => (
+        key: 'actions',
+        label: '',
+        render: (value, article) => (
         <div className="flex items-center space-x-1">
-          <Button
+            <Button
             variant="ghost"
             size="xs"
             onClick={() => {
-              setEditingArticle(article);
-              setShowEditor(true);
+                setEditingArticle(article);
+                setShowEditor(true);
             }}
             iconName="Edit2"
-          />
-          <Button
+            />
+            <Button
             variant="ghost"
             size="xs"
             onClick={async () => {
-              if (window.confirm('Are you sure you want to delete this article?')) {
+                if (window.confirm('Are you sure you want to delete this article?')) {
                 const result = await articleOperations.delete(article.id);
                 if (result.success) {
-                  toast.success('Article deleted');
-                  refreshArticles();
+                    toast.success('Article deleted');
+                    refreshArticles();
                 }
-              }
+                }
             }}
             iconName="Trash2"
             className="text-red-500"
-          />
+            />
         </div>
-      ),
-      width: 100
+        ),
+        width: 100
     }
-  ];
+    ];
 
   // Quick actions for the header
   const quickActionsConfig = [
