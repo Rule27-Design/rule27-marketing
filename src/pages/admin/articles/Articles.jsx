@@ -1,9 +1,8 @@
-// src/pages/admin/articles/Articles.jsx
+// src/pages/admin/articles/Articles.jsx - Fixed version
 import React, { useState, useEffect, useCallback } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 import { 
-  FilterBar,
   BulkActions,
   StatusBadge,
   EmptyState,
@@ -60,11 +59,10 @@ const Articles = () => {
   useEffect(() => {
     const unsubscribe = subscribeToEvents('article:updated', (article) => {
       refreshArticles();
-      // Don't use toast inside subscription to avoid re-render issues
     });
 
     return unsubscribe;
-  }, []); // Empty dependency array
+  }, []);
 
   // Fetch categories and authors for filters
   useEffect(() => {
@@ -95,53 +93,13 @@ const Articles = () => {
     }
   };
 
-  // Filter configuration with actual data
-  const filterConfig = [
-    {
-      id: 'status',
-      label: 'Status',
-      type: 'select',
-      value: filters.status || 'all',
-      options: [
-        { value: 'all', label: 'All Status' },
-        { value: 'draft', label: 'Draft' },
-        { value: 'published', label: 'Published' },
-        { value: 'scheduled', label: 'Scheduled' },
-        { value: 'archived', label: 'Archived' }
-      ]
-    },
-    {
-      id: 'category',
-      label: 'Category',
-      type: 'select',
-      value: filters.category || 'all',
-      options: [
-        { value: 'all', label: 'All Categories' },
-        ...categories.map(cat => ({ value: cat.id, label: cat.name }))
-      ]
-    },
-    {
-      id: 'author',
-      label: 'Author',
-      type: 'select',
-      value: filters.author || 'all',
-      options: [
-        { value: 'all', label: 'All Authors' },
-        ...authors.map(author => ({ value: author.id, label: author.full_name }))
-      ]
-    },
-    {
-      id: 'featured',
-      label: 'Featured',
-      type: 'select',
-      value: filters.featured || 'all',
-      options: [
-        { value: 'all', label: 'All Articles' },
-        { value: 'featured', label: 'Featured Only' },
-        { value: 'not-featured', label: 'Not Featured' }
-      ]
-    }
-  ];
+  // Handle filter change
+  const handleFilterChange = (filterId, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterId]: value === 'all' ? null : value
+    }));
+  };
 
   // Bulk action configuration
   const bulkActionConfig = [
@@ -221,7 +179,7 @@ const Articles = () => {
     }
   };
 
-  // Table columns configuration with better spacing
+  // Table columns with fixed widths
   const tableColumns = [
     {
       key: 'select',
@@ -233,62 +191,61 @@ const Articles = () => {
           onClick={(e) => e.stopPropagation()}
         />
       ),
-      width: '40px'
+      width: '40px',
+      fixed: true
     },
     {
       key: 'title',
       label: 'Title',
       render: (value, article) => (
-        <div className="min-w-0">
-          <div className="flex items-start space-x-3">
-            {article.featured_image && (
-              <img
-                src={article.featured_image}
-                alt=""
-                className="w-12 h-12 rounded object-cover flex-shrink-0"
-              />
-            )}
-            <div className="min-w-0 flex-1">
-              <div className="font-medium text-gray-900">
-                {article.title}
-                {article.is_featured && (
-                  <Icon name="Star" size={12} className="inline ml-1 text-yellow-500" />
-                )}
-              </div>
-              {article.excerpt && (
-                <div className="text-xs text-gray-500 line-clamp-1 mt-1">
-                  {article.excerpt}
-                </div>
+        <div className="flex items-start space-x-3">
+          {article.featured_image && (
+            <img
+              src={article.featured_image}
+              alt=""
+              className="w-10 h-10 rounded object-cover flex-shrink-0"
+            />
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="font-medium text-gray-900 truncate">
+              {article.title}
+              {article.is_featured && (
+                <Icon name="Star" size={12} className="inline ml-1 text-yellow-500" />
               )}
             </div>
+            {article.excerpt && (
+              <div className="text-xs text-gray-500 line-clamp-1 mt-0.5">
+                {article.excerpt}
+              </div>
+            )}
           </div>
         </div>
       ),
       sortable: true,
-      width: 'auto'
+      minWidth: '300px'
     },
     {
       key: 'status',
       label: 'Status',
       render: (value, article) => <StatusBadge status={article.status} size="xs" />,
-      width: '110px',
+      width: '100px',
       sortable: true
     },
     {
       key: 'author',
       label: 'Author',
       render: (value, article) => (
-        <div className="text-sm text-gray-700">
+        <div className="text-sm text-gray-700 truncate">
           {article.author?.full_name || 'Unknown'}
         </div>
       ),
-      width: '140px'
+      width: '120px'
     },
     {
       key: 'category',
       label: 'Category',
       render: (value, article) => (
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-gray-600 truncate">
           {article.category?.name || '-'}
         </div>
       ),
@@ -298,22 +255,13 @@ const Articles = () => {
       key: 'metrics',
       label: 'Metrics',
       render: (value, article) => (
-        <div className="flex items-center space-x-3 text-sm text-gray-500">
-          <span className="flex items-center" title="Views">
-            <Icon name="Eye" size={14} className="mr-1" />
-            {article.view_count || 0}
-          </span>
-          <span className="flex items-center" title="Likes">
-            <Icon name="Heart" size={14} className="mr-1" />
-            {article.like_count || 0}
-          </span>
-          <span className="flex items-center" title="Shares">
-            <Icon name="Share2" size={14} className="mr-1" />
-            {article.share_count || 0}
-          </span>
+        <div className="flex items-center space-x-2 text-xs text-gray-500">
+          <span title="Views">{article.view_count || 0}</span>
+          <span title="Likes">❤ {article.like_count || 0}</span>
+          <span title="Shares">↗ {article.share_count || 0}</span>
         </div>
       ),
-      width: '150px'
+      width: '120px'
     },
     {
       key: 'date',
@@ -323,7 +271,7 @@ const Articles = () => {
           {formatDate(article.updated_at, 'MMM d, yyyy')}
         </div>
       ),
-      width: '100px',
+      width: '90px',
       sortable: true
     },
     {
@@ -363,7 +311,8 @@ const Articles = () => {
           </Button>
         </div>
       ),
-      width: '80px'
+      width: '80px',
+      fixed: true
     }
   ];
 
@@ -410,7 +359,7 @@ const Articles = () => {
         <QuickActions actions={quickActionsConfig} />
       </div>
 
-      {/* Single Search Bar */}
+      {/* Search and Filters - Custom implementation to avoid FilterBar issues */}
       <div className="mb-4 space-y-3">
         <SearchBar
           placeholder="Search articles..."
@@ -418,13 +367,72 @@ const Articles = () => {
           debounceMs={300}
         />
         
-        {/* Filter Bar without internal search */}
-        <FilterBar
-          filters={filterConfig}
-          onFilterChange={(newFilters) => setFilters({ ...filters, ...newFilters })}
-          onReset={() => setFilters({})}
-          hideSearch={true}
-        />
+        <div className="flex items-center gap-3">
+          {/* Status Filter */}
+          <select
+            value={filters.status || 'all'}
+            onChange={(e) => handleFilterChange('status', e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="all">All Status</option>
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="archived">Archived</option>
+          </select>
+
+          {/* Author Filter */}
+          <select
+            value={filters.author || 'all'}
+            onChange={(e) => handleFilterChange('author', e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="all">All Authors</option>
+            {authors.map(author => (
+              <option key={author.id} value={author.id}>
+                {author.full_name}
+              </option>
+            ))}
+          </select>
+
+          {/* Category Filter */}
+          <select
+            value={filters.category || 'all'}
+            onChange={(e) => handleFilterChange('category', e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="all">All Categories</option>
+            {categories.map(cat => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Featured Filter */}
+          <select
+            value={filters.featured || 'all'}
+            onChange={(e) => handleFilterChange('featured', e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="all">All Articles</option>
+            <option value="featured">Featured Only</option>
+            <option value="not-featured">Not Featured</option>
+          </select>
+
+          {/* Clear Filters */}
+          {Object.keys(filters).some(key => filters[key] && filters[key] !== 'all') && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setFilters({})}
+              className="text-gray-500"
+            >
+              <Icon name="X" size={16} className="mr-1" />
+              Clear
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Bulk Actions */}
@@ -456,7 +464,7 @@ const Articles = () => {
           <VirtualTable
             data={articles}
             columns={tableColumns}
-            rowHeight={80}
+            rowHeight={72}
             visibleRows={10}
             onRowClick={(article) => {
               setEditingArticle(article);
