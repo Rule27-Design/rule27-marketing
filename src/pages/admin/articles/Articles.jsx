@@ -1,5 +1,5 @@
 // src/pages/admin/articles/Articles.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { 
   FilterBar,
@@ -42,7 +42,11 @@ const Articles = () => {
     setSelectedArticles,
     pagination,
     changePage,
-    refreshArticles
+    changePageSize,
+    refreshArticles,
+    selectAll,
+    deselectAll,
+    toggleSelection
   } = useArticles({
     status: searchParams.get('status') || 'all'
   });
@@ -79,18 +83,10 @@ const Articles = () => {
       label: 'Category',
       type: 'select',
       defaultValue: 'all',
-      async: true,
-      loadOptions: async () => {
-        // Load categories from database
-        const { data } = await supabase
-          .from('categories')
-          .select('id, name')
-          .eq('type', 'article');
-        return [
-          { value: 'all', label: 'All Categories' },
-          ...data.map(cat => ({ value: cat.id, label: cat.name }))
-        ];
-      }
+      options: [
+        { value: 'all', label: 'All Categories' }
+        // Categories will be loaded dynamically
+      ]
     },
     {
       id: 'featured',
@@ -136,7 +132,7 @@ const Articles = () => {
     }
   ];
 
-  // Handle bulk actions from BulkActions component
+  // Handle bulk actions
   const handleBulkAction = async (actionId, selectedIds) => {
     try {
       let result;
@@ -184,139 +180,138 @@ const Articles = () => {
   };
 
   // Table columns configuration for VirtualTable
-    const tableColumns = [
+  const tableColumns = [
     {
-        key: 'select',
-        label: '', // Changed from 'header' to 'label'
-        render: (value, article) => ( // Changed from 'cell' to 'render'
+      key: 'select',
+      label: '',
+      render: (value, article) => (
         <Checkbox
-            checked={selectedArticles.includes(article.id)}
-            onChange={(checked) => {
-            setSelectedArticles(prev =>
-                checked 
-                ? [...prev, article.id]
-                : prev.filter(id => id !== article.id)
-            );
-            }}
+          checked={selectedArticles.includes(article.id)}
+          onChange={(checked) => toggleSelection(article.id)}
         />
-        ),
-        width: 40
+      ),
+      width: 40
     },
     {
-        key: 'title',
-        label: 'Title',
-        render: (value, article) => (
+      key: 'title',
+      label: 'Title',
+      render: (value, article) => (
         <div className="flex items-center space-x-3">
-            {article.featured_image && (
+          {article.featured_image && (
             <img
-                src={article.featured_image}
-                alt=""
-                className="w-10 h-10 rounded object-cover"
+              src={article.featured_image}
+              alt=""
+              className="w-10 h-10 rounded object-cover"
             />
-            )}
-            <div>
+          )}
+          <div>
             <div className="font-medium text-text-primary">
-                {article.title}
-                {article.is_featured && (
+              {article.title}
+              {article.is_featured && (
                 <Icon name="Star" size={12} className="inline ml-1 text-yellow-500" />
-                )}
+              )}
             </div>
             {article.excerpt && (
-                <div className="text-xs text-text-secondary line-clamp-1">
+              <div className="text-xs text-text-secondary line-clamp-1">
                 {article.excerpt}
-                </div>
+              </div>
             )}
-            </div>
+          </div>
         </div>
-        )
+      ),
+      sortable: true
     },
     {
-        key: 'status',
-        label: 'Status',
-        render: (value, article) => <StatusBadge status={article.status} size="xs" />,
-        width: 120
+      key: 'status',
+      label: 'Status',
+      render: (value, article) => <StatusBadge status={article.status} size="xs" />,
+      width: 120,
+      sortable: true
     },
     {
-        key: 'author',
-        label: 'Author',
-        render: (value, article) => (
+      key: 'author',
+      label: 'Author',
+      render: (value, article) => (
         <div className="text-sm">
-            {article.author?.full_name || 'Unknown'}
+          {article.author?.full_name || 'Unknown'}
         </div>
-        ),
-        width: 150
+      ),
+      width: 150
     },
     {
-        key: 'category',
-        label: 'Category',
-        render: (value, article) => (
+      key: 'category',
+      label: 'Category',
+      render: (value, article) => (
         <div className="text-sm text-text-secondary">
-            {article.category?.name || '-'}
+          {article.category?.name || '-'}
         </div>
-        ),
-        width: 120
+      ),
+      width: 120
     },
     {
-        key: 'metrics',
-        label: 'Metrics',
-        render: (value, article) => (
+      key: 'metrics',
+      label: 'Metrics',
+      render: (value, article) => (
         <MetricsDisplay
-            metrics={[
+          metrics={[
             { value: article.view_count || 0, icon: 'Eye' },
             { value: article.like_count || 0, icon: 'Heart' },
             { value: article.share_count || 0, icon: 'Share2' }
-            ]}
-            compact
+          ]}
+          compact
         />
-        ),
-        width: 150
+      ),
+      width: 150
     },
     {
-        key: 'date',
-        label: 'Modified',
-        render: (value, article) => (
+      key: 'date',
+      label: 'Modified',
+      render: (value, article) => (
         <div className="text-xs text-text-secondary">
-            {formatDate(article.updated_at, 'MMM d, yyyy')}
+          {formatDate(article.updated_at, 'MMM d, yyyy')}
         </div>
-        ),
-        width: 100
+      ),
+      width: 100,
+      sortable: true
     },
     {
-        key: 'actions',
-        label: '',
-        render: (value, article) => (
+      key: 'actions',
+      label: '',
+      render: (value, article) => (
         <div className="flex items-center space-x-1">
-            <Button
+          <Button
             variant="ghost"
             size="xs"
-            onClick={() => {
-                setEditingArticle(article);
-                setShowEditor(true);
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditingArticle(article);
+              setShowEditor(true);
             }}
             iconName="Edit2"
-            />
-            <Button
+          />
+          <Button
             variant="ghost"
             size="xs"
-            onClick={async () => {
-                if (window.confirm('Are you sure you want to delete this article?')) {
+            onClick={async (e) => {
+              e.stopPropagation();
+              if (window.confirm('Are you sure you want to delete this article?')) {
                 const result = await articleOperations.delete(article.id);
                 if (result.success) {
-                    toast.success('Article deleted');
-                    refreshArticles();
+                  toast.success('Article deleted');
+                  refreshArticles();
                 }
-                }
+              }
             }}
             iconName="Trash2"
             className="text-red-500"
-            />
+          />
         </div>
-        ),
-        width: 100
+      ),
+      width: 100
     }
-    ];
+  ];
 
-  // Quick actions for the header
+  // Quick actions configuration
   const quickActionsConfig = [
     {
       id: 'new',
@@ -362,9 +357,9 @@ const Articles = () => {
       {/* Search and Filters */}
       <div className="mb-4 space-y-3">
         <SearchBar
-          value={filters.search || ''}
-          onChange={(value) => setFilters({ ...filters, search: value })}
           placeholder="Search articles..."
+          onSearch={(value) => setFilters({ ...filters, search: value })}
+          debounceMs={300}
         />
         
         <FilterBar
@@ -375,41 +370,98 @@ const Articles = () => {
       </div>
 
       {/* Bulk Actions */}
-      <BulkActions
-        selectedItems={selectedArticles}
-        actions={bulkActionConfig}
-        onAction={handleBulkAction}
-        position="top"
-      />
+      {selectedArticles.length > 0 && (
+        <BulkActions
+          selectedItems={selectedArticles}
+          actions={bulkActionConfig}
+          onAction={handleBulkAction}
+          position="top"
+        />
+      )}
 
       {/* Articles Table or Empty State */}
-      {articles.length === 0 ? (
-        <EmptyState
-          icon="FileText"
-          title="No articles found"
-          message="Create your first article to get started"
-          action={{
-            label: 'Create Article',
-            onClick: () => {
-              setEditingArticle(null);
+      <div className="flex-1 bg-white rounded-lg shadow overflow-hidden">
+        {articles.length === 0 ? (
+          <EmptyState
+            icon="FileText"
+            title="No articles found"
+            message="Create your first article to get started"
+            action={{
+              label: 'Create Article',
+              onClick: () => {
+                setEditingArticle(null);
+                setShowEditor(true);
+              }
+            }}
+          />
+        ) : (
+          <VirtualTable
+            data={articles}
+            columns={tableColumns}
+            rowHeight={80}
+            visibleRows={10}
+            onRowClick={(article) => {
+              setEditingArticle(article);
               setShowEditor(true);
-            }
-          }}
-        />
-      ) : (
-        <VirtualTable
-          data={articles}
-          columns={tableColumns}
-          rowHeight={80}
-          onRowClick={(article) => {
-            setEditingArticle(article);
-            setShowEditor(true);
-          }}
-          pagination={{
-            ...pagination,
-            onPageChange: changePage
-          }}
-        />
+            }}
+            selectedRows={selectedArticles}
+            onSelectionChange={setSelectedArticles}
+            sortable={true}
+            onSort={(key, direction) => {
+              setFilters({ ...filters, sortBy: key, sortOrder: direction });
+            }}
+            loading={loading}
+          />
+        )}
+      </div>
+
+      {/* Pagination */}
+      {articles.length > 0 && (
+        <div className="mt-4 flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            Showing {(pagination.page - 1) * pagination.pageSize + 1} to{' '}
+            {Math.min(pagination.page * pagination.pageSize, pagination.total)} of{' '}
+            {pagination.total} articles
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => changePage(pagination.page - 1)}
+              disabled={pagination.page === 1}
+            >
+              Previous
+            </Button>
+            
+            {/* Page numbers */}
+            <div className="flex items-center space-x-1">
+              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                const pageNum = i + 1;
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={pageNum === pagination.page ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => changePage(pageNum)}
+                    className="w-8 h-8 p-0"
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => changePage(pagination.page + 1)}
+              disabled={pagination.page === pagination.totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Export Button */}

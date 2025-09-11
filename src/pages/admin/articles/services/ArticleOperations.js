@@ -1,43 +1,41 @@
 // src/pages/admin/articles/services/ArticleOperations.js
 import { supabase } from '../../../../lib/supabase';
-import { sanitizeData } from '../../../../utils';
+import { generateSlug, sanitizeData, cleanTimestampField } from '../../../../utils/validation';
 
-export class ArticleOperationsService {
-  // Calculate read time helper
-  calculateReadTime(content) {
-    if (!content) return 0;
-    const text = typeof content === 'string' ? content : content.text || '';
-    const wordsPerMinute = 200;
-    const words = text.split(/\s+/).length;
-    return Math.ceil(words / wordsPerMinute);
-  }
-
+class ArticleOperationsService {
   // Create article
-  async create(data) {
+  async create(articleData) {
     try {
-      // Calculate read time if content exists
-      if (data.content) {
-        data.read_time = this.calculateReadTime(data.content);
+      const sanitized = sanitizeData(articleData);
+      
+      // Generate slug if not provided
+      if (!sanitized.slug && sanitized.title) {
+        sanitized.slug = generateSlug(sanitized.title);
       }
 
-      const cleanData = sanitizeData(data);
+      // Auto-generate canonical URL if not provided
+      if (!sanitized.canonical_url && sanitized.slug) {
+        sanitized.canonical_url = `https://rule27design.com/articles/${sanitized.slug}`;
+      }
 
-      const { data: article, error } = await supabase
+      // Calculate read time if content exists
+      if (sanitized.content && sanitized.content.wordCount) {
+        sanitized.read_time = Math.ceil(sanitized.content.wordCount / 200);
+      }
+
+      // Clean timestamp fields
+      if (sanitized.scheduled_at) {
+        sanitized.scheduled_at = cleanTimestampField(sanitized.scheduled_at);
+      }
+
+      const { data, error } = await supabase
         .from('articles')
-        .insert([{
-          ...cleanData,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }])
+        .insert(sanitized)
         .select()
         .single();
 
       if (error) throw error;
-
-      // Create initial analytics record
-      await this.createAnalyticsRecord(article.id);
-
-      return { success: true, data: article };
+      return { success: true, data };
     } catch (error) {
       console.error('Error creating article:', error);
       return { success: false, error: error.message };
@@ -45,49 +43,32 @@ export class ArticleOperationsService {
   }
 
   // Update article
-  async update(id, data) {
+  async update(articleId, articleData) {
     try {
+      const sanitized = sanitizeData(articleData);
+      
       // Calculate read time if content exists
-      if (data.content) {
-        data.read_time = this.calculateReadTime(data.content);
+      if (sanitized.content && sanitized.content.wordCount) {
+        sanitized.read_time = Math.ceil(sanitized.content.wordCount / 200);
       }
 
-      const cleanData = sanitizeData(data);
-
-      // Check if status is changing to published
-      const { data: currentArticle } = await supabase
-        .from('articles')
-        .select('status')
-        .eq('id', id)
-        .single();
-
-      const isPublishing = currentArticle?.status !== 'published' && cleanData.status === 'published';
-
-      const updateData = {
-        ...cleanData,
-        updated_at: new Date().toISOString()
-      };
-
-      // Add published_at if publishing for the first time
-      if (isPublishing) {
-        updateData.published_at = new Date().toISOString();
+      // Clean timestamp fields
+      if (sanitized.scheduled_at) {
+        sanitized.scheduled_at = cleanTimestampField(sanitized.scheduled_at);
       }
 
-      const { data: article, error } = await supabase
+      // Add updated timestamp
+      sanitized.updated_at = new Date().toISOString();
+
+      const { data, error } = await supabase
         .from('articles')
-        .update(updateData)
-        .eq('id', id)
+        .update(sanitized)
+        .eq('id', articleId)
         .select()
         .single();
 
       if (error) throw error;
-
-      // Track status change in analytics
-      if (currentArticle?.status !== article.status) {
-        await this.trackStatusChange(id, currentArticle.status, article.status);
-      }
-
-      return { success: true, data: article };
+      return { success: true, data };
     } catch (error) {
       console.error('Error updating article:', error);
       return { success: false, error: error.message };
@@ -95,18 +76,14 @@ export class ArticleOperationsService {
   }
 
   // Delete article
-  async delete(id) {
+  async delete(articleId) {
     try {
-      // Delete related data first
-      await this.deleteRelatedData(id);
-
       const { error } = await supabase
         .from('articles')
         .delete()
-        .eq('id', id);
+        .eq('id', articleId);
 
       if (error) throw error;
-
       return { success: true };
     } catch (error) {
       console.error('Error deleting article:', error);
@@ -114,97 +91,59 @@ export class ArticleOperationsService {
     }
   }
 
-  // Duplicate article
-  async duplicate(id) {
+  // Duplicate an article
+  async duplicate(article, userProfile) {
     try {
-      // Get original article
-      const { data: original, error: fetchError } = await supabase
-        .from('articles')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      // Create duplicate with modified title and slug
-      const duplicate = {
-        ...original,
-        id: undefined,
-        title: `${original.title} (Copy)`,
-        slug: `${original.slug}-copy-${Date.now()}`,
+      const duplicatedData = {
+        ...article,
+        id: undefined, // Remove ID to create new
+        title: `${article.title} (Copy)`,
+        slug: `${article.slug}-copy-${Date.now()}`,
         status: 'draft',
-        is_featured: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        published_at: null,
         view_count: 0,
-        unique_view_count: 0,
         like_count: 0,
+        comment_count: 0,
         share_count: 0,
-        bookmark_count: 0
+        published_at: null,
+        scheduled_at: null,
+        created_at: undefined,
+        updated_at: undefined,
+        created_by: userProfile.id,
+        updated_by: userProfile.id,
+        author_id: userProfile.id
       };
 
-      const { data: newArticle, error: insertError } = await supabase
+      // Remove any system fields
+      delete duplicatedData.author;
+      delete duplicatedData.category;
+      delete duplicatedData.co_authors_data;
+
+      const { data, error } = await supabase
         .from('articles')
-        .insert([duplicate])
+        .insert(duplicatedData)
         .select()
         .single();
 
-      if (insertError) throw insertError;
-
-      // Create analytics record for new article
-      await this.createAnalyticsRecord(newArticle.id);
-
-      return { success: true, data: newArticle };
+      if (error) throw error;
+      return { success: true, data };
     } catch (error) {
       console.error('Error duplicating article:', error);
       return { success: false, error: error.message };
     }
   }
 
-  // Schedule article publishing
-  async schedulePublishing(id, scheduledDate) {
-    try {
-      const { data, error } = await supabase
-        .from('articles')
-        .update({
-          status: 'scheduled',
-          scheduled_at: scheduledDate,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Create scheduled job (would integrate with a job queue in production)
-      await this.createScheduledJob(id, scheduledDate);
-
-      return { success: true, data };
-    } catch (error) {
-      console.error('Error scheduling article:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  // Bulk operations
-  async bulkPublish(ids) {
+  // Bulk publish articles
+  async bulkPublish(articleIds) {
     try {
       const { error } = await supabase
         .from('articles')
         .update({ 
           status: 'published',
-          published_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          published_at: new Date().toISOString()
         })
-        .in('id', ids);
+        .in('id', articleIds);
 
       if (error) throw error;
-
-      // Track bulk action
-      await this.trackBulkAction('publish', ids);
-
       return { success: true };
     } catch (error) {
       console.error('Error bulk publishing:', error);
@@ -212,74 +151,26 @@ export class ArticleOperationsService {
     }
   }
 
-  async bulkArchive(ids) {
+  // Bulk update status
+  async bulkUpdateStatus(articleIds, newStatus, userProfile) {
     try {
-      const { error } = await supabase
-        .from('articles')
-        .update({ 
-          status: 'archived',
-          archived_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .in('id', ids);
-
-      if (error) throw error;
-
-      // Track bulk action
-      await this.trackBulkAction('archive', ids);
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error bulk archiving:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async bulkDelete(ids) {
-    try {
-      // Delete related data for all articles
-      for (const id of ids) {
-        await this.deleteRelatedData(id);
-      }
-
-      const { error } = await supabase
-        .from('articles')
-        .delete()
-        .in('id', ids);
-
-      if (error) throw error;
-
-      // Track bulk action
-      await this.trackBulkAction('delete', ids);
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error bulk deleting:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async bulkUpdateStatus(ids, status) {
-    try {
-      const updateData = {
-        status,
-        updated_at: new Date().toISOString()
+      const updateData = { 
+        status: newStatus,
+        updated_by: userProfile?.id
       };
 
-      if (status === 'published') {
+      if (newStatus === 'published') {
         updateData.published_at = new Date().toISOString();
+      } else if (newStatus === 'pending_approval') {
+        updateData.submitted_for_approval_at = new Date().toISOString();
       }
 
       const { error } = await supabase
         .from('articles')
         .update(updateData)
-        .in('id', ids);
+        .in('id', articleIds);
 
       if (error) throw error;
-
-      // Track bulk action
-      await this.trackBulkAction(`status_${status}`, ids);
-
       return { success: true };
     } catch (error) {
       console.error('Error bulk updating status:', error);
@@ -287,415 +178,247 @@ export class ArticleOperationsService {
     }
   }
 
-  // Archive/Unarchive
-  async archive(id) {
+  // Bulk archive articles
+  async bulkArchive(articleIds) {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('articles')
-        .update({
+        .update({ 
           status: 'archived',
-          archived_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          archived_at: new Date().toISOString()
         })
-        .eq('id', id)
-        .select()
-        .single();
+        .in('id', articleIds);
 
       if (error) throw error;
-
-      return { success: true, data };
-    } catch (error) {
-      console.error('Error archiving article:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async unarchive(id) {
-    try {
-      const { data, error } = await supabase
-        .from('articles')
-        .update({
-          status: 'draft',
-          archived_at: null,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      return { success: true, data };
-    } catch (error) {
-      console.error('Error unarchiving article:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  // Update metrics
-  async updateViewCount(id, sessionId) {
-    try {
-      // Check if this session has already viewed
-      const { data: existingView } = await supabase
-        .from('article_analytics')
-        .select('id')
-        .eq('article_id', id)
-        .eq('session_id', sessionId)
-        .single();
-
-      if (!existingView) {
-        // Record new view
-        await supabase
-          .from('article_analytics')
-          .insert({
-            article_id: id,
-            session_id: sessionId,
-            event_type: 'view',
-            created_at: new Date().toISOString()
-          });
-
-        // Increment view counts
-        const { data: article } = await supabase
-          .from('articles')
-          .select('view_count, unique_view_count')
-          .eq('id', id)
-          .single();
-
-        await supabase
-          .from('articles')
-          .update({
-            view_count: (article?.view_count || 0) + 1,
-            unique_view_count: (article?.unique_view_count || 0) + 1
-          })
-          .eq('id', id);
-      } else {
-        // Just increment total view count
-        const { data: article } = await supabase
-          .from('articles')
-          .select('view_count')
-          .eq('id', id)
-          .single();
-
-        await supabase
-          .from('articles')
-          .update({
-            view_count: (article?.view_count || 0) + 1
-          })
-          .eq('id', id);
-      }
-
       return { success: true };
     } catch (error) {
-      console.error('Error updating view count:', error);
+      console.error('Error bulk archiving:', error);
       return { success: false, error: error.message };
     }
   }
 
-  async updateLikeCount(id, userId, action = 'like') {
+  // Bulk delete articles
+  async bulkDelete(articleIds) {
     try {
-      const { data: article } = await supabase
+      const { error } = await supabase
+        .from('articles')
+        .delete()
+        .in('id', articleIds);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error) {
+      console.error('Error bulk deleting:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Schedule article for publishing
+  async scheduleArticle(articleId, scheduledDate, userProfile) {
+    try {
+      const { error } = await supabase
+        .from('articles')
+        .update({
+          scheduled_at: scheduledDate,
+          status: 'scheduled',
+          updated_by: userProfile?.id
+        })
+        .eq('id', articleId);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error) {
+      console.error('Error scheduling article:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Generate and update article slug
+  async updateSlug(articleId, title, userProfile) {
+    try {
+      const newSlug = generateSlug(title);
+      
+      // Check if slug already exists
+      const { data: existingArticle } = await supabase
+        .from('articles')
+        .select('id')
+        .eq('slug', newSlug)
+        .neq('id', articleId)
+        .single();
+
+      const finalSlug = existingArticle ? `${newSlug}-${Date.now()}` : newSlug;
+
+      const { error } = await supabase
+        .from('articles')
+        .update({
+          slug: finalSlug,
+          updated_by: userProfile?.id
+        })
+        .eq('id', articleId);
+
+      if (error) throw error;
+      return { success: true, slug: finalSlug };
+    } catch (error) {
+      console.error('Error updating slug:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Toggle article featured status
+  async toggleFeatured(articleId, currentStatus, userProfile) {
+    try {
+      const { error } = await supabase
+        .from('articles')
+        .update({
+          is_featured: !currentStatus,
+          updated_by: userProfile?.id
+        })
+        .eq('id', articleId);
+
+      if (error) throw error;
+      return { success: true, featured: !currentStatus };
+    } catch (error) {
+      console.error('Error toggling featured status:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Update article view count
+  async incrementViewCount(articleId) {
+    try {
+      // Get current view count
+      const { data: article, error: fetchError } = await supabase
+        .from('articles')
+        .select('view_count')
+        .eq('id', articleId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Increment view count
+      const { error } = await supabase
+        .from('articles')
+        .update({
+          view_count: (article.view_count || 0) + 1
+        })
+        .eq('id', articleId);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error) {
+      console.error('Error incrementing view count:', error);
+      // Don't return error for background operation
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Update article like count
+  async incrementLikeCount(articleId) {
+    try {
+      const { data: article, error: fetchError } = await supabase
         .from('articles')
         .select('like_count')
-        .eq('id', id)
+        .eq('id', articleId)
         .single();
 
-      const newCount = action === 'like' 
-        ? (article?.like_count || 0) + 1
-        : Math.max(0, (article?.like_count || 0) - 1);
+      if (fetchError) throw fetchError;
 
-      await supabase
+      const { error } = await supabase
         .from('articles')
-        .update({ like_count: newCount })
-        .eq('id', id);
+        .update({
+          like_count: (article.like_count || 0) + 1
+        })
+        .eq('id', articleId);
 
-      // Track in analytics
-      await supabase
-        .from('article_analytics')
-        .insert({
-          article_id: id,
-          user_id: userId,
-          event_type: action,
-          created_at: new Date().toISOString()
-        });
-
-      return { success: true, count: newCount };
-    } catch (error) {
-      console.error('Error updating like count:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async updateShareCount(id, platform) {
-    try {
-      const { data: article } = await supabase
-        .from('articles')
-        .select('share_count')
-        .eq('id', id)
-        .single();
-
-      const newCount = (article?.share_count || 0) + 1;
-
-      await supabase
-        .from('articles')
-        .update({ share_count: newCount })
-        .eq('id', id);
-
-      // Track in analytics
-      await supabase
-        .from('article_analytics')
-        .insert({
-          article_id: id,
-          event_type: 'share',
-          metadata: { platform },
-          created_at: new Date().toISOString()
-        });
-
-      return { success: true, count: newCount };
-    } catch (error) {
-      console.error('Error updating share count:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async updateBookmarkCount(id, userId, action = 'bookmark') {
-    try {
-      const { data: article } = await supabase
-        .from('articles')
-        .select('bookmark_count')
-        .eq('id', id)
-        .single();
-
-      const newCount = action === 'bookmark'
-        ? (article?.bookmark_count || 0) + 1
-        : Math.max(0, (article?.bookmark_count || 0) - 1);
-
-      await supabase
-        .from('articles')
-        .update({ bookmark_count: newCount })
-        .eq('id', id);
-
-      // Track in analytics
-      await supabase
-        .from('article_analytics')
-        .insert({
-          article_id: id,
-          user_id: userId,
-          event_type: action,
-          created_at: new Date().toISOString()
-        });
-
-      return { success: true, count: newCount };
-    } catch (error) {
-      console.error('Error updating bookmark count:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  // Track reading progress
-  async trackReadingProgress(id, userId, progress, timeOnPage) {
-    try {
-      await supabase
-        .from('article_analytics')
-        .insert({
-          article_id: id,
-          user_id: userId,
-          event_type: 'read_progress',
-          metadata: {
-            scroll_depth: progress,
-            time_on_page: timeOnPage
-          },
-          created_at: new Date().toISOString()
-        });
-
-      // Update average read depth if progress is complete
-      if (progress >= 90) {
-        const { data: article } = await supabase
-          .from('articles')
-          .select('average_read_depth, average_time_on_page')
-          .eq('id', id)
-          .single();
-
-        // Calculate new averages (simplified - in production, use proper averaging)
-        const newAvgDepth = article?.average_read_depth 
-          ? (article.average_read_depth + progress) / 2
-          : progress;
-        
-        const newAvgTime = article?.average_time_on_page
-          ? (article.average_time_on_page + timeOnPage) / 2
-          : timeOnPage;
-
-        await supabase
-          .from('articles')
-          .update({
-            average_read_depth: newAvgDepth,
-            average_time_on_page: newAvgTime
-          })
-          .eq('id', id);
-      }
-
+      if (error) throw error;
       return { success: true };
     } catch (error) {
-      console.error('Error tracking reading progress:', error);
+      console.error('Error incrementing like count:', error);
       return { success: false, error: error.message };
     }
   }
 
-  // Get related articles
-  async getRelatedArticles(id, limit = 5) {
+  // Update article share count
+  async incrementShareCount(articleId) {
     try {
-      // Get current article
-      const { data: currentArticle } = await supabase
+      const { data: article, error: fetchError } = await supabase
         .from('articles')
-        .select('category_id, tags')
-        .eq('id', id)
+        .select('share_count')
+        .eq('id', articleId)
         .single();
 
-      if (!currentArticle) {
-        return { success: false, error: 'Article not found' };
-      }
+      if (fetchError) throw fetchError;
 
-      // Find related by category and tags
-      let query = supabase
+      const { error } = await supabase
         .from('articles')
-        .select('id, title, slug, excerpt, featured_image, published_at, author:profiles!author_id(full_name)')
-        .eq('status', 'published')
-        .neq('id', id)
-        .limit(limit);
-
-      // Prioritize same category
-      if (currentArticle.category_id) {
-        query = query.eq('category_id', currentArticle.category_id);
-      }
-
-      const { data: relatedArticles, error } = await query;
+        .update({
+          share_count: (article.share_count || 0) + 1
+        })
+        .eq('id', articleId);
 
       if (error) throw error;
-
-      // If not enough articles in same category, get more from other categories
-      if (relatedArticles.length < limit) {
-        const { data: moreArticles } = await supabase
-          .from('articles')
-          .select('id, title, slug, excerpt, featured_image, published_at, author:profiles!author_id(full_name)')
-          .eq('status', 'published')
-          .neq('id', id)
-          .neq('category_id', currentArticle.category_id)
-          .limit(limit - relatedArticles.length);
-
-        if (moreArticles) {
-          relatedArticles.push(...moreArticles);
-        }
-      }
-
-      return { success: true, data: relatedArticles };
+      return { success: true };
     } catch (error) {
-      console.error('Error getting related articles:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  // Search articles
-  async searchArticles(query, filters = {}) {
-    try {
-      let supabaseQuery = supabase
-        .from('articles')
-        .select(`
-          *,
-          author:profiles!author_id(id, full_name, avatar_url),
-          category:categories(id, name, slug)
-        `);
-
-      // Apply search query
-      if (query) {
-        supabaseQuery = supabaseQuery.or(`
-          title.ilike.%${query}%,
-          excerpt.ilike.%${query}%,
-          content.ilike.%${query}%
-        `);
-      }
-
-      // Apply filters
-      if (filters.status) {
-        supabaseQuery = supabaseQuery.eq('status', filters.status);
-      }
-      if (filters.category_id) {
-        supabaseQuery = supabaseQuery.eq('category_id', filters.category_id);
-      }
-      if (filters.author_id) {
-        supabaseQuery = supabaseQuery.eq('author_id', filters.author_id);
-      }
-      if (filters.is_featured !== undefined) {
-        supabaseQuery = supabaseQuery.eq('is_featured', filters.is_featured);
-      }
-
-      // Date range filters
-      if (filters.start_date) {
-        supabaseQuery = supabaseQuery.gte('published_at', filters.start_date);
-      }
-      if (filters.end_date) {
-        supabaseQuery = supabaseQuery.lte('published_at', filters.end_date);
-      }
-
-      // Sorting
-      const sortField = filters.sort_by || 'published_at';
-      const sortOrder = filters.sort_order || 'desc';
-      supabaseQuery = supabaseQuery.order(sortField, { ascending: sortOrder === 'asc' });
-
-      // Pagination
-      if (filters.page && filters.page_size) {
-        const from = (filters.page - 1) * filters.page_size;
-        const to = from + filters.page_size - 1;
-        supabaseQuery = supabaseQuery.range(from, to);
-      }
-
-      const { data, error, count } = await supabaseQuery;
-
-      if (error) throw error;
-
-      return { 
-        success: true, 
-        data,
-        total: count,
-        page: filters.page || 1,
-        page_size: filters.page_size || data.length
-      };
-    } catch (error) {
-      console.error('Error searching articles:', error);
+      console.error('Error incrementing share count:', error);
       return { success: false, error: error.message };
     }
   }
 
   // Export articles
-  async exportArticles(ids = null) {
+  async exportArticles(articleIds = null, format = 'csv') {
     try {
       let query = supabase
         .from('articles')
         .select(`
           *,
-          author:profiles!author_id(full_name),
-          category:categories(name)
+          author:profiles!articles_author_id_fkey(id, full_name, email),
+          category:categories!articles_category_id_fkey(id, name, slug)
         `);
 
-      if (ids && ids.length > 0) {
-        query = query.in('id', ids);
+      if (articleIds) {
+        query = query.in('id', articleIds);
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
 
-      // Convert to CSV
-      const csv = this.convertToCSV(data);
-      
-      // Download CSV
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `articles-${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      let exportData;
+      let filename;
+      let mimeType;
+
+      switch (format) {
+        case 'csv':
+          exportData = this.convertToCSV(data);
+          filename = `articles-export-${Date.now()}.csv`;
+          mimeType = 'text/csv';
+          break;
+          
+        case 'json':
+          exportData = JSON.stringify(data, null, 2);
+          filename = `articles-export-${Date.now()}.json`;
+          mimeType = 'application/json';
+          break;
+
+        case 'markdown':
+          exportData = this.convertToMarkdown(data);
+          filename = `articles-export-${Date.now()}.md`;
+          mimeType = 'text/markdown';
+          break;
+
+        default:
+          throw new Error('Unsupported export format');
+      }
+
+      // Create and download file
+      const blob = new Blob([exportData], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
       return { success: true };
     } catch (error) {
@@ -704,131 +427,275 @@ export class ArticleOperationsService {
     }
   }
 
-  // Helper methods
-  async deleteRelatedData(articleId) {
-    try {
-      // Delete analytics data
-      await supabase
-        .from('article_analytics')
-        .delete()
-        .eq('article_id', articleId);
-
-      // Delete comments
-      await supabase
-        .from('article_comments')
-        .delete()
-        .eq('article_id', articleId);
-
-      // Delete reactions
-      await supabase
-        .from('article_reactions')
-        .delete()
-        .eq('article_id', articleId);
-
-      // Delete bookmarks
-      await supabase
-        .from('article_bookmarks')
-        .delete()
-        .eq('article_id', articleId);
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error deleting related data:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async createAnalyticsRecord(articleId) {
-    try {
-      await supabase
-        .from('article_analytics')
-        .insert({
-          article_id: articleId,
-          event_type: 'created',
-          created_at: new Date().toISOString()
-        });
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error creating analytics record:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async trackStatusChange(articleId, oldStatus, newStatus) {
-    try {
-      await supabase
-        .from('article_analytics')
-        .insert({
-          article_id: articleId,
-          event_type: 'status_change',
-          metadata: { old_status: oldStatus, new_status: newStatus },
-          created_at: new Date().toISOString()
-        });
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error tracking status change:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async trackBulkAction(action, articleIds) {
-    try {
-      await supabase
-        .from('article_analytics')
-        .insert({
-          event_type: 'bulk_action',
-          metadata: { action, article_ids: articleIds },
-          created_at: new Date().toISOString()
-        });
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error tracking bulk action:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async createScheduledJob(articleId, scheduledDate) {
-    // In production, this would integrate with a job queue like Bull or similar
-    // For now, just log it
-    console.log(`Scheduled publishing for article ${articleId} at ${scheduledDate}`);
-    return { success: true };
-  }
-
+  // Convert to CSV format
   convertToCSV(data) {
-    if (data.length === 0) return '';
-
-    // Flatten nested objects
-    const flattenedData = data.map(row => ({
-      id: row.id,
-      title: row.title,
-      slug: row.slug,
-      status: row.status,
-      author: row.author?.full_name || '',
-      category: row.category?.name || '',
-      published_at: row.published_at,
-      created_at: row.created_at,
-      view_count: row.view_count,
-      like_count: row.like_count,
-      share_count: row.share_count,
-      is_featured: row.is_featured
-    }));
-
-    const headers = Object.keys(flattenedData[0]);
+    if (!data || data.length === 0) return '';
+    
+    // Define CSV headers
+    const headers = [
+      'Title',
+      'Slug',
+      'Status',
+      'Author',
+      'Category',
+      'Tags',
+      'Featured',
+      'Views',
+      'Likes',
+      'Comments',
+      'Shares',
+      'Read Time',
+      'Created',
+      'Updated',
+      'Published'
+    ];
+    
     const csvHeaders = headers.join(',');
-    const csvRows = flattenedData.map(row => {
-      return headers.map(header => {
-        const value = row[header] || '';
-        const escaped = String(value).replace(/"/g, '""');
-        return escaped.includes(',') ? `"${escaped}"` : escaped;
-      }).join(',');
+    
+    const csvRows = data.map(article => {
+      const row = [
+        this.escapeCSV(article.title),
+        this.escapeCSV(article.slug),
+        article.status,
+        this.escapeCSV(article.author?.full_name || 'Unknown'),
+        this.escapeCSV(article.category?.name || 'None'),
+        this.escapeCSV((article.tags || []).join('; ')),
+        article.is_featured ? 'Yes' : 'No',
+        article.view_count || 0,
+        article.like_count || 0,
+        article.comment_count || 0,
+        article.share_count || 0,
+        article.read_time ? `${article.read_time} min` : 'N/A',
+        new Date(article.created_at).toLocaleDateString(),
+        new Date(article.updated_at).toLocaleDateString(),
+        article.published_at ? new Date(article.published_at).toLocaleDateString() : 'Not published'
+      ];
+      
+      return row.join(',');
     });
-
+    
     return [csvHeaders, ...csvRows].join('\n');
+  }
+
+  // Convert to Markdown format
+  convertToMarkdown(data) {
+    if (!data || data.length === 0) return '';
+    
+    let markdown = '# Articles Export\n\n';
+    markdown += `*Exported on ${new Date().toLocaleString()}*\n\n`;
+    markdown += `**Total Articles:** ${data.length}\n\n`;
+    markdown += '---\n\n';
+    
+    data.forEach((article, index) => {
+      markdown += `## ${index + 1}. ${article.title}\n\n`;
+      markdown += `- **Status:** ${article.status}\n`;
+      markdown += `- **Author:** ${article.author?.full_name || 'Unknown'}\n`;
+      markdown += `- **Category:** ${article.category?.name || 'None'}\n`;
+      markdown += `- **Tags:** ${(article.tags || []).join(', ') || 'None'}\n`;
+      markdown += `- **Featured:** ${article.is_featured ? 'Yes' : 'No'}\n`;
+      markdown += `- **Views:** ${article.view_count || 0}\n`;
+      markdown += `- **Likes:** ${article.like_count || 0}\n`;
+      markdown += `- **Read Time:** ${article.read_time ? `${article.read_time} minutes` : 'N/A'}\n`;
+      markdown += `- **Created:** ${new Date(article.created_at).toLocaleDateString()}\n`;
+      
+      if (article.published_at) {
+        markdown += `- **Published:** ${new Date(article.published_at).toLocaleDateString()}\n`;
+      }
+      
+      if (article.excerpt) {
+        markdown += `\n**Excerpt:**\n> ${article.excerpt}\n`;
+      }
+      
+      if (article.content && article.content.text) {
+        const preview = article.content.text.substring(0, 200);
+        markdown += `\n**Content Preview:**\n${preview}${article.content.text.length > 200 ? '...' : ''}\n`;
+      }
+      
+      markdown += '\n---\n\n';
+    });
+    
+    return markdown;
+  }
+
+  // Escape CSV values
+  escapeCSV(value) {
+    if (value === null || value === undefined) return '';
+    const stringValue = String(value);
+    
+    // Escape quotes and wrap in quotes if contains comma, newline, or quotes
+    if (stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')) {
+      return `"${stringValue.replace(/"/g, '""')}"`;
+    }
+    
+    return stringValue;
+  }
+
+  // Import articles from CSV
+  async importFromCSV(csvData, userProfile) {
+    try {
+      const lines = csvData.split('\n');
+      const headers = lines[0].split(',').map(h => h.trim());
+      const articles = [];
+      
+      for (let i = 1; i < lines.length; i++) {
+        if (lines[i].trim() === '') continue;
+        
+        const values = this.parseCSVLine(lines[i]);
+        const article = {};
+        
+        headers.forEach((header, index) => {
+          const value = values[index]?.trim();
+          
+          switch (header.toLowerCase()) {
+            case 'title':
+              article.title = value;
+              break;
+            case 'slug':
+              article.slug = value || generateSlug(article.title);
+              break;
+            case 'status':
+              article.status = value || 'draft';
+              break;
+            case 'excerpt':
+              article.excerpt = value;
+              break;
+            case 'content':
+              article.content = value ? { html: value, text: value.replace(/<[^>]*>/g, '') } : null;
+              break;
+            case 'tags':
+              article.tags = value ? value.split(';').map(t => t.trim()) : [];
+              break;
+            case 'featured':
+              article.is_featured = value?.toLowerCase() === 'yes';
+              break;
+          }
+        });
+        
+        // Add metadata
+        article.author_id = userProfile.id;
+        article.created_by = userProfile.id;
+        article.updated_by = userProfile.id;
+        
+        articles.push(article);
+      }
+      
+      // Bulk insert
+      const { data, error } = await supabase
+        .from('articles')
+        .insert(articles)
+        .select();
+      
+      if (error) throw error;
+      
+      return { success: true, imported: data.length };
+    } catch (error) {
+      console.error('Error importing articles:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Parse CSV line handling quoted values
+  parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      const nextChar = line[i + 1];
+      
+      if (char === '"') {
+        if (inQuotes && nextChar === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        result.push(current);
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    
+    result.push(current);
+    return result;
+  }
+
+  // Get article statistics
+  async getStatistics(dateRange = null) {
+    try {
+      let query = supabase
+        .from('articles')
+        .select('*', { count: 'exact' });
+      
+      if (dateRange) {
+        if (dateRange.start) {
+          query = query.gte('created_at', dateRange.start);
+        }
+        if (dateRange.end) {
+          query = query.lte('created_at', dateRange.end);
+        }
+      }
+      
+      const { data, error, count } = await query;
+      if (error) throw error;
+      
+      const stats = {
+        total: count || 0,
+        byStatus: {},
+        byCategory: {},
+        byAuthor: {},
+        featured: 0,
+        totalViews: 0,
+        totalLikes: 0,
+        totalComments: 0,
+        avgReadTime: 0,
+        avgWordCount: 0
+      };
+      
+      data.forEach(article => {
+        // Status breakdown
+        stats.byStatus[article.status] = (stats.byStatus[article.status] || 0) + 1;
+        
+        // Category breakdown
+        if (article.category_id) {
+          stats.byCategory[article.category_id] = (stats.byCategory[article.category_id] || 0) + 1;
+        }
+        
+        // Author breakdown
+        stats.byAuthor[article.author_id] = (stats.byAuthor[article.author_id] || 0) + 1;
+        
+        // Featured count
+        if (article.is_featured) stats.featured++;
+        
+        // Engagement metrics
+        stats.totalViews += article.view_count || 0;
+        stats.totalLikes += article.like_count || 0;
+        stats.totalComments += article.comment_count || 0;
+        
+        // Content metrics
+        if (article.read_time) {
+          stats.avgReadTime += article.read_time;
+        }
+        if (article.content && article.content.wordCount) {
+          stats.avgWordCount += article.content.wordCount;
+        }
+      });
+      
+      // Calculate averages
+      if (data.length > 0) {
+        stats.avgReadTime = Math.round(stats.avgReadTime / data.length);
+        stats.avgWordCount = Math.round(stats.avgWordCount / data.length);
+      }
+      
+      return { success: true, stats };
+    } catch (error) {
+      console.error('Error getting statistics:', error);
+      return { success: false, error: error.message };
+    }
   }
 }
 
-// Export singleton instance
 export const articleOperations = new ArticleOperationsService();
