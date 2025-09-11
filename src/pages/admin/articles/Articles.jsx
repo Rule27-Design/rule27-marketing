@@ -57,11 +57,11 @@ const Articles = () => {
   useEffect(() => {
     const unsubscribe = subscribeToEvents('article:updated', (article) => {
       refreshArticles();
-      toast.info('Article updated', `"${article.title}" has been updated`);
+      // toast.info('Article updated', `"${article.title}" has been updated`);
     });
 
     return unsubscribe;
-  }, [subscribeToEvents, refreshArticles, toast]);
+  }, []); 
 
   // Filter configuration for FilterBar
   const filterConfig = [
