@@ -1,4 +1,4 @@
-// src/pages/admin/articles/hooks/useArticles.js - Complete fixed version
+// src/pages/admin/articles/hooks/useArticles.js - Fixed to prevent infinite loop
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../../lib/supabase';
 import { useToast } from '../../../../components/ui/Toast';
@@ -76,12 +76,11 @@ export const useArticles = (initialFilters = {}) => {
       // Only update state if component is still mounted
       if (!isMountedRef.current) return;
 
-      // Fetch related data in batches to avoid too many requests
+      // Fetch related data
       if (articlesData && articlesData.length > 0) {
         const authorIds = [...new Set(articlesData.map(a => a.author_id).filter(Boolean))];
         const categoryIds = [...new Set(articlesData.map(a => a.category_id).filter(Boolean))];
 
-        // Fetch in parallel but with limited connections
         const [profilesResponse, categoriesResponse] = await Promise.all([
           authorIds.length > 0 
             ? supabase.from('profiles').select('id, full_name, avatar_url').in('id', authorIds)
@@ -116,7 +115,6 @@ export const useArticles = (initialFilters = {}) => {
       console.error('Error fetching articles:', err);
       if (isMountedRef.current) {
         setError(err.message);
-        // Only show toast for non-network errors
         if (!err.message.includes('Failed to fetch')) {
           toast.error('Failed to load articles', err.message);
         }
@@ -127,29 +125,24 @@ export const useArticles = (initialFilters = {}) => {
         setLoading(false);
       }
     }
-  }, [filters, pagination.page, pagination.pageSize, toast]);
+  }, [filters.status, filters.category, filters.author, filters.featured, filters.search, 
+      filters.sortBy, filters.sortOrder, pagination.page, pagination.pageSize, toast]);
 
-  // Initial fetch
+  // Single useEffect for initial load and updates
   useEffect(() => {
     isMountedRef.current = true;
     fetchArticles();
     
     return () => {
       isMountedRef.current = false;
+      isFetchingRef.current = false;
     };
-  }, []); // Empty dependency array - only run on mount
+  }, [fetchArticles]); // Only dependency is fetchArticles
 
-  // Fetch when filters or pagination changes
-  useEffect(() => {
-    if (isMountedRef.current) {
-      fetchArticles();
-    }
-  }, [filters, pagination.page, pagination.pageSize, fetchArticles]);
-
-  // Refresh articles
+  // Refresh articles manually
   const refreshArticles = useCallback(() => {
-    if (!isFetchingRef.current) {
-      fetchArticles();
+    if (!isFetchingRef.current && isMountedRef.current) {
+      return fetchArticles();
     }
   }, [fetchArticles]);
 
@@ -183,7 +176,6 @@ export const useArticles = (initialFilters = {}) => {
     });
   }, []);
 
-  // Return all the methods and state
   return {
     articles,
     loading,
@@ -193,11 +185,11 @@ export const useArticles = (initialFilters = {}) => {
     selectedArticles,
     setSelectedArticles,
     pagination,
-    changePage,       // This was missing
-    changePageSize,   // This was missing
+    changePage,
+    changePageSize,
     refreshArticles,
-    selectAll,        // This was missing
-    deselectAll,      // This was missing
-    toggleSelection   // This was missing
+    selectAll,
+    deselectAll,
+    toggleSelection
   };
 };
