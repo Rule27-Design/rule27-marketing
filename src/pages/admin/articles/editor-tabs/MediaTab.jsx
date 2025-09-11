@@ -2,6 +2,7 @@
 import React from 'react';
 import ImageUpload from '../../../../components/ui/ImageUpload';
 import Input from '../../../../components/ui/Input';
+import Icon from '../../../../components/AdminIcon';
 
 const MediaTab = ({ formData, errors, onChange }) => {
   return (
