@@ -37,39 +37,39 @@ const ArticleEditor = ({
   
   // Initialize form data
   const initialData = {
-    title: '',
-    slug: '',
-    excerpt: '',
-    content: null,
-    featured_image: '',
-    featured_image_alt: '',
-    featured_video: '',
-    gallery_images: [],
-    author_id: userProfile?.id || '',
-    co_authors: [],
-    category_id: '',
-    tags: [],
-    status: 'draft',
-    scheduled_at: '',
-    is_featured: false,
-    enable_comments: false,
-    enable_reactions: true,
-    meta_title: '',
-    meta_description: '',
-    meta_keywords: [],
-    og_title: '',
-    og_description: '',
-    og_image: '',
-    twitter_card: 'summary_large_image',
-    canonical_url: '',
-    internal_notes: '',
-    read_time: null,
-    view_count: 0,
-    like_count: 0,
-    comment_count: 0,
-    share_count: 0,
-    ...article
-  };
+  title: '',
+  slug: '',
+  excerpt: '',
+  content: null,
+  featured_image: '',
+  featured_image_alt: '',
+  featured_video: '',
+  gallery_images: [],
+  author_id: userProfile?.id || '',
+  co_authors: [],
+  category_id: '',
+  tags: [],
+  status: 'draft',
+  scheduled_at: '',
+  is_featured: false,
+  enable_comments: false,
+  enable_reactions: true,
+  meta_title: '',
+  meta_description: '',
+  meta_keywords: [],
+  og_title: '',
+  og_description: '',
+  og_image: '',
+  twitter_card: 'summary_large_image',
+  canonical_url: '',
+  internal_notes: '',
+  read_time: null,
+  view_count: 0,
+  like_count: 0,
+  share_count: 0,
+  bookmark_count: 0,
+  ...article
+};
 
   const [formData, setFormData] = useState(initialData);
   const [isDirty, setIsDirty] = useState(false);
@@ -286,58 +286,73 @@ const ArticleEditor = ({
 
   // Render preview
   const renderPreview = () => (
-    <div className="prose prose-lg max-w-none">
-      {formData.featured_image && (
-        <img 
-          src={formData.featured_image} 
-          alt={formData.featured_image_alt || formData.title}
-          className="w-full rounded-lg mb-6"
-        />
-      )}
-      
-      <h1 className="text-4xl font-bold mb-4">
-        {formData.title || 'Untitled Article'}
-      </h1>
-      
-      <div className="flex items-center space-x-4 text-gray-500 mb-6">
-        <span>By {userProfile?.full_name || 'Author'}</span>
-        <span>•</span>
-        <span>{formData.read_time || 1} min read</span>
-        {formData.category_id && (
-          <>
-            <span>•</span>
-            <span>{categories.find(c => c.id === formData.category_id)?.name}</span>
-          </>
-        )}
-      </div>
-      
-      {formData.excerpt && (
-        <p className="lead text-xl text-gray-600 mb-6">
-          {formData.excerpt}
-        </p>
-      )}
-      
-      {formData.content?.html ? (
-        <div dangerouslySetInnerHTML={{ __html: formData.content.html }} />
-      ) : formData.content?.text ? (
-        <p>{formData.content.text}</p>
-      ) : (
-        <p className="text-gray-400 italic">No content yet...</p>
-      )}
-      
-      {formData.tags && formData.tags.length > 0 && (
-        <div className="mt-8 pt-8 border-t">
-          <div className="flex flex-wrap gap-2">
-            {formData.tags.map((tag, index) => (
-              <span key={index} className="px-3 py-1 bg-gray-100 rounded-full text-sm">
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+  <div className="prose prose-lg max-w-none">
+    {formData.featured_image && (
+      <img 
+        src={formData.featured_image} 
+        alt={formData.featured_image_alt || formData.title}
+        className="w-full rounded-lg mb-6"
+      />
+    )}
+    
+    <h1 className="text-4xl font-bold mb-4">
+      {formData.title || 'Untitled Article'}
+    </h1>
+    
+    <div className="flex items-center space-x-4 text-gray-500 mb-6">
+      <span>By {userProfile?.full_name || 'Author'}</span>
+      <span>•</span>
+      <span>{formData.read_time || 1} min read</span>
     </div>
-  );
+    
+    {formData.excerpt && (
+      <p className="lead text-xl text-gray-600 mb-6">
+        {formData.excerpt}
+      </p>
+    )}
+    
+    {formData.content?.html ? (
+      <div dangerouslySetInnerHTML={{ __html: formData.content.html }} />
+    ) : (
+      <p className="text-gray-400 italic">No content yet...</p>
+    )}
+    
+    {/* Gallery Images */}
+    {formData.gallery_images && formData.gallery_images.length > 0 && (
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold mb-4">Gallery</h2>
+        <div className="grid grid-cols-2 gap-4">
+          {formData.gallery_images.map((image, index) => (
+            <figure key={index} className="mb-4">
+              <img
+                src={image.url}
+                alt={image.alt || `Gallery image ${index + 1}`}
+                className="w-full rounded-lg"
+              />
+              {image.caption && (
+                <figcaption className="text-sm text-gray-600 mt-2 text-center">
+                  {image.caption}
+                </figcaption>
+              )}
+            </figure>
+          ))}
+        </div>
+      </div>
+    )}
+    
+    {formData.tags && formData.tags.length > 0 && (
+      <div className="mt-8 pt-8 border-t">
+        <div className="flex flex-wrap gap-2">
+          {formData.tags.map((tag, index) => (
+            <span key={index} className="px-3 py-1 bg-gray-100 rounded-full text-sm">
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+);
 
   // Modal actions
   const modalActions = [

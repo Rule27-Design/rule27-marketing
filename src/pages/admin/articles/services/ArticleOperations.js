@@ -4,56 +4,117 @@ import { generateSlug, sanitizeData, cleanTimestampField } from '../../../../uti
 
 class ArticleOperationsService {
   // Create article
-  async create(articleData) {
+  async create(articleData, userProfile) {
     try {
-      const sanitized = sanitizeData(articleData);
-      
-      // Generate slug if not provided
-      if (!sanitized.slug && sanitized.title) {
+        // Define all valid columns from your schema
+        const validColumns = [
+        'title', 'slug', 'excerpt', 'content',
+        'featured_image', 'featured_image_alt', 'featured_video',
+        'author_id', 'co_authors', 'category_id', 'tags',
+        'status', 'scheduled_at', 'read_time',
+        'is_featured', 'enable_comments', 'enable_reactions',
+        'meta_title', 'meta_description', 'meta_keywords',
+        'og_title', 'og_description', 'og_image', 'twitter_card', 'canonical_url',
+        'schema_markup', 'internal_notes',
+        'created_by'
+        ];
+
+        // Create clean data with only valid columns
+        const cleanData = {};
+        validColumns.forEach(column => {
+        if (articleData[column] !== undefined) {
+            cleanData[column] = articleData[column];
+        }
+        });
+
+        const sanitized = sanitizeData(cleanData);
+        
+        // Generate slug if not provided
+        if (!sanitized.slug && sanitized.title) {
         sanitized.slug = generateSlug(sanitized.title);
-      }
+        }
 
-      // Auto-generate canonical URL if not provided
-      if (!sanitized.canonical_url && sanitized.slug) {
+        // Auto-generate canonical URL if not provided
+        if (!sanitized.canonical_url && sanitized.slug) {
         sanitized.canonical_url = `https://rule27design.com/articles/${sanitized.slug}`;
-      }
+        }
 
-      // Calculate read time if content exists
-      if (sanitized.content && sanitized.content.wordCount) {
+        // Calculate read time if content exists
+        if (sanitized.content && sanitized.content.wordCount) {
         sanitized.read_time = Math.ceil(sanitized.content.wordCount / 200);
-      }
+        }
 
-      // Clean timestamp fields
-      if (sanitized.scheduled_at) {
+        // Clean timestamp fields
+        if (sanitized.scheduled_at === '') {
+        sanitized.scheduled_at = null;
+        } else if (sanitized.scheduled_at) {
         sanitized.scheduled_at = cleanTimestampField(sanitized.scheduled_at);
-      }
+        }
 
-      const { data, error } = await supabase
+        // Set author and creator
+        if (userProfile) {
+        sanitized.author_id = sanitized.author_id || userProfile.id;
+        sanitized.created_by = userProfile.id;
+        }
+
+        // Remove any null or empty string values for array fields
+        if (sanitized.tags) {
+        sanitized.tags = sanitized.tags.filter(Boolean);
+        }
+        if (sanitized.meta_keywords) {
+        sanitized.meta_keywords = sanitized.meta_keywords.filter(Boolean);
+        }
+        if (sanitized.co_authors) {
+        sanitized.co_authors = sanitized.co_authors.filter(Boolean);
+        }
+
+        const { data, error } = await supabase
         .from('articles')
         .insert(sanitized)
         .select()
         .single();
 
-      if (error) throw error;
-      return { success: true, data };
+        if (error) throw error;
+        return { success: true, data };
     } catch (error) {
-      console.error('Error creating article:', error);
-      return { success: false, error: error.message };
+        console.error('Error creating article:', error);
+        return { success: false, error: error.message };
     }
-  }
+    }
 
   // Update article
   async update(articleId, articleData, userProfile) {
     try {
-        const sanitized = sanitizeData(articleData);
+        // Define all valid columns from your schema
+        const validColumns = [
+        'title', 'slug', 'excerpt', 'content',
+        'featured_image', 'featured_image_alt', 'featured_video',
+        'gallery_images',
+        'author_id', 'co_authors', 'category_id', 'tags',
+        'status', 'submitted_for_approval_at', 'approved_by', 'approved_at',
+        'published_at', 'scheduled_at', 'read_time',
+        'is_featured', 'enable_comments', 'enable_reactions',
+        'view_count', 'unique_view_count', 'like_count', 'share_count', 'bookmark_count',
+        'average_read_depth', 'average_time_on_page',
+        'meta_title', 'meta_description', 'meta_keywords',
+        'og_title', 'og_description', 'og_image', 'twitter_card', 'canonical_url',
+        'schema_markup', 'internal_notes',
+        'created_by', 'updated_by'
+        ];
+
+        // Create clean data with only valid columns
+        const cleanData = {};
+        validColumns.forEach(column => {
+        if (articleData[column] !== undefined) {
+            cleanData[column] = articleData[column];
+        }
+        });
+
+        // Sanitize the data
+        const sanitized = sanitizeData(cleanData);
         
-        // Remove any joined/computed fields that aren't actual columns
-        delete sanitized.author;
-        delete sanitized.category;
-        delete sanitized.co_authors_data;
-        
-        // Ensure we're using correct column names
-        if (sanitized.author_id === undefined && userProfile) {
+        // Ensure author_id is set
+        if (!sanitized.author_id && userProfile) {
         sanitized.author_id = userProfile.id;
         }
         
@@ -63,7 +124,9 @@ class ArticleOperationsService {
         }
 
         // Clean timestamp fields
-        if (sanitized.scheduled_at) {
+        if (sanitized.scheduled_at === '') {
+        sanitized.scheduled_at = null;
+        } else if (sanitized.scheduled_at) {
         sanitized.scheduled_at = cleanTimestampField(sanitized.scheduled_at);
         }
 
@@ -71,6 +134,17 @@ class ArticleOperationsService {
         sanitized.updated_at = new Date().toISOString();
         if (userProfile) {
         sanitized.updated_by = userProfile.id;
+        }
+
+        // Remove any null or empty string values for array fields
+        if (sanitized.tags) {
+        sanitized.tags = sanitized.tags.filter(Boolean);
+        }
+        if (sanitized.meta_keywords) {
+        sanitized.meta_keywords = sanitized.meta_keywords.filter(Boolean);
+        }
+        if (sanitized.co_authors) {
+        sanitized.co_authors = sanitized.co_authors.filter(Boolean);
         }
 
         const { data, error } = await supabase
