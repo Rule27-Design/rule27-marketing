@@ -1,4 +1,4 @@
-// src/pages/admin/articles/editor-tabs/MediaTab.jsx
+// src/pages/admin/articles/editor-tabs/MediaTab.jsx - Fixed layout
 import React, { useState } from 'react';
 import ImageUpload from '../../../../components/ui/ImageUpload';
 import Input from '../../../../components/ui/Input';
@@ -38,37 +38,40 @@ const MediaTab = ({ formData, errors, onChange }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 p-6">
       {/* Featured Image */}
-      <div>
-        <ImageUpload
-          label="Featured Image"
-          value={formData.featured_image}
-          onChange={(value) => onChange('featured_image', value)}
-          bucket="media"
-          folder="articles/featured"
-          error={errors.featured_image}
-          showPreview={true}
-          acceptedFormats={['image/jpeg', 'image/png', 'image/webp']}
-          maxSizeMB={5}
-        />
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Featured Image
+          </label>
+          <ImageUpload
+            value={formData.featured_image}
+            onChange={(value) => onChange('featured_image', value)}
+            bucket="media"
+            folder="articles/featured"
+            error={errors.featured_image}
+            showPreview={true}
+            acceptedFormats={['image/jpeg', 'image/png', 'image/webp']}
+            maxSizeMB={5}
+            className="w-full"
+          />
+        </div>
         
         {formData.featured_image && (
-          <div className="mt-4">
-            <Input
-              label="Featured Image Alt Text"
-              value={formData.featured_image_alt}
-              onChange={(e) => onChange('featured_image_alt', e.target.value)}
-              placeholder="Describe the image for accessibility"
-              error={errors.featured_image_alt}
-              required
-            />
-          </div>
+          <Input
+            label="Featured Image Alt Text"
+            value={formData.featured_image_alt}
+            onChange={(e) => onChange('featured_image_alt', e.target.value)}
+            placeholder="Describe the image for accessibility"
+            error={errors.featured_image_alt}
+            required
+          />
         )}
       </div>
 
       {/* Featured Video */}
-      <div>
+      <div className="space-y-2">
         <Input
           label="Featured Video URL (Optional)"
           value={formData.featured_video}
@@ -78,7 +81,7 @@ const MediaTab = ({ formData, errors, onChange }) => {
         />
         
         {formData.featured_video && (
-          <div className="mt-2 aspect-video bg-gray-100 rounded-lg overflow-hidden">
+          <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
             <div className="flex items-center justify-center h-full text-gray-400">
               <Icon name="Video" size={48} />
               <span className="ml-2">Video Preview</span>
@@ -88,8 +91,8 @@ const MediaTab = ({ formData, errors, onChange }) => {
       </div>
 
       {/* Gallery Images */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
           <label className="block text-sm font-medium text-gray-700">
             Gallery Images (Optional)
           </label>
@@ -100,65 +103,73 @@ const MediaTab = ({ formData, errors, onChange }) => {
           )}
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {gallery.map((image, index) => (
-            <div key={index} className="relative group bg-white rounded-lg border overflow-hidden">
-              <img
-                src={image.url}
-                alt={image.alt || `Gallery image ${index + 1}`}
-                className="w-full h-32 object-cover"
-              />
-              
-              {/* Image actions */}
-              <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                {index > 0 && (
-                  <button
-                    onClick={() => moveGalleryImage(index, index - 1)}
-                    className="bg-white rounded p-1 shadow hover:bg-gray-100"
-                    title="Move left"
-                  >
-                    <Icon name="ChevronLeft" size={14} />
-                  </button>
-                )}
-                {index < gallery.length - 1 && (
-                  <button
-                    onClick={() => moveGalleryImage(index, index + 1)}
-                    className="bg-white rounded p-1 shadow hover:bg-gray-100"
-                    title="Move right"
-                  >
-                    <Icon name="ChevronRight" size={14} />
-                  </button>
-                )}
-                <button
-                  onClick={() => removeGalleryImage(index)}
-                  className="bg-red-500 text-white rounded p-1 shadow hover:bg-red-600"
-                  title="Remove"
-                >
-                  <Icon name="X" size={14} />
-                </button>
-              </div>
-              
-              {/* Image details */}
-              <div className="p-2 space-y-1">
-                <input
-                  type="text"
-                  placeholder="Alt text"
-                  value={image.alt || ''}
-                  onChange={(e) => updateGalleryImage(index, 'alt', e.target.value)}
-                  className="w-full text-xs px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-accent"
+        {/* Gallery grid */}
+        {gallery.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+            {gallery.map((image, index) => (
+              <div key={index} className="relative group bg-white rounded-lg border overflow-hidden">
+                <img
+                  src={image.url}
+                  alt={image.alt || `Gallery image ${index + 1}`}
+                  className="w-full h-32 object-cover"
                 />
-                <input
-                  type="text"
-                  placeholder="Caption (optional)"
-                  value={image.caption || ''}
-                  onChange={(e) => updateGalleryImage(index, 'caption', e.target.value)}
-                  className="w-full text-xs px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-accent"
-                />
+                
+                {/* Image actions */}
+                <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {index > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => moveGalleryImage(index, index - 1)}
+                      className="bg-white rounded p-1 shadow hover:bg-gray-100"
+                      title="Move left"
+                    >
+                      <Icon name="ChevronLeft" size={14} />
+                    </button>
+                  )}
+                  {index < gallery.length - 1 && (
+                    <button
+                      type="button"
+                      onClick={() => moveGalleryImage(index, index + 1)}
+                      className="bg-white rounded p-1 shadow hover:bg-gray-100"
+                      title="Move right"
+                    >
+                      <Icon name="ChevronRight" size={14} />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeGalleryImage(index)}
+                    className="bg-red-500 text-white rounded p-1 shadow hover:bg-red-600"
+                    title="Remove"
+                  >
+                    <Icon name="X" size={14} />
+                  </button>
+                </div>
+                
+                {/* Image details */}
+                <div className="p-2 space-y-1">
+                  <input
+                    type="text"
+                    placeholder="Alt text"
+                    value={image.alt || ''}
+                    onChange={(e) => updateGalleryImage(index, 'alt', e.target.value)}
+                    className="w-full text-xs px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-accent"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Caption (optional)"
+                    value={image.caption || ''}
+                    onChange={(e) => updateGalleryImage(index, 'caption', e.target.value)}
+                    className="w-full text-xs px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-accent"
+                  />
+                </div>
               </div>
-            </div>
-          ))}
-          
-          {/* Add image button */}
+            ))}
+          </div>
+        )}
+        
+        {/* Add image upload area */}
+        <div className="w-full">
           <ImageUpload
             value=""
             onChange={addGalleryImage}
@@ -167,25 +178,53 @@ const MediaTab = ({ formData, errors, onChange }) => {
             showPreview={false}
             onUploadStart={() => setUploadingGallery(true)}
             onUploadEnd={() => setUploadingGallery(false)}
-            className="h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:border-gray-400 cursor-pointer transition-colors"
+            className="w-full min-h-[128px] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:border-gray-400 cursor-pointer transition-colors p-8"
           >
             <div className="text-center">
               {uploadingGallery ? (
                 <div className="animate-spin rounded-full h-8 w-8 border-2 border-accent border-t-transparent mx-auto" />
               ) : (
                 <>
-                  <Icon name="Plus" size={24} className="mx-auto text-gray-400" />
-                  <span className="text-sm text-gray-500 mt-1">Add Image</span>
+                  <Icon name="Upload" size={24} className="mx-auto text-gray-400 mb-2" />
+                  <span className="text-sm text-gray-600 font-medium">Click to upload or drag and drop</span>
+                  <span className="text-xs text-gray-500 block mt-1">PNG, JPG, JPEG up to 5MB</span>
                 </>
               )}
             </div>
           </ImageUpload>
+          
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">or</span>
+            </div>
+          </div>
+          
+          <Input
+            placeholder="Paste Image URL"
+            value=""
+            onChange={(e) => {
+              if (e.target.value) {
+                addGalleryImage(e.target.value);
+                e.target.value = '';
+              }
+            }}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && e.target.value) {
+                e.preventDefault();
+                addGalleryImage(e.target.value);
+                e.target.value = '';
+              }
+            }}
+          />
         </div>
 
         {/* Gallery tips */}
         {gallery.length > 0 && (
-          <div className="mt-4 text-xs text-gray-500">
-            <p>• Drag images to reorder them in the gallery</p>
+          <div className="text-xs text-gray-500 space-y-1 bg-gray-50 p-3 rounded">
+            <p>• Use arrow buttons to reorder images</p>
             <p>• Alt text is important for SEO and accessibility</p>
             <p>• Captions will be displayed below images in the article</p>
           </div>
