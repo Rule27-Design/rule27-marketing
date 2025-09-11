@@ -1,5 +1,5 @@
-// src/pages/admin/articles/Articles.jsx - Fixed version
-import React, { useState, useEffect, useCallback } from 'react';
+// src/pages/admin/articles/Articles.jsx
+import React, { useState, useEffect } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 import { 
@@ -8,9 +8,7 @@ import {
   EmptyState,
   ErrorState,
   ExportButton,
-  VirtualTable,
   SkeletonTable,
-  MetricsDisplay,
   SearchBar,
   QuickActions
 } from '../../../components/admin';
@@ -179,143 +177,6 @@ const Articles = () => {
     }
   };
 
-  // Table columns with fixed widths
-  const tableColumns = [
-    {
-      key: 'select',
-      label: '',
-      render: (value, article) => (
-        <Checkbox
-          checked={selectedArticles.includes(article.id)}
-          onChange={() => toggleSelection(article.id)}
-          onClick={(e) => e.stopPropagation()}
-        />
-      ),
-      width: '40px',
-      fixed: true
-    },
-    {
-      key: 'title',
-      label: 'Title',
-      render: (value, article) => (
-        <div className="flex items-start space-x-3">
-          {article.featured_image && (
-            <img
-              src={article.featured_image}
-              alt=""
-              className="w-10 h-10 rounded object-cover flex-shrink-0"
-            />
-          )}
-          <div className="min-w-0 flex-1">
-            <div className="font-medium text-gray-900 truncate">
-              {article.title}
-              {article.is_featured && (
-                <Icon name="Star" size={12} className="inline ml-1 text-yellow-500" />
-              )}
-            </div>
-            {article.excerpt && (
-              <div className="text-xs text-gray-500 line-clamp-1 mt-0.5">
-                {article.excerpt}
-              </div>
-            )}
-          </div>
-        </div>
-      ),
-      sortable: true,
-      minWidth: '300px'
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      render: (value, article) => <StatusBadge status={article.status} size="xs" />,
-      width: '100px',
-      sortable: true
-    },
-    {
-      key: 'author',
-      label: 'Author',
-      render: (value, article) => (
-        <div className="text-sm text-gray-700 truncate">
-          {article.author?.full_name || 'Unknown'}
-        </div>
-      ),
-      width: '120px'
-    },
-    {
-      key: 'category',
-      label: 'Category',
-      render: (value, article) => (
-        <div className="text-sm text-gray-600 truncate">
-          {article.category?.name || '-'}
-        </div>
-      ),
-      width: '120px'
-    },
-    {
-      key: 'metrics',
-      label: 'Metrics',
-      render: (value, article) => (
-        <div className="flex items-center space-x-2 text-xs text-gray-500">
-          <span title="Views">{article.view_count || 0}</span>
-          <span title="Likes">❤ {article.like_count || 0}</span>
-          <span title="Shares">↗ {article.share_count || 0}</span>
-        </div>
-      ),
-      width: '120px'
-    },
-    {
-      key: 'date',
-      label: 'Modified',
-      render: (value, article) => (
-        <div className="text-xs text-gray-500">
-          {formatDate(article.updated_at, 'MMM d, yyyy')}
-        </div>
-      ),
-      width: '90px',
-      sortable: true
-    },
-    {
-      key: 'actions',
-      label: '',
-      render: (value, article) => (
-        <div className="flex items-center justify-end space-x-1">
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditingArticle(article);
-              setShowEditor(true);
-            }}
-            title="Edit"
-          >
-            <Icon name="Edit2" size={14} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={async (e) => {
-              e.stopPropagation();
-              if (window.confirm('Are you sure you want to delete this article?')) {
-                const result = await articleOperations.delete(article.id);
-                if (result.success) {
-                  toast.success('Article deleted');
-                  refreshArticles();
-                }
-              }
-            }}
-            title="Delete"
-            className="text-red-500 hover:text-red-700"
-          >
-            <Icon name="Trash2" size={14} />
-          </Button>
-        </div>
-      ),
-      width: '80px',
-      fixed: true
-    }
-  ];
-
   // Quick actions configuration
   const quickActionsConfig = [
     {
@@ -359,7 +220,7 @@ const Articles = () => {
         <QuickActions actions={quickActionsConfig} />
       </div>
 
-      {/* Search and Filters - Custom implementation to avoid FilterBar issues */}
+      {/* Search and Filters */}
       <div className="mb-4 space-y-3">
         <SearchBar
           placeholder="Search articles..."
@@ -445,7 +306,7 @@ const Articles = () => {
         />
       )}
 
-      {/* Articles Table or Empty State */}
+      {/* Articles Table */}
       <div className="flex-1 bg-white rounded-lg shadow overflow-hidden">
         {articles.length === 0 && !loading ? (
           <EmptyState
@@ -461,23 +322,128 @@ const Articles = () => {
             }}
           />
         ) : (
-          <VirtualTable
-            data={articles}
-            columns={tableColumns}
-            rowHeight={72}
-            visibleRows={10}
-            onRowClick={(article) => {
-              setEditingArticle(article);
-              setShowEditor(true);
-            }}
-            selectedRows={selectedArticles}
-            onSelectionChange={setSelectedArticles}
-            sortable={true}
-            onSort={(key, direction) => {
-              setFilters({ ...filters, sortBy: key, sortOrder: direction });
-            }}
-            loading={loading}
-          />
+          <div className="overflow-x-auto h-full">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50 sticky top-0">
+                <tr>
+                  <th className="w-12 px-4 py-3">
+                    <Checkbox
+                      checked={selectedArticles.length === articles.length && articles.length > 0}
+                      onChange={(checked) => checked ? selectAll() : deselectAll()}
+                    />
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                  <th className="w-28 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="w-36 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
+                  <th className="w-32 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                  <th className="w-40 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metrics</th>
+                  <th className="w-28 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Modified</th>
+                  <th className="w-24 px-4 py-3"></th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {articles.map((article) => (
+                  <tr
+                    key={article.id}
+                    onClick={() => {
+                      setEditingArticle(article);
+                      setShowEditor(true);
+                    }}
+                    className="hover:bg-gray-50 cursor-pointer"
+                  >
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={selectedArticles.includes(article.id)}
+                        onChange={() => toggleSelection(article.id)}
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center space-x-3">
+                        {article.featured_image && (
+                          <img
+                            src={article.featured_image}
+                            alt=""
+                            className="w-10 h-10 rounded object-cover flex-shrink-0"
+                          />
+                        )}
+                        <div className="min-w-0">
+                          <div className="font-medium text-gray-900">
+                            {article.title}
+                            {article.is_featured && (
+                              <Icon name="Star" size={12} className="inline ml-1 text-yellow-500" />
+                            )}
+                          </div>
+                          {article.excerpt && (
+                            <div className="text-xs text-gray-500 line-clamp-1">
+                              {article.excerpt}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={article.status} size="xs" />
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700">
+                      {article.author?.full_name || 'Unknown'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {article.category?.name || '-'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3 text-xs text-gray-500">
+                        <span className="flex items-center gap-1">
+                          <Icon name="Eye" size={12} />
+                          {article.view_count || 0}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Icon name="Heart" size={12} />
+                          {article.like_count || 0}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Icon name="Share2" size={12} />
+                          {article.share_count || 0}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-500">
+                      {formatDate(article.updated_at, 'MMM d, yyyy')}
+                    </td>
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => {
+                            setEditingArticle(article);
+                            setShowEditor(true);
+                          }}
+                        >
+                          <Icon name="Edit2" size={14} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={async () => {
+                            if (window.confirm('Delete this article?')) {
+                              const result = await articleOperations.delete(article.id);
+                              if (result.success) {
+                                toast.success('Article deleted');
+                                refreshArticles();
+                              }
+                            }
+                          }}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Icon name="Trash2" size={14} />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
