@@ -1,7 +1,7 @@
 // src/components/admin/QualityCheck.jsx
 import React, { useState, useEffect } from 'react';
 import Icon from '../AdminIcon';
-import { Progress } from '../ui/Progress';
+import Progress from '../ui/Progress';
 
 const QualityCheck = ({ 
   data, 
