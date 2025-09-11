@@ -1,4 +1,4 @@
-// src/pages/admin/articles/hooks/useArticles.js - Fixed version
+// src/pages/admin/articles/hooks/useArticles.js - Complete fixed version
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../../lib/supabase';
 import { useToast } from '../../../../components/ui/Toast';
@@ -20,7 +20,6 @@ export const useArticles = (initialFilters = {}) => {
   // Use refs to prevent re-fetching
   const isFetchingRef = useRef(false);
   const isMountedRef = useRef(true);
-  const hasInitialFetchRef = useRef(false);
 
   // Fetch articles with filters and pagination
   const fetchArticles = useCallback(async () => {
@@ -128,39 +127,63 @@ export const useArticles = (initialFilters = {}) => {
         setLoading(false);
       }
     }
-  }, [filters.status, filters.category, filters.author, filters.featured, filters.search, 
-      filters.sortBy, filters.sortOrder, pagination.page, pagination.pageSize]); // Specific dependencies
+  }, [filters, pagination.page, pagination.pageSize, toast]);
 
-  // Initial fetch - only run once
+  // Initial fetch
   useEffect(() => {
     isMountedRef.current = true;
-    
-    if (!hasInitialFetchRef.current) {
-      hasInitialFetchRef.current = true;
-      fetchArticles();
-    }
+    fetchArticles();
     
     return () => {
       isMountedRef.current = false;
     };
   }, []); // Empty dependency array - only run on mount
 
-  // Fetch when filters or pagination changes (but not on initial mount)
+  // Fetch when filters or pagination changes
   useEffect(() => {
-    if (hasInitialFetchRef.current && isMountedRef.current) {
+    if (isMountedRef.current) {
       fetchArticles();
     }
   }, [filters, pagination.page, pagination.pageSize, fetchArticles]);
 
-  // Refresh articles - manual refresh
+  // Refresh articles
   const refreshArticles = useCallback(() => {
-    if (!isFetchingRef.current && isMountedRef.current) {
-      return fetchArticles();
+    if (!isFetchingRef.current) {
+      fetchArticles();
     }
   }, [fetchArticles]);
 
-  // ... rest of the hook remains the same
+  // Change page
+  const changePage = useCallback((page) => {
+    if (page >= 1 && page <= pagination.totalPages) {
+      setPagination(prev => ({ ...prev, page }));
+    }
+  }, [pagination.totalPages]);
 
+  // Change page size
+  const changePageSize = useCallback((pageSize) => {
+    setPagination(prev => ({ ...prev, pageSize, page: 1 }));
+  }, []);
+
+  // Selection methods
+  const selectAll = useCallback(() => {
+    setSelectedArticles(articles.map(a => a.id));
+  }, [articles]);
+
+  const deselectAll = useCallback(() => {
+    setSelectedArticles([]);
+  }, []);
+
+  const toggleSelection = useCallback((articleId) => {
+    setSelectedArticles(prev => {
+      if (prev.includes(articleId)) {
+        return prev.filter(id => id !== articleId);
+      }
+      return [...prev, articleId];
+    });
+  }, []);
+
+  // Return all the methods and state
   return {
     articles,
     loading,
@@ -170,11 +193,11 @@ export const useArticles = (initialFilters = {}) => {
     selectedArticles,
     setSelectedArticles,
     pagination,
-    changePage,
-    changePageSize,
+    changePage,       // This was missing
+    changePageSize,   // This was missing
     refreshArticles,
-    selectAll,
-    deselectAll,
-    toggleSelection
+    selectAll,        // This was missing
+    deselectAll,      // This was missing
+    toggleSelection   // This was missing
   };
 };
