@@ -43,37 +43,50 @@ class ArticleOperationsService {
   }
 
   // Update article
-  async update(articleId, articleData) {
+  async update(articleId, articleData, userProfile) {
     try {
-      const sanitized = sanitizeData(articleData);
-      
-      // Calculate read time if content exists
-      if (sanitized.content && sanitized.content.wordCount) {
+        const sanitized = sanitizeData(articleData);
+        
+        // Remove any joined/computed fields that aren't actual columns
+        delete sanitized.author;
+        delete sanitized.category;
+        delete sanitized.co_authors_data;
+        
+        // Ensure we're using correct column names
+        if (sanitized.author_id === undefined && userProfile) {
+        sanitized.author_id = userProfile.id;
+        }
+        
+        // Calculate read time if content exists
+        if (sanitized.content && sanitized.content.wordCount) {
         sanitized.read_time = Math.ceil(sanitized.content.wordCount / 200);
-      }
+        }
 
-      // Clean timestamp fields
-      if (sanitized.scheduled_at) {
+        // Clean timestamp fields
+        if (sanitized.scheduled_at) {
         sanitized.scheduled_at = cleanTimestampField(sanitized.scheduled_at);
-      }
+        }
 
-      // Add updated timestamp
-      sanitized.updated_at = new Date().toISOString();
+        // Add updated metadata
+        sanitized.updated_at = new Date().toISOString();
+        if (userProfile) {
+        sanitized.updated_by = userProfile.id;
+        }
 
-      const { data, error } = await supabase
+        const { data, error } = await supabase
         .from('articles')
         .update(sanitized)
         .eq('id', articleId)
         .select()
         .single();
 
-      if (error) throw error;
-      return { success: true, data };
+        if (error) throw error;
+        return { success: true, data };
     } catch (error) {
-      console.error('Error updating article:', error);
-      return { success: false, error: error.message };
+        console.error('Error updating article:', error);
+        return { success: false, error: error.message };
     }
-  }
+    }
 
   // Delete article
   async delete(articleId) {
