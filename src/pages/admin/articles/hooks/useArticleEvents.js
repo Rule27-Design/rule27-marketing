@@ -2,76 +2,89 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { supabase } from '../../../../lib/supabase';
 
-export const useArticleEvents = () => {
-  const subscriptionsRef = useRef({});
+class EventBus {
+  constructor() {
+    this.events = {};
+  }
 
-  // Subscribe to article events
-  const subscribeToEvents = useCallback((eventType, callback) => {
-    // Create unique subscription key
-    const subscriptionKey = `${eventType}_${Date.now()}`;
-    
-    // Set up real-time subscription
-    const subscription = supabase
-      .channel(`articles_${subscriptionKey}`)
+  on(event, callback) {
+    if (!this.events[event]) {
+      this.events[event] = [];
+    }
+    this.events[event].push(callback);
+    return () => this.off(event, callback);
+  }
+
+  off(event, callback) {
+    if (!this.events[event]) return;
+    this.events[event] = this.events[event].filter(cb => cb !== callback);
+  }
+
+  emit(event, data) {
+    if (!this.events[event]) return;
+    this.events[event].forEach(callback => callback(data));
+  }
+}
+
+export const articleEventBus = new EventBus();
+
+export const useArticleEvents = () => {
+  const subscriptionRef = useRef(null);
+
+  useEffect(() => {
+    // Subscribe to realtime changes
+    subscriptionRef.current = supabase
+      .channel('articles_changes')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'articles'
-        },
+        { event: '*', schema: 'public', table: 'articles' },
         (payload) => {
-          // Map database events to custom events
-          let customEvent = null;
-          
           switch (payload.eventType) {
             case 'INSERT':
-              customEvent = 'article:created';
+              articleEventBus.emit('article:created', payload.new);
               break;
             case 'UPDATE':
-              customEvent = 'article:updated';
+              articleEventBus.emit('article:updated', payload.new);
+              if (payload.old?.status !== payload.new.status) {
+                if (payload.new.status === 'published') {
+                  articleEventBus.emit('article:published', payload.new);
+                }
+              }
               break;
             case 'DELETE':
-              customEvent = 'article:deleted';
+              articleEventBus.emit('article:deleted', payload.old);
               break;
-          }
-          
-          if (customEvent === eventType || eventType === '*') {
-            callback(payload.new || payload.old, payload.eventType);
           }
         }
       )
       .subscribe();
-    
-    // Store subscription
-    subscriptionsRef.current[subscriptionKey] = subscription;
-    
-    // Return unsubscribe function
+
     return () => {
-      if (subscriptionsRef.current[subscriptionKey]) {
-        subscriptionsRef.current[subscriptionKey].unsubscribe();
-        delete subscriptionsRef.current[subscriptionKey];
+      if (subscriptionRef.current) {
+        supabase.removeChannel(subscriptionRef.current);
       }
     };
   }, []);
 
-  // Subscribe to bulk events
-  const subscribeToBulkEvents = useCallback((callback) => {
-    return subscribeToEvents('*', callback);
-  }, [subscribeToEvents]);
+  const subscribeToEvents = useCallback((event, callback) => {
+    return articleEventBus.on(event, callback);
+  }, []);
 
-  // Cleanup all subscriptions on unmount
-  useEffect(() => {
-    return () => {
-      Object.values(subscriptionsRef.current).forEach(subscription => {
-        subscription.unsubscribe();
-      });
-      subscriptionsRef.current = {};
-    };
+  const emitEvent = useCallback((event, data) => {
+    articleEventBus.emit(event, data);
   }, []);
 
   return {
     subscribeToEvents,
-    subscribeToBulkEvents
+    emit: emitEvent,
+    eventBus: articleEventBus
   };
+};
+
+export const ARTICLE_EVENTS = {
+  CREATED: 'article:created',
+  UPDATED: 'article:updated',
+  DELETED: 'article:deleted',
+  PUBLISHED: 'article:published',
+  BULK_ACTION: 'article:bulk_action'
 };
