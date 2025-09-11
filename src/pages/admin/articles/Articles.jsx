@@ -1,6 +1,7 @@
 // src/pages/admin/articles/Articles.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
+import { supabase } from '../../../lib/supabase';
 import { 
   FilterBar,
   BulkActions,
@@ -31,6 +32,8 @@ const Articles = () => {
   
   const [showEditor, setShowEditor] = useState(false);
   const [editingArticle, setEditingArticle] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [authors, setAuthors] = useState([]);
   
   const {
     articles,
@@ -57,19 +60,48 @@ const Articles = () => {
   useEffect(() => {
     const unsubscribe = subscribeToEvents('article:updated', (article) => {
       refreshArticles();
-      // toast.info('Article updated', `"${article.title}" has been updated`);
+      // Don't use toast inside subscription to avoid re-render issues
     });
 
     return unsubscribe;
-  }, []); 
+  }, []); // Empty dependency array
 
-  // Filter configuration for FilterBar
+  // Fetch categories and authors for filters
+  useEffect(() => {
+    fetchFilterData();
+  }, []);
+
+  const fetchFilterData = async () => {
+    try {
+      // Fetch categories
+      const { data: categoriesData } = await supabase
+        .from('categories')
+        .select('id, name')
+        .eq('type', 'article')
+        .eq('is_active', true)
+        .order('name');
+      
+      // Fetch authors
+      const { data: authorsData } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('role', ['admin', 'contributor'])
+        .order('full_name');
+      
+      setCategories(categoriesData || []);
+      setAuthors(authorsData || []);
+    } catch (error) {
+      console.error('Error fetching filter data:', error);
+    }
+  };
+
+  // Filter configuration with actual data
   const filterConfig = [
     {
       id: 'status',
       label: 'Status',
       type: 'select',
-      defaultValue: 'all',
+      value: filters.status || 'all',
       options: [
         { value: 'all', label: 'All Status' },
         { value: 'draft', label: 'Draft' },
@@ -82,17 +114,27 @@ const Articles = () => {
       id: 'category',
       label: 'Category',
       type: 'select',
-      defaultValue: 'all',
+      value: filters.category || 'all',
       options: [
-        { value: 'all', label: 'All Categories' }
-        // Categories will be loaded dynamically
+        { value: 'all', label: 'All Categories' },
+        ...categories.map(cat => ({ value: cat.id, label: cat.name }))
+      ]
+    },
+    {
+      id: 'author',
+      label: 'Author',
+      type: 'select',
+      value: filters.author || 'all',
+      options: [
+        { value: 'all', label: 'All Authors' },
+        ...authors.map(author => ({ value: author.id, label: author.full_name }))
       ]
     },
     {
       id: 'featured',
       label: 'Featured',
       type: 'select',
-      defaultValue: 'all',
+      value: filters.featured || 'all',
       options: [
         { value: 'all', label: 'All Articles' },
         { value: 'featured', label: 'Featured Only' },
@@ -179,152 +221,151 @@ const Articles = () => {
     }
   };
 
-  // Table columns configuration for VirtualTable
-    const tableColumns = [
+  // Table columns configuration with better spacing
+  const tableColumns = [
     {
-        key: 'select',
-        label: '',
-        render: (value, article) => (
+      key: 'select',
+      label: '',
+      render: (value, article) => (
         <Checkbox
-            checked={selectedArticles.includes(article.id)}
-            onChange={(checked) => toggleSelection(article.id)}
-            onClick={(e) => e.stopPropagation()}
+          checked={selectedArticles.includes(article.id)}
+          onChange={() => toggleSelection(article.id)}
+          onClick={(e) => e.stopPropagation()}
         />
-        ),
-        width: '50px',
-        className: 'pl-4'
+      ),
+      width: '40px'
     },
     {
-        key: 'title',
-        label: 'Title',
-        render: (value, article) => (
+      key: 'title',
+      label: 'Title',
+      render: (value, article) => (
         <div className="min-w-0">
-            <div className="flex items-start space-x-3">
+          <div className="flex items-start space-x-3">
             {article.featured_image && (
-                <img
+              <img
                 src={article.featured_image}
                 alt=""
                 className="w-12 h-12 rounded object-cover flex-shrink-0"
-                />
+              />
             )}
             <div className="min-w-0 flex-1">
-                <div className="font-medium text-gray-900 truncate pr-2">
+              <div className="font-medium text-gray-900">
                 {article.title}
                 {article.is_featured && (
-                    <Icon name="Star" size={12} className="inline ml-1 text-yellow-500" />
+                  <Icon name="Star" size={12} className="inline ml-1 text-yellow-500" />
                 )}
+              </div>
+              {article.excerpt && (
+                <div className="text-xs text-gray-500 line-clamp-1 mt-1">
+                  {article.excerpt}
                 </div>
-                {article.excerpt && (
-                <div className="text-xs text-gray-500 line-clamp-2 mt-1">
-                    {article.excerpt}
-                </div>
-                )}
+              )}
             </div>
-            </div>
+          </div>
         </div>
-        ),
-        sortable: true,
-        className: 'min-w-[300px]'
+      ),
+      sortable: true,
+      width: 'auto'
     },
     {
-        key: 'status',
-        label: 'Status',
-        render: (value, article) => <StatusBadge status={article.status} size="xs" />,
-        width: '100px',
-        sortable: true
+      key: 'status',
+      label: 'Status',
+      render: (value, article) => <StatusBadge status={article.status} size="xs" />,
+      width: '110px',
+      sortable: true
     },
     {
-        key: 'author',
-        label: 'Author',
-        render: (value, article) => (
-        <div className="text-sm text-gray-700 truncate">
-            {article.author?.full_name || 'Unknown'}
+      key: 'author',
+      label: 'Author',
+      render: (value, article) => (
+        <div className="text-sm text-gray-700">
+          {article.author?.full_name || 'Unknown'}
         </div>
-        ),
-        width: '150px'
+      ),
+      width: '140px'
     },
     {
-        key: 'category',
-        label: 'Category',
-        render: (value, article) => (
-        <div className="text-sm text-gray-600 truncate">
-            {article.category?.name || '-'}
+      key: 'category',
+      label: 'Category',
+      render: (value, article) => (
+        <div className="text-sm text-gray-600">
+          {article.category?.name || '-'}
         </div>
-        ),
-        width: '120px'
+      ),
+      width: '120px'
     },
     {
-        key: 'metrics',
-        label: 'Metrics',
-        render: (value, article) => (
-        <div className="flex items-center space-x-4 text-sm">
-            <div className="flex items-center space-x-1" title="Views">
-            <Icon name="Eye" size={14} className="text-gray-400" />
-            <span>{article.view_count || 0}</span>
-            </div>
-            <div className="flex items-center space-x-1" title="Likes">
-            <Icon name="Heart" size={14} className="text-gray-400" />
-            <span>{article.like_count || 0}</span>
-            </div>
-            <div className="flex items-center space-x-1" title="Shares">
-            <Icon name="Share2" size={14} className="text-gray-400" />
-            <span>{article.share_count || 0}</span>
-            </div>
+      key: 'metrics',
+      label: 'Metrics',
+      render: (value, article) => (
+        <div className="flex items-center space-x-3 text-sm text-gray-500">
+          <span className="flex items-center" title="Views">
+            <Icon name="Eye" size={14} className="mr-1" />
+            {article.view_count || 0}
+          </span>
+          <span className="flex items-center" title="Likes">
+            <Icon name="Heart" size={14} className="mr-1" />
+            {article.like_count || 0}
+          </span>
+          <span className="flex items-center" title="Shares">
+            <Icon name="Share2" size={14} className="mr-1" />
+            {article.share_count || 0}
+          </span>
         </div>
-        ),
-        width: '180px'
+      ),
+      width: '150px'
     },
     {
-        key: 'date',
-        label: 'Modified',
-        render: (value, article) => (
+      key: 'date',
+      label: 'Modified',
+      render: (value, article) => (
         <div className="text-xs text-gray-500">
-            {formatDate(article.updated_at, 'MMM d, yyyy')}
+          {formatDate(article.updated_at, 'MMM d, yyyy')}
         </div>
-        ),
-        width: '100px',
-        sortable: true
+      ),
+      width: '100px',
+      sortable: true
     },
     {
-        key: 'actions',
-        label: '',
-        render: (value, article) => (
-        <div className="flex items-center justify-end space-x-1 pr-4">
-            <Button
+      key: 'actions',
+      label: '',
+      render: (value, article) => (
+        <div className="flex items-center justify-end space-x-1">
+          <Button
             variant="ghost"
             size="xs"
             onClick={(e) => {
-                e.stopPropagation();
-                setEditingArticle(article);
-                setShowEditor(true);
+              e.stopPropagation();
+              setEditingArticle(article);
+              setShowEditor(true);
             }}
             title="Edit"
-            >
+          >
             <Icon name="Edit2" size={14} />
-            </Button>
-            <Button
+          </Button>
+          <Button
             variant="ghost"
             size="xs"
             onClick={async (e) => {
-                e.stopPropagation();
-                if (window.confirm('Are you sure you want to delete this article?')) {
+              e.stopPropagation();
+              if (window.confirm('Are you sure you want to delete this article?')) {
                 const result = await articleOperations.delete(article.id);
                 if (result.success) {
-                    toast.success('Article deleted');
-                    refreshArticles();
+                  toast.success('Article deleted');
+                  refreshArticles();
                 }
-                }
+              }
             }}
             title="Delete"
             className="text-red-500 hover:text-red-700"
-            >
+          >
             <Icon name="Trash2" size={14} />
-            </Button>
+          </Button>
         </div>
-        ),
-        width: '100px'
+      ),
+      width: '80px'
     }
-    ];
+  ];
 
   // Quick actions configuration
   const quickActionsConfig = [
@@ -369,7 +410,7 @@ const Articles = () => {
         <QuickActions actions={quickActionsConfig} />
       </div>
 
-      {/* Search and Filters */}
+      {/* Single Search Bar */}
       <div className="mb-4 space-y-3">
         <SearchBar
           placeholder="Search articles..."
@@ -377,10 +418,12 @@ const Articles = () => {
           debounceMs={300}
         />
         
+        {/* Filter Bar without internal search */}
         <FilterBar
           filters={filterConfig}
-          onFilterChange={setFilters}
+          onFilterChange={(newFilters) => setFilters({ ...filters, ...newFilters })}
           onReset={() => setFilters({})}
+          hideSearch={true}
         />
       </div>
 
@@ -395,45 +438,40 @@ const Articles = () => {
       )}
 
       {/* Articles Table or Empty State */}
-        <div className="flex-1 min-h-0">
-        <div className="h-full bg-white rounded-lg shadow overflow-hidden">
-            {articles.length === 0 ? (
-            <EmptyState
-                icon="FileText"
-                title="No articles found"
-                message="Create your first article to get started"
-                action={{
-                label: 'Create Article',
-                onClick: () => {
-                    setEditingArticle(null);
-                    setShowEditor(true);
-                }
-                }}
-            />
-            ) : (
-            <div className="h-full overflow-auto">
-                <VirtualTable
-                data={articles}
-                columns={tableColumns}
-                rowHeight={80}
-                visibleRows={Math.min(10, articles.length)}
-                onRowClick={(article) => {
-                    setEditingArticle(article);
-                    setShowEditor(true);
-                }}
-                selectedRows={selectedArticles}
-                onSelectionChange={setSelectedArticles}
-                sortable={true}
-                onSort={(key, direction) => {
-                    setFilters({ ...filters, sortBy: key, sortOrder: direction });
-                }}
-                loading={loading}
-                className="min-w-[1200px]"
-                />
-            </div>
-            )}
-        </div>
-        </div>
+      <div className="flex-1 bg-white rounded-lg shadow overflow-hidden">
+        {articles.length === 0 && !loading ? (
+          <EmptyState
+            icon="FileText"
+            title="No articles found"
+            message="Create your first article to get started"
+            action={{
+              label: 'Create Article',
+              onClick: () => {
+                setEditingArticle(null);
+                setShowEditor(true);
+              }
+            }}
+          />
+        ) : (
+          <VirtualTable
+            data={articles}
+            columns={tableColumns}
+            rowHeight={80}
+            visibleRows={10}
+            onRowClick={(article) => {
+              setEditingArticle(article);
+              setShowEditor(true);
+            }}
+            selectedRows={selectedArticles}
+            onSelectionChange={setSelectedArticles}
+            sortable={true}
+            onSort={(key, direction) => {
+              setFilters({ ...filters, sortBy: key, sortOrder: direction });
+            }}
+            loading={loading}
+          />
+        )}
+      </div>
 
       {/* Pagination */}
       {articles.length > 0 && (
