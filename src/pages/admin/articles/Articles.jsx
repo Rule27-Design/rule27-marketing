@@ -180,136 +180,151 @@ const Articles = () => {
   };
 
   // Table columns configuration for VirtualTable
-  const tableColumns = [
+    const tableColumns = [
     {
-      key: 'select',
-      label: '',
-      render: (value, article) => (
+        key: 'select',
+        label: '',
+        render: (value, article) => (
         <Checkbox
-          checked={selectedArticles.includes(article.id)}
-          onChange={(checked) => toggleSelection(article.id)}
+            checked={selectedArticles.includes(article.id)}
+            onChange={(checked) => toggleSelection(article.id)}
+            onClick={(e) => e.stopPropagation()}
         />
-      ),
-      width: 40
+        ),
+        width: '50px',
+        className: 'pl-4'
     },
     {
-      key: 'title',
-      label: 'Title',
-      render: (value, article) => (
-        <div className="flex items-center space-x-3">
-          {article.featured_image && (
-            <img
-              src={article.featured_image}
-              alt=""
-              className="w-10 h-10 rounded object-cover"
-            />
-          )}
-          <div>
-            <div className="font-medium text-text-primary">
-              {article.title}
-              {article.is_featured && (
-                <Icon name="Star" size={12} className="inline ml-1 text-yellow-500" />
-              )}
-            </div>
-            {article.excerpt && (
-              <div className="text-xs text-text-secondary line-clamp-1">
-                {article.excerpt}
-              </div>
+        key: 'title',
+        label: 'Title',
+        render: (value, article) => (
+        <div className="min-w-0">
+            <div className="flex items-start space-x-3">
+            {article.featured_image && (
+                <img
+                src={article.featured_image}
+                alt=""
+                className="w-12 h-12 rounded object-cover flex-shrink-0"
+                />
             )}
-          </div>
+            <div className="min-w-0 flex-1">
+                <div className="font-medium text-gray-900 truncate pr-2">
+                {article.title}
+                {article.is_featured && (
+                    <Icon name="Star" size={12} className="inline ml-1 text-yellow-500" />
+                )}
+                </div>
+                {article.excerpt && (
+                <div className="text-xs text-gray-500 line-clamp-2 mt-1">
+                    {article.excerpt}
+                </div>
+                )}
+            </div>
+            </div>
         </div>
-      ),
-      sortable: true
+        ),
+        sortable: true,
+        className: 'min-w-[300px]'
     },
     {
-      key: 'status',
-      label: 'Status',
-      render: (value, article) => <StatusBadge status={article.status} size="xs" />,
-      width: 120,
-      sortable: true
+        key: 'status',
+        label: 'Status',
+        render: (value, article) => <StatusBadge status={article.status} size="xs" />,
+        width: '100px',
+        sortable: true
     },
     {
-      key: 'author',
-      label: 'Author',
-      render: (value, article) => (
-        <div className="text-sm">
-          {article.author?.full_name || 'Unknown'}
+        key: 'author',
+        label: 'Author',
+        render: (value, article) => (
+        <div className="text-sm text-gray-700 truncate">
+            {article.author?.full_name || 'Unknown'}
         </div>
-      ),
-      width: 150
+        ),
+        width: '150px'
     },
     {
-      key: 'category',
-      label: 'Category',
-      render: (value, article) => (
-        <div className="text-sm text-text-secondary">
-          {article.category?.name || '-'}
+        key: 'category',
+        label: 'Category',
+        render: (value, article) => (
+        <div className="text-sm text-gray-600 truncate">
+            {article.category?.name || '-'}
         </div>
-      ),
-      width: 120
+        ),
+        width: '120px'
     },
     {
-      key: 'metrics',
-      label: 'Metrics',
-      render: (value, article) => (
-        <MetricsDisplay
-          metrics={[
-            { value: article.view_count || 0, icon: 'Eye' },
-            { value: article.like_count || 0, icon: 'Heart' },
-            { value: article.share_count || 0, icon: 'Share2' }
-          ]}
-          compact
-        />
-      ),
-      width: 150
-    },
-    {
-      key: 'date',
-      label: 'Modified',
-      render: (value, article) => (
-        <div className="text-xs text-text-secondary">
-          {formatDate(article.updated_at, 'MMM d, yyyy')}
+        key: 'metrics',
+        label: 'Metrics',
+        render: (value, article) => (
+        <div className="flex items-center space-x-4 text-sm">
+            <div className="flex items-center space-x-1" title="Views">
+            <Icon name="Eye" size={14} className="text-gray-400" />
+            <span>{article.view_count || 0}</span>
+            </div>
+            <div className="flex items-center space-x-1" title="Likes">
+            <Icon name="Heart" size={14} className="text-gray-400" />
+            <span>{article.like_count || 0}</span>
+            </div>
+            <div className="flex items-center space-x-1" title="Shares">
+            <Icon name="Share2" size={14} className="text-gray-400" />
+            <span>{article.share_count || 0}</span>
+            </div>
         </div>
-      ),
-      width: 100,
-      sortable: true
+        ),
+        width: '180px'
     },
     {
-      key: 'actions',
-      label: '',
-      render: (value, article) => (
-        <div className="flex items-center space-x-1">
-          <Button
+        key: 'date',
+        label: 'Modified',
+        render: (value, article) => (
+        <div className="text-xs text-gray-500">
+            {formatDate(article.updated_at, 'MMM d, yyyy')}
+        </div>
+        ),
+        width: '100px',
+        sortable: true
+    },
+    {
+        key: 'actions',
+        label: '',
+        render: (value, article) => (
+        <div className="flex items-center justify-end space-x-1 pr-4">
+            <Button
             variant="ghost"
             size="xs"
             onClick={(e) => {
-              e.stopPropagation();
-              setEditingArticle(article);
-              setShowEditor(true);
+                e.stopPropagation();
+                setEditingArticle(article);
+                setShowEditor(true);
             }}
-            iconName="Edit2"
-          />
-          <Button
+            title="Edit"
+            >
+            <Icon name="Edit2" size={14} />
+            </Button>
+            <Button
             variant="ghost"
             size="xs"
             onClick={async (e) => {
-              e.stopPropagation();
-              if (window.confirm('Are you sure you want to delete this article?')) {
+                e.stopPropagation();
+                if (window.confirm('Are you sure you want to delete this article?')) {
                 const result = await articleOperations.delete(article.id);
                 if (result.success) {
-                  toast.success('Article deleted');
-                  refreshArticles();
+                    toast.success('Article deleted');
+                    refreshArticles();
                 }
-              }
+                }
             }}
-            iconName="Trash2"
-            className="text-red-500"
-          />
+            title="Delete"
+            className="text-red-500 hover:text-red-700"
+            >
+            <Icon name="Trash2" size={14} />
+            </Button>
         </div>
-      ),
-      width: 100
+        ),
+        width: '100px'
     }
-  ];
+    ];
 
   // Quick actions configuration
   const quickActionsConfig = [
@@ -380,40 +395,45 @@ const Articles = () => {
       )}
 
       {/* Articles Table or Empty State */}
-      <div className="flex-1 bg-white rounded-lg shadow overflow-hidden">
-        {articles.length === 0 ? (
-          <EmptyState
-            icon="FileText"
-            title="No articles found"
-            message="Create your first article to get started"
-            action={{
-              label: 'Create Article',
-              onClick: () => {
-                setEditingArticle(null);
-                setShowEditor(true);
-              }
-            }}
-          />
-        ) : (
-          <VirtualTable
-            data={articles}
-            columns={tableColumns}
-            rowHeight={80}
-            visibleRows={10}
-            onRowClick={(article) => {
-              setEditingArticle(article);
-              setShowEditor(true);
-            }}
-            selectedRows={selectedArticles}
-            onSelectionChange={setSelectedArticles}
-            sortable={true}
-            onSort={(key, direction) => {
-              setFilters({ ...filters, sortBy: key, sortOrder: direction });
-            }}
-            loading={loading}
-          />
-        )}
-      </div>
+        <div className="flex-1 min-h-0">
+        <div className="h-full bg-white rounded-lg shadow overflow-hidden">
+            {articles.length === 0 ? (
+            <EmptyState
+                icon="FileText"
+                title="No articles found"
+                message="Create your first article to get started"
+                action={{
+                label: 'Create Article',
+                onClick: () => {
+                    setEditingArticle(null);
+                    setShowEditor(true);
+                }
+                }}
+            />
+            ) : (
+            <div className="h-full overflow-auto">
+                <VirtualTable
+                data={articles}
+                columns={tableColumns}
+                rowHeight={80}
+                visibleRows={Math.min(10, articles.length)}
+                onRowClick={(article) => {
+                    setEditingArticle(article);
+                    setShowEditor(true);
+                }}
+                selectedRows={selectedArticles}
+                onSelectionChange={setSelectedArticles}
+                sortable={true}
+                onSort={(key, direction) => {
+                    setFilters({ ...filters, sortBy: key, sortOrder: direction });
+                }}
+                loading={loading}
+                className="min-w-[1200px]"
+                />
+            </div>
+            )}
+        </div>
+        </div>
 
       {/* Pagination */}
       {articles.length > 0 && (

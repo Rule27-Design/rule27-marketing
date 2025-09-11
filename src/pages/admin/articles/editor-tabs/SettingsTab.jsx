@@ -1,95 +1,62 @@
 // src/pages/admin/articles/editor-tabs/SettingsTab.jsx
 import React from 'react';
+import Input from '../../../../components/ui/Input';
 import Select from '../../../../components/ui/Select';
 import { Checkbox } from '../../../../components/ui/Checkbox';
-import Input from '../../../../components/ui/Input';
-import { cn, formatDate } from '../../../../utils';
 
 const SettingsTab = ({ formData, errors, onChange }) => {
-  const handleScheduleToggle = (enabled) => {
-    if (enabled) {
-      onChange('status', 'scheduled');
-    } else {
-      onChange('status', 'draft');
-      onChange('scheduled_at', '');
-    }
-  };
-
   return (
     <div className="space-y-6">
-      {/* Publishing Status */}
+      {/* Publishing Settings */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Status
-        </label>
-        <Select
-          value={formData.status || 'draft'}
-          onChange={(value) => onChange('status', value)}
-          options={[
-            { value: 'draft', label: 'Draft' },
-            { value: 'published', label: 'Published' },
-            { value: 'scheduled', label: 'Scheduled' },
-            { value: 'archived', label: 'Archived' }
-          ]}
-        />
-      </div>
-
-      {/* Scheduled Publishing */}
-      {formData.status === 'scheduled' && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Schedule Date & Time
-          </label>
-          <Input
-            type="datetime-local"
-            value={formData.scheduled_at || ''}
-            onChange={(e) => onChange('scheduled_at', e.target.value)}
-            min={new Date().toISOString().slice(0, 16)}
-          />
-          {formData.scheduled_at && (
-            <p className="text-xs text-gray-500 mt-1">
-              Will be published on {formatDate(formData.scheduled_at, 'PPP p')}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Display Options */}
-      <div className="space-y-3">
-        <h3 className="text-sm font-medium text-gray-700">Display Options</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Publishing Settings</h3>
         
-        <label className="flex items-center space-x-3">
-          <Checkbox
-            checked={formData.is_featured || false}
-            onChange={(checked) => onChange('is_featured', checked)}
+        <div className="space-y-4">
+          <Select
+            label="Status"
+            value={formData.status}
+            onChange={(value) => onChange('status', value)}
+            options={[
+              { value: 'draft', label: 'Draft' },
+              { value: 'published', label: 'Published' },
+              { value: 'scheduled', label: 'Scheduled' },
+              { value: 'archived', label: 'Archived' }
+            ]}
           />
-          <div>
-            <span className="text-sm font-medium text-gray-700">Featured Article</span>
-            <p className="text-xs text-gray-500">Display prominently on homepage</p>
-          </div>
-        </label>
 
-        <label className="flex items-center space-x-3">
-          <Checkbox
-            checked={formData.enable_comments !== false}
-            onChange={(checked) => onChange('enable_comments', checked)}
-          />
-          <div>
-            <span className="text-sm font-medium text-gray-700">Enable Comments</span>
-            <p className="text-xs text-gray-500">Allow readers to comment</p>
-          </div>
-        </label>
+          {formData.status === 'scheduled' && (
+            <Input
+              type="datetime-local"
+              label="Schedule Publication"
+              value={formData.scheduled_at}
+              onChange={(e) => onChange('scheduled_at', e.target.value)}
+              required
+            />
+          )}
 
-        <label className="flex items-center space-x-3">
-          <Checkbox
-            checked={formData.enable_reactions !== false}
-            onChange={(checked) => onChange('enable_reactions', checked)}
-          />
-          <div>
-            <span className="text-sm font-medium text-gray-700">Enable Reactions</span>
-            <p className="text-xs text-gray-500">Allow readers to react with emojis</p>
+          <div className="space-y-3">
+            <Checkbox
+              checked={formData.is_featured}
+              onCheckedChange={(checked) => onChange('is_featured', checked)}
+              label="Featured Article"
+              description="Display this article prominently on the homepage"
+            />
+            
+            <Checkbox
+              checked={formData.enable_comments}
+              onCheckedChange={(checked) => onChange('enable_comments', checked)}
+              label="Enable Comments"
+              description="Allow readers to comment on this article"
+            />
+            
+            <Checkbox
+              checked={formData.enable_reactions}
+              onCheckedChange={(checked) => onChange('enable_reactions', checked)}
+              label="Enable Reactions"
+              description="Allow readers to like and share this article"
+            />
           </div>
-        </label>
+        </div>
       </div>
 
       {/* Internal Notes */}
@@ -98,52 +65,48 @@ const SettingsTab = ({ formData, errors, onChange }) => {
           Internal Notes
         </label>
         <textarea
-          value={formData.internal_notes || ''}
+          value={formData.internal_notes}
           onChange={(e) => onChange('internal_notes', e.target.value)}
-          placeholder="Notes for internal use only..."
+          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent"
           rows={4}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+          placeholder="Notes for the editorial team (not visible to readers)..."
         />
       </div>
 
-      {/* Article Stats (Read-only) */}
+      {/* Article Statistics */}
       {formData.id && (
-        <div className={cn(
-          "border rounded-lg p-4",
-          "bg-gray-50"
-        )}>
-          <h3 className="text-sm font-medium text-gray-700 mb-3">Article Statistics</h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">
-                {formData.view_count || 0}
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h3 className="text-sm font-medium text-gray-900 mb-3">Article Information</h3>
+          <dl className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <dt className="text-gray-500">Created:</dt>
+              <dd className="text-gray-900">
+                {new Date(formData.created_at).toLocaleDateString()}
+              </dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-gray-500">Last Updated:</dt>
+              <dd className="text-gray-900">
+                {new Date(formData.updated_at).toLocaleDateString()}
+              </dd>
+            </div>
+            {formData.published_at && (
+              <div className="flex justify-between">
+                <dt className="text-gray-500">Published:</dt>
+                <dd className="text-gray-900">
+                  {new Date(formData.published_at).toLocaleDateString()}
+                </dd>
               </div>
-              <div className="text-xs text-gray-500">Views</div>
+            )}
+            <div className="flex justify-between">
+              <dt className="text-gray-500">Views:</dt>
+              <dd className="text-gray-900">{formData.view_count || 0}</dd>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">
-                {formData.like_count || 0}
-              </div>
-              <div className="text-xs text-gray-500">Likes</div>
+            <div className="flex justify-between">
+              <dt className="text-gray-500">Likes:</dt>
+              <dd className="text-gray-900">{formData.like_count || 0}</dd>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">
-                {formData.share_count || 0}
-              </div>
-              <div className="text-xs text-gray-500">Shares</div>
-            </div>
-          </div>
-          
-          {formData.published_at && (
-            <div className="mt-4 pt-4 border-t">
-              <p className="text-xs text-gray-500">
-                Published: {formatDate(formData.published_at, 'PPP')}
-              </p>
-              <p className="text-xs text-gray-500">
-                Last updated: {formatDate(formData.updated_at, 'PPP')}
-              </p>
-            </div>
-          )}
+          </dl>
         </div>
       )}
     </div>
