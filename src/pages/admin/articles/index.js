@@ -1,5 +1,9 @@
 // src/pages/admin/articles/index.js
-export { default as Articles } from './Articles';
+// Export Articles as default for Routes.jsx
+import Articles from './Articles';
+export default Articles;
+
+// Also export named exports for other uses
 export { default as ArticleEditor } from './ArticleEditor';
 
 // Export editor tabs
