@@ -1,95 +1,77 @@
 // src/pages/admin/articles/hooks/useArticleEvents.js
-import { useEffect, useRef, useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { supabase } from '../../../../lib/supabase';
 
-class EventBus {
-  constructor() {
-    this.events = {};
-  }
-
-  on(event, callback) {
-    if (!this.events[event]) {
-      this.events[event] = [];
-    }
-    this.events[event].push(callback);
-    return () => this.off(event, callback); // Return unsubscribe function
-  }
-
-  off(event, callback) {
-    if (!this.events[event]) return;
-    this.events[event] = this.events[event].filter(cb => cb !== callback);
-  }
-
-  emit(event, data) {
-    if (!this.events[event]) return;
-    this.events[event].forEach(callback => callback(data));
-  }
-}
-
-// Global event bus for article events
-export const articleEventBus = new EventBus();
-
 export const useArticleEvents = () => {
-  const subscriptionRef = useRef(null);
+  const subscriptionsRef = useRef({});
 
-  useEffect(() => {
-    // Subscribe to realtime changes
-    subscriptionRef.current = supabase
-      .channel('articles_changes')
+  // Subscribe to article events
+  const subscribeToEvents = useCallback((eventType, callback) => {
+    // Create unique subscription key
+    const subscriptionKey = `${eventType}_${Date.now()}`;
+    
+    // Set up real-time subscription
+    const subscription = supabase
+      .channel(`articles_${subscriptionKey}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'articles' },
+        {
+          event: '*',
+          schema: 'public',
+          table: 'articles'
+        },
         (payload) => {
+          // Map database events to custom events
+          let customEvent = null;
+          
           switch (payload.eventType) {
             case 'INSERT':
-              articleEventBus.emit('article:created', payload.new);
+              customEvent = 'article:created';
               break;
             case 'UPDATE':
-              articleEventBus.emit('article:updated', payload.new);
-              if (payload.old?.status !== payload.new.status) {
-                if (payload.new.status === 'published') {
-                  articleEventBus.emit('article:published', payload.new);
-                } else if (payload.new.status === 'archived') {
-                  articleEventBus.emit('article:archived', payload.new);
-                }
-              }
+              customEvent = 'article:updated';
               break;
             case 'DELETE':
-              articleEventBus.emit('article:deleted', payload.old);
+              customEvent = 'article:deleted';
               break;
+          }
+          
+          if (customEvent === eventType || eventType === '*') {
+            callback(payload.new || payload.old, payload.eventType);
           }
         }
       )
       .subscribe();
-
+    
+    // Store subscription
+    subscriptionsRef.current[subscriptionKey] = subscription;
+    
+    // Return unsubscribe function
     return () => {
-      if (subscriptionRef.current) {
-        supabase.removeChannel(subscriptionRef.current);
+      if (subscriptionsRef.current[subscriptionKey]) {
+        subscriptionsRef.current[subscriptionKey].unsubscribe();
+        delete subscriptionsRef.current[subscriptionKey];
       }
     };
   }, []);
 
-  const subscribeToEvents = useCallback((event, callback) => {
-    return articleEventBus.on(event, callback);
-  }, []);
+  // Subscribe to bulk events
+  const subscribeToBulkEvents = useCallback((callback) => {
+    return subscribeToEvents('*', callback);
+  }, [subscribeToEvents]);
 
-  const emitEvent = useCallback((event, data) => {
-    articleEventBus.emit(event, data);
+  // Cleanup all subscriptions on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(subscriptionsRef.current).forEach(subscription => {
+        subscription.unsubscribe();
+      });
+      subscriptionsRef.current = {};
+    };
   }, []);
 
   return {
     subscribeToEvents,
-    emit: emitEvent,
-    eventBus: articleEventBus
+    subscribeToBulkEvents
   };
-};
-
-// Export event types
-export const ARTICLE_EVENTS = {
-  CREATED: 'article:created',
-  UPDATED: 'article:updated',
-  DELETED: 'article:deleted',
-  PUBLISHED: 'article:published',
-  ARCHIVED: 'article:archived',
-  BULK_ACTION: 'article:bulk_action'
 };

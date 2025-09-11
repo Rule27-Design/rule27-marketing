@@ -10,7 +10,7 @@ export { default as SettingsTab } from './editor-tabs/SettingsTab';
 export { default as AnalyticsTab } from './editor-tabs/AnalyticsTab';
 
 // Export services
-export { articleOperations, ArticleOperationsService } from './services/ArticleOperations';
+export { articleOperations } from './services/ArticleOperations';
 
 // Export hooks
 export { useArticles } from './hooks/useArticles';

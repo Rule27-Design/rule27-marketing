@@ -17,13 +17,13 @@ export const useArticles = (initialFilters = {}) => {
   });
   const toast = useToast();
 
-  // Fetch articles with filters
+  // Fetch articles with filters and pagination
   const fetchArticles = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      // First, get the basic articles data
+      // Build query
       let query = supabase
         .from('articles')
         .select('*', { count: 'exact' });
@@ -51,27 +51,27 @@ export const useArticles = (initialFilters = {}) => {
         query = query.or(`title.ilike.%${filters.search}%,excerpt.ilike.%${filters.search}%`);
       }
 
+      // Sorting
+      const sortBy = filters.sortBy || 'updated_at';
+      const sortOrder = filters.sortOrder || 'desc';
+      query = query.order(sortBy, { ascending: sortOrder === 'asc' });
+
       // Pagination
       const from = (pagination.page - 1) * pagination.pageSize;
       const to = from + pagination.pageSize - 1;
       query = query.range(from, to);
 
-      // Default ordering
-      query = query.order('updated_at', { ascending: false });
-
       const { data: articlesData, error: fetchError, count } = await query;
 
       if (fetchError) throw fetchError;
 
-      // If we have articles, fetch related data
+      // Fetch related data
       if (articlesData && articlesData.length > 0) {
-        // Get unique author IDs and category IDs
         const authorIds = [...new Set(articlesData.map(a => a.author_id).filter(Boolean))];
         const categoryIds = [...new Set(articlesData.map(a => a.category_id).filter(Boolean))];
         const coAuthorIds = [...new Set(articlesData.flatMap(a => a.co_authors || []))];
         const allAuthorIds = [...new Set([...authorIds, ...coAuthorIds])];
 
-        // Fetch profiles and categories
         const [profilesResponse, categoriesResponse] = await Promise.all([
           allAuthorIds.length > 0 
             ? supabase.from('profiles').select('id, full_name, avatar_url').in('id', allAuthorIds)
@@ -84,7 +84,7 @@ export const useArticles = (initialFilters = {}) => {
         const profiles = profilesResponse.data || [];
         const categories = categoriesResponse.data || [];
 
-        // Map the related data back to articles
+        // Map related data
         const enrichedArticles = articlesData.map(article => ({
           ...article,
           author: profiles.find(p => p.id === article.author_id) || null,
@@ -99,6 +99,7 @@ export const useArticles = (initialFilters = {}) => {
         setArticles([]);
       }
 
+      // Update pagination
       setPagination(prev => ({
         ...prev,
         total: count || 0,
@@ -125,15 +126,17 @@ export const useArticles = (initialFilters = {}) => {
 
   // Change page
   const changePage = useCallback((page) => {
-    setPagination(prev => ({ ...prev, page }));
-  }, []);
+    if (page >= 1 && page <= pagination.totalPages) {
+      setPagination(prev => ({ ...prev, page }));
+    }
+  }, [pagination.totalPages]);
 
   // Change page size
   const changePageSize = useCallback((pageSize) => {
     setPagination(prev => ({ ...prev, pageSize, page: 1 }));
   }, []);
 
-  // Select/deselect articles
+  // Selection methods
   const selectAll = useCallback(() => {
     setSelectedArticles(articles.map(a => a.id));
   }, [articles]);
