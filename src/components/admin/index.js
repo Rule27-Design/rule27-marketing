@@ -10,6 +10,7 @@ export { default as EmptyState } from './EmptyState';
 export { default as ErrorState } from './ErrorState';
 export { default as SearchBar } from './SearchBar';
 export { default as ExportButton } from './ExportButton';
+export { default as QualityCheck } from './QualityCheck';
 
 // Editor and Preview Components
 export { default as PreviewModal } from './PreviewModal';
