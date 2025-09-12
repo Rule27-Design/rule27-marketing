@@ -236,16 +236,16 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
       {/* Testimonial */}
       <div>
         <Select
-          label="Client Testimonial (Optional)"
-          value={formData.testimonial_id || ''}
-          onChange={(value) => onChange('testimonial_id', value || null)}
-          options={[
-            { value: '', label: 'Select testimonial...' },
-            ...testimonials.map(t => ({
-              value: t.id,
-              label: `${t.client_name} - ${t.company_name || 'No company'}`
-            }))
-          ]}
+            label="Client Testimonial (Optional)"
+            value={formData.testimonial_id || ''}
+            onChange={(value) => onChange('testimonial_id', value || null)}
+            options={[
+                { value: '', label: 'Select testimonial...' },
+                ...testimonials.map(t => ({
+                value: t.id,
+                label: `${t.client_name}${t.client_company ? ` - ${t.client_company}` : ''}`
+                }))
+            ]}
         />
         <p className="text-xs text-gray-500 mt-1">
           Link an existing testimonial to this case study
