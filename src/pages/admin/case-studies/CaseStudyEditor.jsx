@@ -36,60 +36,102 @@ const CaseStudyEditor = ({
   
   // Initialize form data with ALL fields including rich text
   const initialData = {
-    title: '',
-    slug: '',
-    client_name: '',
-    client_logo: '',
-    client_website: '',
-    client_industry: '',
-    client_company_size: '',
-    project_duration: '',
-    project_start_date: '',
-    project_end_date: '',
-    project_investment: '',
-    service_type: '',
-    service_category: '',
-    deliverables: [],
-    technologies_used: [],
-    team_size: null,
-    team_members: [],
-    challenge: null, // Rich text object
-    solution: null, // Rich text object
-    implementation_process: null, // Rich text object
-    key_metrics: [],
-    results_summary: '', // Plain text summary
-    results_narrative: null, // Rich text object
-    testimonial_id: null,
-    hero_image: '',
-    hero_video: '',
-    gallery_images: [],
-    status: 'draft',
-    is_featured: false,
-    sort_order: 0,
-    meta_title: '',
-    meta_description: '',
-    meta_keywords: [],
-    og_title: '',
-    og_description: '',
-    og_image: '',
-    canonical_url: '',
-    internal_notes: '',
-    view_count: 0,
-    unique_view_count: 0,
-    inquiry_count: 0,
+  // Core fields - these map directly
+    title: caseStudy?.title || '',
+    slug: caseStudy?.slug || '',
+    client_name: caseStudy?.client_name || '',
+    client_logo: caseStudy?.client_logo || '',
+    client_website: caseStudy?.client_website || '',
+    client_industry: caseStudy?.client_industry || '',
+    client_company_size: caseStudy?.client_company_size || '',
+    
+    // Project details - these map directly now
+    project_duration: caseStudy?.project_duration || '',
+    project_start_date: caseStudy?.project_start_date || '',
+    project_end_date: caseStudy?.project_end_date || '',
+    project_investment: caseStudy?.project_investment || '',
+    
+    // Service details
+    service_type: caseStudy?.service_type || '',
+    service_category: caseStudy?.service_category || '',
+    
+    // Arrays and JSON fields
+    deliverables: caseStudy?.deliverables || [],
+    technologies_used: caseStudy?.technologies_used || [],
+    team_size: caseStudy?.team_size || null,
+    team_members: caseStudy?.team_members || [],
+    
+    // Rich text fields - these are JSONB in the database
+    challenge: caseStudy?.challenge || null,
+    solution: caseStudy?.solution || null,
+    implementation_process: caseStudy?.implementation_process || null,
+    results_narrative: caseStudy?.results_narrative || null,
+    
+    // Plain text summary
+    results_summary: caseStudy?.results_summary || '',
+    
+    // Metrics and gallery
+    key_metrics: caseStudy?.key_metrics || [],
+    gallery_images: caseStudy?.gallery_images || [],
+    process_steps: caseStudy?.process_steps || [],
+    
+    // Media
+    hero_image: caseStudy?.hero_image || '',
+    hero_image_alt: caseStudy?.hero_image_alt || '',
+    hero_video: caseStudy?.hero_video || '',
+    
+    // References
+    testimonial_id: caseStudy?.testimonial_id || null,
+    project_lead: caseStudy?.project_lead || null,
+    
+    // Status and settings
+    status: caseStudy?.status || 'draft',
+    is_featured: caseStudy?.is_featured || false,
+    is_confidential: caseStudy?.is_confidential || false,
+    is_active: caseStudy?.is_active !== false, // Default true
+    sort_order: caseStudy?.sort_order || 0,
+    
+    // SEO fields
+    meta_title: caseStudy?.meta_title || '',
+    meta_description: caseStudy?.meta_description || '',
+    meta_keywords: caseStudy?.meta_keywords || [],
+    og_title: caseStudy?.og_title || '',
+    og_description: caseStudy?.og_description || '',
+    og_image: caseStudy?.og_image || '',
+    canonical_url: caseStudy?.canonical_url || '',
+    
+    // Internal
+    internal_notes: caseStudy?.internal_notes || '',
+    
+    // Analytics
+    view_count: caseStudy?.view_count || 0,
+    unique_view_count: caseStudy?.unique_view_count || 0,
+    inquiry_count: caseStudy?.inquiry_count || 0,
+    average_time_on_page: caseStudy?.average_time_on_page || null,
+    
     // Phase 2-4 fields
-    related_case_studies: [],
-    custom_fields: {},
-    version: 1,
-    published_at: null,
-    scheduled_at: null,
-    language: 'en',
-    translations: {},
-    ab_test_variant: null,
-    performance_score: null,
-    seo_score: null,
-    ...caseStudy
-  };
+    scheduled_at: caseStudy?.scheduled_at || null,
+    published_at: caseStudy?.published_at || null,
+    language: caseStudy?.language || 'en',
+    translations: caseStudy?.translations || {},
+    ab_test_variant: caseStudy?.ab_test_variant || null,
+    performance_score: caseStudy?.performance_score || 0,
+    seo_score: caseStudy?.seo_score || 0,
+    ai_tags: caseStudy?.ai_tags || [],
+    ai_summary: caseStudy?.ai_summary || '',
+    predicted_performance: caseStudy?.predicted_performance || null,
+    related_case_studies: caseStudy?.related_case_studies || [],
+    custom_fields: caseStudy?.custom_fields || {},
+    version: caseStudy?.version || 1,
+    
+    // Metadata
+    created_at: caseStudy?.created_at || null,
+    updated_at: caseStudy?.updated_at || null,
+    created_by: caseStudy?.created_by || null,
+    updated_by: caseStudy?.updated_by || null,
+    
+    // DO NOT spread caseStudy at the end as it might have undefined values
+    };
 
   const [formData, setFormData] = useState(initialData);
   const [isDirty, setIsDirty] = useState(false);
