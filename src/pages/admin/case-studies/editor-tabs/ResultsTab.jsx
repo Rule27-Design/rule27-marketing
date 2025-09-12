@@ -1,12 +1,13 @@
 // src/pages/admin/case-studies/editor-tabs/ResultsTab.jsx
 import React from 'react';
+import TiptapContentEditor from '../../../../components/ui/TiptapContentEditor';
 import Input from '../../../../components/ui/Input';
 import Select from '../../../../components/ui/Select';
 import Button from '../../../../components/ui/Button';
 import Icon from '../../../../components/AdminIcon';
 
 const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
-  // Key metrics management
+  // Key metrics management (same as before)
   const addMetric = () => {
     const newMetric = {
       label: '',
@@ -40,53 +41,41 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
 
   return (
     <div className="space-y-6">
-      {/* Challenge */}
+      {/* Challenge - Using TiptapContentEditor */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          The Challenge <span className="text-red-500">*</span>
-        </label>
-        <textarea
+        <TiptapContentEditor
           value={formData.challenge}
-          onChange={(e) => onChange('challenge', e.target.value)}
+          onChange={(content) => onChange('challenge', content)}
+          label="The Challenge"
           placeholder="Describe the challenges the client was facing..."
-          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent"
-          rows={4}
+          minHeight="200px"
+          error={errors.challenge}
           required
         />
-        {errors.challenge && (
-          <p className="text-sm text-red-500 mt-1">{errors.challenge}</p>
-        )}
       </div>
 
-      {/* Solution */}
+      {/* Solution - Using TiptapContentEditor */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Our Solution <span className="text-red-500">*</span>
-        </label>
-        <textarea
+        <TiptapContentEditor
           value={formData.solution}
-          onChange={(e) => onChange('solution', e.target.value)}
+          onChange={(content) => onChange('solution', content)}
+          label="Our Solution"
           placeholder="Describe the solution you provided..."
-          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent"
-          rows={4}
+          minHeight="200px"
+          error={errors.solution}
           required
         />
-        {errors.solution && (
-          <p className="text-sm text-red-500 mt-1">{errors.solution}</p>
-        )}
       </div>
 
-      {/* Implementation Process */}
+      {/* Implementation Process - Using TiptapContentEditor */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Implementation Process
-        </label>
-        <textarea
+        <TiptapContentEditor
           value={formData.implementation_process}
-          onChange={(e) => onChange('implementation_process', e.target.value)}
+          onChange={(content) => onChange('implementation_process', content)}
+          label="Implementation Process"
           placeholder="Describe how the solution was implemented..."
-          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent"
-          rows={4}
+          minHeight="200px"
+          error={errors.implementation_process}
         />
       </div>
 
@@ -214,17 +203,33 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
         )}
       </div>
 
-      {/* Results Narrative */}
+      {/* Results Summary - NEW FIELD */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Results Narrative
+          Results Summary
         </label>
         <textarea
-          value={formData.results_narrative}
-          onChange={(e) => onChange('results_narrative', e.target.value)}
-          placeholder="Provide a detailed narrative of the results achieved..."
+          value={formData.results_summary}
+          onChange={(e) => onChange('results_summary', e.target.value)}
+          placeholder="Brief summary of results for listings and previews..."
           className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent"
-          rows={6}
+          rows={3}
+          maxLength={300}
+        />
+        <div className="text-xs text-gray-500 mt-1">
+          {formData.results_summary?.length || 0} / 300 characters
+        </div>
+      </div>
+
+      {/* Results Narrative - Using TiptapContentEditor */}
+      <div>
+        <TiptapContentEditor
+          value={formData.results_narrative}
+          onChange={(content) => onChange('results_narrative', content)}
+          label="Detailed Results Narrative"
+          placeholder="Provide a detailed narrative of the results achieved..."
+          minHeight="300px"
+          error={errors.results_narrative}
         />
       </div>
 
@@ -247,7 +252,57 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
         </p>
       </div>
 
-      {/* Success Tips */}
+      {/* Content Statistics */}
+      {(formData.challenge || formData.solution || formData.results_narrative) && (
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h3 className="text-sm font-medium text-gray-900 mb-3">Content Statistics</h3>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-white rounded-lg p-3 border border-gray-200">
+              <div className="flex items-center space-x-2">
+                <Icon name="FileText" size={16} className="text-gray-400" />
+                <div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {[formData.challenge, formData.solution, formData.results_narrative]
+                      .filter(Boolean)
+                      .reduce((sum, content) => sum + (content.wordCount || 0), 0)}
+                  </div>
+                  <div className="text-xs text-gray-500">Total Words</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg p-3 border border-gray-200">
+              <div className="flex items-center space-x-2">
+                <Icon name="Clock" size={16} className="text-gray-400" />
+                <div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {Math.ceil(
+                      [formData.challenge, formData.solution, formData.results_narrative]
+                        .filter(Boolean)
+                        .reduce((sum, content) => sum + (content.wordCount || 0), 0) / 200
+                    )}
+                  </div>
+                  <div className="text-xs text-gray-500">Min Read</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg p-3 border border-gray-200">
+              <div className="flex items-center space-x-2">
+                <Icon name="TrendingUp" size={16} className="text-gray-400" />
+                <div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {formData.key_metrics?.length || 0}
+                  </div>
+                  <div className="text-xs text-gray-500">Metrics</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tips for Compelling Results */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h3 className="text-sm font-medium text-blue-900 mb-2">Tips for Compelling Results</h3>
         <ul className="text-sm text-blue-700 space-y-1">
@@ -256,6 +311,7 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
           <li>• Focus on business outcomes (revenue, efficiency, growth)</li>
           <li>• Add context to make metrics meaningful to readers</li>
           <li>• Order metrics by importance or impact</li>
+          <li>• Use rich formatting to highlight key points</li>
         </ul>
       </div>
     </div>
