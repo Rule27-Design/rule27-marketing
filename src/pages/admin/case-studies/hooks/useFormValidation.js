@@ -44,21 +44,46 @@ export const useFormValidation = () => {
         }
         break;
 
+      // Rich text validations
       case 'challenge':
-        if (!value || value.trim().length === 0) {
+        if (!value || (typeof value === 'object' && !value.html?.trim()) || 
+            (typeof value === 'string' && !value.trim())) {
           error = 'Challenge description is required';
         }
         break;
 
       case 'solution':
-        if (!value || value.trim().length === 0) {
+        if (!value || (typeof value === 'object' && !value.html?.trim()) || 
+            (typeof value === 'string' && !value.trim())) {
           error = 'Solution description is required';
+        }
+        break;
+
+      case 'implementation_process':
+        // Optional field, but validate if provided
+        if (value && typeof value === 'object' && value.html && value.html.length > 10000) {
+          error = 'Implementation process is too long';
+        }
+        break;
+
+      case 'results_narrative':
+        // Optional field, but validate if provided
+        if (value && typeof value === 'object' && value.html && value.html.length > 10000) {
+          error = 'Results narrative is too long';
+        }
+        break;
+
+      case 'results_summary':
+        if (value && value.length > 300) {
+          error = 'Results summary must be less than 300 characters';
         }
         break;
 
       case 'key_metrics':
         if (!value || value.length === 0) {
           error = 'At least one key metric is required';
+        } else if (value.some(metric => !metric.label || !metric.value)) {
+          error = 'All metrics must have a label and value';
         }
         break;
 
@@ -71,6 +96,25 @@ export const useFormValidation = () => {
       case 'project_start_date':
         if (!value) {
           error = 'Project start date is required';
+        }
+        break;
+
+      case 'project_end_date':
+        if (value && formData.project_start_date) {
+          const start = new Date(formData.project_start_date);
+          const end = new Date(value);
+          if (end < start) {
+            error = 'End date must be after start date';
+          }
+        }
+        break;
+
+      case 'scheduled_at':
+        if (value) {
+          const scheduledDate = new Date(value);
+          if (scheduledDate <= new Date()) {
+            error = 'Scheduled date must be in the future';
+          }
         }
         break;
 
@@ -95,6 +139,30 @@ export const useFormValidation = () => {
       case 'meta_description':
         if (value && value.length > 160) {
           error = 'Meta description should be less than 160 characters for SEO';
+        }
+        break;
+
+      case 'og_title':
+        if (value && value.length > 70) {
+          error = 'Open Graph title should be less than 70 characters';
+        }
+        break;
+
+      case 'og_description':
+        if (value && value.length > 200) {
+          error = 'Open Graph description should be less than 200 characters';
+        }
+        break;
+
+      case 'team_size':
+        if (value && (isNaN(value) || value < 0)) {
+          error = 'Team size must be a positive number';
+        }
+        break;
+
+      case 'sort_order':
+        if (value && (isNaN(value) || value < 0)) {
+          error = 'Sort order must be a positive number';
         }
         break;
 
@@ -140,16 +208,23 @@ export const useFormValidation = () => {
       newErrors.service_type = 'Service type is required';
     }
 
-    if (!formData.challenge?.trim()) {
+    // Rich text content validation
+    if (!formData.challenge || 
+        (typeof formData.challenge === 'object' && !formData.challenge.html?.trim()) ||
+        (typeof formData.challenge === 'string' && !formData.challenge.trim())) {
       newErrors.challenge = 'Challenge description is required';
     }
 
-    if (!formData.solution?.trim()) {
+    if (!formData.solution || 
+        (typeof formData.solution === 'object' && !formData.solution.html?.trim()) ||
+        (typeof formData.solution === 'string' && !formData.solution.trim())) {
       newErrors.solution = 'Solution description is required';
     }
 
     if (!formData.key_metrics || formData.key_metrics.length === 0) {
       newErrors.key_metrics = 'At least one key metric is required';
+    } else if (formData.key_metrics.some(metric => !metric.label || !metric.value)) {
+      newErrors.key_metrics = 'All metrics must have a label and value';
     }
 
     if (!formData.hero_image?.trim()) {
@@ -160,7 +235,20 @@ export const useFormValidation = () => {
       newErrors.project_start_date = 'Project start date is required';
     }
 
+    // Date validation
+    if (formData.project_end_date && formData.project_start_date) {
+      const start = new Date(formData.project_start_date);
+      const end = new Date(formData.project_end_date);
+      if (end < start) {
+        newErrors.project_end_date = 'End date must be after start date';
+      }
+    }
+
     // Optional field validations
+    if (formData.results_summary?.length > 300) {
+      newErrors.results_summary = 'Results summary must be less than 300 characters';
+    }
+
     if (formData.meta_title?.length > 60) {
       newErrors.meta_title = 'Meta title should be less than 60 characters';
     }
@@ -175,6 +263,18 @@ export const useFormValidation = () => {
 
     if (formData.client_website && !/^https?:\/\/.+/.test(formData.client_website)) {
       newErrors.client_website = 'Please enter a valid URL';
+    }
+
+    if (formData.scheduled_at) {
+      const scheduledDate = new Date(formData.scheduled_at);
+      if (scheduledDate <= new Date()) {
+        newErrors.scheduled_at = 'Scheduled date must be in the future';
+      }
+    }
+
+    // Gallery image validation
+    if (formData.gallery_images && formData.gallery_images.length > 20) {
+      newErrors.gallery_images = 'Maximum 20 gallery images allowed';
     }
 
     setErrors(newErrors);
@@ -194,10 +294,14 @@ export const useFormValidation = () => {
 
   const getTabErrors = useCallback((tab, errors) => {
     const tabFieldMap = {
-      overview: ['title', 'slug', 'client_name', 'client_industry', 'service_type', 'project_start_date', 'project_end_date'],
-      results: ['challenge', 'solution', 'implementation_process', 'key_metrics', 'results_narrative'],
+      overview: ['title', 'slug', 'client_name', 'client_industry', 'service_type', 
+                 'project_start_date', 'project_end_date', 'client_website', 
+                 'team_size', 'deliverables'],
+      results: ['challenge', 'solution', 'implementation_process', 'key_metrics', 
+                'results_summary', 'results_narrative'],
       media: ['hero_image', 'hero_video', 'client_logo', 'gallery_images'],
-      details: ['status', 'meta_title', 'meta_description', 'canonical_url']
+      details: ['status', 'scheduled_at', 'meta_title', 'meta_description', 
+                'canonical_url', 'og_title', 'og_description', 'og_image']
     };
 
     const tabFields = tabFieldMap[tab] || [];

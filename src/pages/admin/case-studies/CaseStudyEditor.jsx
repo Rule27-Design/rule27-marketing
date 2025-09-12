@@ -34,7 +34,7 @@ const CaseStudyEditor = ({
   const [saving, setSaving] = useState(false);
   const [testimonials, setTestimonials] = useState([]);
   
-  // Initialize form data
+  // Initialize form data with ALL fields including rich text
   const initialData = {
     title: '',
     slug: '',
@@ -53,11 +53,12 @@ const CaseStudyEditor = ({
     technologies_used: [],
     team_size: null,
     team_members: [],
-    challenge: '',
-    solution: '',
-    implementation_process: '',
+    challenge: null, // Rich text object
+    solution: null, // Rich text object
+    implementation_process: null, // Rich text object
     key_metrics: [],
-    results_narrative: '',
+    results_summary: '', // Plain text summary
+    results_narrative: null, // Rich text object
     testimonial_id: null,
     hero_image: '',
     hero_video: '',
@@ -74,7 +75,19 @@ const CaseStudyEditor = ({
     canonical_url: '',
     internal_notes: '',
     view_count: 0,
+    unique_view_count: 0,
     inquiry_count: 0,
+    // Phase 2-4 fields
+    related_case_studies: [],
+    custom_fields: {},
+    version: 1,
+    published_at: null,
+    scheduled_at: null,
+    language: 'en',
+    translations: {},
+    ab_test_variant: null,
+    performance_score: null,
+    seo_score: null,
     ...caseStudy
   };
 
@@ -142,9 +155,10 @@ const CaseStudyEditor = ({
         updated.meta_title = value.substring(0, 60);
       }
       
-      // Auto-generate meta description from challenge
+      // Auto-generate meta description from challenge (if rich text)
       if (field === 'challenge' && !prev.meta_description) {
-        updated.meta_description = value.substring(0, 160);
+        const text = typeof value === 'object' ? value.text : value;
+        updated.meta_description = text ? text.substring(0, 160) : '';
       }
       
       // Calculate project duration from dates
@@ -156,11 +170,36 @@ const CaseStudyEditor = ({
         updated.project_duration = `${months} months`;
       }
       
+      // Calculate read time from rich text content
+      if (['challenge', 'solution', 'implementation_process', 'results_narrative'].includes(field)) {
+        const totalWords = ['challenge', 'solution', 'implementation_process', 'results_narrative']
+          .reduce((sum, f) => {
+            const content = f === field ? value : updated[f];
+            return sum + (content?.wordCount || 0);
+          }, 0);
+        updated.read_time = Math.ceil(totalWords / 200);
+      }
+      
+      // Calculate SEO score (Phase 2)
+      if (['meta_title', 'meta_description', 'meta_keywords'].includes(field)) {
+        updated.seo_score = calculateSEOScore(updated);
+      }
+      
       return updated;
     });
     
     clearError(field);
   }, [clearError, caseStudy]);
+
+  // Calculate SEO Score (Phase 2 feature)
+  const calculateSEOScore = (data) => {
+    let score = 0;
+    if (data.meta_title && data.meta_title.length > 30 && data.meta_title.length <= 60) score += 25;
+    if (data.meta_description && data.meta_description.length > 120 && data.meta_description.length <= 160) score += 25;
+    if (data.meta_keywords && data.meta_keywords.length >= 3) score += 25;
+    if (data.og_image) score += 25;
+    return score;
+  };
 
   // Handle save
   const handleSave = async () => {
@@ -185,6 +224,11 @@ const CaseStudyEditor = ({
     // Auto-generate canonical URL if not provided
     if (!sanitized.canonical_url && sanitized.slug) {
       sanitized.canonical_url = `https://rule27design.com/case-studies/${sanitized.slug}`;
+    }
+    
+    // Track version (Phase 2)
+    if (caseStudy?.id) {
+      sanitized.version = (caseStudy.version || 1) + 1;
     }
     
     let result;
@@ -215,6 +259,19 @@ const CaseStudyEditor = ({
   // Handle save with status change
   const handleSaveWithStatus = async (status) => {
     setFormData(prev => ({ ...prev, status }));
+    if (status === 'published' && !formData.published_at) {
+      setFormData(prev => ({ ...prev, published_at: new Date().toISOString() }));
+    }
+    setTimeout(() => handleSave(), 100);
+  };
+
+  // Handle scheduling (Phase 3)
+  const handleSchedule = async (scheduledDate) => {
+    setFormData(prev => ({ 
+      ...prev, 
+      status: 'scheduled',
+      scheduled_at: scheduledDate 
+    }));
     setTimeout(() => handleSave(), 100);
   };
 
@@ -274,7 +331,7 @@ const CaseStudyEditor = ({
     });
   }
 
-  // Render preview
+  // Render preview with rich text content
   const renderPreview = () => (
     <div className="prose prose-lg max-w-none">
       {/* Hero Section */}
@@ -331,35 +388,51 @@ const CaseStudyEditor = ({
         </div>
       )}
       
-      {/* Challenge */}
+      {/* Challenge - Render rich text */}
       {formData.challenge && (
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-3">The Challenge</h2>
-          <p className="text-gray-700">{formData.challenge}</p>
+          {typeof formData.challenge === 'object' && formData.challenge.html ? (
+            <div dangerouslySetInnerHTML={{ __html: formData.challenge.html }} />
+          ) : (
+            <p className="text-gray-700">{formData.challenge}</p>
+          )}
         </div>
       )}
       
-      {/* Solution */}
+      {/* Solution - Render rich text */}
       {formData.solution && (
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-3">Our Solution</h2>
-          <p className="text-gray-700">{formData.solution}</p>
+          {typeof formData.solution === 'object' && formData.solution.html ? (
+            <div dangerouslySetInnerHTML={{ __html: formData.solution.html }} />
+          ) : (
+            <p className="text-gray-700">{formData.solution}</p>
+          )}
         </div>
       )}
       
-      {/* Implementation Process */}
+      {/* Implementation Process - Render rich text */}
       {formData.implementation_process && (
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-3">Implementation Process</h2>
-          <p className="text-gray-700">{formData.implementation_process}</p>
+          {typeof formData.implementation_process === 'object' && formData.implementation_process.html ? (
+            <div dangerouslySetInnerHTML={{ __html: formData.implementation_process.html }} />
+          ) : (
+            <p className="text-gray-700">{formData.implementation_process}</p>
+          )}
         </div>
       )}
       
-      {/* Results */}
+      {/* Results - Render rich text */}
       {formData.results_narrative && (
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-3">Results</h2>
-          <p className="text-gray-700">{formData.results_narrative}</p>
+          {typeof formData.results_narrative === 'object' && formData.results_narrative.html ? (
+            <div dangerouslySetInnerHTML={{ __html: formData.results_narrative.html }} />
+          ) : (
+            <p className="text-gray-700">{formData.results_narrative}</p>
+          )}
         </div>
       )}
       
@@ -412,6 +485,22 @@ const CaseStudyEditor = ({
     }
   ];
 
+  // Add schedule action (Phase 3)
+  if (formData.status === 'draft') {
+    modalActions.push({
+      label: 'Schedule',
+      icon: 'Calendar',
+      onClick: () => {
+        // This would open a scheduling modal
+        const scheduledDate = prompt('Enter scheduled date (YYYY-MM-DD HH:MM):');
+        if (scheduledDate) {
+          handleSchedule(scheduledDate);
+        }
+      },
+      variant: 'ghost'
+    });
+  }
+
   // Add publish action for admins
   if (userProfile?.role === 'admin' && formData.status !== 'published') {
     modalActions.push({
@@ -429,7 +518,14 @@ const CaseStudyEditor = ({
         onClose={onClose}
         onSave={handleSave}
         title={caseStudy ? `Edit: ${caseStudy.title}` : 'New Case Study'}
-        subtitle={saveStatus === 'saving' ? 'Auto-saving...' : saveStatus === 'saved' ? 'All changes saved' : ''}
+        subtitle={
+          <>
+            {saveStatus === 'saving' && 'Auto-saving...'}
+            {saveStatus === 'saved' && 'All changes saved'}
+            {formData.version > 1 && ` • Version ${formData.version}`}
+            {formData.seo_score && ` • SEO Score: ${formData.seo_score}%`}
+          </>
+        }
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={setActiveTab}

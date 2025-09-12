@@ -1,11 +1,17 @@
 // src/pages/admin/case-studies/editor-tabs/DetailsTab.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Input from '../../../../components/ui/Input';
 import Select from '../../../../components/ui/Select';
 import { Checkbox } from '../../../../components/ui/Checkbox';
 import { QualityCheck } from '../../../../components/admin';
+import Button from '../../../../components/ui/Button';
+import Icon from '../../../../components/AdminIcon';
 
 const DetailsTab = ({ formData, errors, onChange }) => {
+  const [aiSuggestions, setAiSuggestions] = useState(null);
+  const [performancePrediction, setPerformancePrediction] = useState(null);
+
+  // Meta keywords management
   const handleMetaKeywordsChange = (value, index) => {
     const newKeywords = [...(formData.meta_keywords || [])];
     newKeywords[index] = value;
@@ -20,6 +26,44 @@ const DetailsTab = ({ formData, errors, onChange }) => {
     const newKeywords = [...(formData.meta_keywords || [])];
     newKeywords.splice(index, 1);
     onChange('meta_keywords', newKeywords);
+  };
+
+  // Related case studies management (Phase 2)
+  const addRelatedCaseStudy = (caseStudyId) => {
+    if (caseStudyId && !formData.related_case_studies?.includes(caseStudyId)) {
+      onChange('related_case_studies', [...(formData.related_case_studies || []), caseStudyId]);
+    }
+  };
+
+  const removeRelatedCaseStudy = (caseStudyId) => {
+    onChange('related_case_studies', 
+      formData.related_case_studies.filter(id => id !== caseStudyId)
+    );
+  };
+
+  // Get AI suggestions (Phase 4)
+  const getAISuggestions = async () => {
+    // This would call the AI service
+    setAiSuggestions({
+      metaTitle: [`${formData.title}: A Success Story`, `How We Helped ${formData.client_name}`],
+      metaDescription: ['Discover how we transformed...', 'Learn about our partnership...'],
+      keywords: ['case study', formData.service_type, formData.client_industry]
+    });
+  };
+
+  // Get performance prediction (Phase 4)
+  const getPerformancePrediction = async () => {
+    // This would call the prediction service
+    setPerformancePrediction({
+      estimatedViews: 2500,
+      estimatedInquiries: 25,
+      confidence: 0.78,
+      recommendations: [
+        'Add more metrics for credibility',
+        'Include client testimonial',
+        'Optimize meta description'
+      ]
+    });
   };
 
   return (
@@ -40,25 +84,39 @@ const DetailsTab = ({ formData, errors, onChange }) => {
         <h3 className="text-lg font-medium text-gray-900 mb-4">Publishing Settings</h3>
         
         <div className="space-y-4">
-          <Select
-            label="Status"
-            value={formData.status}
-            onChange={(value) => onChange('status', value)}
-            options={[
-              { value: 'draft', label: 'Draft' },
-              { value: 'published', label: 'Published' },
-              { value: 'archived', label: 'Archived' }
-            ]}
-            error={errors.status}
-          />
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Select
+              label="Status"
+              value={formData.status}
+              onChange={(value) => onChange('status', value)}
+              options={[
+                { value: 'draft', label: 'Draft' },
+                { value: 'published', label: 'Published' },
+                { value: 'scheduled', label: 'Scheduled' },
+                { value: 'archived', label: 'Archived' }
+              ]}
+              error={errors.status}
+            />
+
+            {formData.status === 'scheduled' && (
+              <Input
+                type="datetime-local"
+                label="Schedule Publication"
+                value={formData.scheduled_at}
+                onChange={(e) => onChange('scheduled_at', e.target.value)}
+                error={errors.scheduled_at}
+                required
+              />
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Checkbox
                 checked={formData.is_featured}
                 onCheckedChange={(checked) => onChange('is_featured', checked)}
                 label="Featured Case Study"
-                description="Display prominently on homepage"
+                description="Display prominently"
               />
             </div>
             
@@ -70,13 +128,74 @@ const DetailsTab = ({ formData, errors, onChange }) => {
               min="0"
               placeholder="0"
             />
+
+            <Select
+              label="Language"
+              value={formData.language || 'en'}
+              onChange={(value) => onChange('language', value)}
+              options={[
+                { value: 'en', label: 'English' },
+                { value: 'es', label: 'Spanish' },
+                { value: 'fr', label: 'French' },
+                { value: 'de', label: 'German' }
+              ]}
+            />
+          </div>
+
+          {/* A/B Testing (Phase 3) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              A/B Test Variant
+            </label>
+            <Select
+              value={formData.ab_test_variant || ''}
+              onChange={(value) => onChange('ab_test_variant', value)}
+              options={[
+                { value: '', label: 'No A/B Test' },
+                { value: 'control', label: 'Control (A)' },
+                { value: 'variant_b', label: 'Variant B' },
+                { value: 'variant_c', label: 'Variant C' }
+              ]}
+            />
           </div>
         </div>
       </div>
 
       {/* SEO Settings */}
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">SEO Settings</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-medium text-gray-900">SEO Settings</h3>
+          {/* AI Suggestions Button (Phase 4) */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={getAISuggestions}
+          >
+            <Icon name="Sparkles" size={16} className="mr-2" />
+            Get AI Suggestions
+          </Button>
+        </div>
+        
+        {/* AI Suggestions Display */}
+        {aiSuggestions && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <h4 className="text-sm font-medium text-blue-900 mb-2">AI Suggestions</h4>
+            <div className="space-y-2 text-sm text-blue-700">
+              <div>
+                <strong>Title Options:</strong>
+                {aiSuggestions.metaTitle.map((title, i) => (
+                  <button
+                    key={i}
+                    onClick={() => onChange('meta_title', title)}
+                    className="block hover:underline"
+                  >
+                    • {title}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
         
         <div className="space-y-4">
           <Input
@@ -96,13 +215,18 @@ const DetailsTab = ({ formData, errors, onChange }) => {
             <textarea
               value={formData.meta_description}
               onChange={(e) => onChange('meta_description', e.target.value)}
-              placeholder={formData.challenge ? formData.challenge.substring(0, 160) : "SEO description (155-160 characters)"}
+              placeholder={formData.challenge ? 
+                (typeof formData.challenge === 'object' ? 
+                  formData.challenge.text?.substring(0, 160) : 
+                  formData.challenge.substring(0, 160)) : 
+                "SEO description (155-160 characters)"}
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent"
               rows={3}
               maxLength={160}
             />
-            <div className="text-xs text-gray-500 mt-1">
-              {formData.meta_description?.length || 0} / 160 characters
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>{formData.meta_description?.length || 0} / 160 characters</span>
+              <span>SEO Score: {formData.seo_score || 0}%</span>
             </div>
           </div>
 
@@ -168,7 +292,7 @@ const DetailsTab = ({ formData, errors, onChange }) => {
             <textarea
               value={formData.og_description}
               onChange={(e) => onChange('og_description', e.target.value)}
-              placeholder={formData.challenge || "Description for social media sharing"}
+              placeholder={formData.results_summary || "Description for social media sharing"}
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent"
               rows={3}
             />
@@ -182,6 +306,56 @@ const DetailsTab = ({ formData, errors, onChange }) => {
           />
         </div>
       </div>
+
+      {/* Performance Prediction (Phase 4) */}
+      {formData.id && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium text-gray-900">Performance Insights</h3>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={getPerformancePrediction}
+            >
+              <Icon name="TrendingUp" size={16} className="mr-2" />
+              Predict Performance
+            </Button>
+          </div>
+
+          {performancePrediction && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                  <div className="text-2xl font-bold text-green-700">
+                    {performancePrediction.estimatedViews}
+                  </div>
+                  <div className="text-sm text-green-600">Est. Views</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-green-700">
+                    {performancePrediction.estimatedInquiries}
+                  </div>
+                  <div className="text-sm text-green-600">Est. Inquiries</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-green-700">
+                    {(performancePrediction.confidence * 100).toFixed(0)}%
+                  </div>
+                  <div className="text-sm text-green-600">Confidence</div>
+                </div>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-green-900 mb-2">Recommendations</h4>
+                <ul className="text-sm text-green-700 space-y-1">
+                  {performancePrediction.recommendations.map((rec, i) => (
+                    <li key={i}>• {rec}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Internal Notes */}
       <div>
@@ -203,6 +377,10 @@ const DetailsTab = ({ formData, errors, onChange }) => {
           <h3 className="text-sm font-medium text-gray-900 mb-3">Performance Metrics</h3>
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between">
+              <dt className="text-gray-500">Version:</dt>
+              <dd className="text-gray-900">{formData.version || 1}</dd>
+            </div>
+            <div className="flex justify-between">
               <dt className="text-gray-500">Views:</dt>
               <dd className="text-gray-900">{formData.view_count || 0}</dd>
             </div>
@@ -213,6 +391,14 @@ const DetailsTab = ({ formData, errors, onChange }) => {
             <div className="flex justify-between">
               <dt className="text-gray-500">Inquiries Generated:</dt>
               <dd className="text-gray-900">{formData.inquiry_count || 0}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-gray-500">Performance Score:</dt>
+              <dd className="text-gray-900">{formData.performance_score || 0}%</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-gray-500">SEO Score:</dt>
+              <dd className="text-gray-900">{formData.seo_score || 0}%</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">Created:</dt>
@@ -226,21 +412,17 @@ const DetailsTab = ({ formData, errors, onChange }) => {
                 {formData.updated_at ? new Date(formData.updated_at).toLocaleDateString() : 'N/A'}
               </dd>
             </div>
+            {formData.published_at && (
+              <div className="flex justify-between">
+                <dt className="text-gray-500">Published:</dt>
+                <dd className="text-gray-900">
+                  {new Date(formData.published_at).toLocaleDateString()}
+                </dd>
+              </div>
+            )}
           </dl>
         </div>
       )}
-
-      {/* Publishing Guidelines */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-blue-900 mb-2">Publishing Guidelines</h3>
-        <ul className="text-sm text-blue-700 space-y-1">
-          <li>• Aim for a quality score of 60% or higher before publishing</li>
-          <li>• Ensure client approval before publishing case studies</li>
-          <li>• Featured case studies appear on the homepage</li>
-          <li>• Use sort order to control display sequence</li>
-          <li>• Include compelling metrics to demonstrate value</li>
-        </ul>
-      </div>
     </div>
   );
 };
