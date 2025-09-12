@@ -1,16 +1,14 @@
 // src/pages/admin/case-studies/CaseStudies.jsx
 import React, { useState, useEffect } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
+import { supabase } from '../../../lib/supabase';
 import { 
-  FilterBar,
   BulkActions,
   StatusBadge,
   EmptyState,
   ErrorState,
   ExportButton,
-  VirtualTable,
   SkeletonTable,
-  MetricsDisplay,
   SearchBar,
   QuickActions
 } from '../../../components/admin';
@@ -31,6 +29,8 @@ const CaseStudies = () => {
   
   const [showEditor, setShowEditor] = useState(false);
   const [editingCaseStudy, setEditingCaseStudy] = useState(null);
+  const [industries, setIndustries] = useState([]);
+  const [serviceTypes, setServiceTypes] = useState([]);
   
   const {
     caseStudies,
@@ -38,11 +38,15 @@ const CaseStudies = () => {
     error,
     filters,
     setFilters,
-    selectedItems,
-    setSelectedItems,
+    selectedCaseStudies,
+    setSelectedCaseStudies,
     pagination,
     changePage,
-    refreshCaseStudies
+    changePageSize,
+    refreshCaseStudies,
+    selectAll,
+    deselectAll,
+    toggleSelection
   } = useCaseStudies({
     status: searchParams.get('status') || 'all'
   });
@@ -53,69 +57,43 @@ const CaseStudies = () => {
   useEffect(() => {
     const unsubscribe = subscribeToEvents('case_study:updated', (caseStudy) => {
       refreshCaseStudies();
-      toast.info('Case study updated', `"${caseStudy.title}" has been updated`);
     });
 
     return unsubscribe;
-  }, [subscribeToEvents, refreshCaseStudies, toast]);
+  }, []);
 
-  // Filter configuration for FilterBar
-  const filterConfig = [
-    {
-      id: 'status',
-      label: 'Status',
-      type: 'select',
-      defaultValue: 'all',
-      options: [
-        { value: 'all', label: 'All Status' },
-        { value: 'draft', label: 'Draft' },
-        { value: 'pending_approval', label: 'Pending Approval' },
-        { value: 'approved', label: 'Approved' },
-        { value: 'published', label: 'Published' },
-        { value: 'archived', label: 'Archived' }
-      ]
-    },
-    {
-      id: 'industry',
-      label: 'Industry',
-      type: 'select',
-      defaultValue: 'all',
-      options: [
-        { value: 'all', label: 'All Industries' },
-        { value: 'Technology', label: 'Technology' },
-        { value: 'Healthcare', label: 'Healthcare' },
-        { value: 'Finance', label: 'Finance' },
-        { value: 'Retail', label: 'Retail' },
-        { value: 'Education', label: 'Education' },
-        { value: 'Manufacturing', label: 'Manufacturing' }
-      ]
-    },
-    {
-      id: 'service_type',
-      label: 'Service Type',
-      type: 'select',
-      defaultValue: 'all',
-      options: [
-        { value: 'all', label: 'All Services' },
-        { value: 'Web Development', label: 'Web Development' },
-        { value: 'Mobile App', label: 'Mobile App' },
-        { value: 'Digital Marketing', label: 'Digital Marketing' },
-        { value: 'Brand Strategy', label: 'Brand Strategy' },
-        { value: 'UX/UI Design', label: 'UX/UI Design' }
-      ]
-    },
-    {
-      id: 'featured',
-      label: 'Featured',
-      type: 'select',
-      defaultValue: 'all',
-      options: [
-        { value: 'all', label: 'All Case Studies' },
-        { value: 'featured', label: 'Featured Only' },
-        { value: 'not-featured', label: 'Not Featured' }
-      ]
+  // Fetch filter data
+  useEffect(() => {
+    fetchFilterData();
+  }, []);
+
+  const fetchFilterData = async () => {
+    try {
+      // Get unique industries and service types from existing case studies
+      const { data: caseStudiesData } = await supabase
+        .from('case_studies')
+        .select('client_industry, service_type')
+        .eq('is_active', true);
+      
+      if (caseStudiesData) {
+        const uniqueIndustries = [...new Set(caseStudiesData.map(cs => cs.client_industry).filter(Boolean))];
+        const uniqueServiceTypes = [...new Set(caseStudiesData.map(cs => cs.service_type).filter(Boolean))];
+        
+        setIndustries(uniqueIndustries.map(ind => ({ value: ind, label: ind })));
+        setServiceTypes(uniqueServiceTypes.map(st => ({ value: st, label: st })));
+      }
+    } catch (error) {
+      console.error('Error fetching filter data:', error);
     }
-  ];
+  };
+
+  // Handle filter change
+  const handleFilterChange = (filterId, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterId]: value === 'all' ? null : value
+    }));
+  };
 
   // Bulk action configuration
   const bulkActionConfig = [
@@ -125,12 +103,6 @@ const CaseStudies = () => {
       icon: 'Send',
       variant: 'primary',
       requireConfirm: true
-    },
-    {
-      id: 'approve',
-      label: 'Approve',
-      icon: 'CheckCircle',
-      variant: 'ghost'
     },
     {
       id: 'archive',
@@ -167,13 +139,6 @@ const CaseStudies = () => {
           }
           break;
           
-        case 'approve':
-          result = await caseStudyOperations.bulkApprove(selectedIds, userProfile.id);
-          if (result.success) {
-            toast.success('Case studies approved', `${selectedIds.length} case studies have been approved`);
-          }
-          break;
-          
         case 'archive':
           result = await caseStudyOperations.bulkArchive(selectedIds);
           if (result.success) {
@@ -199,7 +164,7 @@ const CaseStudies = () => {
       if (result && !result.success) {
         toast.error('Action failed', result.error);
       } else {
-        setSelectedItems([]);
+        setSelectedCaseStudies([]);
         await refreshCaseStudies();
       }
     } catch (error) {
@@ -208,151 +173,7 @@ const CaseStudies = () => {
     }
   };
 
-  // Table columns configuration
-  const tableColumns = [
-    {
-      key: 'select',
-      header: () => (
-        <Checkbox
-          checked={caseStudies.length > 0 && selectedItems.length === caseStudies.length}
-          onChange={(checked) => {
-            setSelectedItems(checked ? caseStudies.map(cs => cs.id) : []);
-          }}
-        />
-      ),
-      cell: (caseStudy) => (
-        <Checkbox
-          checked={selectedItems.includes(caseStudy.id)}
-          onChange={(checked) => {
-            setSelectedItems(prev =>
-              checked 
-                ? [...prev, caseStudy.id]
-                : prev.filter(id => id !== caseStudy.id)
-            );
-          }}
-        />
-      ),
-      width: 40
-    },
-    {
-      key: 'title',
-      header: 'Case Study',
-      cell: (caseStudy) => (
-        <div className="flex items-center space-x-3">
-          {caseStudy.hero_image && (
-            <img
-              src={caseStudy.hero_image}
-              alt=""
-              className="w-12 h-12 rounded object-cover"
-            />
-          )}
-          <div>
-            <div className="font-medium text-text-primary">
-              {caseStudy.title}
-              {caseStudy.is_featured && (
-                <Icon name="Star" size={12} className="inline ml-1 text-yellow-500" />
-              )}
-            </div>
-            <div className="text-xs text-text-secondary">
-              {caseStudy.client_name} • {caseStudy.industry}
-            </div>
-          </div>
-        </div>
-      )
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      cell: (caseStudy) => <StatusBadge status={caseStudy.status} size="xs" />,
-      width: 120
-    },
-    {
-      key: 'service',
-      header: 'Service',
-      cell: (caseStudy) => (
-        <div className="text-sm text-text-secondary">
-          {caseStudy.service_type}
-        </div>
-      ),
-      width: 150
-    },
-    {
-      key: 'metrics',
-      header: 'Impact',
-      cell: (caseStudy) => {
-        const metrics = caseStudy.key_metrics || [];
-        const topMetric = metrics[0];
-        if (!topMetric) return <span className="text-gray-400">-</span>;
-        
-        return (
-          <div className="text-sm">
-            <span className="font-medium text-green-600">
-              {topMetric.improvement || '+0%'}
-            </span>
-            <span className="text-xs text-gray-500 ml-1">
-              {topMetric.label}
-            </span>
-          </div>
-        );
-      },
-      width: 150
-    },
-    {
-      key: 'duration',
-      header: 'Duration',
-      cell: (caseStudy) => (
-        <div className="text-sm text-text-secondary">
-          {caseStudy.project_duration || '-'}
-        </div>
-      ),
-      width: 100
-    },
-    {
-      key: 'date',
-      header: 'Modified',
-      cell: (caseStudy) => (
-        <div className="text-xs text-text-secondary">
-          {formatDate(caseStudy.updated_at, 'MMM d, yyyy')}
-        </div>
-      ),
-      width: 100
-    },
-    {
-      key: 'actions',
-      header: '',
-      cell: (caseStudy) => (
-        <div className="flex items-center space-x-1">
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={() => {
-              setEditingCaseStudy(caseStudy);
-              setShowEditor(true);
-            }}
-            iconName="Edit2"
-          />
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={async () => {
-              if (window.confirm('Are you sure you want to delete this case study?')) {
-                const result = await caseStudyOperations.delete(caseStudy.id);
-                if (result.success) {
-                  toast.success('Case study deleted');
-                  refreshCaseStudies();
-                }
-              }
-            }}
-            iconName="Trash2"
-            className="text-red-500"
-          />
-        </div>
-      ),
-      width: 100
-    }
-  ];
-
-  // Quick actions
+  // Quick actions configuration
   const quickActionsConfig = [
     {
       id: 'new',
@@ -365,6 +186,14 @@ const CaseStudies = () => {
       }
     }
   ];
+
+  // Format metrics display
+  const formatMetrics = (metrics) => {
+    if (!metrics || metrics.length === 0) return '-';
+    const primaryMetric = metrics[0];
+    if (!primaryMetric) return '-';
+    return primaryMetric.improvement || `${primaryMetric.value}${primaryMetric.unit || ''}`;
+  };
 
   // Loading state
   if (loading && caseStudies.length === 0) {
@@ -389,7 +218,7 @@ const CaseStudies = () => {
         <div>
           <h1 className="text-2xl font-heading-bold uppercase tracking-wider">Case Studies</h1>
           <p className="text-sm text-text-secondary mt-1">
-            Showcase your client success stories
+            Showcase your successful projects and client results
           </p>
         </div>
         <QuickActions actions={quickActionsConfig} />
@@ -398,54 +227,285 @@ const CaseStudies = () => {
       {/* Search and Filters */}
       <div className="mb-4 space-y-3">
         <SearchBar
-          value={filters.search || ''}
-          onChange={(value) => setFilters({ ...filters, search: value })}
           placeholder="Search case studies..."
+          onSearch={(value) => setFilters({ ...filters, search: value })}
+          debounceMs={300}
         />
         
-        <FilterBar
-          filters={filterConfig}
-          onFilterChange={setFilters}
-          onReset={() => setFilters({})}
-        />
+        <div className="flex items-center gap-3">
+          {/* Status Filter */}
+          <select
+            value={filters.status || 'all'}
+            onChange={(e) => handleFilterChange('status', e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="all">All Status</option>
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+            <option value="archived">Archived</option>
+          </select>
+
+          {/* Industry Filter */}
+          <select
+            value={filters.industry || 'all'}
+            onChange={(e) => handleFilterChange('industry', e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="all">All Industries</option>
+            {industries.map(ind => (
+              <option key={ind.value} value={ind.value}>
+                {ind.label}
+              </option>
+            ))}
+          </select>
+
+          {/* Service Type Filter */}
+          <select
+            value={filters.serviceType || 'all'}
+            onChange={(e) => handleFilterChange('serviceType', e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="all">All Services</option>
+            {serviceTypes.map(st => (
+              <option key={st.value} value={st.value}>
+                {st.label}
+              </option>
+            ))}
+          </select>
+
+          {/* Featured Filter */}
+          <select
+            value={filters.featured || 'all'}
+            onChange={(e) => handleFilterChange('featured', e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="all">All Case Studies</option>
+            <option value="featured">Featured Only</option>
+            <option value="not-featured">Not Featured</option>
+          </select>
+
+          {/* Clear Filters */}
+          {Object.keys(filters).some(key => filters[key] && filters[key] !== 'all') && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setFilters({})}
+              className="text-gray-500"
+            >
+              <Icon name="X" size={16} className="mr-1" />
+              Clear
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Bulk Actions */}
-      <BulkActions
-        selectedItems={selectedItems}
-        actions={bulkActionConfig}
-        onAction={handleBulkAction}
-        position="top"
-      />
+      {selectedCaseStudies.length > 0 && (
+        <BulkActions
+          selectedItems={selectedCaseStudies}
+          actions={bulkActionConfig}
+          onAction={handleBulkAction}
+          position="top"
+        />
+      )}
 
-      {/* Case Studies Table or Empty State */}
-      {caseStudies.length === 0 ? (
-        <EmptyState
-          icon="Briefcase"
-          title="No case studies found"
-          message="Create your first case study to showcase your work"
-          action={{
-            label: 'Create Case Study',
-            onClick: () => {
-              setEditingCaseStudy(null);
-              setShowEditor(true);
-            }
-          }}
-        />
-      ) : (
-        <VirtualTable
-          data={caseStudies}
-          columns={tableColumns}
-          rowHeight={80}
-          onRowClick={(caseStudy) => {
-            setEditingCaseStudy(caseStudy);
-            setShowEditor(true);
-          }}
-          pagination={{
-            ...pagination,
-            onPageChange: changePage
-          }}
-        />
+      {/* Case Studies Table */}
+      <div className="flex-1 bg-white rounded-lg shadow overflow-hidden">
+        {caseStudies.length === 0 && !loading ? (
+          <EmptyState
+            icon="Briefcase"
+            title="No case studies found"
+            message="Create your first case study to showcase your work"
+            action={{
+              label: 'Create Case Study',
+              onClick: () => {
+                setEditingCaseStudy(null);
+                setShowEditor(true);
+              }
+            }}
+          />
+        ) : (
+          <div className="overflow-x-auto h-full">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50 sticky top-0">
+                <tr>
+                  <th className="w-12 px-4 py-3">
+                    <Checkbox
+                      checked={selectedCaseStudies.length === caseStudies.length && caseStudies.length > 0}
+                      onChange={(checked) => checked ? selectAll() : deselectAll()}
+                    />
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                  <th className="w-28 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="w-36 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                  <th className="w-32 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Industry</th>
+                  <th className="w-40 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Results</th>
+                  <th className="w-28 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                  <th className="w-24 px-4 py-3"></th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {caseStudies.map((caseStudy) => (
+                  <tr
+                    key={caseStudy.id}
+                    onClick={() => {
+                      setEditingCaseStudy(caseStudy);
+                      setShowEditor(true);
+                    }}
+                    className="hover:bg-gray-50 cursor-pointer"
+                  >
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={selectedCaseStudies.includes(caseStudy.id)}
+                        onChange={() => toggleSelection(caseStudy.id)}
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center space-x-3">
+                        {caseStudy.hero_image && (
+                          <img
+                            src={caseStudy.hero_image}
+                            alt=""
+                            className="w-10 h-10 rounded object-cover flex-shrink-0"
+                          />
+                        )}
+                        <div className="min-w-0">
+                          <div className="font-medium text-gray-900">
+                            {caseStudy.title}
+                            {caseStudy.is_featured && (
+                              <Icon name="Star" size={12} className="inline ml-1 text-yellow-500" />
+                            )}
+                          </div>
+                          {caseStudy.service_type && (
+                            <div className="text-xs text-gray-500">
+                              {caseStudy.service_type}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={caseStudy.status} size="xs" />
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700">
+                      <div>
+                        {caseStudy.client_logo && (
+                          <img 
+                            src={caseStudy.client_logo} 
+                            alt={caseStudy.client_name}
+                            className="h-5 mb-1 object-contain"
+                          />
+                        )}
+                        <div>{caseStudy.client_name || 'Unknown'}</div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {caseStudy.client_industry || '-'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="text-sm">
+                        <div className="font-medium text-green-600">
+                          {formatMetrics(caseStudy.key_metrics)}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          <Icon name="Eye" size={12} className="inline mr-1" />
+                          {caseStudy.view_count || 0} views
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-500">
+                      {caseStudy.project_duration || 
+                        (caseStudy.project_start_date && caseStudy.project_end_date
+                          ? `${formatDate(caseStudy.project_start_date, 'MMM yyyy')} - ${formatDate(caseStudy.project_end_date, 'MMM yyyy')}`
+                          : '-'
+                        )
+                      }
+                    </td>
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => {
+                            setEditingCaseStudy(caseStudy);
+                            setShowEditor(true);
+                          }}
+                        >
+                          <Icon name="Edit2" size={14} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={async () => {
+                            if (window.confirm('Delete this case study?')) {
+                              const result = await caseStudyOperations.delete(caseStudy.id);
+                              if (result.success) {
+                                toast.success('Case study deleted');
+                                refreshCaseStudies();
+                              }
+                            }
+                          }}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Icon name="Trash2" size={14} />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Pagination */}
+      {caseStudies.length > 0 && (
+        <div className="mt-4 flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            Showing {(pagination.page - 1) * pagination.pageSize + 1} to{' '}
+            {Math.min(pagination.page * pagination.pageSize, pagination.total)} of{' '}
+            {pagination.total} case studies
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => changePage(pagination.page - 1)}
+              disabled={pagination.page === 1}
+            >
+              Previous
+            </Button>
+            
+            {/* Page numbers */}
+            <div className="flex items-center space-x-1">
+              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                const pageNum = i + 1;
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={pageNum === pagination.page ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => changePage(pageNum)}
+                    className="w-8 h-8 p-0"
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => changePage(pagination.page + 1)}
+              disabled={pagination.page === pagination.totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Export Button */}
@@ -457,10 +517,10 @@ const CaseStudies = () => {
             columns={[
               { key: 'title', label: 'Title' },
               { key: 'client_name', label: 'Client' },
-              { key: 'industry', label: 'Industry' },
+              { key: 'client_industry', label: 'Industry' },
               { key: 'service_type', label: 'Service' },
               { key: 'status', label: 'Status' },
-              { key: 'project_duration', label: 'Duration' },
+              { key: 'view_count', label: 'Views' },
               { key: 'created_at', label: 'Created' }
             ]}
           />

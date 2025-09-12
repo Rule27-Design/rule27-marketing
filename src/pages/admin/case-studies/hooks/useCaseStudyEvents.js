@@ -1,5 +1,5 @@
 // src/pages/admin/case-studies/hooks/useCaseStudyEvents.js
-import { useEffect, useRef, useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { supabase } from '../../../../lib/supabase';
 
 class EventBus {
@@ -48,8 +48,6 @@ export const useCaseStudyEvents = () => {
               if (payload.old?.status !== payload.new.status) {
                 if (payload.new.status === 'published') {
                   caseStudyEventBus.emit('case_study:published', payload.new);
-                } else if (payload.new.status === 'approved') {
-                  caseStudyEventBus.emit('case_study:approved', payload.new);
                 }
               }
               break;
@@ -88,6 +86,5 @@ export const CASE_STUDY_EVENTS = {
   UPDATED: 'case_study:updated',
   DELETED: 'case_study:deleted',
   PUBLISHED: 'case_study:published',
-  APPROVED: 'case_study:approved',
   BULK_ACTION: 'case_study:bulk_action'
 };

@@ -1,5 +1,5 @@
 // src/pages/admin/case-studies/hooks/useCaseStudies.js
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../../lib/supabase';
 import { useToast } from '../../../../components/ui/Toast';
 
@@ -8,7 +8,7 @@ export const useCaseStudies = (initialFilters = {}) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState(initialFilters);
-  const [selectedItems, setSelectedItems] = useState([]);
+  const [selectedCaseStudies, setSelectedCaseStudies] = useState([]);
   const [pagination, setPagination] = useState({
     page: 1,
     pageSize: 20,
@@ -16,31 +16,25 @@ export const useCaseStudies = (initialFilters = {}) => {
     totalPages: 0
   });
   const toast = useToast();
+  
+  // Use refs to prevent re-fetching
+  const isFetchingRef = useRef(false);
+  const isMountedRef = useRef(true);
 
-  // Fetch case studies with filters
+  // Fetch case studies with filters and pagination
   const fetchCaseStudies = useCallback(async () => {
+    // Prevent concurrent fetches
+    if (isFetchingRef.current) return;
+    
+    isFetchingRef.current = true;
     setLoading(true);
     setError(null);
 
     try {
+      // Build query
       let query = supabase
         .from('case_studies')
-        .select(`
-            *,
-            team_members,
-            key_metrics,
-            gallery,
-            technologies_used,
-            deliverables,
-            testimonial:testimonials!testimonial_id(
-            id,
-            client_name,
-            client_title,
-            client_company,
-            quote,
-            rating
-            )
-        `, { count: 'exact' });
+        .select('*', { count: 'exact' });
 
       // Apply filters
       if (filters.status && filters.status !== 'all') {
@@ -48,11 +42,11 @@ export const useCaseStudies = (initialFilters = {}) => {
       }
 
       if (filters.industry && filters.industry !== 'all') {
-        query = query.eq('industry', filters.industry);
+        query = query.eq('client_industry', filters.industry);
       }
 
-      if (filters.service_type && filters.service_type !== 'all') {
-        query = query.eq('service_type', filters.service_type);
+      if (filters.serviceType && filters.serviceType !== 'all') {
+        query = query.eq('service_type', filters.serviceType);
       }
 
       if (filters.featured === 'featured') {
@@ -62,29 +56,29 @@ export const useCaseStudies = (initialFilters = {}) => {
       }
 
       if (filters.search) {
-        query = query.or(`
-          title.ilike.%${filters.search}%,
-          client_name.ilike.%${filters.search}%,
-          description.ilike.%${filters.search}%
-        `);
+        query = query.or(`title.ilike.%${filters.search}%,client_name.ilike.%${filters.search}%`);
       }
+
+      // Sorting
+      const sortBy = filters.sortBy || 'updated_at';
+      const sortOrder = filters.sortOrder || 'desc';
+      query = query.order(sortBy, { ascending: sortOrder === 'asc' });
 
       // Pagination
       const from = (pagination.page - 1) * pagination.pageSize;
       const to = from + pagination.pageSize - 1;
       query = query.range(from, to);
 
-      // Default ordering
-      query = query
-        .order('is_featured', { ascending: false })
-        .order('sort_order', { ascending: true })
-        .order('updated_at', { ascending: false });
-
-      const { data, error: fetchError, count } = await query;
+      const { data: caseStudiesData, error: fetchError, count } = await query;
 
       if (fetchError) throw fetchError;
 
-      setCaseStudies(data || []);
+      // Only update state if component is still mounted
+      if (!isMountedRef.current) return;
+
+      setCaseStudies(caseStudiesData || []);
+
+      // Update pagination
       setPagination(prev => ({
         ...prev,
         total: count || 0,
@@ -92,26 +86,67 @@ export const useCaseStudies = (initialFilters = {}) => {
       }));
     } catch (err) {
       console.error('Error fetching case studies:', err);
-      setError(err.message);
-      toast.error('Failed to load case studies', err.message);
+      if (isMountedRef.current) {
+        setError(err.message);
+        if (!err.message.includes('Failed to fetch')) {
+          toast.error('Failed to load case studies', err.message);
+        }
+      }
     } finally {
-      setLoading(false);
+      isFetchingRef.current = false;
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
-  }, [filters, pagination.page, pagination.pageSize, toast]);
+  }, [filters.status, filters.industry, filters.serviceType, filters.featured, filters.search, 
+      filters.sortBy, filters.sortOrder, pagination.page, pagination.pageSize, toast]);
 
-  // Initial fetch
+  // Single useEffect for initial load and updates
   useEffect(() => {
+    isMountedRef.current = true;
     fetchCaseStudies();
+    
+    return () => {
+      isMountedRef.current = false;
+      isFetchingRef.current = false;
+    };
   }, [fetchCaseStudies]);
 
-  // Refresh case studies
+  // Refresh case studies manually
   const refreshCaseStudies = useCallback(() => {
-    fetchCaseStudies();
+    if (!isFetchingRef.current && isMountedRef.current) {
+      return fetchCaseStudies();
+    }
   }, [fetchCaseStudies]);
 
   // Change page
   const changePage = useCallback((page) => {
-    setPagination(prev => ({ ...prev, page }));
+    if (page >= 1 && page <= pagination.totalPages) {
+      setPagination(prev => ({ ...prev, page }));
+    }
+  }, [pagination.totalPages]);
+
+  // Change page size
+  const changePageSize = useCallback((pageSize) => {
+    setPagination(prev => ({ ...prev, pageSize, page: 1 }));
+  }, []);
+
+  // Selection methods
+  const selectAll = useCallback(() => {
+    setSelectedCaseStudies(caseStudies.map(cs => cs.id));
+  }, [caseStudies]);
+
+  const deselectAll = useCallback(() => {
+    setSelectedCaseStudies([]);
+  }, []);
+
+  const toggleSelection = useCallback((caseStudyId) => {
+    setSelectedCaseStudies(prev => {
+      if (prev.includes(caseStudyId)) {
+        return prev.filter(id => id !== caseStudyId);
+      }
+      return [...prev, caseStudyId];
+    });
   }, []);
 
   return {
@@ -120,10 +155,14 @@ export const useCaseStudies = (initialFilters = {}) => {
     error,
     filters,
     setFilters,
-    selectedItems,
-    setSelectedItems,
+    selectedCaseStudies,
+    setSelectedCaseStudies,
     pagination,
     changePage,
-    refreshCaseStudies
+    changePageSize,
+    refreshCaseStudies,
+    selectAll,
+    deselectAll,
+    toggleSelection
   };
 };
