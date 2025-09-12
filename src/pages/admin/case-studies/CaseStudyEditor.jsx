@@ -21,6 +21,9 @@ import MediaTab from './editor-tabs/MediaTab';
 import DetailsTab from './editor-tabs/DetailsTab';
 import AnalyticsTab from './editor-tabs/AnalyticsTab';
 
+// Default no-image placeholder
+const NO_IMAGE_URL = '/build/assets/images/no_image.png';
+
 const CaseStudyEditor = ({
   caseStudy = null,
   userProfile,
@@ -34,9 +37,9 @@ const CaseStudyEditor = ({
   const [saving, setSaving] = useState(false);
   const [testimonials, setTestimonials] = useState([]);
   
-  // Initialize form data with ALL fields including rich text
+  // Initialize form data with ALL fields from the schema
   const initialData = {
-  // Core fields - these map directly
+    // Core fields
     title: caseStudy?.title || '',
     slug: caseStudy?.slug || '',
     client_name: caseStudy?.client_name || '',
@@ -45,7 +48,7 @@ const CaseStudyEditor = ({
     client_industry: caseStudy?.client_industry || '',
     client_company_size: caseStudy?.client_company_size || '',
     
-    // Project details - these map directly now
+    // Project details
     project_duration: caseStudy?.project_duration || '',
     project_start_date: caseStudy?.project_start_date || '',
     project_end_date: caseStudy?.project_end_date || '',
@@ -61,7 +64,7 @@ const CaseStudyEditor = ({
     team_size: caseStudy?.team_size || null,
     team_members: caseStudy?.team_members || [],
     
-    // Rich text fields - these are JSONB in the database
+    // Rich text fields (JSONB in database)
     challenge: caseStudy?.challenge || null,
     solution: caseStudy?.solution || null,
     implementation_process: caseStudy?.implementation_process || null,
@@ -88,7 +91,7 @@ const CaseStudyEditor = ({
     status: caseStudy?.status || 'draft',
     is_featured: caseStudy?.is_featured || false,
     is_confidential: caseStudy?.is_confidential || false,
-    is_active: caseStudy?.is_active !== false, // Default true
+    is_active: caseStudy?.is_active !== false,
     sort_order: caseStudy?.sort_order || 0,
     
     // SEO fields
@@ -128,10 +131,8 @@ const CaseStudyEditor = ({
     created_at: caseStudy?.created_at || null,
     updated_at: caseStudy?.updated_at || null,
     created_by: caseStudy?.created_by || null,
-    updated_by: caseStudy?.updated_by || null,
-    
-    // DO NOT spread caseStudy at the end as it might have undefined values
-    };
+    updated_by: caseStudy?.updated_by || null
+  };
 
   const [formData, setFormData] = useState(initialData);
   const [isDirty, setIsDirty] = useState(false);
@@ -155,14 +156,20 @@ const CaseStudyEditor = ({
     try {
       const { data, error } = await supabase
         .from('testimonials')
-        .select('id, client_name, client_title, company_name')
+        .select('id, client_name, client_title, client_company, quote, rating')
         .eq('status', 'published')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching testimonials:', error);
+        throw error;
+      }
+      
+      console.log('Fetched testimonials:', data);
       setTestimonials(data || []);
     } catch (error) {
       console.error('Error fetching testimonials:', error);
+      setTestimonials([]);
     }
   };
 
@@ -233,7 +240,7 @@ const CaseStudyEditor = ({
     clearError(field);
   }, [clearError, caseStudy]);
 
-  // Calculate SEO Score (Phase 2 feature)
+  // Calculate SEO Score
   const calculateSEOScore = (data) => {
     let score = 0;
     if (data.meta_title && data.meta_title.length > 30 && data.meta_title.length <= 60) score += 25;
@@ -250,7 +257,6 @@ const CaseStudyEditor = ({
     // Validate form
     const validationErrors = validateForm(formData);
     if (Object.keys(validationErrors).length > 0) {
-      // Find the first tab with errors and switch to it
       const tabsWithErrors = getTabsWithErrors(validationErrors);
       if (tabsWithErrors.length > 0) {
         setActiveTab(tabsWithErrors[0]);
@@ -373,15 +379,26 @@ const CaseStudyEditor = ({
     });
   }
 
+  // Helper function to get image URL with fallback
+  const getImageUrl = (url) => {
+    if (!url || url === 'null' || url.includes('placeholder')) {
+      return NO_IMAGE_URL;
+    }
+    return url;
+  };
+
   // Render preview with rich text content
   const renderPreview = () => (
     <div className="prose prose-lg max-w-none">
       {/* Hero Section */}
       {formData.hero_image && (
         <img 
-          src={formData.hero_image} 
-          alt={formData.title}
+          src={getImageUrl(formData.hero_image)}
+          alt={formData.hero_image_alt || formData.title}
           className="w-full rounded-lg mb-6"
+          onError={(e) => {
+            e.target.src = NO_IMAGE_URL;
+          }}
         />
       )}
       
@@ -391,6 +408,16 @@ const CaseStudyEditor = ({
       
       {/* Client Info */}
       <div className="bg-gray-50 rounded-lg p-6 mb-6">
+        {formData.client_logo && (
+          <img 
+            src={getImageUrl(formData.client_logo)}
+            alt={formData.client_name}
+            className="h-12 mb-4"
+            onError={(e) => {
+              e.target.src = NO_IMAGE_URL;
+            }}
+          />
+        )}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <div className="text-sm text-gray-500">Client</div>
@@ -486,9 +513,12 @@ const CaseStudyEditor = ({
             {formData.gallery_images.map((image, index) => (
               <figure key={index}>
                 <img
-                  src={image.url}
+                  src={getImageUrl(image.url)}
                   alt={image.alt || `Gallery image ${index + 1}`}
                   className="w-full rounded-lg"
+                  onError={(e) => {
+                    e.target.src = NO_IMAGE_URL;
+                  }}
                 />
                 {image.caption && (
                   <figcaption className="text-sm text-gray-600 mt-2 text-center">
@@ -533,7 +563,6 @@ const CaseStudyEditor = ({
       label: 'Schedule',
       icon: 'Calendar',
       onClick: () => {
-        // This would open a scheduling modal
         const scheduledDate = prompt('Enter scheduled date (YYYY-MM-DD HH:MM):');
         if (scheduledDate) {
           handleSchedule(scheduledDate);

@@ -2,7 +2,35 @@
 import { supabase } from '../../../../lib/supabase';
 import { generateSlug, sanitizeData, cleanTimestampField } from '../../../../utils/validation';
 
+// Default no-image placeholder
+const NO_IMAGE_URL = '/build/assets/images/no_image.png';
+
 class CaseStudyOperationsService {
+  // Handle placeholder images
+  cleanImageUrls(data) {
+    if (data.client_logo && (data.client_logo.includes('placeholder') || data.client_logo === 'null')) {
+      data.client_logo = NO_IMAGE_URL;
+    }
+    if (data.hero_image && (data.hero_image.includes('placeholder') || data.hero_image === 'null')) {
+      data.hero_image = NO_IMAGE_URL;
+    }
+    if (data.og_image && (data.og_image.includes('placeholder') || data.og_image === 'null')) {
+      data.og_image = NO_IMAGE_URL;
+    }
+    
+    // Clean gallery images
+    if (data.gallery_images && Array.isArray(data.gallery_images)) {
+      data.gallery_images = data.gallery_images.map(img => {
+        if (img.url && (img.url.includes('placeholder') || img.url === 'null')) {
+          return { ...img, url: NO_IMAGE_URL };
+        }
+        return img;
+      });
+    }
+    
+    return data;
+  }
+
   // Create case study
   async create(caseStudyData, userProfile) {
     try {
@@ -18,10 +46,10 @@ class CaseStudyOperationsService {
         'challenge', 'solution', 'implementation_process',
         'results_narrative', 'results_summary',
         // Metrics and media
-        'key_metrics', 'testimonial_id', 'hero_image',
-        'hero_video', 'gallery_images', 
+        'key_metrics', 'testimonial_id', 'hero_image', 'hero_image_alt',
+        'hero_video', 'gallery_images', 'process_steps',
         // Status and settings
-        'status', 'is_featured', 'sort_order',
+        'status', 'is_featured', 'is_active', 'is_confidential', 'sort_order',
         // SEO fields
         'meta_title', 'meta_description', 'meta_keywords', 'og_title',
         'og_description', 'og_image', 'canonical_url', 
@@ -46,6 +74,9 @@ class CaseStudyOperationsService {
       });
 
       const sanitized = sanitizeData(cleanData);
+      
+      // Clean image URLs
+      this.cleanImageUrls(sanitized);
       
       // Generate slug if not provided
       if (!sanitized.slug && sanitized.title) {
@@ -154,7 +185,8 @@ class CaseStudyOperationsService {
         'service_type', 'service_category', 'deliverables', 'technologies_used',
         'team_size', 'team_members', 'challenge', 'solution', 'implementation_process',
         'key_metrics', 'results_summary', 'results_narrative', 'testimonial_id', 
-        'hero_image', 'hero_video', 'gallery_images', 'status', 'is_featured', 
+        'hero_image', 'hero_image_alt', 'hero_video', 'gallery_images', 'process_steps',
+        'status', 'is_featured', 'is_active', 'is_confidential',
         'sort_order', 'meta_title', 'meta_description', 'meta_keywords', 'og_title',
         'og_description', 'og_image', 'canonical_url', 'internal_notes',
         'view_count', 'unique_view_count', 'inquiry_count', 'updated_by',
@@ -173,6 +205,9 @@ class CaseStudyOperationsService {
       });
 
       const sanitized = sanitizeData(cleanData);
+
+      // Clean image URLs
+      this.cleanImageUrls(sanitized);
 
       // Clean timestamp fields
       if (sanitized.project_start_date) {
@@ -199,6 +234,11 @@ class CaseStudyOperationsService {
       // Handle publishing
       if (sanitized.status === 'published' && !sanitized.published_at) {
         sanitized.published_at = new Date().toISOString();
+      }
+
+      // Auto-generate canonical URL if not provided
+      if (!sanitized.canonical_url && sanitized.slug) {
+        sanitized.canonical_url = `https://rule27design.com/case-studies/${sanitized.slug}`;
       }
 
       // Clean array fields
@@ -794,10 +834,10 @@ class CaseStudyOperationsService {
       metaTitle: data.meta_title && data.meta_title.length >= 30 && data.meta_title.length <= 60,
       metaDescription: data.meta_description && data.meta_description.length >= 120 && data.meta_description.length <= 160,
       keywords: data.meta_keywords && data.meta_keywords.length >= 3,
-      ogImage: !!data.og_image,
+      ogImage: !!data.og_image && !data.og_image.includes('placeholder'),
       canonicalUrl: !!data.canonical_url,
       slug: data.slug && data.slug.length <= 50,
-      heroImage: !!data.hero_image,
+      heroImage: !!data.hero_image && !data.hero_image.includes('placeholder'),
       content: data.challenge && data.solution && data.results_narrative
     };
 
@@ -818,9 +858,14 @@ class CaseStudyOperationsService {
     if (data.implementation_process) score += 10;
     if (data.results_narrative) score += 10;
     
-    // Media
-    if (data.hero_image) score += 10;
-    if (data.gallery_images && data.gallery_images.length > 0) score += 10;
+    // Media (excluding placeholder images)
+    if (data.hero_image && !data.hero_image.includes('placeholder')) score += 10;
+    if (data.gallery_images && data.gallery_images.length > 0) {
+      const realImages = data.gallery_images.filter(img => 
+        img.url && !img.url.includes('placeholder')
+      );
+      if (realImages.length > 0) score += 10;
+    }
     
     // Metrics
     if (data.key_metrics && data.key_metrics.length >= 3) score += 20;
@@ -920,6 +965,7 @@ class CaseStudyOperationsService {
   // Track event (Phase 3)
   async trackEvent(eventType, eventData) {
     try {
+      // Check if analytics_events table exists before inserting
       await supabase
         .from('analytics_events')
         .insert({
@@ -928,7 +974,8 @@ class CaseStudyOperationsService {
           created_at: new Date().toISOString()
         });
     } catch (error) {
-      console.error('Error tracking event:', error);
+      // Silently fail if table doesn't exist
+      console.log('Analytics event tracking skipped:', eventType);
     }
   }
 
