@@ -1,26 +1,85 @@
 // src/pages/admin/case-studies/services/CaseStudyOperations.js
 import { supabase } from '../../../../lib/supabase';
-import { sanitizeData } from '../../../../utils';
+import { generateSlug, sanitizeData, cleanTimestampField } from '../../../../utils/validation';
 
-export class CaseStudyOperationsService {
+class CaseStudyOperationsService {
   // Create case study
-  async create(data) {
+  async create(caseStudyData, userProfile) {
     try {
-      const cleanData = sanitizeData(data);
+      // Define all valid columns from the case_studies schema
+      const validColumns = [
+        'title', 'slug', 'client_name', 'client_logo', 'client_website',
+        'client_industry', 'client_company_size', 'project_duration',
+        'project_start_date', 'project_end_date', 'project_investment',
+        'service_type', 'service_category', 'deliverables', 'technologies_used',
+        'team_size', 'team_members', 'challenge', 'solution', 'implementation_process',
+        'key_metrics', 'results_narrative', 'testimonial_id', 'hero_image',
+        'hero_video', 'gallery_images', 'status', 'is_featured', 'sort_order',
+        'meta_title', 'meta_description', 'meta_keywords', 'og_title',
+        'og_description', 'og_image', 'canonical_url', 'internal_notes',
+        'created_by', 'updated_by'
+      ];
 
-      const { data: caseStudy, error } = await supabase
+      // Create clean data with only valid columns
+      const cleanData = {};
+      validColumns.forEach(column => {
+        if (caseStudyData[column] !== undefined) {
+          cleanData[column] = caseStudyData[column];
+        }
+      });
+
+      const sanitized = sanitizeData(cleanData);
+      
+      // Generate slug if not provided
+      if (!sanitized.slug && sanitized.title) {
+        sanitized.slug = generateSlug(sanitized.title);
+      }
+
+      // Auto-generate canonical URL if not provided
+      if (!sanitized.canonical_url && sanitized.slug) {
+        sanitized.canonical_url = `https://rule27design.com/case-studies/${sanitized.slug}`;
+      }
+
+      // Clean timestamp fields
+      if (sanitized.project_start_date) {
+        sanitized.project_start_date = cleanTimestampField(sanitized.project_start_date);
+      }
+      if (sanitized.project_end_date) {
+        sanitized.project_end_date = cleanTimestampField(sanitized.project_end_date);
+      }
+
+      // Set creator
+      if (userProfile) {
+        sanitized.created_by = userProfile.id;
+        sanitized.updated_by = userProfile.id;
+      }
+
+      // Remove any null or empty string values for array fields
+      if (sanitized.deliverables) {
+        sanitized.deliverables = sanitized.deliverables.filter(Boolean);
+      }
+      if (sanitized.technologies_used) {
+        sanitized.technologies_used = sanitized.technologies_used.filter(Boolean);
+      }
+      if (sanitized.meta_keywords) {
+        sanitized.meta_keywords = sanitized.meta_keywords.filter(Boolean);
+      }
+
+      // Ensure key_metrics is properly formatted
+      if (sanitized.key_metrics && Array.isArray(sanitized.key_metrics)) {
+        sanitized.key_metrics = sanitized.key_metrics.filter(metric => 
+          metric && metric.label && metric.value
+        );
+      }
+
+      const { data, error } = await supabase
         .from('case_studies')
-        .insert([{
-          ...cleanData,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }])
+        .insert(sanitized)
         .select()
         .single();
 
       if (error) throw error;
-
-      return { success: true, data: caseStudy };
+      return { success: true, data };
     } catch (error) {
       console.error('Error creating case study:', error);
       return { success: false, error: error.message };
@@ -28,23 +87,73 @@ export class CaseStudyOperationsService {
   }
 
   // Update case study
-  async update(id, data) {
+  async update(caseStudyId, caseStudyData, userProfile) {
     try {
-      const cleanData = sanitizeData(data);
+      // Define all valid columns
+      const validColumns = [
+        'title', 'slug', 'client_name', 'client_logo', 'client_website',
+        'client_industry', 'client_company_size', 'project_duration',
+        'project_start_date', 'project_end_date', 'project_investment',
+        'service_type', 'service_category', 'deliverables', 'technologies_used',
+        'team_size', 'team_members', 'challenge', 'solution', 'implementation_process',
+        'key_metrics', 'results_narrative', 'testimonial_id', 'hero_image',
+        'hero_video', 'gallery_images', 'status', 'is_featured', 'sort_order',
+        'meta_title', 'meta_description', 'meta_keywords', 'og_title',
+        'og_description', 'og_image', 'canonical_url', 'internal_notes',
+        'view_count', 'unique_view_count', 'inquiry_count', 'updated_by'
+      ];
 
-      const { data: caseStudy, error } = await supabase
+      // Create clean data with only valid columns
+      const cleanData = {};
+      validColumns.forEach(column => {
+        if (caseStudyData[column] !== undefined) {
+          cleanData[column] = caseStudyData[column];
+        }
+      });
+
+      const sanitized = sanitizeData(cleanData);
+
+      // Clean timestamp fields
+      if (sanitized.project_start_date) {
+        sanitized.project_start_date = cleanTimestampField(sanitized.project_start_date);
+      }
+      if (sanitized.project_end_date) {
+        sanitized.project_end_date = cleanTimestampField(sanitized.project_end_date);
+      }
+
+      // Add updated metadata
+      sanitized.updated_at = new Date().toISOString();
+      if (userProfile) {
+        sanitized.updated_by = userProfile.id;
+      }
+
+      // Remove any null or empty string values for array fields
+      if (sanitized.deliverables) {
+        sanitized.deliverables = sanitized.deliverables.filter(Boolean);
+      }
+      if (sanitized.technologies_used) {
+        sanitized.technologies_used = sanitized.technologies_used.filter(Boolean);
+      }
+      if (sanitized.meta_keywords) {
+        sanitized.meta_keywords = sanitized.meta_keywords.filter(Boolean);
+      }
+
+      // Ensure key_metrics is properly formatted
+      if (sanitized.key_metrics && Array.isArray(sanitized.key_metrics)) {
+        sanitized.key_metrics = sanitized.key_metrics.filter(metric => 
+          metric && metric.label && metric.value
+        );
+      }
+
+      const { data, error } = await supabase
         .from('case_studies')
-        .update({
-          ...cleanData,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id)
+        .update(sanitized)
+        .eq('id', caseStudyId)
         .select()
         .single();
 
       if (error) throw error;
-
-      return { success: true, data: caseStudy };
+      return { success: true, data };
     } catch (error) {
       console.error('Error updating case study:', error);
       return { success: false, error: error.message };
@@ -52,31 +161,14 @@ export class CaseStudyOperationsService {
   }
 
   // Delete case study
-  async delete(id) {
+  async delete(caseStudyId) {
     try {
-      // Delete associated media if needed
-      const { data: caseStudy } = await supabase
-        .from('case_studies')
-        .select('hero_image, gallery, client_logo')
-        .eq('id', id)
-        .single();
-
-      if (caseStudy) {
-        // Clean up media files
-        await this.deleteMediaFiles([
-          caseStudy.hero_image,
-          caseStudy.client_logo,
-          ...(caseStudy.gallery || [])
-        ].filter(Boolean));
-      }
-
       const { error } = await supabase
         .from('case_studies')
         .delete()
-        .eq('id', id);
+        .eq('id', caseStudyId);
 
       if (error) throw error;
-
       return { success: true };
     } catch (error) {
       console.error('Error deleting case study:', error);
@@ -84,20 +176,50 @@ export class CaseStudyOperationsService {
     }
   }
 
-  // Bulk operations
-  async bulkPublish(ids) {
+  // Duplicate a case study
+  async duplicate(caseStudy, userProfile) {
+    try {
+      const duplicatedData = {
+        ...caseStudy,
+        id: undefined,
+        title: `${caseStudy.title} (Copy)`,
+        slug: `${caseStudy.slug}-copy-${Date.now()}`,
+        status: 'draft',
+        view_count: 0,
+        unique_view_count: 0,
+        inquiry_count: 0,
+        created_at: undefined,
+        updated_at: undefined,
+        created_by: userProfile?.id,
+        updated_by: userProfile?.id
+      };
+
+      const { data, error } = await supabase
+        .from('case_studies')
+        .insert(duplicatedData)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error duplicating case study:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Bulk publish case studies
+  async bulkPublish(caseStudyIds) {
     try {
       const { error } = await supabase
         .from('case_studies')
         .update({ 
           status: 'published',
-          published_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          published_at: new Date().toISOString()
         })
-        .in('id', ids);
+        .in('id', caseStudyIds);
 
       if (error) throw error;
-
       return { success: true };
     } catch (error) {
       console.error('Error bulk publishing:', error);
@@ -105,40 +227,18 @@ export class CaseStudyOperationsService {
     }
   }
 
-  async bulkApprove(ids, approverId) {
-    try {
-      const { error } = await supabase
-        .from('case_studies')
-        .update({ 
-          status: 'approved',
-          approved_by: approverId,
-          approved_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .in('id', ids);
-
-      if (error) throw error;
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error bulk approving:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async bulkArchive(ids) {
+  // Bulk archive case studies
+  async bulkArchive(caseStudyIds) {
     try {
       const { error } = await supabase
         .from('case_studies')
         .update({ 
           status: 'archived',
-          archived_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          is_active: false
         })
-        .in('id', ids);
+        .in('id', caseStudyIds);
 
       if (error) throw error;
-
       return { success: true };
     } catch (error) {
       console.error('Error bulk archiving:', error);
@@ -146,35 +246,15 @@ export class CaseStudyOperationsService {
     }
   }
 
-  async bulkDelete(ids) {
+  // Bulk delete case studies
+  async bulkDelete(caseStudyIds) {
     try {
-      // Get media files before deletion
-      const { data: caseStudies } = await supabase
-        .from('case_studies')
-        .select('hero_image, gallery, client_logo')
-        .in('id', ids);
-
-      // Collect all media files
-      const mediaFiles = [];
-      caseStudies?.forEach(cs => {
-        if (cs.hero_image) mediaFiles.push(cs.hero_image);
-        if (cs.client_logo) mediaFiles.push(cs.client_logo);
-        if (cs.gallery) mediaFiles.push(...cs.gallery);
-      });
-
-      // Delete media files
-      if (mediaFiles.length > 0) {
-        await this.deleteMediaFiles(mediaFiles);
-      }
-
-      // Delete case studies
       const { error } = await supabase
         .from('case_studies')
         .delete()
-        .in('id', ids);
+        .in('id', caseStudyIds);
 
       if (error) throw error;
-
       return { success: true };
     } catch (error) {
       console.error('Error bulk deleting:', error);
@@ -182,34 +262,122 @@ export class CaseStudyOperationsService {
     }
   }
 
+  // Toggle featured status
+  async toggleFeatured(caseStudyId, currentStatus, userProfile) {
+    try {
+      const { error } = await supabase
+        .from('case_studies')
+        .update({
+          is_featured: !currentStatus,
+          updated_by: userProfile?.id
+        })
+        .eq('id', caseStudyId);
+
+      if (error) throw error;
+      return { success: true, featured: !currentStatus };
+    } catch (error) {
+      console.error('Error toggling featured status:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Update view count
+  async incrementViewCount(caseStudyId) {
+    try {
+      const { data: caseStudy, error: fetchError } = await supabase
+        .from('case_studies')
+        .select('view_count')
+        .eq('id', caseStudyId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const { error } = await supabase
+        .from('case_studies')
+        .update({
+          view_count: (caseStudy.view_count || 0) + 1
+        })
+        .eq('id', caseStudyId);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error) {
+      console.error('Error incrementing view count:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Update inquiry count
+  async incrementInquiryCount(caseStudyId) {
+    try {
+      const { data: caseStudy, error: fetchError } = await supabase
+        .from('case_studies')
+        .select('inquiry_count')
+        .eq('id', caseStudyId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const { error } = await supabase
+        .from('case_studies')
+        .update({
+          inquiry_count: (caseStudy.inquiry_count || 0) + 1
+        })
+        .eq('id', caseStudyId);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error) {
+      console.error('Error incrementing inquiry count:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
   // Export case studies
-  async exportCaseStudies(ids = null) {
+  async exportCaseStudies(caseStudyIds = null, format = 'csv') {
     try {
       let query = supabase
         .from('case_studies')
         .select('*');
 
-      if (ids && ids.length > 0) {
-        query = query.in('id', ids);
+      if (caseStudyIds) {
+        query = query.in('id', caseStudyIds);
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
 
-      // Convert to CSV
-      const csv = this.convertToCSV(data);
-      
-      // Download CSV
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `case-studies-${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      let exportData;
+      let filename;
+      let mimeType;
+
+      switch (format) {
+        case 'csv':
+          exportData = this.convertToCSV(data);
+          filename = `case-studies-export-${Date.now()}.csv`;
+          mimeType = 'text/csv';
+          break;
+          
+        case 'json':
+          exportData = JSON.stringify(data, null, 2);
+          filename = `case-studies-export-${Date.now()}.json`;
+          mimeType = 'application/json';
+          break;
+
+        default:
+          throw new Error('Unsupported export format');
+      }
+
+      // Create and download file
+      const blob = new Blob([exportData], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
       return { success: true };
     } catch (error) {
@@ -218,95 +386,121 @@ export class CaseStudyOperationsService {
     }
   }
 
-  // Helper: Convert to CSV
+  // Convert to CSV format
   convertToCSV(data) {
-    if (data.length === 0) return '';
-
+    if (!data || data.length === 0) return '';
+    
     const headers = [
-      'title',
-      'client_name', 
-      'industry',
-      'service_type',
-      'status',
-      'project_duration',
-      'created_at',
-      'published_at'
+      'Title',
+      'Client',
+      'Industry',
+      'Service Type',
+      'Status',
+      'Featured',
+      'Project Duration',
+      'Start Date',
+      'End Date',
+      'Views',
+      'Inquiries',
+      'Created',
+      'Updated'
     ];
-
+    
     const csvHeaders = headers.join(',');
-    const csvRows = data.map(row => {
-      return headers.map(header => {
-        const value = row[header] || '';
-        // Escape quotes and wrap in quotes if contains comma
-        const escaped = String(value).replace(/"/g, '""');
-        return escaped.includes(',') ? `"${escaped}"` : escaped;
-      }).join(',');
+    
+    const csvRows = data.map(cs => {
+      const row = [
+        this.escapeCSV(cs.title),
+        this.escapeCSV(cs.client_name),
+        this.escapeCSV(cs.client_industry || ''),
+        this.escapeCSV(cs.service_type || ''),
+        cs.status,
+        cs.is_featured ? 'Yes' : 'No',
+        this.escapeCSV(cs.project_duration || ''),
+        cs.project_start_date ? new Date(cs.project_start_date).toLocaleDateString() : '',
+        cs.project_end_date ? new Date(cs.project_end_date).toLocaleDateString() : '',
+        cs.view_count || 0,
+        cs.inquiry_count || 0,
+        new Date(cs.created_at).toLocaleDateString(),
+        new Date(cs.updated_at).toLocaleDateString()
+      ];
+      
+      return row.join(',');
     });
-
+    
     return [csvHeaders, ...csvRows].join('\n');
   }
 
-  // Helper: Delete media files from storage
-  async deleteMediaFiles(urls) {
-    const filePaths = urls.map(url => {
-      // Extract file path from Supabase URL
-      const match = url.match(/storage\/v1\/object\/public\/media\/(.+)/);
-      return match ? match[1] : null;
-    }).filter(Boolean);
-
-    if (filePaths.length === 0) return;
-
-    try {
-      const { error } = await supabase.storage
-        .from('media')
-        .remove(filePaths);
-      
-      if (error) console.error('Error deleting media files:', error);
-    } catch (error) {
-      console.error('Error in deleteMediaFiles:', error);
+  // Escape CSV values
+  escapeCSV(value) {
+    if (value === null || value === undefined) return '';
+    const stringValue = String(value);
+    
+    if (stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')) {
+      return `"${stringValue.replace(/"/g, '""')}"`;
     }
+    
+    return stringValue;
   }
 
-  // Duplicate case study
-  async duplicate(id) {
+  // Get case study statistics
+  async getStatistics(dateRange = null) {
     try {
-      // Get original case study
-      const { data: original, error: fetchError } = await supabase
+      let query = supabase
         .from('case_studies')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      // Create duplicate with modified title and slug
-      const duplicate = {
-        ...original,
-        id: undefined,
-        title: `${original.title} (Copy)`,
-        slug: `${original.slug}-copy-${Date.now()}`,
-        status: 'draft',
-        is_featured: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        published_at: null
+        .select('*', { count: 'exact' });
+      
+      if (dateRange) {
+        if (dateRange.start) {
+          query = query.gte('created_at', dateRange.start);
+        }
+        if (dateRange.end) {
+          query = query.lte('created_at', dateRange.end);
+        }
+      }
+      
+      const { data, error, count } = await query;
+      if (error) throw error;
+      
+      const stats = {
+        total: count || 0,
+        byStatus: {},
+        byIndustry: {},
+        byServiceType: {},
+        featured: 0,
+        totalViews: 0,
+        totalInquiries: 0,
+        avgProjectDuration: 0
       };
-
-      const { data: newCaseStudy, error: insertError } = await supabase
-        .from('case_studies')
-        .insert([duplicate])
-        .select()
-        .single();
-
-      if (insertError) throw insertError;
-
-      return { success: true, data: newCaseStudy };
+      
+      data.forEach(cs => {
+        // Status breakdown
+        stats.byStatus[cs.status] = (stats.byStatus[cs.status] || 0) + 1;
+        
+        // Industry breakdown
+        if (cs.client_industry) {
+          stats.byIndustry[cs.client_industry] = (stats.byIndustry[cs.client_industry] || 0) + 1;
+        }
+        
+        // Service type breakdown
+        if (cs.service_type) {
+          stats.byServiceType[cs.service_type] = (stats.byServiceType[cs.service_type] || 0) + 1;
+        }
+        
+        // Featured count
+        if (cs.is_featured) stats.featured++;
+        
+        // Engagement metrics
+        stats.totalViews += cs.view_count || 0;
+        stats.totalInquiries += cs.inquiry_count || 0;
+      });
+      
+      return { success: true, stats };
     } catch (error) {
-      console.error('Error duplicating case study:', error);
+      console.error('Error getting statistics:', error);
       return { success: false, error: error.message };
     }
   }
 }
 
-// Export singleton instance
 export const caseStudyOperations = new CaseStudyOperationsService();
