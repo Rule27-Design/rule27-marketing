@@ -299,37 +299,43 @@ const DetailsTab = ({ formData, errors, onChange }) => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Checkbox
-                checked={formData.is_featured}
-                onCheckedChange={(checked) => onChange('is_featured', checked)}
-                label="Featured Case Study"
-                description="Display prominently"
-              />
+                <label className="flex items-start space-x-2 cursor-pointer">
+                <input
+                    type="checkbox"
+                    checked={formData.is_featured || false}
+                    onChange={(e) => onChange('is_featured', e.target.checked)}
+                    className="mt-1 h-4 w-4 text-accent border-gray-300 rounded focus:ring-accent"
+                />
+                <div>
+                    <span className="text-sm font-medium text-gray-700">Featured Case Study</span>
+                    <p className="text-xs text-gray-500">Display prominently</p>
+                </div>
+                </label>
             </div>
             
             <Input
-              type="number"
-              label="Sort Order"
-              value={formData.sort_order || 0}
-              onChange={(e) => onChange('sort_order', parseInt(e.target.value) || 0)}
-              min="0"
-              placeholder="0"
+                type="number"
+                label="Sort Order"
+                value={formData.sort_order || 0}
+                onChange={(e) => onChange('sort_order', parseInt(e.target.value) || 0)}
+                min="0"
+                placeholder="0"
             />
 
             <Select
-              label="Language"
-              value={formData.language || 'en'}
-              onChange={(value) => onChange('language', value)}
-              options={[
+                label="Language"
+                value={formData.language || 'en'}
+                onChange={(value) => onChange('language', value)}
+                options={[
                 { value: 'en', label: 'English' },
                 { value: 'es', label: 'Spanish' },
                 { value: 'fr', label: 'French' },
                 { value: 'de', label: 'German' }
-              ]}
+                ]}
             />
-          </div>
+            </div>
 
           {/* A/B Testing (Phase 3) */}
           <div>
