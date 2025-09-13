@@ -65,22 +65,21 @@ const CaseStudyEditor = ({
     team_size: caseStudy?.team_size || null,
     team_members: caseStudy?.team_members || [],
     
-    // Rich text fields (JSONB in database) - FIX: Ensure these are the right fields
+    // Rich text fields (JSONB in database)
     challenge: caseStudy?.challenge || null,
     solution: caseStudy?.solution || null,
     implementation_process: caseStudy?.implementation_process || null,
-    results_narrative: caseStudy?.results_narrative || null, // This is the rich text for results
+    
+    // Results narrative - Now an array of structured metrics
+    results_narrative: caseStudy?.results_narrative || [],
     
     // Plain text summary
     results_summary: caseStudy?.results_summary || '',
     
-    // Metrics and gallery - FIX: key_metrics is the metrics array, not detailed_results
+    // Metrics and gallery
     key_metrics: caseStudy?.key_metrics || [],
     gallery_images: caseStudy?.gallery_images || [],
     process_steps: caseStudy?.process_steps || [],
-    
-    // Store detailed_results separately if it exists (it's a different metrics format)
-    detailed_metrics: caseStudy?.detailed_results || [],
     
     // Media
     hero_image: caseStudy?.hero_image || '',
@@ -193,6 +192,58 @@ const CaseStudyEditor = ({
     }
   }, [formData, caseStudy?.id, isDirty, triggerAutoSave]);
 
+  // Calculate SEO Score
+  const calculateSEOScore = (data) => {
+    let score = 0;
+    const checks = {
+      metaTitle: data.meta_title && data.meta_title.length >= 30 && data.meta_title.length <= 60,
+      metaDescription: data.meta_description && data.meta_description.length >= 120 && data.meta_description.length <= 160,
+      keywords: data.meta_keywords && data.meta_keywords.length >= 3,
+      ogImage: !!data.og_image && !data.og_image.includes('placeholder'),
+      canonicalUrl: !!data.canonical_url,
+      slug: data.slug && data.slug.length <= 50,
+      heroImage: !!data.hero_image && !data.hero_image.includes('placeholder'),
+      content: data.challenge && data.solution && Array.isArray(data.results_narrative) && data.results_narrative.length > 0
+    };
+
+    Object.values(checks).forEach(check => {
+      if (check) score += 12.5;
+    });
+
+    return Math.round(score);
+  };
+
+  // Calculate Performance Score
+  const calculatePerformanceScore = (data) => {
+    let score = 0;
+    
+    // Content completeness (40 points)
+    if (data.challenge) score += 10;
+    if (data.solution) score += 10;
+    if (data.implementation_process) score += 10;
+    if (Array.isArray(data.results_narrative) && data.results_narrative.length > 0) score += 10;
+    
+    // Media (20 points)
+    if (data.hero_image && !data.hero_image.includes('placeholder')) score += 10;
+    if (data.gallery_images && data.gallery_images.length > 0) {
+      const realImages = data.gallery_images.filter(img => 
+        img.url && !img.url.includes('placeholder')
+      );
+      if (realImages.length > 0) score += 10;
+    }
+    
+    // Metrics (20 points)
+    if (data.key_metrics && data.key_metrics.length >= 3) score += 20;
+    
+    // SEO (10 points)
+    if (data.seo_score >= 75) score += 10;
+    
+    // Engagement potential (10 points)
+    if (data.testimonial_id) score += 10;
+    
+    return Math.min(100, score);
+  };
+
   // Handle field changes
   const handleFieldChange = useCallback((field, value) => {
     setFormData(prev => {
@@ -225,9 +276,15 @@ const CaseStudyEditor = ({
         updated.project_duration = months > 0 ? `${months} months` : updated.project_duration;
       }
       
-      // Calculate SEO score
-      if (['meta_title', 'meta_description', 'meta_keywords', 'og_image', 'hero_image'].includes(field)) {
+      // Calculate scores when relevant fields change
+      if (['meta_title', 'meta_description', 'meta_keywords', 'og_image', 'hero_image', 
+          'challenge', 'solution', 'results_narrative'].includes(field)) {
         updated.seo_score = calculateSEOScore(updated);
+      }
+      
+      if (['challenge', 'solution', 'implementation_process', 'results_narrative', 
+          'hero_image', 'gallery_images', 'key_metrics', 'testimonial_id'].includes(field)) {
+        updated.performance_score = calculatePerformanceScore(updated);
       }
       
       return updated;
@@ -238,16 +295,6 @@ const CaseStudyEditor = ({
       clearError(field);
     }
   }, [clearError, caseStudy, validationAttempted]);
-
-  // Calculate SEO Score
-  const calculateSEOScore = (data) => {
-    let score = 0;
-    if (data.meta_title && data.meta_title.length >= 30 && data.meta_title.length <= 60) score += 25;
-    if (data.meta_description && data.meta_description.length >= 120 && data.meta_description.length <= 160) score += 25;
-    if (data.meta_keywords && data.meta_keywords.length >= 3) score += 25;
-    if (data.og_image || data.hero_image) score += 25;
-    return score;
-  };
 
   // Handle save with improved error display
   const handleSave = async () => {
@@ -390,6 +437,27 @@ const CaseStudyEditor = ({
     return url;
   };
 
+  // Format value for display in preview
+  const formatMetricValue = (value, type) => {
+    if (!value) return '';
+    
+    switch (type) {
+      case 'currency':
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(value);
+      case 'percentage':
+        return `${value}%`;
+      case 'number':
+        return new Intl.NumberFormat('en-US').format(value);
+      default:
+        return value;
+    }
+  };
+
   // Render preview with rich text content
   const renderPreview = () => (
     <div className="prose prose-lg max-w-none">
@@ -466,7 +534,6 @@ const CaseStudyEditor = ({
           <h2 className="text-2xl font-bold mb-3">The Challenge</h2>
           {typeof formData.challenge === 'object' && formData.challenge.content ? (
             <div className="text-gray-700">
-              {/* Simple rendering - you might want to use a proper TipTap renderer here */}
               {formData.challenge.content[0]?.content?.[0]?.text || ''}
             </div>
           ) : (
@@ -486,6 +553,28 @@ const CaseStudyEditor = ({
           ) : (
             <p className="text-gray-700">{formData.solution}</p>
           )}
+        </div>
+      )}
+      
+      {/* Detailed Results - Now as structured metrics */}
+      {formData.results_narrative && formData.results_narrative.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold mb-3">Detailed Results</h2>
+          <div className="space-y-4">
+            {formData.results_narrative.map((result, index) => (
+              <div key={index} className="border-l-4 border-accent pl-4">
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl font-bold text-accent">
+                    {formatMetricValue(result.value, result.type)}
+                  </span>
+                  <span className="text-lg font-medium">{result.metric}</span>
+                </div>
+                {result.description && (
+                  <p className="text-gray-600">{result.description}</p>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
       
@@ -565,6 +654,7 @@ const CaseStudyEditor = ({
             {saveStatus === 'saved' && 'All changes saved'}
             {formData.version > 1 && ` • Version ${formData.version}`}
             {formData.seo_score > 0 && ` • SEO Score: ${formData.seo_score}%`}
+            {formData.performance_score > 0 && ` • Quality Score: ${formData.performance_score}%`}
           </>
         }
         tabs={tabs}
