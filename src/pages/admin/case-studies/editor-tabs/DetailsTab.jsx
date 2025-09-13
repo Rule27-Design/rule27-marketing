@@ -6,6 +6,7 @@ import Button from '../../../../components/ui/Button';
 import Icon from '../../../../components/AdminIcon';
 import { caseStudyOperations } from '../services/CaseStudyOperations';
 import { useToast } from '../../../../components/ui/Toast';
+import { supabase } from '../../../../lib/supabase';
 
 const DetailsTab = ({ formData, errors, onChange, userProfile }) => {
   const toast = useToast();
@@ -14,6 +15,7 @@ const DetailsTab = ({ formData, errors, onChange, userProfile }) => {
   const [abTestResults, setAbTestResults] = useState(null);
   const [variants, setVariants] = useState([]);
   const [loadingVariants, setLoadingVariants] = useState(false);
+  const [testimonials, setTestimonials] = useState([]);
 
   // Load variants if this is a parent case study
   useEffect(() => {
@@ -22,10 +24,41 @@ const DetailsTab = ({ formData, errors, onChange, userProfile }) => {
     }
   }, [formData.id]);
 
+  // Fetch testimonials for selection
+  useEffect(() => {
+    fetchTestimonials();
+  }, []);
+
+  const fetchTestimonials = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('testimonials')
+        .select('*')
+        .eq('status', 'published')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching testimonials:', error);
+        setTestimonials([]);
+        return;
+      }
+      
+      setTestimonials(data || []);
+    } catch (error) {
+      console.error('Error in fetchTestimonials:', error);
+      setTestimonials([]);
+    }
+  };
+
   const loadVariants = async () => {
-    const result = await caseStudyOperations.getVariants(formData.id);
-    if (result.success) {
-      setVariants(result.data.filter(v => v.id !== formData.id));
+    try {
+      const result = await caseStudyOperations.getVariants(formData.id);
+      if (result.success) {
+        setVariants(result.data.filter(v => v.id !== formData.id));
+      }
+    } catch (error) {
+      console.error('Error loading variants:', error);
+      setVariants([]);
     }
   };
 
@@ -49,17 +82,22 @@ const DetailsTab = ({ formData, errors, onChange, userProfile }) => {
   // A/B Testing functions
   const createABTestVariants = async () => {
     setLoadingVariants(true);
-    const variantNames = ['Variant B', 'Variant C'];
-    let created = 0;
-    
-    for (const variantName of variantNames) {
-      const result = await caseStudyOperations.createVariant(formData.id, variantName, userProfile);
-      if (result.success) created++;
-    }
-    
-    if (created > 0) {
-      toast.success('A/B test variants created', `${created} variants created successfully. You can now edit each variant independently.`);
-      await loadVariants();
+    try {
+      const variantNames = ['Variant B', 'Variant C'];
+      let created = 0;
+      
+      for (const variantName of variantNames) {
+        const result = await caseStudyOperations.createVariant(formData.id, variantName, userProfile);
+        if (result.success) created++;
+      }
+      
+      if (created > 0) {
+        toast.success('A/B test variants created', `${created} variants created successfully. You can now edit each variant independently.`);
+        await loadVariants();
+      }
+    } catch (error) {
+      console.error('Error creating variants:', error);
+      toast.error('Failed to create variants', error.message);
     }
     setLoadingVariants(false);
   };
@@ -68,19 +106,28 @@ const DetailsTab = ({ formData, errors, onChange, userProfile }) => {
     const endDate = prompt('Enter test end date (YYYY-MM-DD):');
     if (!endDate) return;
     
-    const result = await caseStudyOperations.activateABTest(formData.id, endDate, userProfile);
-    if (result.success) {
-      toast.success('A/B test activated', 'The test is now running and tracking metrics.');
-      onChange('ab_test_active', true);
-      onChange('ab_test_start_date', new Date().toISOString());
-      onChange('ab_test_end_date', endDate);
+    try {
+      const result = await caseStudyOperations.activateABTest(formData.id, endDate, userProfile);
+      if (result.success) {
+        toast.success('A/B test activated', 'The test is now running and tracking metrics.');
+        onChange('ab_test_active', true);
+        onChange('ab_test_start_date', new Date().toISOString());
+        onChange('ab_test_end_date', endDate);
+      }
+    } catch (error) {
+      console.error('Error activating test:', error);
+      toast.error('Failed to activate test', error.message);
     }
   };
 
   const viewABTestResults = async () => {
-    const result = await caseStudyOperations.getABTestResults(formData.id);
-    if (result.success) {
-      setAbTestResults(result.data);
+    try {
+      const result = await caseStudyOperations.getABTestResults(formData.id);
+      if (result.success) {
+        setAbTestResults(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching results:', error);
     }
   };
 
@@ -94,25 +141,43 @@ const DetailsTab = ({ formData, errors, onChange, userProfile }) => {
 
   // Get AI suggestions
   const getAISuggestions = async () => {
-    setAiSuggestions({
-      metaTitle: [`${formData.title}: A Success Story`, `How We Helped ${formData.client_name}`],
-      metaDescription: ['Discover how we transformed...', 'Learn about our partnership...'],
-      keywords: ['case study', formData.service_type, formData.client_industry]
-    });
+    try {
+      const result = await caseStudyOperations.getAISuggestions(formData);
+      if (result.success) {
+        setAiSuggestions(result.suggestions);
+      } else {
+        setAiSuggestions({
+          metaTitle: [`${formData.title}: A Success Story`, `How We Helped ${formData.client_name}`],
+          metaDescription: ['Discover how we transformed...', 'Learn about our partnership...'],
+          keywords: ['case study', formData.service_type, formData.client_industry].filter(Boolean)
+        });
+      }
+    } catch (error) {
+      console.error('Error getting AI suggestions:', error);
+    }
   };
 
   // Get performance prediction
   const getPerformancePrediction = async () => {
-    setPerformancePrediction({
-      estimatedViews: 2500,
-      estimatedInquiries: 25,
-      confidence: 0.78,
-      recommendations: [
-        'Add more metrics for credibility',
-        'Include client testimonial',
-        'Optimize meta description'
-      ]
-    });
+    try {
+      const result = await caseStudyOperations.predictPerformance(formData);
+      if (result.success) {
+        setPerformancePrediction(result.prediction);
+      } else {
+        setPerformancePrediction({
+          estimatedViews: 2500,
+          estimatedInquiries: 25,
+          confidence: 0.78,
+          recommendations: [
+            'Add more metrics for credibility',
+            'Include client testimonial',
+            'Optimize meta description'
+          ]
+        });
+      }
+    } catch (error) {
+      console.error('Error getting prediction:', error);
+    }
   };
 
   // Helper functions
@@ -142,7 +207,7 @@ const DetailsTab = ({ formData, errors, onChange, userProfile }) => {
   const getRealGalleryImagesCount = () => {
     if (!formData.gallery_images) return 0;
     return formData.gallery_images.filter(img => 
-      img.url && !img.url.includes('placeholder')
+      img.url && !img.url.includes('placeholder') && !img.url.includes('no_image')
     ).length;
   };
 
@@ -253,7 +318,7 @@ const DetailsTab = ({ formData, errors, onChange, userProfile }) => {
           </div>
 
           <div className="flex items-center gap-2 text-sm">
-            {formData.hero_image && !formData.hero_image.includes('placeholder') ? 
+            {formData.hero_image && !formData.hero_image.includes('placeholder') && !formData.hero_image.includes('no_image') ? 
               <Icon name="CheckCircle" size={16} className="text-green-500" /> : 
               <Icon name="AlertCircle" size={16} className="text-yellow-500" />
             }
@@ -275,12 +340,12 @@ const DetailsTab = ({ formData, errors, onChange, userProfile }) => {
           </div>
 
           <div className="flex items-center gap-2 text-sm">
-            {formData.testimonial_id ? 
+            {formData.testimonial_id || testimonials.length === 0 ? 
               <Icon name="CheckCircle" size={16} className="text-green-500" /> : 
               <Icon name="AlertCircle" size={16} className="text-blue-500" />
             }
             <span className={formData.testimonial_id ? 'text-gray-700' : 'text-gray-500'}>
-              Client testimonial linked
+              Client testimonial {testimonials.length === 0 ? '(no testimonials available)' : formData.testimonial_id ? 'linked' : 'not linked'}
             </span>
             {formData.testimonial_id && <span className="text-gray-400 ml-auto">+10</span>}
           </div>
@@ -386,7 +451,6 @@ const DetailsTab = ({ formData, errors, onChange, userProfile }) => {
             <h4 className="text-sm font-medium text-gray-700 mb-3">A/B Testing</h4>
             
             {!formData.parent_case_study_id && !formData.is_variant ? (
-              // This is a parent case study
               <div className="space-y-3">
                 {formData.id ? (
                   <>
@@ -487,7 +551,6 @@ const DetailsTab = ({ formData, errors, onChange, userProfile }) => {
                 )}
               </div>
             ) : (
-              // This is a variant
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                 <div className="text-sm text-yellow-700">
                   <p className="font-medium">This is a test variant</p>
