@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import Input from '../../../../components/ui/Input';
 import Select from '../../../../components/ui/Select';
 import { Checkbox } from '../../../../components/ui/Checkbox';
-import { QualityCheck } from '../../../../components/admin';
 import Button from '../../../../components/ui/Button';
 import Icon from '../../../../components/AdminIcon';
 
@@ -76,24 +75,198 @@ const DetailsTab = ({ formData, errors, onChange }) => {
         return firstParagraph.content[0].text.substring(0, 160);
       }
     }
+    if (content.html) return ''; // Has HTML content
+    if (content.json) return ''; // Has JSON content
     return '';
+  };
+
+  // Check if rich text content has actual content
+  const hasRichTextContent = (content) => {
+    if (!content) return false;
+    if (typeof content === 'string') return content.trim().length > 0;
+    if (content.html) return true;
+    if (content.json) return true;
+    if (content.type === 'doc' && content.content?.length > 0) return true;
+    return false;
+  };
+
+  // Get gallery images count (excluding placeholders)
+  const getRealGalleryImagesCount = () => {
+    if (!formData.gallery_images) return 0;
+    return formData.gallery_images.filter(img => 
+      img.url && !img.url.includes('placeholder')
+    ).length;
   };
 
   return (
     <div className="space-y-6">
-      {/* Quality Check - Pass the scores from formData */}
-      <QualityCheck 
-        data={{
-          ...formData,
-          qualityScore: formData.performance_score || 0,
-          seoScore: formData.seo_score || 0
-        }} 
-        config="case-study"
-        onScoreChange={(score) => {
-          // This is handled by the parent component now
-          console.log('Quality score:', score);
-        }}
-      />
+      {/* Custom Quality Check */}
+      <div className="border rounded-lg p-4 bg-white">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">Quality Score</h3>
+            <p className="text-sm text-gray-500">Content optimization analysis</p>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl font-bold">
+              <span className={
+                formData.performance_score >= 70 ? 'text-green-600' : 
+                formData.performance_score >= 40 ? 'text-yellow-600' : 
+                'text-red-600'
+              }>
+                {formData.performance_score || 0}%
+              </span>
+            </div>
+            <div className="text-sm text-gray-500">
+              {formData.performance_score >= 70 ? 'Good' : 
+               formData.performance_score >= 40 ? 'Fair' : 'Needs Work'}
+            </div>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+          <div 
+            className={`h-2 rounded-full transition-all ${
+              formData.performance_score >= 70 ? 'bg-green-500' : 
+              formData.performance_score >= 40 ? 'bg-yellow-500' : 
+              'bg-red-500'
+            }`}
+            style={{ width: `${formData.performance_score || 0}%` }}
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Quality Checks</h4>
+          
+          {/* Content Checks */}
+          <div className="flex items-center gap-2 text-sm">
+            {formData.title ? 
+              <Icon name="CheckCircle" size={16} className="text-green-500" /> : 
+              <Icon name="XCircle" size={16} className="text-red-500" />
+            }
+            <span className={formData.title ? 'text-gray-700' : 'text-gray-500'}>
+              Title is provided
+            </span>
+            {formData.title && <span className="text-gray-400 ml-auto">+10</span>}
+          </div>
+
+          <div className="flex items-center gap-2 text-sm">
+            {hasRichTextContent(formData.challenge) ? 
+              <Icon name="CheckCircle" size={16} className="text-green-500" /> : 
+              <Icon name="XCircle" size={16} className="text-red-500" />
+            }
+            <span className={hasRichTextContent(formData.challenge) ? 'text-gray-700' : 'text-gray-500'}>
+              Challenge content is provided
+            </span>
+            {hasRichTextContent(formData.challenge) && <span className="text-gray-400 ml-auto">+10</span>}
+          </div>
+
+          <div className="flex items-center gap-2 text-sm">
+            {hasRichTextContent(formData.solution) ? 
+              <Icon name="CheckCircle" size={16} className="text-green-500" /> : 
+              <Icon name="XCircle" size={16} className="text-red-500" />
+            }
+            <span className={hasRichTextContent(formData.solution) ? 'text-gray-700' : 'text-gray-500'}>
+              Solution content is provided
+            </span>
+            {hasRichTextContent(formData.solution) && <span className="text-gray-400 ml-auto">+10</span>}
+          </div>
+
+          <div className="flex items-center gap-2 text-sm">
+            {hasRichTextContent(formData.implementation_process) ? 
+              <Icon name="CheckCircle" size={16} className="text-green-500" /> : 
+              <Icon name="AlertCircle" size={16} className="text-yellow-500" />
+            }
+            <span className={hasRichTextContent(formData.implementation_process) ? 'text-gray-700' : 'text-gray-500'}>
+              Implementation process described
+            </span>
+            {hasRichTextContent(formData.implementation_process) && <span className="text-gray-400 ml-auto">+10</span>}
+          </div>
+
+          <div className="flex items-center gap-2 text-sm">
+            {formData.results_narrative?.length > 0 ? 
+              <Icon name="CheckCircle" size={16} className="text-green-500" /> : 
+              <Icon name="XCircle" size={16} className="text-red-500" />
+            }
+            <span className={formData.results_narrative?.length > 0 ? 'text-gray-700' : 'text-gray-500'}>
+              Detailed results provided ({formData.results_narrative?.length || 0} metrics)
+            </span>
+            {formData.results_narrative?.length > 0 && <span className="text-gray-400 ml-auto">+10</span>}
+          </div>
+
+          {/* Metrics & Media */}
+          <div className="flex items-center gap-2 text-sm">
+            {formData.key_metrics?.length >= 3 ? 
+              <Icon name="CheckCircle" size={16} className="text-green-500" /> : 
+              <Icon name="AlertCircle" size={16} className="text-yellow-500" />
+            }
+            <span className={formData.key_metrics?.length >= 3 ? 'text-gray-700' : 'text-gray-500'}>
+              Key metrics ({formData.key_metrics?.length || 0}/3 minimum)
+            </span>
+            {formData.key_metrics?.length >= 3 && <span className="text-gray-400 ml-auto">+20</span>}
+          </div>
+
+          <div className="flex items-center gap-2 text-sm">
+            {formData.hero_image && !formData.hero_image.includes('placeholder') ? 
+              <Icon name="CheckCircle" size={16} className="text-green-500" /> : 
+              <Icon name="AlertCircle" size={16} className="text-yellow-500" />
+            }
+            <span className={formData.hero_image && !formData.hero_image.includes('placeholder') ? 'text-gray-700' : 'text-gray-500'}>
+              Hero image added
+            </span>
+            {formData.hero_image && !formData.hero_image.includes('placeholder') && <span className="text-gray-400 ml-auto">+10</span>}
+          </div>
+
+          <div className="flex items-center gap-2 text-sm">
+            {getRealGalleryImagesCount() > 0 ? 
+              <Icon name="CheckCircle" size={16} className="text-green-500" /> : 
+              <Icon name="AlertCircle" size={16} className="text-blue-500" />
+            }
+            <span className={getRealGalleryImagesCount() > 0 ? 'text-gray-700' : 'text-gray-500'}>
+              Gallery images ({getRealGalleryImagesCount()}/3 recommended)
+            </span>
+            {getRealGalleryImagesCount() > 0 && <span className="text-gray-400 ml-auto">+10</span>}
+          </div>
+
+          <div className="flex items-center gap-2 text-sm">
+            {formData.testimonial_id ? 
+              <Icon name="CheckCircle" size={16} className="text-green-500" /> : 
+              <Icon name="AlertCircle" size={16} className="text-blue-500" />
+            }
+            <span className={formData.testimonial_id ? 'text-gray-700' : 'text-gray-500'}>
+              Client testimonial linked
+            </span>
+            {formData.testimonial_id && <span className="text-gray-400 ml-auto">+10</span>}
+          </div>
+
+          {/* SEO Checks */}
+          <div className="flex items-center gap-2 text-sm">
+            {formData.seo_score >= 75 ? 
+              <Icon name="CheckCircle" size={16} className="text-green-500" /> : 
+              <Icon name="AlertCircle" size={16} className="text-yellow-500" />
+            }
+            <span className={formData.seo_score >= 75 ? 'text-gray-700' : 'text-gray-500'}>
+              SEO optimization ({formData.seo_score || 0}% score)
+            </span>
+            {formData.seo_score >= 75 && <span className="text-gray-400 ml-auto">+10</span>}
+          </div>
+        </div>
+        
+        <div className="mt-4 pt-4 border-t flex justify-between items-center">
+          <div className="text-sm">
+            <span className="text-gray-600">Ready to Publish: </span>
+            <span className={formData.performance_score >= 70 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
+              {formData.performance_score >= 70 ? 'Yes' : 'No'}
+            </span>
+          </div>
+          {formData.performance_score < 70 && (
+            <div className="text-xs text-gray-500">
+              Minimum 70% required
+            </div>
+          )}
+        </div>
+      </div>
       
       {/* Publishing Settings */}
       <div>
