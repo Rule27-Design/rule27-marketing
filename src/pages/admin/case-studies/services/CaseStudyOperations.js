@@ -85,7 +85,7 @@ class CaseStudyOperationsService {
 
       // Auto-generate canonical URL if not provided
       if (!sanitized.canonical_url && sanitized.slug) {
-        sanitized.canonical_url = `https://rule27design.com/case-studies/${sanitized.slug}`;
+        sanitized.canonical_url = `https://www.rule27design.com/case-studies/${sanitized.slug}`;
       }
 
       // Clean timestamp fields
@@ -238,7 +238,7 @@ class CaseStudyOperationsService {
 
       // Auto-generate canonical URL if not provided
       if (!sanitized.canonical_url && sanitized.slug) {
-        sanitized.canonical_url = `https://rule27design.com/case-studies/${sanitized.slug}`;
+        sanitized.canonical_url = `https://www.rule27design.com/case-studies/${sanitized.slug}`;
       }
 
       // Clean array fields
@@ -1112,6 +1112,116 @@ class CaseStudyOperationsService {
       return { success: false, error: error.message };
     }
   }
+
+  // Create A/B test variant
+    async createVariant(parentCaseStudyId, variantName, userProfile) {
+    try {
+        // Get parent case study
+        const { data: parent, error: parentError } = await supabase
+        .from('case_studies')
+        .select('*')
+        .eq('id', parentCaseStudyId)
+        .single();
+        
+        if (parentError) throw parentError;
+        
+        // Create variant copy
+        const variantData = {
+        ...parent,
+        id: undefined,
+        parent_case_study_id: parentCaseStudyId,
+        is_variant: true,
+        variant_name: variantName,
+        title: `${parent.title} - ${variantName}`,
+        slug: `${parent.slug}-${variantName.toLowerCase()}`,
+        status: 'draft',
+        ab_test_variant: variantName,
+        view_count: 0,
+        unique_view_count: 0,
+        inquiry_count: 0,
+        created_at: undefined,
+        updated_at: undefined,
+        created_by: userProfile?.id,
+        updated_by: userProfile?.id
+        };
+        
+        const { data, error } = await supabase
+        .from('case_studies')
+        .insert(variantData)
+        .select()
+        .single();
+        
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error creating variant:', error);
+        return { success: false, error: error.message };
+    }
+    }
+
+    // Get all variants of a case study
+    async getVariants(caseStudyId) {
+    try {
+        const { data, error } = await supabase
+        .from('case_studies')
+        .select('*')
+        .or(`id.eq.${caseStudyId},parent_case_study_id.eq.${caseStudyId}`)
+        .order('variant_name');
+        
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error fetching variants:', error);
+        return { success: false, error: error.message };
+    }
+    }
+
+    // Activate A/B test
+    async activateABTest(caseStudyId, endDate, userProfile) {
+    try {
+        // Update parent and all variants
+        const { error } = await supabase
+        .from('case_studies')
+        .update({
+            ab_test_active: true,
+            ab_test_start_date: new Date().toISOString(),
+            ab_test_end_date: endDate,
+            updated_by: userProfile?.id
+        })
+        .or(`id.eq.${caseStudyId},parent_case_study_id.eq.${caseStudyId}`);
+        
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        console.error('Error activating A/B test:', error);
+        return { success: false, error: error.message };
+    }
+    }
+
+    // Get A/B test results
+    async getABTestResults(caseStudyId) {
+    try {
+        const { data, error } = await supabase
+        .from('case_studies')
+        .select('variant_name, view_count, unique_view_count, inquiry_count, average_time_on_page')
+        .or(`id.eq.${caseStudyId},parent_case_study_id.eq.${caseStudyId}`);
+        
+        if (error) throw error;
+        
+        // Calculate conversion rates
+        const results = data.map(variant => ({
+        ...variant,
+        conversion_rate: variant.view_count > 0 
+            ? ((variant.inquiry_count / variant.view_count) * 100).toFixed(2)
+            : 0
+        }));
+        
+        return { success: true, data: results };
+    } catch (error) {
+        console.error('Error fetching A/B test results:', error);
+        return { success: false, error: error.message };
+    }
+    }
 }
 
 export const caseStudyOperations = new CaseStudyOperationsService();

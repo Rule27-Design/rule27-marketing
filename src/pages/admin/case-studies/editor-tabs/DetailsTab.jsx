@@ -2,13 +2,32 @@
 import React, { useState, useEffect } from 'react';
 import Input from '../../../../components/ui/Input';
 import Select from '../../../../components/ui/Select';
-import { Checkbox } from '../../../../components/ui/Checkbox';
 import Button from '../../../../components/ui/Button';
 import Icon from '../../../../components/AdminIcon';
+import { caseStudyOperations } from '../services/CaseStudyOperations';
+import { useToast } from '../../../../components/ui/Toast';
 
-const DetailsTab = ({ formData, errors, onChange }) => {
+const DetailsTab = ({ formData, errors, onChange, userProfile }) => {
+  const toast = useToast();
   const [aiSuggestions, setAiSuggestions] = useState(null);
   const [performancePrediction, setPerformancePrediction] = useState(null);
+  const [abTestResults, setAbTestResults] = useState(null);
+  const [variants, setVariants] = useState([]);
+  const [loadingVariants, setLoadingVariants] = useState(false);
+
+  // Load variants if this is a parent case study
+  useEffect(() => {
+    if (formData.id && !formData.parent_case_study_id) {
+      loadVariants();
+    }
+  }, [formData.id]);
+
+  const loadVariants = async () => {
+    const result = await caseStudyOperations.getVariants(formData.id);
+    if (result.success) {
+      setVariants(result.data.filter(v => v.id !== formData.id));
+    }
+  };
 
   // Meta keywords management
   const handleMetaKeywordsChange = (value, index) => {
@@ -27,22 +46,54 @@ const DetailsTab = ({ formData, errors, onChange }) => {
     onChange('meta_keywords', newKeywords);
   };
 
-  // Related case studies management (Phase 2)
-  const addRelatedCaseStudy = (caseStudyId) => {
-    if (caseStudyId && !formData.related_case_studies?.includes(caseStudyId)) {
-      onChange('related_case_studies', [...(formData.related_case_studies || []), caseStudyId]);
+  // A/B Testing functions
+  const createABTestVariants = async () => {
+    setLoadingVariants(true);
+    const variantNames = ['Variant B', 'Variant C'];
+    let created = 0;
+    
+    for (const variantName of variantNames) {
+      const result = await caseStudyOperations.createVariant(formData.id, variantName, userProfile);
+      if (result.success) created++;
+    }
+    
+    if (created > 0) {
+      toast.success('A/B test variants created', `${created} variants created successfully. You can now edit each variant independently.`);
+      await loadVariants();
+    }
+    setLoadingVariants(false);
+  };
+
+  const activateABTest = async () => {
+    const endDate = prompt('Enter test end date (YYYY-MM-DD):');
+    if (!endDate) return;
+    
+    const result = await caseStudyOperations.activateABTest(formData.id, endDate, userProfile);
+    if (result.success) {
+      toast.success('A/B test activated', 'The test is now running and tracking metrics.');
+      onChange('ab_test_active', true);
+      onChange('ab_test_start_date', new Date().toISOString());
+      onChange('ab_test_end_date', endDate);
     }
   };
 
-  const removeRelatedCaseStudy = (caseStudyId) => {
-    onChange('related_case_studies', 
-      formData.related_case_studies.filter(id => id !== caseStudyId)
-    );
+  const viewABTestResults = async () => {
+    const result = await caseStudyOperations.getABTestResults(formData.id);
+    if (result.success) {
+      setAbTestResults(result.data);
+    }
   };
 
-  // Get AI suggestions (Phase 4)
+  const openVariant = (variantId) => {
+    window.open(`/admin/case-studies/edit/${variantId}`, '_blank');
+  };
+
+  const openParentCaseStudy = (parentId) => {
+    window.open(`/admin/case-studies/edit/${parentId}`, '_blank');
+  };
+
+  // Get AI suggestions
   const getAISuggestions = async () => {
-    // This would call the AI service
     setAiSuggestions({
       metaTitle: [`${formData.title}: A Success Story`, `How We Helped ${formData.client_name}`],
       metaDescription: ['Discover how we transformed...', 'Learn about our partnership...'],
@@ -50,9 +101,8 @@ const DetailsTab = ({ formData, errors, onChange }) => {
     });
   };
 
-  // Get performance prediction (Phase 4)
+  // Get performance prediction
   const getPerformancePrediction = async () => {
-    // This would call the prediction service
     setPerformancePrediction({
       estimatedViews: 2500,
       estimatedInquiries: 25,
@@ -65,7 +115,7 @@ const DetailsTab = ({ formData, errors, onChange }) => {
     });
   };
 
-  // Helper to get text from rich text content
+  // Helper functions
   const getRichTextPreview = (content) => {
     if (!content) return '';
     if (typeof content === 'string') return content.substring(0, 160);
@@ -75,12 +125,11 @@ const DetailsTab = ({ formData, errors, onChange }) => {
         return firstParagraph.content[0].text.substring(0, 160);
       }
     }
-    if (content.html) return ''; // Has HTML content
-    if (content.json) return ''; // Has JSON content
+    if (content.html) return '';
+    if (content.json) return '';
     return '';
   };
 
-  // Check if rich text content has actual content
   const hasRichTextContent = (content) => {
     if (!content) return false;
     if (typeof content === 'string') return content.trim().length > 0;
@@ -90,7 +139,6 @@ const DetailsTab = ({ formData, errors, onChange }) => {
     return false;
   };
 
-  // Get gallery images count (excluding placeholders)
   const getRealGalleryImagesCount = () => {
     if (!formData.gallery_images) return 0;
     return formData.gallery_images.filter(img => 
@@ -124,7 +172,6 @@ const DetailsTab = ({ formData, errors, onChange }) => {
           </div>
         </div>
 
-        {/* Progress bar */}
         <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
           <div 
             className={`h-2 rounded-full transition-all ${
@@ -139,7 +186,6 @@ const DetailsTab = ({ formData, errors, onChange }) => {
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Quality Checks</h4>
           
-          {/* Content Checks */}
           <div className="flex items-center gap-2 text-sm">
             {formData.title ? 
               <Icon name="CheckCircle" size={16} className="text-green-500" /> : 
@@ -195,7 +241,6 @@ const DetailsTab = ({ formData, errors, onChange }) => {
             {formData.results_narrative?.length > 0 && <span className="text-gray-400 ml-auto">+10</span>}
           </div>
 
-          {/* Metrics & Media */}
           <div className="flex items-center gap-2 text-sm">
             {formData.key_metrics?.length >= 3 ? 
               <Icon name="CheckCircle" size={16} className="text-green-500" /> : 
@@ -240,7 +285,6 @@ const DetailsTab = ({ formData, errors, onChange }) => {
             {formData.testimonial_id && <span className="text-gray-400 ml-auto">+10</span>}
           </div>
 
-          {/* SEO Checks */}
           <div className="flex items-center gap-2 text-sm">
             {formData.seo_score >= 75 ? 
               <Icon name="CheckCircle" size={16} className="text-green-500" /> : 
@@ -299,59 +343,168 @@ const DetailsTab = ({ formData, errors, onChange }) => {
             )}
           </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-                <label className="flex items-start space-x-2 cursor-pointer">
+              <label className="flex items-start space-x-2 cursor-pointer">
                 <input
-                    type="checkbox"
-                    checked={formData.is_featured || false}
-                    onChange={(e) => onChange('is_featured', e.target.checked)}
-                    className="mt-1 h-4 w-4 text-accent border-gray-300 rounded focus:ring-accent"
+                  type="checkbox"
+                  checked={formData.is_featured || false}
+                  onChange={(e) => onChange('is_featured', e.target.checked)}
+                  className="mt-1 h-4 w-4 text-accent border-gray-300 rounded focus:ring-accent"
                 />
                 <div>
-                    <span className="text-sm font-medium text-gray-700">Featured Case Study</span>
-                    <p className="text-xs text-gray-500">Display prominently</p>
+                  <span className="text-sm font-medium text-gray-700">Featured Case Study</span>
+                  <p className="text-xs text-gray-500">Display prominently</p>
                 </div>
-                </label>
+              </label>
             </div>
             
             <Input
-                type="number"
-                label="Sort Order"
-                value={formData.sort_order || 0}
-                onChange={(e) => onChange('sort_order', parseInt(e.target.value) || 0)}
-                min="0"
-                placeholder="0"
+              type="number"
+              label="Sort Order"
+              value={formData.sort_order || 0}
+              onChange={(e) => onChange('sort_order', parseInt(e.target.value) || 0)}
+              min="0"
+              placeholder="0"
             />
 
             <Select
-                label="Language"
-                value={formData.language || 'en'}
-                onChange={(value) => onChange('language', value)}
-                options={[
+              label="Language"
+              value={formData.language || 'en'}
+              onChange={(value) => onChange('language', value)}
+              options={[
                 { value: 'en', label: 'English' },
                 { value: 'es', label: 'Spanish' },
                 { value: 'fr', label: 'French' },
                 { value: 'de', label: 'German' }
-                ]}
-            />
-            </div>
-
-          {/* A/B Testing (Phase 3) */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              A/B Test Variant
-            </label>
-            <Select
-              value={formData.ab_test_variant || ''}
-              onChange={(value) => onChange('ab_test_variant', value)}
-              options={[
-                { value: '', label: 'No A/B Test' },
-                { value: 'control', label: 'Control (A)' },
-                { value: 'variant_b', label: 'Variant B' },
-                { value: 'variant_c', label: 'Variant C' }
               ]}
             />
+          </div>
+
+          {/* A/B Testing Section */}
+          <div className="border rounded-lg p-4 bg-gray-50">
+            <h4 className="text-sm font-medium text-gray-700 mb-3">A/B Testing</h4>
+            
+            {!formData.parent_case_study_id && !formData.is_variant ? (
+              // This is a parent case study
+              <div className="space-y-3">
+                {formData.id ? (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">
+                        Test Status: {formData.ab_test_active ? 
+                          <span className="font-medium text-green-600">Active</span> : 
+                          <span className="font-medium text-gray-500">Inactive</span>
+                        }
+                      </span>
+                      {!formData.ab_test_active && variants.length === 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={createABTestVariants}
+                          disabled={loadingVariants}
+                        >
+                          <Icon name="Copy" size={14} className="mr-2" />
+                          {loadingVariants ? 'Creating...' : 'Create Test Variants'}
+                        </Button>
+                      )}
+                      {!formData.ab_test_active && variants.length > 0 && (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={activateABTest}
+                        >
+                          <Icon name="Play" size={14} className="mr-2" />
+                          Activate Test
+                        </Button>
+                      )}
+                    </div>
+                    
+                    {variants.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-gray-700">Test Variants:</p>
+                        {variants.map(variant => (
+                          <div key={variant.id} className="flex items-center justify-between bg-white rounded p-2">
+                            <span className="text-sm text-gray-600">{variant.variant_name || variant.title}</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openVariant(variant.id)}
+                            >
+                              <Icon name="ExternalLink" size={14} className="mr-1" />
+                              Edit
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {formData.ab_test_active && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <div className="text-sm text-blue-700">
+                          <p className="font-medium">A/B test is running</p>
+                          <p className="text-xs mt-1">
+                            Started: {formData.ab_test_start_date ? new Date(formData.ab_test_start_date).toLocaleDateString() : 'N/A'}
+                          </p>
+                          {formData.ab_test_end_date && (
+                            <p className="text-xs">
+                              Ends: {new Date(formData.ab_test_end_date).toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="mt-2"
+                          onClick={viewABTestResults}
+                        >
+                          View Results
+                        </Button>
+                      </div>
+                    )}
+
+                    {abTestResults && abTestResults.length > 0 && (
+                      <div className="bg-white border rounded-lg p-3 mt-3">
+                        <h5 className="text-sm font-medium text-gray-700 mb-2">Test Results</h5>
+                        <div className="space-y-2">
+                          {abTestResults.map(result => (
+                            <div key={result.variant_name} className="text-xs">
+                              <div className="flex justify-between mb-1">
+                                <span className="font-medium">{result.variant_name || 'Control'}</span>
+                                <span className="text-green-600">{result.conversion_rate}% conversion</span>
+                              </div>
+                              <div className="text-gray-500">
+                                Views: {result.view_count} | Inquiries: {result.inquiry_count}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-500">Save the case study first to enable A/B testing</p>
+                )}
+              </div>
+            ) : (
+              // This is a variant
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <div className="text-sm text-yellow-700">
+                  <p className="font-medium">This is a test variant</p>
+                  <p>Variant: {formData.variant_name || formData.ab_test_variant}</p>
+                  {formData.parent_case_study_id && (
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="mt-2 p-0"
+                      onClick={() => openParentCaseStudy(formData.parent_case_study_id)}
+                    >
+                      View parent case study →
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -360,7 +513,6 @@ const DetailsTab = ({ formData, errors, onChange }) => {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium text-gray-900">SEO Settings</h3>
-          {/* AI Suggestions Button (Phase 4) */}
           <Button
             variant="outline"
             size="sm"
@@ -371,7 +523,6 @@ const DetailsTab = ({ formData, errors, onChange }) => {
           </Button>
         </div>
         
-        {/* AI Suggestions Display */}
         {aiSuggestions && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
             <h4 className="text-sm font-medium text-blue-900 mb-2">AI Suggestions</h4>
@@ -421,7 +572,6 @@ const DetailsTab = ({ formData, errors, onChange }) => {
             </div>
           </div>
 
-          {/* Meta Keywords */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Meta Keywords
@@ -498,7 +648,7 @@ const DetailsTab = ({ formData, errors, onChange }) => {
         </div>
       </div>
 
-      {/* Performance Prediction (Phase 4) */}
+      {/* Performance Prediction */}
       {formData.id && (
         <div>
           <div className="flex items-center justify-between mb-4">
@@ -562,7 +712,7 @@ const DetailsTab = ({ formData, errors, onChange }) => {
         />
       </div>
 
-      {/* Case Study Statistics - Only show for existing case studies */}
+      {/* Case Study Statistics */}
       {formData.id && (
         <div className="bg-gray-50 rounded-lg p-4">
           <h3 className="text-sm font-medium text-gray-900 mb-3">Performance Metrics</h3>
