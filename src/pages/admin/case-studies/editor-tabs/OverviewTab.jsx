@@ -28,6 +28,11 @@ const OverviewTab = ({ formData, errors, onChange, userProfile }) => {
     '201-500 employees', '501-1000 employees', '1000+ employees'
   ];
 
+  // Business Stage options
+  const businessStageOptions = [
+    'Startup', 'Growth Stage', 'Scale-up', 'Enterprise'
+    ];
+
   // Handle title change with auto-slug
   const handleTitleChange = (value) => {
     onChange('title', value);
@@ -113,46 +118,58 @@ const OverviewTab = ({ formData, errors, onChange, userProfile }) => {
         <h3 className="text-lg font-medium text-gray-900">Client Information</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
+        <Input
             label="Client Name"
             value={formData.client_name}
             onChange={(e) => onChange('client_name', e.target.value)}
             required
             placeholder="Company or client name"
             error={errors.client_name}
-          />
-          
-          <Input
+        />
+        
+        <Input
             label="Client Website"
             value={formData.client_website}
             onChange={(e) => onChange('client_website', e.target.value)}
             placeholder="https://example.com"
             type="url"
             error={errors.client_website}
-          />
+        />
 
-          <Select
+        <Select
             label="Industry"
             value={formData.client_industry}
             onChange={(value) => onChange('client_industry', value)}
             options={[
-              { value: '', label: 'Select industry...' },
-              ...industryOptions.map(ind => ({ value: ind, label: ind }))
+            { value: '', label: 'Select industry...' },
+            ...industryOptions.map(ind => ({ value: ind, label: ind }))
             ]}
             error={errors.client_industry}
             required
-          />
+        />
 
-          <Select
+        <Select
+            label="Business Stage"
+            value={formData.business_stage}
+            onChange={(value) => onChange('business_stage', value)}
+            options={[
+            { value: '', label: 'Select stage...' },
+            ...businessStageOptions.map(stage => ({ value: stage, label: stage }))
+            ]}
+            error={errors.business_stage}
+            required
+        />
+
+        <Select
             label="Company Size"
             value={formData.client_company_size}
             onChange={(value) => onChange('client_company_size', value)}
             options={[
-              { value: '', label: 'Select size...' },
-              ...companySizeOptions.map(size => ({ value: size, label: size }))
+            { value: '', label: 'Select size...' },
+            ...companySizeOptions.map(size => ({ value: size, label: size }))
             ]}
             error={errors.client_company_size}
-          />
+        />
         </div>
 
         <Input
