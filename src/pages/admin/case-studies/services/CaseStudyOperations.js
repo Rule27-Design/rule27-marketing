@@ -6,6 +6,15 @@ import { generateSlug, sanitizeData, cleanTimestampField } from '../../../../uti
 const NO_IMAGE_URL = '/build/assets/images/no_image.png';
 
 class CaseStudyOperationsService {
+  constructor() {
+    this.userProfile = null;
+  }
+
+  // Set user profile for tracking
+  setUserProfile(profile) {
+    this.userProfile = profile;
+  }
+
   // Handle placeholder images
   cleanImageUrls(data) {
     if (data.client_logo && (data.client_logo.includes('placeholder') || data.client_logo === 'null')) {
@@ -38,7 +47,7 @@ class CaseStudyOperationsService {
       const validColumns = [
         // Core fields
         'title', 'slug', 'client_name', 'client_logo', 'client_website',
-        'client_industry', 'client_company_size','business_stage', 'project_duration',
+        'client_industry', 'client_company_size', 'business_stage', 'project_duration',
         'project_start_date', 'project_end_date', 'project_investment',
         'service_type', 'service_category', 'deliverables', 'technologies_used',
         'team_size', 'team_members', 
@@ -154,9 +163,8 @@ class CaseStudyOperationsService {
 
       if (error) throw error;
 
-      // Track creation event (Phase 3)
-      await this.trackEvent('case_study_created', {
-        case_study_id: data.id,
+      // Track creation event - FIXED: Pass ID as second parameter
+      await this.trackEvent('case_study_created', data.id, {
         user_id: userProfile?.id
       });
 
@@ -180,7 +188,7 @@ class CaseStudyOperationsService {
       // All valid columns for update
       const validColumns = [
         'title', 'slug', 'client_name', 'client_logo', 'client_website',
-        'client_industry', 'client_company_size', 'project_duration',
+        'client_industry', 'client_company_size', 'business_stage', 'project_duration',
         'project_start_date', 'project_end_date', 'project_investment',
         'service_type', 'service_category', 'deliverables', 'technologies_used',
         'team_size', 'team_members', 'challenge', 'solution', 'implementation_process',
@@ -272,10 +280,9 @@ class CaseStudyOperationsService {
 
       if (error) throw error;
 
-      // Track update event (Phase 3)
+      // Track update event - FIXED: Pass ID as second parameter
       if (!caseStudyData.auto_save) {
-        await this.trackEvent('case_study_updated', {
-          case_study_id: caseStudyId,
+        await this.trackEvent('case_study_updated', caseStudyId, {
           user_id: userProfile?.id,
           version: sanitized.version
         });
@@ -289,8 +296,13 @@ class CaseStudyOperationsService {
   }
 
   // Delete case study
-  async delete(caseStudyId) {
+  async delete(caseStudyId, userProfile) {
     try {
+      // Track deletion before deleting
+      await this.trackEvent('case_study_deleted', caseStudyId, {
+        user_id: userProfile?.id
+      });
+
       const { error } = await supabase
         .from('case_studies')
         .delete()
@@ -330,6 +342,12 @@ class CaseStudyOperationsService {
         .single();
 
       if (error) throw error;
+
+      await this.trackEvent('case_study_duplicated', data.id, {
+        original_id: caseStudy.id,
+        user_id: userProfile?.id
+      });
+
       return { success: true, data };
     } catch (error) {
       console.error('Error duplicating case study:', error);
@@ -338,17 +356,27 @@ class CaseStudyOperationsService {
   }
 
   // Bulk publish case studies
-  async bulkPublish(caseStudyIds) {
+  async bulkPublish(caseStudyIds, userProfile) {
     try {
       const { error } = await supabase
         .from('case_studies')
         .update({ 
           status: 'published',
-          published_at: new Date().toISOString()
+          published_at: new Date().toISOString(),
+          updated_by: userProfile?.id
         })
         .in('id', caseStudyIds);
 
       if (error) throw error;
+
+      // Track bulk publish
+      for (const id of caseStudyIds) {
+        await this.trackEvent('case_study_published', id, {
+          user_id: userProfile?.id,
+          bulk: true
+        });
+      }
+
       return { success: true };
     } catch (error) {
       console.error('Error bulk publishing:', error);
@@ -382,17 +410,27 @@ class CaseStudyOperationsService {
   }
 
   // Bulk archive case studies
-  async bulkArchive(caseStudyIds) {
+  async bulkArchive(caseStudyIds, userProfile) {
     try {
       const { error } = await supabase
         .from('case_studies')
         .update({ 
           status: 'archived',
-          is_active: false
+          is_active: false,
+          updated_by: userProfile?.id
         })
         .in('id', caseStudyIds);
 
       if (error) throw error;
+
+      // Track bulk archive
+      for (const id of caseStudyIds) {
+        await this.trackEvent('case_study_archived', id, {
+          user_id: userProfile?.id,
+          bulk: true
+        });
+      }
+
       return { success: true };
     } catch (error) {
       console.error('Error bulk archiving:', error);
@@ -401,8 +439,16 @@ class CaseStudyOperationsService {
   }
 
   // Bulk delete case studies
-  async bulkDelete(caseStudyIds) {
+  async bulkDelete(caseStudyIds, userProfile) {
     try {
+      // Track before deletion
+      for (const id of caseStudyIds) {
+        await this.trackEvent('case_study_deleted', id, {
+          user_id: userProfile?.id,
+          bulk: true
+        });
+      }
+
       const { error } = await supabase
         .from('case_studies')
         .delete()
@@ -429,6 +475,12 @@ class CaseStudyOperationsService {
         .eq('id', caseStudyId);
 
       if (error) throw error;
+
+      await this.trackEvent('case_study_scheduled', caseStudyId, {
+        scheduled_date: scheduledDate,
+        user_id: userProfile?.id
+      });
+
       return { success: true };
     } catch (error) {
       console.error('Error scheduling case study:', error);
@@ -505,6 +557,9 @@ class CaseStudyOperationsService {
         .eq('id', caseStudyId);
 
       if (error) throw error;
+
+      await this.trackEvent('case_study_viewed', caseStudyId, {});
+
       return { success: true };
     } catch (error) {
       console.error('Error incrementing view count:', error);
@@ -557,6 +612,9 @@ class CaseStudyOperationsService {
         .eq('id', caseStudyId);
 
       if (error) throw error;
+
+      await this.trackEvent('inquiry_from_case_study', caseStudyId, {});
+
       return { success: true };
     } catch (error) {
       console.error('Error incrementing inquiry count:', error);
@@ -631,6 +689,8 @@ class CaseStudyOperationsService {
       'Title',
       'Client',
       'Industry',
+      'Business Stage',
+      'Company Size',
       'Service Type',
       'Status',
       'Featured',
@@ -654,6 +714,8 @@ class CaseStudyOperationsService {
         this.escapeCSV(cs.title),
         this.escapeCSV(cs.client_name),
         this.escapeCSV(cs.client_industry || ''),
+        this.escapeCSV(cs.business_stage || ''),
+        this.escapeCSV(cs.client_company_size || ''),
         this.escapeCSV(cs.service_type || ''),
         cs.status,
         cs.is_featured ? 'Yes' : 'No',
@@ -689,6 +751,7 @@ class CaseStudyOperationsService {
       markdown += `## ${index + 1}. ${cs.title}\n\n`;
       markdown += `- **Client:** ${cs.client_name || 'Unknown'}\n`;
       markdown += `- **Industry:** ${cs.client_industry || 'None'}\n`;
+      markdown += `- **Business Stage:** ${cs.business_stage || 'None'}\n`;
       markdown += `- **Service:** ${cs.service_type || 'None'}\n`;
       markdown += `- **Status:** ${cs.status}\n`;
       markdown += `- **Featured:** ${cs.is_featured ? 'Yes' : 'No'}\n`;
@@ -754,6 +817,12 @@ class CaseStudyOperationsService {
               break;
             case 'industry':
               caseStudy.client_industry = value;
+              break;
+            case 'business stage':
+              caseStudy.business_stage = value;
+              break;
+            case 'company size':
+              caseStudy.client_company_size = value;
               break;
             case 'service type':
               caseStudy.service_type = value;
@@ -962,28 +1031,31 @@ class CaseStudyOperationsService {
     }
   }
 
-  // Track event (Phase 3)
+  // Track event (Phase 3) - FIXED
   async trackEvent(eventType, entityId, metadata = {}) {
     try {
-        const { error } = await supabase
+      // Skip if no entity ID
+      if (!entityId) return;
+
+      const { error } = await supabase
         .from('analytics_events')
         .insert({
-            event_type: eventType,
-            entity_type: 'case_study',
-            entity_id: entityId,
-            metadata,
-            user_id: this.userProfile?.id
+          event_type: eventType,
+          entity_type: 'case_study',
+          entity_id: entityId, // This is now correctly a UUID
+          metadata,
+          user_id: metadata.user_id || this.userProfile?.id
         });
-        
-        // Silently ignore analytics errors
-        if (error) {
+      
+      // Silently ignore analytics errors
+      if (error) {
         console.log('Analytics tracking skipped:', error.message);
-        }
+      }
     } catch (error) {
-        // Silently fail if analytics isn't set up
-        console.log('Analytics not configured');
+      // Silently fail if analytics isn't set up
+      console.log('Analytics not configured');
     }
-}
+  }
 
   // Get AI suggestions (Phase 4)
   async getAISuggestions(caseStudyData) {
@@ -994,8 +1066,10 @@ class CaseStudyOperationsService {
         success: true,
         suggestions: {
           title: [`${caseStudyData.title}: A Success Story`, `How We Helped ${caseStudyData.client_name} Achieve Results`],
-          meta_description: ['Discover how we helped transform...', 'Learn about our successful partnership...'],
+          metaTitle: [`${caseStudyData.title} | Case Study`, `${caseStudyData.client_name} Success Story`],
+          metaDescription: ['Discover how we helped transform...', 'Learn about our successful partnership...'],
           tags: ['digital transformation', 'success story', caseStudyData.service_type?.toLowerCase()],
+          keywords: ['case study', caseStudyData.service_type, caseStudyData.client_industry].filter(Boolean),
           related_content: []
         }
       };
@@ -1014,8 +1088,8 @@ class CaseStudyOperationsService {
       return {
         success: true,
         prediction: {
-          estimated_views: score * 50,
-          estimated_inquiries: Math.floor(score * 0.5),
+          estimatedViews: score * 50,
+          estimatedInquiries: Math.floor(score * 0.5),
           confidence: 0.75,
           recommendations: [
             'Add more metrics to improve credibility',
@@ -1054,6 +1128,7 @@ class CaseStudyOperationsService {
         byStatus: {},
         byIndustry: {},
         byServiceType: {},
+        byBusinessStage: {},
         featured: 0,
         totalViews: 0,
         totalUniqueViews: 0,
@@ -1078,6 +1153,11 @@ class CaseStudyOperationsService {
         // Service type breakdown
         if (cs.service_type) {
           stats.byServiceType[cs.service_type] = (stats.byServiceType[cs.service_type] || 0) + 1;
+        }
+        
+        // Business stage breakdown
+        if (cs.business_stage) {
+          stats.byBusinessStage[cs.business_stage] = (stats.byBusinessStage[cs.business_stage] || 0) + 1;
         }
         
         // Featured count
@@ -1120,26 +1200,26 @@ class CaseStudyOperationsService {
   }
 
   // Create A/B test variant
-    async createVariant(parentCaseStudyId, variantName, userProfile) {
+  async createVariant(parentCaseStudyId, variantName, userProfile) {
     try {
-        // Get parent case study
-        const { data: parent, error: parentError } = await supabase
+      // Get parent case study
+      const { data: parent, error: parentError } = await supabase
         .from('case_studies')
         .select('*')
         .eq('id', parentCaseStudyId)
         .single();
-        
-        if (parentError) throw parentError;
-        
-        // Create variant copy
-        const variantData = {
+      
+      if (parentError) throw parentError;
+      
+      // Create variant copy
+      const variantData = {
         ...parent,
         id: undefined,
         parent_case_study_id: parentCaseStudyId,
         is_variant: true,
         variant_name: variantName,
         title: `${parent.title} - ${variantName}`,
-        slug: `${parent.slug}-${variantName.toLowerCase()}`,
+        slug: `${parent.slug}-${variantName.toLowerCase().replace(/\s+/g, '-')}`,
         status: 'draft',
         ab_test_variant: variantName,
         view_count: 0,
@@ -1149,85 +1229,98 @@ class CaseStudyOperationsService {
         updated_at: undefined,
         created_by: userProfile?.id,
         updated_by: userProfile?.id
-        };
-        
-        const { data, error } = await supabase
+      };
+      
+      const { data, error } = await supabase
         .from('case_studies')
         .insert(variantData)
         .select()
         .single();
-        
-        if (error) throw error;
-        return { success: true, data };
-    } catch (error) {
-        console.error('Error creating variant:', error);
-        return { success: false, error: error.message };
-    }
-    }
+      
+      if (error) throw error;
 
-    // Get all variants of a case study
-    async getVariants(caseStudyId) {
+      await this.trackEvent('ab_variant_created', data.id, {
+        parent_id: parentCaseStudyId,
+        variant_name: variantName,
+        user_id: userProfile?.id
+      });
+
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error creating variant:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Get all variants of a case study
+  async getVariants(caseStudyId) {
     try {
-        const { data, error } = await supabase
+      const { data, error } = await supabase
         .from('case_studies')
         .select('*')
         .or(`id.eq.${caseStudyId},parent_case_study_id.eq.${caseStudyId}`)
         .order('variant_name');
-        
-        if (error) throw error;
-        return { success: true, data };
+      
+      if (error) throw error;
+      return { success: true, data };
     } catch (error) {
-        console.error('Error fetching variants:', error);
-        return { success: false, error: error.message };
+      console.error('Error fetching variants:', error);
+      return { success: false, error: error.message };
     }
-    }
+  }
 
-    // Activate A/B test
-    async activateABTest(caseStudyId, endDate, userProfile) {
+  // Activate A/B test
+  async activateABTest(caseStudyId, endDate, userProfile) {
     try {
-        // Update parent and all variants
-        const { error } = await supabase
+      // Update parent and all variants
+      const { error } = await supabase
         .from('case_studies')
         .update({
-            ab_test_active: true,
-            ab_test_start_date: new Date().toISOString(),
-            ab_test_end_date: endDate,
-            updated_by: userProfile?.id
+          ab_test_active: true,
+          ab_test_start_date: new Date().toISOString(),
+          ab_test_end_date: endDate,
+          updated_by: userProfile?.id
         })
         .or(`id.eq.${caseStudyId},parent_case_study_id.eq.${caseStudyId}`);
-        
-        if (error) throw error;
-        return { success: true };
-    } catch (error) {
-        console.error('Error activating A/B test:', error);
-        return { success: false, error: error.message };
-    }
-    }
+      
+      if (error) throw error;
 
-    // Get A/B test results
-    async getABTestResults(caseStudyId) {
+      await this.trackEvent('ab_test_activated', caseStudyId, {
+        end_date: endDate,
+        user_id: userProfile?.id
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error activating A/B test:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Get A/B test results
+  async getABTestResults(caseStudyId) {
     try {
-        const { data, error } = await supabase
+      const { data, error } = await supabase
         .from('case_studies')
         .select('variant_name, view_count, unique_view_count, inquiry_count, average_time_on_page')
         .or(`id.eq.${caseStudyId},parent_case_study_id.eq.${caseStudyId}`);
-        
-        if (error) throw error;
-        
-        // Calculate conversion rates
-        const results = data.map(variant => ({
+      
+      if (error) throw error;
+      
+      // Calculate conversion rates
+      const results = data.map(variant => ({
         ...variant,
         conversion_rate: variant.view_count > 0 
-            ? ((variant.inquiry_count / variant.view_count) * 100).toFixed(2)
-            : 0
-        }));
-        
-        return { success: true, data: results };
+          ? ((variant.inquiry_count / variant.view_count) * 100).toFixed(2)
+          : 0
+      }));
+      
+      return { success: true, data: results };
     } catch (error) {
-        console.error('Error fetching A/B test results:', error);
-        return { success: false, error: error.message };
+      console.error('Error fetching A/B test results:', error);
+      return { success: false, error: error.message };
     }
-    }
+  }
 }
 
 export const caseStudyOperations = new CaseStudyOperationsService();

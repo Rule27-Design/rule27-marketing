@@ -59,7 +59,7 @@ const InnovationLaboratory = () => {
         <meta property="og:title" content="Innovation Lab | Rule27 Design - Where Tomorrow Begins" />
         <meta property="og:description" content="Explore cutting-edge tools, AI experiments, and trend analysis. Interactive demos and resources that push the boundaries of digital design." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://rule27design.com/innovation" />
+        <meta property="og:url" content="https://www.rule27design.com/innovation" />
         <meta property="og:image" content="/assets/og-image.jpg" />
         
         {/* Twitter Card */}
@@ -69,7 +69,7 @@ const InnovationLaboratory = () => {
         <meta name="twitter:image" content="/assets/og-image.jpg" />
         
         {/* Canonical */}
-        <link rel="canonical" href="https://rule27design.com/innovation" />
+        <link rel="canonical" href="https://www.rule27design.com/innovation" />
         
         {/* Preload critical resources */}
         <link rel="preload" href="/assets/logo/rule27-color.svg" as="image" />

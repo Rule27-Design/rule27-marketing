@@ -81,7 +81,7 @@ const AboutProcessStudio = () => {
         <meta property="og:title" content="About | Rule27 Design - The Rebels Behind Digital Innovation" />
         <meta property="og:description" content="Meet the certified experts, discover our methodology, and explore the culture that makes Rule27 Design the digital powerhouse where excellence thrives." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://rule27design.com/about" />
+        <meta property="og:url" content="https://www.rule27design.com/about" />
         <meta property="og:image" content="/assets/og-image.jpg" />
         
         {/* Twitter Card */}
@@ -91,7 +91,7 @@ const AboutProcessStudio = () => {
         <meta name="twitter:image" content="/assets/og-image.jpg" />
         
         {/* Canonical */}
-        <link rel="canonical" href="https://rule27design.com/about" />
+        <link rel="canonical" href="https://www.rule27design.com/about" />
         
         {/* Preload critical resources */}
         <link rel="preload" href="/src/assets/Fonts/steelfish.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />

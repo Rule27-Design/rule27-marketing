@@ -59,7 +59,7 @@ const ContactConsultationPortal = () => {
         <meta property="og:title" content="Contact | Rule27 Design - Start Your Transformation" />
         <meta property="og:description" content="Ready to break conventional boundaries? Schedule a consultation with Rule27 Design's expert team and discover how we can transform your digital presence." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://rule27design.com/contact" />
+        <meta property="og:url" content="https://www.rule27design.com/contact" />
         <meta property="og:image" content="/assets/og-image.jpg" />
         
         {/* Twitter Card */}
@@ -69,7 +69,7 @@ const ContactConsultationPortal = () => {
         <meta name="twitter:image" content="/assets/og-image.jpg" />
         
         {/* Canonical */}
-        <link rel="canonical" href="https://rule27design.com/contact" />
+        <link rel="canonical" href="https://www.rule27design.com/contact" />
         
         {/* NO FONT PRELOADS - They're already loaded by the main CSS */}
       </Helmet>
