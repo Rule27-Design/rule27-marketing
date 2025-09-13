@@ -7,7 +7,7 @@ import Button from '../../../../components/ui/Button';
 import Icon from '../../../../components/AdminIcon';
 
 const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
-  // Key metrics management (same as before)
+  // Key metrics management
   const addMetric = () => {
     const newMetric = {
       label: '',
@@ -37,6 +37,44 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
     const [movedItem] = newMetrics.splice(fromIndex, 1);
     newMetrics.splice(toIndex, 0, movedItem);
     onChange('key_metrics', newMetrics);
+  };
+
+  // Process steps management
+  const addProcessStep = () => {
+    const newStep = {
+      title: '',
+      description: ''
+    };
+    onChange('process_steps', [...(formData.process_steps || []), newStep]);
+  };
+
+  const updateProcessStep = (index, field, value) => {
+    const newSteps = [...(formData.process_steps || [])];
+    newSteps[index] = { ...newSteps[index], [field]: value };
+    onChange('process_steps', newSteps);
+  };
+
+  const removeProcessStep = (index) => {
+    const newSteps = [...(formData.process_steps || [])];
+    newSteps.splice(index, 1);
+    onChange('process_steps', newSteps);
+  };
+
+  // Deliverables management
+  const addDeliverable = () => {
+    onChange('deliverables', [...(formData.deliverables || []), '']);
+  };
+
+  const updateDeliverable = (index, value) => {
+    const newDeliverables = [...(formData.deliverables || [])];
+    newDeliverables[index] = value;
+    onChange('deliverables', newDeliverables);
+  };
+
+  const removeDeliverable = (index) => {
+    const newDeliverables = [...(formData.deliverables || [])];
+    newDeliverables.splice(index, 1);
+    onChange('deliverables', newDeliverables);
   };
 
   return (
@@ -203,13 +241,14 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
         )}
       </div>
 
-      {/* Results Summary - NEW FIELD */}
+      {/* Results Summary */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Results Summary
+          <span className="text-gray-500 font-normal ml-2">(Brief summary for listings)</span>
         </label>
         <textarea
-          value={formData.results_summary}
+          value={formData.results_summary || ''}
           onChange={(e) => onChange('results_summary', e.target.value)}
           placeholder="Brief summary of results for listings and previews..."
           className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent"
@@ -219,6 +258,9 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
         <div className="text-xs text-gray-500 mt-1">
           {formData.results_summary?.length || 0} / 300 characters
         </div>
+        {errors.results_summary && (
+          <p className="text-sm text-red-500 mt-1">{errors.results_summary}</p>
+        )}
       </div>
 
       {/* Results Narrative - Using TiptapContentEditor */}
@@ -233,23 +275,143 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
         />
       </div>
 
+      {/* Process Steps */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <label className="text-sm font-medium text-gray-700">
+            Process Steps (Optional)
+          </label>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={addProcessStep}
+          >
+            <Icon name="Plus" size={16} className="mr-2" />
+            Add Step
+          </Button>
+        </div>
+
+        {(formData.process_steps || []).length > 0 && (
+          <div className="space-y-3">
+            {formData.process_steps.map((step, index) => (
+              <div key={index} className="bg-gray-50 rounded-lg p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <span className="text-sm font-medium">Step {index + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeProcessStep(index)}
+                    className="text-red-500 hover:bg-red-100 p-1 rounded"
+                  >
+                    <Icon name="X" size={14} />
+                  </button>
+                </div>
+                <Input
+                  label="Title"
+                  value={step.title}
+                  onChange={(e) => updateProcessStep(index, 'title', e.target.value)}
+                  placeholder="Step title..."
+                  className="mb-2"
+                />
+                <textarea
+                  value={step.description}
+                  onChange={(e) => updateProcessStep(index, 'description', e.target.value)}
+                  placeholder="Step description..."
+                  className="w-full px-3 py-2 border rounded-lg"
+                  rows={2}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Deliverables */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <label className="text-sm font-medium text-gray-700">
+            Deliverables (Optional)
+          </label>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={addDeliverable}
+          >
+            <Icon name="Plus" size={16} className="mr-2" />
+            Add Deliverable
+          </Button>
+        </div>
+
+        {(formData.deliverables || []).length > 0 && (
+          <div className="space-y-2">
+            {formData.deliverables.map((deliverable, index) => (
+              <div key={index} className="flex gap-2">
+                <input
+                  type="text"
+                  value={deliverable}
+                  onChange={(e) => updateDeliverable(index, e.target.value)}
+                  placeholder="Enter deliverable..."
+                  className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeDeliverable(index)}
+                  className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Testimonial */}
       <div>
         <Select
-            label="Client Testimonial (Optional)"
-            value={formData.testimonial_id || ''}
-            onChange={(value) => onChange('testimonial_id', value || null)}
-            options={[
-                { value: '', label: 'Select testimonial...' },
-                ...testimonials.map(t => ({
-                value: t.id,
-                label: `${t.client_name}${t.client_company ? ` - ${t.client_company}` : ''}`
-                }))
-            ]}
+          label="Client Testimonial (Optional)"
+          value={formData.testimonial_id || ''}
+          onChange={(value) => onChange('testimonial_id', value || null)}
+          options={[
+            { value: '', label: 'Select testimonial...' },
+            ...testimonials.map(t => ({
+              value: t.id,
+              label: `${t.client_name}${t.client_company ? ` - ${t.client_company}` : ''}`
+            }))
+          ]}
         />
         <p className="text-xs text-gray-500 mt-1">
           Link an existing testimonial to this case study
         </p>
+        
+        {formData.testimonial_id && testimonials.length > 0 && (
+          <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+            {(() => {
+              const selected = testimonials.find(t => t.id === formData.testimonial_id);
+              return selected ? (
+                <>
+                  <p className="text-sm italic text-gray-600">"{selected.quote}"</p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    — {selected.client_name}
+                    {selected.client_title && `, ${selected.client_title}`}
+                    {selected.client_company && ` at ${selected.client_company}`}
+                  </p>
+                  {selected.rating && (
+                    <div className="flex items-center mt-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Icon 
+                          key={i}
+                          name="Star" 
+                          size={12} 
+                          className={i < selected.rating ? 'text-yellow-500' : 'text-gray-300'}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : null;
+            })()}
+          </div>
+        )}
       </div>
 
       {/* Content Statistics */}
@@ -262,7 +424,7 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
                 <Icon name="FileText" size={16} className="text-gray-400" />
                 <div>
                   <div className="text-2xl font-bold text-gray-900">
-                    {[formData.challenge, formData.solution, formData.results_narrative]
+                    {[formData.challenge, formData.solution, formData.implementation_process, formData.results_narrative]
                       .filter(Boolean)
                       .reduce((sum, content) => sum + (content.wordCount || 0), 0)}
                   </div>
@@ -277,7 +439,7 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
                 <div>
                   <div className="text-2xl font-bold text-gray-900">
                     {Math.ceil(
-                      [formData.challenge, formData.solution, formData.results_narrative]
+                      [formData.challenge, formData.solution, formData.implementation_process, formData.results_narrative]
                         .filter(Boolean)
                         .reduce((sum, content) => sum + (content.wordCount || 0), 0) / 200
                     )}

@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 export const useFormValidation = () => {
   const [errors, setErrors] = useState({});
 
-  const validateField = useCallback((field, value) => {
+  const validateField = useCallback((field, value, formData = {}) => {
     let error = null;
 
     switch (field) {
@@ -44,17 +44,36 @@ export const useFormValidation = () => {
         }
         break;
 
-      // Rich text validations
+      // Rich text validations - check for actual content
       case 'challenge':
-        if (!value || (typeof value === 'object' && !value.html?.trim()) || 
-            (typeof value === 'string' && !value.trim())) {
+        if (!value) {
+          error = 'Challenge description is required';
+        } else if (typeof value === 'object') {
+          // Check if it's a TipTap document with content
+          const hasContent = value.content && value.content.length > 0 && 
+            value.content.some(node => 
+              node.content && node.content.some(item => item.text && item.text.trim())
+            );
+          if (!hasContent) {
+            error = 'Challenge description is required';
+          }
+        } else if (typeof value === 'string' && !value.trim()) {
           error = 'Challenge description is required';
         }
         break;
 
       case 'solution':
-        if (!value || (typeof value === 'object' && !value.html?.trim()) || 
-            (typeof value === 'string' && !value.trim())) {
+        if (!value) {
+          error = 'Solution description is required';
+        } else if (typeof value === 'object') {
+          const hasContent = value.content && value.content.length > 0 && 
+            value.content.some(node => 
+              node.content && node.content.some(item => item.text && item.text.trim())
+            );
+          if (!hasContent) {
+            error = 'Solution description is required';
+          }
+        } else if (typeof value === 'string' && !value.trim()) {
           error = 'Solution description is required';
         }
         break;
@@ -100,7 +119,9 @@ export const useFormValidation = () => {
         break;
 
       case 'project_end_date':
-        if (value && formData.project_start_date) {
+        if (!value) {
+          error = 'Project end date is required';
+        } else if (formData.project_start_date) {
           const start = new Date(formData.project_start_date);
           const end = new Date(value);
           if (end < start) {
@@ -208,16 +229,28 @@ export const useFormValidation = () => {
       newErrors.service_type = 'Service type is required';
     }
 
-    // Rich text content validation
-    if (!formData.challenge || 
-        (typeof formData.challenge === 'object' && !formData.challenge.html?.trim()) ||
-        (typeof formData.challenge === 'string' && !formData.challenge.trim())) {
+    // Rich text content validation - improved to check for actual content
+    const hasChallenge = formData.challenge && (
+      typeof formData.challenge === 'string' ? 
+        formData.challenge.trim() : 
+        formData.challenge.content?.some(node => 
+          node.content?.some(item => item.text?.trim())
+        )
+    );
+
+    const hasSolution = formData.solution && (
+      typeof formData.solution === 'string' ? 
+        formData.solution.trim() : 
+        formData.solution.content?.some(node => 
+          node.content?.some(item => item.text?.trim())
+        )
+    );
+
+    if (!hasChallenge) {
       newErrors.challenge = 'Challenge description is required';
     }
 
-    if (!formData.solution || 
-        (typeof formData.solution === 'object' && !formData.solution.html?.trim()) ||
-        (typeof formData.solution === 'string' && !formData.solution.trim())) {
+    if (!hasSolution) {
       newErrors.solution = 'Solution description is required';
     }
 
@@ -233,6 +266,10 @@ export const useFormValidation = () => {
 
     if (!formData.project_start_date) {
       newErrors.project_start_date = 'Project start date is required';
+    }
+
+    if (!formData.project_end_date) {
+      newErrors.project_end_date = 'Project end date is required';
     }
 
     // Date validation
@@ -292,21 +329,41 @@ export const useFormValidation = () => {
     setErrors({});
   }, []);
 
-  const getTabErrors = useCallback((tab, errors) => {
+  const getTabErrors = useCallback(() => {
     const tabFieldMap = {
-      overview: ['title', 'slug', 'client_name', 'client_industry', 'service_type', 
-                 'project_start_date', 'project_end_date', 'client_website', 
-                 'team_size', 'deliverables'],
+      overview: ['title', 'slug', 'client_name', 'client_industry', 'client_company_size',
+                 'service_type', 'service_category', 'project_start_date', 'project_end_date', 
+                 'client_website', 'team_size', 'deliverables', 'project_duration', 
+                 'project_investment', 'technologies_used'],
       results: ['challenge', 'solution', 'implementation_process', 'key_metrics', 
-                'results_summary', 'results_narrative'],
-      media: ['hero_image', 'hero_video', 'client_logo', 'gallery_images'],
+                'results_summary', 'results_narrative', 'testimonial_id', 'process_steps'],
+      media: ['hero_image', 'hero_image_alt', 'hero_video', 'client_logo', 'gallery_images'],
       details: ['status', 'scheduled_at', 'meta_title', 'meta_description', 
-                'canonical_url', 'og_title', 'og_description', 'og_image']
+                'canonical_url', 'og_title', 'og_description', 'og_image', 
+                'internal_notes', 'is_featured', 'is_confidential', 'sort_order']
     };
 
-    const tabFields = tabFieldMap[tab] || [];
-    return Object.keys(errors).filter(field => tabFields.includes(field));
-  }, []);
+    const tabErrors = {
+      overview: [],
+      results: [],
+      media: [],
+      details: []
+    };
+
+    Object.entries(errors).forEach(([field, error]) => {
+      Object.entries(tabFieldMap).forEach(([tab, fields]) => {
+        if (fields.includes(field)) {
+          tabErrors[tab].push({ field, error });
+        }
+      });
+    });
+
+    return tabErrors;
+  }, [errors]);
+
+  const hasErrors = useCallback(() => {
+    return Object.keys(errors).length > 0;
+  }, [errors]);
 
   return {
     errors,
@@ -314,6 +371,7 @@ export const useFormValidation = () => {
     validateForm,
     clearError,
     clearAllErrors,
-    getTabErrors
+    getTabErrors,
+    hasErrors
   };
 };
