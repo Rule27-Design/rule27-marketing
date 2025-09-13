@@ -12,7 +12,9 @@ const TiptapContentEditor = ({
   label = 'Content',
   placeholder = 'Start writing your content...',
   className = '',
-  minHeight = '300px'
+  minHeight = '300px',
+  required = false,
+  error = null
 }) => {
   const [isReady, setIsReady] = useState(false);
 
@@ -39,9 +41,13 @@ const TiptapContentEditor = ({
             console.log('🎯 TipTap Editor - Setting initial value:', value);
             
             // Handle different content formats
-            if (value.json && typeof value.json === 'object') {
-              // TipTap JSON format (preferred)
-              console.log('🎯 Using TipTap JSON format');
+            if (value.type === 'doc' && Array.isArray(value.content)) {
+              // Direct TipTap JSON (Case Studies format)
+              console.log('🎯 Using direct TipTap JSON (Case Studies format)');
+              editor.commands.setContent(value);
+            } else if (value.json && typeof value.json === 'object') {
+              // TipTap JSON format (Articles format)
+              console.log('🎯 Using TipTap JSON format (Articles)');
               editor.commands.setContent(value.json);
             } else if (value.html) {
               // HTML format
@@ -56,22 +62,12 @@ const TiptapContentEditor = ({
               // Plain string
               console.log('🎯 Using plain string format');
               editor.commands.setContent(value);
-            } else if (value.type === 'doc' && Array.isArray(value.content)) {
-              // Direct TipTap JSON
-              console.log('🎯 Using direct TipTap JSON');
-              editor.commands.setContent(value);
             } else {
               console.log('🎯 Unknown format, using empty content');
               editor.commands.setContent('');
             }
           } catch (error) {
             console.error('❌ Error setting initial content:', error);
-            console.log('📝 Trying to set as HTML fallback');
-            try {
-              editor.commands.setContent(String(value));
-            } catch (fallbackError) {
-              console.error('❌ Fallback also failed:', fallbackError);
-            }
           }
         }, 100);
       }
@@ -82,24 +78,31 @@ const TiptapContentEditor = ({
       try {
         const html = editor.getHTML();
         const text = editor.getText();
-        const json = editor.getJSON(); // Get native TipTap JSON
+        const json = editor.getJSON();
+        const wordCount = text.split(/\s+/).filter(word => word.length > 0).length;
         
-        console.log('📝 TipTap Editor - Content updated:', { html: html.substring(0, 100), json });
+        // Check if we're in Case Studies mode (value is raw JSON) or Articles mode
+        const isRawJsonMode = value && value.type === 'doc' && !value.html;
         
-        // Create structured content for JSONB storage - include both HTML and JSON
-        const structuredContent = {
-          type: 'tiptap',
-          html: html,
-          json: json, // Store native TipTap JSON
-          text: text,
-          wordCount: text.split(/\s+/).filter(word => word.length > 0).length,
-          characterCount: text.length,
-          lastModified: new Date().toISOString(),
-          version: '2.0'
-        };
-        
-        console.log('📝 Sending structured content:', structuredContent);
-        onChange?.(structuredContent);
+        if (isRawJsonMode) {
+          // Case Studies mode - just send the raw JSON
+          console.log('📝 Sending raw TipTap JSON (Case Studies mode)');
+          onChange?.(json);
+        } else {
+          // Articles mode - send structured content
+          console.log('📝 Sending structured content (Articles mode)');
+          const structuredContent = {
+            type: 'tiptap',
+            html: html,
+            json: json,
+            text: text,
+            wordCount: wordCount,
+            characterCount: text.length,
+            lastModified: new Date().toISOString(),
+            version: '2.0'
+          };
+          onChange?.(structuredContent);
+        }
       } catch (error) {
         console.error('❌ Error updating content:', error);
       }
@@ -117,13 +120,16 @@ const TiptapContentEditor = ({
       if (value) {
         // Get current content to avoid unnecessary updates
         const currentJSON = editor.getJSON();
-        const currentHTML = editor.getHTML();
         
         // Determine what content to set
         let newContent = null;
         let contentType = 'none';
         
-        if (value.json && typeof value.json === 'object') {
+        if (value.type === 'doc' && Array.isArray(value.content)) {
+          // Direct TipTap JSON (Case Studies format)
+          newContent = value;
+          contentType = 'direct-json';
+        } else if (value.json && typeof value.json === 'object') {
           newContent = value.json;
           contentType = 'json';
         } else if (value.html) {
@@ -135,18 +141,15 @@ const TiptapContentEditor = ({
         } else if (typeof value === 'string') {
           newContent = value;
           contentType = 'string';
-        } else if (value.type === 'doc' && Array.isArray(value.content)) {
-          newContent = value;
-          contentType = 'direct-json';
         }
         
-        console.log(`🔄 Content type detected: ${contentType}`, newContent);
+        console.log(`🔄 Content type detected: ${contentType}`);
         
         // Only update if content is different
         if (newContent) {
-          const shouldUpdate = contentType === 'json' || contentType === 'direct-json' 
+          const shouldUpdate = (contentType === 'json' || contentType === 'direct-json')
             ? JSON.stringify(currentJSON) !== JSON.stringify(newContent)
-            : currentHTML !== newContent;
+            : true; // For HTML/string, always update as comparison is complex
           
           if (shouldUpdate) {
             console.log('🔄 Updating editor content');
@@ -154,6 +157,12 @@ const TiptapContentEditor = ({
           } else {
             console.log('🔄 Content unchanged, skipping update');
           }
+        }
+      } else {
+        // Clear editor if value is null/undefined
+        const currentText = editor.getText();
+        if (currentText && currentText.trim()) {
+          editor.commands.clearContent();
         }
       }
     } catch (error) {
@@ -168,6 +177,7 @@ const TiptapContentEditor = ({
         {label && (
           <label className="block text-sm font-medium text-gray-700">
             {label}
+            {required && <span className="text-red-500 ml-1">*</span>}
           </label>
         )}
         <div className="border rounded-lg p-4 bg-gray-50 min-h-[300px] flex items-center justify-center">
@@ -223,16 +233,32 @@ const TiptapContentEditor = ({
     }
   };
 
+  // Calculate word count for display
+  const getWordCount = () => {
+    if (!editor) return 0;
+    const text = editor.getText();
+    return text.split(/\s+/).filter(word => word.length > 0).length;
+  };
+
+  const getCharCount = () => {
+    if (!editor) return 0;
+    return editor.getText().length;
+  };
+
   return (
     <div className={cn('space-y-2', className)}>
       {label && (
         <label className="block text-sm font-medium text-gray-700">
           {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
 
       {/* Toolbar */}
-      <div className="border border-gray-300 rounded-t-lg bg-gray-50 px-3 py-2">
+      <div className={cn(
+        "border border-gray-300 rounded-t-lg bg-gray-50 px-3 py-2",
+        error && "border-red-500"
+      )}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-1 flex-wrap gap-1">
             {/* Text Formatting */}
@@ -442,20 +468,28 @@ const TiptapContentEditor = ({
           </div>
           
           <div className="flex items-center space-x-2 text-xs text-gray-500">
-            <span>{value?.wordCount || 0} words</span>
+            <span>{getWordCount()} words</span>
             <span>•</span>
-            <span>{value?.characterCount || 0} chars</span>
+            <span>{getCharCount()} chars</span>
           </div>
         </div>
       </div>
 
       {/* Editor */}
-      <div className="border border-t-0 border-gray-300 rounded-b-lg bg-white">
+      <div className={cn(
+        "border border-t-0 border-gray-300 rounded-b-lg bg-white",
+        error && "border-red-500"
+      )}>
         <EditorContent 
           editor={editor} 
           className="min-h-[300px]"
         />
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <p className="text-sm text-red-600 mt-1">{error}</p>
+      )}
 
       {/* Help Text */}
       <div className="text-xs text-gray-500">
@@ -503,43 +537,35 @@ export const TiptapContentDisplay = ({ content, className = '' }) => {
       // Legacy content object with string content
       displayContent = content.content;
     } else if (content.json && typeof content.json === 'object') {
-      // TipTap JSON format - extract text for display since we don't have HTML
-      const extractTextFromJSON = (node) => {
-        let text = '';
-        if (node.text) {
-          text += node.text;
+      // TipTap JSON format - convert to HTML-like display
+      const renderNode = (node) => {
+        if (node.type === 'text') {
+          return node.text;
         }
-        if (node.content && Array.isArray(node.content)) {
-          text += node.content.map(extractTextFromJSON).join(' ');
+        if (node.type === 'paragraph') {
+          return `<p>${node.content?.map(renderNode).join('') || ''}</p>`;
         }
-        return text;
+        if (node.type === 'doc') {
+          return node.content?.map(renderNode).join('') || '';
+        }
+        return '';
       };
-      
-      const extractedText = extractTextFromJSON(content.json);
-      return (
-        <div className={cn('prose prose-sm max-w-none whitespace-pre-wrap', className)}>
-          {extractedText || 'No readable content found'}
-        </div>
-      );
+      displayContent = renderNode(content.json);
     } else if (content.type === 'doc' && Array.isArray(content.content)) {
-      // Direct TipTap JSON format - extract text for display
-      const extractTextFromJSON = (node) => {
-        let text = '';
-        if (node.text) {
-          text += node.text;
+      // Direct TipTap JSON format (Case Studies) - convert to HTML-like display
+      const renderNode = (node) => {
+        if (node.type === 'text') {
+          return node.text;
         }
-        if (node.content && Array.isArray(node.content)) {
-          text += node.content.map(extractTextFromJSON).join(' ');
+        if (node.type === 'paragraph') {
+          return `<p>${node.content?.map(renderNode).join('') || ''}</p>`;
         }
-        return text;
+        if (node.type === 'doc') {
+          return node.content?.map(renderNode).join('') || '';
+        }
+        return '';
       };
-      
-      const extractedText = extractTextFromJSON(content);
-      return (
-        <div className={cn('prose prose-sm max-w-none whitespace-pre-wrap', className)}>
-          {extractedText || 'No readable content found'}
-        </div>
-      );
+      displayContent = renderNode(content);
     } else {
       return (
         <div className={className}>
