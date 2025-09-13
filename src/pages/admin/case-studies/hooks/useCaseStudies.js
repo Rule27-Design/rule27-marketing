@@ -43,6 +43,7 @@ export const useCaseStudies = (initialFilters = {}) => {
           client_website,
           client_industry,
           client_company_size,
+          business_stage,
           service_type,
           service_category,
           project_duration,
