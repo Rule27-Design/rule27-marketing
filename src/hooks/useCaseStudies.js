@@ -1,6 +1,84 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
+// Helper function to extract text from rich text content
+const extractTextFromRichText = (content) => {
+  if (!content) return '';
+  if (typeof content === 'string') return content;
+  
+  // Handle HTML content
+  if (content.html) {
+    // Strip HTML tags
+    return content.html.replace(/<[^>]*>/g, '');
+  }
+  
+  // Handle TipTap JSON format
+  if (content.type === 'doc' && content.content) {
+    return content.content
+      .filter(node => node.type === 'paragraph')
+      .map(node => {
+        if (node.content && Array.isArray(node.content)) {
+          return node.content
+            .filter(c => c.type === 'text')
+            .map(c => c.text)
+            .join('');
+        }
+        return '';
+      })
+      .join(' ');
+  }
+  
+  return '';
+};
+
+// Transform backend data to frontend format
+const transformCaseStudy = (study) => {
+  if (!study) return null;
+  
+  return {
+    id: study.id,
+    title: study.title,
+    slug: study.slug,
+    client: study.client_name,
+    clientLogo: study.client_logo,
+    clientWebsite: study.client_website,
+    industry: study.client_industry || 'Technology',
+    serviceType: study.service_type || 'Web Development',
+    businessStage: study.client_company_size || 'Growth Stage',
+    heroImage: study.hero_image || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop',
+    description: study.results_summary || extractTextFromRichText(study.challenge) || '',
+    challenge: extractTextFromRichText(study.challenge),
+    solution: extractTextFromRichText(study.solution),
+    implementation: extractTextFromRichText(study.implementation_process),
+    timeline: study.project_duration || 'N/A',
+    duration: study.project_duration || 'N/A',
+    featured: study.is_featured || false,
+    keyMetrics: study.key_metrics || [],
+    // Map results_narrative to detailedResults
+    detailedResults: study.results_narrative || [],
+    processSteps: study.process_steps || [],
+    technologiesUsed: study.technologies_used || [],
+    deliverables: study.deliverables || [],
+    teamMembers: study.team_members || [],
+    projectLead: study.project_lead,
+    testimonial: study.testimonial ? {
+      name: study.testimonial.client_name,
+      position: study.testimonial.client_title,
+      quote: study.testimonial.quote,
+      avatar: study.testimonial.client_avatar || 'https://randomuser.me/api/portraits/men/32.jpg',
+      rating: study.testimonial.rating
+    } : null,
+    gallery: study.gallery_images?.map(item => 
+      typeof item === 'string' ? item : item.url
+    ).filter(url => url && !url.includes('placeholder')) || [study.hero_image].filter(Boolean),
+    viewCount: study.view_count || 0,
+    conversionCount: study.inquiry_count || 0,
+    created_at: study.created_at,
+    project_start_date: study.project_start_date,
+    project_end_date: study.project_end_date
+  };
+};
+
 export const useCaseStudies = () => {
   const [data, setData] = useState({
     caseStudies: [],
@@ -20,7 +98,7 @@ export const useCaseStudies = () => {
         .from('case_studies')
         .select(`
           *,
-          testimonial:testimonials!testimonial_id(
+          testimonial:testimonial_id(
             client_name,
             client_title,
             quote,
@@ -36,46 +114,7 @@ export const useCaseStudies = () => {
       if (error) throw error;
 
       // Transform data to match component structure
-      const transformedStudies = studies?.map(study => ({
-        id: study.id,
-        title: study.title,
-        slug: study.slug,
-        client: study.client_name,
-        clientLogo: study.client_logo,
-        clientWebsite: study.client_website,
-        industry: study.industry,
-        serviceType: study.service_type,
-        businessStage: study.business_stage,
-        heroImage: study.hero_image || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop',
-        description: study.description,
-        challenge: study.challenge,
-        solution: study.solution,
-        implementation: study.implementation,
-        timeline: study.project_duration,
-        duration: `${study.start_date ? new Date(study.start_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'N/A'} - ${study.end_date ? new Date(study.end_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Present'}`,
-        featured: study.featured || study.is_featured,
-        keyMetrics: study.key_metrics || [],
-        detailedResults: study.detailed_results || [],
-        processSteps: study.process_steps || [],
-        technologiesUsed: study.technologies_used || [],
-        deliverables: study.deliverables || [],
-        teamMembers: study.team_members || [],
-        projectLead: study.project_lead,
-        testimonial: study.testimonial ? {
-          name: study.testimonial.client_name,
-          position: study.testimonial.client_title,
-          quote: study.testimonial.quote,
-          avatar: study.testimonial.client_avatar || 'https://randomuser.me/api/portraits/men/32.jpg',
-          rating: study.testimonial.rating
-        } : null,
-        gallery: study.gallery?.map(item => 
-          typeof item === 'string' ? item : item.url
-        ) || [study.hero_image],
-        viewCount: study.view_count || 0,
-        conversionCount: study.conversion_count || 0,
-        created_at: study.created_at,
-        end_date: study.end_date
-      }));
+      const transformedStudies = (studies || []).map(transformCaseStudy);
 
       // Separate featured studies
       const featured = transformedStudies.filter(study => study.featured);
@@ -119,36 +158,15 @@ export const useCaseStudies = () => {
       
       const sessionId = getSessionId();
       
-      // Check if this session has already viewed this case study
-      const { data: existingView } = await supabase
-        .from('content_engagement')
-        .select('id')
-        .eq('content_type', 'case_study')
-        .eq('content_id', caseStudyId)
-        .eq('session_id', sessionId)
-        .single();
-      
       // Update counts
       await supabase
         .from('case_studies')
         .update({ 
           view_count: (currentData?.view_count || 0) + 1,
-          unique_view_count: existingView ? (currentData?.unique_view_count || 0) : (currentData?.unique_view_count || 0) + 1
+          unique_view_count: (currentData?.unique_view_count || 0) + 1
         })
         .eq('id', caseStudyId);
 
-      // Track engagement if not already tracked
-      if (!existingView) {
-        await supabase
-          .from('content_engagement')
-          .insert({
-            content_type: 'case_study',
-            content_id: caseStudyId,
-            action: 'view',
-            session_id: sessionId,
-            user_id: null
-          });
-      }
     } catch (error) {
       console.error('Error tracking view:', error);
     }
@@ -181,8 +199,14 @@ export const useCaseStudy = (slug) => {
         .from('case_studies')
         .select(`
           *,
-          testimonial:testimonials!testimonial_id(*),
-          project_lead:profiles!project_lead(full_name, job_title, avatar_url)
+          testimonial:testimonial_id(
+            client_name,
+            client_title,
+            client_company,
+            quote,
+            rating,
+            client_avatar
+          )
         `)
         .eq('slug', slug)
         .eq('status', 'published')
@@ -190,38 +214,37 @@ export const useCaseStudy = (slug) => {
 
       if (error) throw error;
 
-      // Transform the data to match component expectations
+      // Transform for detail page
       const transformedStudy = study ? {
-        id: study.id,
-        title: study.title,
-        slug: study.slug,
+        ...transformCaseStudy(study),
+        // Keep original fields for detail page
         client_name: study.client_name,
         client_logo: study.client_logo,
         client_website: study.client_website,
-        industry: study.industry,
-        service_type: study.service_type,
-        business_stage: study.business_stage,
+        client_industry: study.client_industry,
         hero_image: study.hero_image || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop',
-        description: study.description,
-        challenge: study.challenge,
-        solution: study.solution,
-        implementation: study.implementation,
-        project_duration: study.project_duration,
-        start_date: study.start_date,
-        end_date: study.end_date,
-        featured: study.featured || study.is_featured,
+        service_type: study.service_type,
+        client_company_size: study.client_company_size,
+        business_stage: study.client_company_size || 'Growth Stage',
         is_featured: study.is_featured,
+        project_duration: study.project_duration,
+        project_start_date: study.project_start_date,
+        project_end_date: study.project_end_date,
+        // Transform results_narrative to detailed_results for compatibility
+        detailed_results: study.results_narrative || [],
         key_metrics: study.key_metrics || [],
-        detailed_results: study.detailed_results || [],
         process_steps: study.process_steps || [],
         technologies_used: study.technologies_used || [],
         deliverables: study.deliverables || [],
-        team_members: study.team_members || [],
-        project_lead: study.project_lead,
+        gallery_images: study.gallery_images || [],
+        gallery: study.gallery_images?.map(item => 
+          typeof item === 'string' ? item : item.url
+        ).filter(url => url && !url.includes('placeholder')) || [study.hero_image].filter(Boolean),
         testimonial: study.testimonial,
-        gallery: study.gallery || [],
-        view_count: study.view_count || 0,
-        conversion_count: study.conversion_count || 0
+        challenge: extractTextFromRichText(study.challenge),
+        solution: extractTextFromRichText(study.solution),
+        implementation: extractTextFromRichText(study.implementation_process),
+        description: study.results_summary || extractTextFromRichText(study.challenge) || ''
       } : null;
 
       setData({
@@ -260,25 +283,32 @@ export const useCaseStudyFilters = () => {
     try {
       const { data: studies } = await supabase
         .from('case_studies')
-        .select('industry, service_type, business_stage')
+        .select('client_industry, service_type, client_company_size')
         .eq('status', 'published')
         .eq('is_active', true);
 
       if (studies) {
-        const industries = [...new Set(studies.map(s => s.industry).filter(Boolean))];
+        const industries = [...new Set(studies.map(s => s.client_industry).filter(Boolean))];
         const serviceTypes = [...new Set(studies.map(s => s.service_type).filter(Boolean))];
-        const businessStages = [...new Set(studies.map(s => s.business_stage).filter(Boolean))];
+        const businessStages = [...new Set(studies.map(s => s.client_company_size).filter(Boolean))];
 
         setFilters({
-          industries,
-          serviceTypes,
-          businessStages,
+          industries: industries.length > 0 ? industries : ['Technology', 'Healthcare', 'Finance', 'Retail'],
+          serviceTypes: serviceTypes.length > 0 ? serviceTypes : ['Web Development', 'Branding', 'Marketing'],
+          businessStages: businessStages.length > 0 ? businessStages : ['Startup', 'Growth Stage', 'Enterprise'],
           loading: false
         });
       }
     } catch (error) {
       console.error('Error fetching filters:', error);
-      setFilters(prev => ({ ...prev, loading: false }));
+      setFilters(prev => ({ 
+        ...prev, 
+        loading: false,
+        // Provide defaults if fetch fails
+        industries: ['Technology', 'Healthcare', 'Finance', 'Retail'],
+        serviceTypes: ['Web Development', 'Branding', 'Marketing'],
+        businessStages: ['Startup', 'Growth Stage', 'Enterprise']
+      }));
     }
   };
 

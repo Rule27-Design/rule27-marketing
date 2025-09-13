@@ -33,9 +33,9 @@ const CaseStudyDetail = () => {
     
     const { data } = await supabase
       .from('case_studies')
-      .select('id, title, slug, client_name, hero_image, industry, service_type, key_metrics')
+      .select('id, title, slug, client_name, hero_image, client_industry, service_type, key_metrics')
       .eq('status', 'published')
-      .or(`industry.eq.${caseStudy.industry},service_type.eq.${caseStudy.service_type}`)
+      .or(`client_industry.eq.${caseStudy.client_industry},service_type.eq.${caseStudy.service_type}`)
       .neq('id', caseStudy.id)
       .limit(3);
     
@@ -45,44 +45,28 @@ const CaseStudyDetail = () => {
   };
 
   const trackView = async () => {
-  if (!caseStudy?.id) return;
-  
-  try {
-    // First, get the current counts
-    const { data: currentData } = await supabase
-      .from('case_studies')
-      .select('view_count, unique_view_count')
-      .eq('id', caseStudy.id)
-      .single();
+    if (!caseStudy?.id) return;
     
-    // Then update with incremented values
-    await supabase
-      .from('case_studies')
-      .update({ 
-        view_count: (currentData?.view_count || 0) + 1,
-        unique_view_count: (currentData?.unique_view_count || 0) + 1
-      })
-      .eq('id', caseStudy.id);
+    try {
+      // First, get the current counts
+      const { data: currentData } = await supabase
+        .from('case_studies')
+        .select('view_count, unique_view_count')
+        .eq('id', caseStudy.id)
+        .single();
       
-    // Track engagement
-    const sessionId = sessionStorage.getItem('sessionId') || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    sessionStorage.setItem('sessionId', sessionId);
-    
-    await supabase
-      .from('content_engagement')
-      .upsert({
-        content_type: 'case_study',
-        content_id: caseStudy.id,
-        action: 'view',
-        session_id: sessionId,
-        user_id: null
-      }, {
-        onConflict: 'user_id,content_type,content_id,action'
-      });
-  } catch (error) {
-    console.error('Error tracking view:', error);
-  }
-};
+      // Then update with incremented values
+      await supabase
+        .from('case_studies')
+        .update({ 
+          view_count: (currentData?.view_count || 0) + 1,
+          unique_view_count: (currentData?.unique_view_count || 0) + 1
+        })
+        .eq('id', caseStudy.id);
+    } catch (error) {
+      console.error('Error tracking view:', error);
+    }
+  };
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: 'Eye' },
@@ -105,7 +89,15 @@ const CaseStudyDetail = () => {
     );
   };
 
-  const formatMetric = (value, type) => {
+  const formatMetric = (value, type, unit) => {
+    if (unit) {
+      // Handle unit-based formatting
+      if (unit === '%') return `${value}%`;
+      if (unit.includes('$')) return `$${value?.toLocaleString()}`;
+      if (unit === 'x') return `${value}x`;
+      return `${value}${unit}`;
+    }
+    // Fallback to type-based formatting
     switch (type) {
       case 'percentage':
         return `${value}%`;
@@ -113,6 +105,8 @@ const CaseStudyDetail = () => {
         return `$${value?.toLocaleString()}`;
       case 'multiplier':
         return `${value}x`;
+      case 'number':
+        return value?.toLocaleString();
       default:
         return value;
     }
@@ -158,9 +152,7 @@ const CaseStudyDetail = () => {
     );
   }
 
-  const gallery = caseStudy?.gallery?.map(item => 
-    typeof item === 'string' ? item : item.url
-  ) || [caseStudy?.hero_image];
+  const gallery = caseStudy?.gallery || [caseStudy?.hero_image].filter(Boolean);
 
   return (
     <>
@@ -229,7 +221,7 @@ const CaseStudyDetail = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex flex-wrap items-center gap-2 mb-4">
                 <span className="px-3 py-1 bg-white/20 backdrop-blur-sm text-xs font-heading-regular tracking-wider uppercase text-white rounded-full">
-                  {caseStudy.industry}
+                  {caseStudy.industry || caseStudy.client_industry}
                 </span>
                 <span className="px-3 py-1 bg-accent/80 backdrop-blur-sm text-xs font-heading-regular tracking-wider uppercase text-white rounded-full">
                   {caseStudy.service_type}
@@ -258,7 +250,7 @@ const CaseStudyDetail = () => {
               {caseStudy.key_metrics?.slice(0, 6).map((metric, index) => (
                 <div key={index} className="text-center">
                   <div className="text-2xl font-heading-regular text-accent mb-1 uppercase tracking-wider">
-                    {formatMetric(metric.value, metric.type)}
+                    {formatMetric(metric.value, metric.type, metric.unit)}
                   </div>
                   <div className="text-xs text-white/80 font-sans">
                     {metric.label}
@@ -344,7 +336,7 @@ const CaseStudyDetail = () => {
                           <div className="flex items-center justify-between mb-3">
                             <span className="font-heading-regular text-primary text-lg tracking-wider uppercase">{result.metric}</span>
                             <span className="text-3xl font-heading-regular text-accent uppercase tracking-wider">
-                              {formatMetric(result.value, result.type)}
+                              {formatMetric(result.value, result.type, result.unit)}
                             </span>
                           </div>
                           <p className="text-text-secondary font-sans">{result.description}</p>
@@ -377,7 +369,7 @@ const CaseStudyDetail = () => {
                           {caseStudy.testimonial.client_title}
                         </div>
                         <div className="text-text-secondary font-heading-regular tracking-wider uppercase">
-                          {caseStudy.client_name}
+                          {caseStudy.testimonial.client_company || caseStudy.client_name}
                         </div>
                       </div>
                       {caseStudy.testimonial.rating && (
@@ -410,7 +402,7 @@ const CaseStudyDetail = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-text-secondary font-sans">Industry</span>
-                        <span className="font-heading-regular text-primary uppercase">{caseStudy.industry}</span>
+                        <span className="font-heading-regular text-primary uppercase">{caseStudy.industry || caseStudy.client_industry}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-text-secondary font-sans">Service</span>
@@ -468,7 +460,7 @@ const CaseStudyDetail = () => {
                   >
                     <div className="h-48 overflow-hidden">
                       <Image
-                        src={study.hero_image}
+                        src={study.hero_image || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop'}
                         alt={study.title}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                       />
@@ -476,7 +468,7 @@ const CaseStudyDetail = () => {
                     <div className="p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-xs font-heading-regular text-accent uppercase tracking-wider">
-                          {study.industry}
+                          {study.client_industry}
                         </span>
                         <span className="text-xs text-text-secondary">•</span>
                         <span className="text-xs text-text-secondary font-sans">
