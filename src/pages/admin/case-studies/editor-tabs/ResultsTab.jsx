@@ -39,6 +39,36 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
     onChange('key_metrics', newMetrics);
   };
 
+  // Results narrative management (structured metrics)
+  const addResultsNarrative = () => {
+    const newResult = {
+      type: 'percentage',
+      value: '',
+      metric: '',
+      description: ''
+    };
+    onChange('results_narrative', [...(formData.results_narrative || []), newResult]);
+  };
+
+  const updateResultsNarrative = (index, field, value) => {
+    const newResults = [...(formData.results_narrative || [])];
+    newResults[index] = { ...newResults[index], [field]: value };
+    onChange('results_narrative', newResults);
+  };
+
+  const removeResultsNarrative = (index) => {
+    const newResults = [...(formData.results_narrative || [])];
+    newResults.splice(index, 1);
+    onChange('results_narrative', newResults);
+  };
+
+  const moveResultsNarrative = (fromIndex, toIndex) => {
+    const newResults = [...(formData.results_narrative || [])];
+    const [movedItem] = newResults.splice(fromIndex, 1);
+    newResults.splice(toIndex, 0, movedItem);
+    onChange('results_narrative', newResults);
+  };
+
   // Process steps management
   const addProcessStep = () => {
     const newStep = {
@@ -75,6 +105,27 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
     const newDeliverables = [...(formData.deliverables || [])];
     newDeliverables.splice(index, 1);
     onChange('deliverables', newDeliverables);
+  };
+
+  // Format value for display
+  const formatValue = (value, type) => {
+    if (!value) return '';
+    
+    switch (type) {
+      case 'currency':
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(value);
+      case 'percentage':
+        return `${value}%`;
+      case 'number':
+        return new Intl.NumberFormat('en-US').format(value);
+      default:
+        return value;
+    }
   };
 
   return (
@@ -263,16 +314,140 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
         )}
       </div>
 
-      {/* Results Narrative - Using TiptapContentEditor */}
+      {/* Detailed Results Narrative - Now structured like key metrics */}
       <div>
-        <TiptapContentEditor
-          value={formData.results_narrative}
-          onChange={(content) => onChange('results_narrative', content)}
-          label="Detailed Results Narrative"
-          placeholder="Provide a detailed narrative of the results achieved..."
-          minHeight="300px"
-          error={errors.results_narrative}
-        />
+        <div className="flex items-center justify-between mb-3">
+          <label className="text-sm font-medium text-gray-700">
+            Detailed Results Narrative
+          </label>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={addResultsNarrative}
+          >
+            <Icon name="Plus" size={16} className="mr-2" />
+            Add Result
+          </Button>
+        </div>
+
+        {(formData.results_narrative || []).length === 0 ? (
+          <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+            <Icon name="TrendingUp" size={48} className="mx-auto text-gray-400 mb-3" />
+            <p className="text-gray-600 mb-3">No detailed results added yet</p>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={addResultsNarrative}
+            >
+              Add Your First Result
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {formData.results_narrative.map((result, index) => (
+              <div key={index} className="bg-white border rounded-lg p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-gray-700">
+                    Result #{index + 1}
+                    {result.value && result.type && (
+                      <span className="ml-2 text-accent font-bold">
+                        {formatValue(result.value, result.type)}
+                      </span>
+                    )}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {index > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => moveResultsNarrative(index, index - 1)}
+                        className="p-1 hover:bg-gray-100 rounded"
+                        title="Move up"
+                      >
+                        <Icon name="ChevronUp" size={14} />
+                      </button>
+                    )}
+                    {index < formData.results_narrative.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={() => moveResultsNarrative(index, index + 1)}
+                        className="p-1 hover:bg-gray-100 rounded"
+                        title="Move down"
+                      >
+                        <Icon name="ChevronDown" size={14} />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeResultsNarrative(index)}
+                      className="p-1 hover:bg-red-100 text-red-500 rounded"
+                      title="Remove"
+                    >
+                      <Icon name="X" size={14} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <Select
+                      label="Type"
+                      value={result.type || 'percentage'}
+                      onChange={(value) => updateResultsNarrative(index, 'type', value)}
+                      options={[
+                        { value: 'currency', label: 'Currency (USD)' },
+                        { value: 'percentage', label: 'Percentage' },
+                        { value: 'number', label: 'Number' }
+                      ]}
+                      required
+                    />
+                    
+                    <Input
+                      label={
+                        result.type === 'currency' ? 'Value ($)' : 
+                        result.type === 'percentage' ? 'Value (%)' : 
+                        'Value'
+                      }
+                      type="number"
+                      value={result.value}
+                      onChange={(e) => updateResultsNarrative(index, 'value', e.target.value)}
+                      placeholder={
+                        result.type === 'currency' ? '2500000' : 
+                        result.type === 'percentage' ? '340' : 
+                        '1000'
+                      }
+                      required
+                    />
+                  </div>
+
+                  <Input
+                    label="Metric Name"
+                    value={result.metric}
+                    onChange={(e) => updateResultsNarrative(index, 'metric', e.target.value)}
+                    placeholder="e.g., Monthly Revenue"
+                    required
+                  />
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      value={result.description}
+                      onChange={(e) => updateResultsNarrative(index, 'description', e.target.value)}
+                      placeholder="e.g., From $500K to $2.5M monthly recurring revenue"
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent"
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {errors.results_narrative && (
+          <p className="text-sm text-red-500 mt-1">{errors.results_narrative}</p>
+        )}
       </div>
 
       {/* Process Steps */}
@@ -415,16 +590,16 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
       </div>
 
       {/* Content Statistics */}
-      {(formData.challenge || formData.solution || formData.results_narrative) && (
+      {(formData.challenge || formData.solution || formData.key_metrics?.length > 0 || formData.results_narrative?.length > 0) && (
         <div className="bg-gray-50 rounded-lg p-4">
           <h3 className="text-sm font-medium text-gray-900 mb-3">Content Statistics</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             <div className="bg-white rounded-lg p-3 border border-gray-200">
               <div className="flex items-center space-x-2">
                 <Icon name="FileText" size={16} className="text-gray-400" />
                 <div>
                   <div className="text-2xl font-bold text-gray-900">
-                    {[formData.challenge, formData.solution, formData.implementation_process, formData.results_narrative]
+                    {[formData.challenge, formData.solution, formData.implementation_process]
                       .filter(Boolean)
                       .reduce((sum, content) => sum + (content.wordCount || 0), 0)}
                   </div>
@@ -439,7 +614,7 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
                 <div>
                   <div className="text-2xl font-bold text-gray-900">
                     {Math.ceil(
-                      [formData.challenge, formData.solution, formData.implementation_process, formData.results_narrative]
+                      [formData.challenge, formData.solution, formData.implementation_process]
                         .filter(Boolean)
                         .reduce((sum, content) => sum + (content.wordCount || 0), 0) / 200
                     )}
@@ -451,12 +626,24 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
             
             <div className="bg-white rounded-lg p-3 border border-gray-200">
               <div className="flex items-center space-x-2">
-                <Icon name="TrendingUp" size={16} className="text-gray-400" />
+                <Icon name="BarChart" size={16} className="text-gray-400" />
                 <div>
                   <div className="text-2xl font-bold text-gray-900">
                     {formData.key_metrics?.length || 0}
                   </div>
-                  <div className="text-xs text-gray-500">Metrics</div>
+                  <div className="text-xs text-gray-500">Key Metrics</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg p-3 border border-gray-200">
+              <div className="flex items-center space-x-2">
+                <Icon name="TrendingUp" size={16} className="text-gray-400" />
+                <div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {formData.results_narrative?.length || 0}
+                  </div>
+                  <div className="text-xs text-gray-500">Detailed Results</div>
                 </div>
               </div>
             </div>
@@ -473,7 +660,7 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
           <li>• Focus on business outcomes (revenue, efficiency, growth)</li>
           <li>• Add context to make metrics meaningful to readers</li>
           <li>• Order metrics by importance or impact</li>
-          <li>• Use rich formatting to highlight key points</li>
+          <li>• Use detailed results for comprehensive performance data</li>
         </ul>
       </div>
     </div>
