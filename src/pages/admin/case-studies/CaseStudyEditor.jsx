@@ -36,6 +36,7 @@ const CaseStudyEditor = ({
   const [showPreview, setShowPreview] = useState(false);
   const [saving, setSaving] = useState(false);
   const [testimonials, setTestimonials] = useState([]);
+  const [validationAttempted, setValidationAttempted] = useState(false);
   
   // Initialize form data with ALL fields from the schema
   const initialData = {
@@ -64,19 +65,22 @@ const CaseStudyEditor = ({
     team_size: caseStudy?.team_size || null,
     team_members: caseStudy?.team_members || [],
     
-    // Rich text fields (JSONB in database)
+    // Rich text fields (JSONB in database) - FIX: Ensure these are the right fields
     challenge: caseStudy?.challenge || null,
     solution: caseStudy?.solution || null,
     implementation_process: caseStudy?.implementation_process || null,
-    results_narrative: caseStudy?.results_narrative || null,
+    results_narrative: caseStudy?.results_narrative || null, // This is the rich text for results
     
     // Plain text summary
     results_summary: caseStudy?.results_summary || '',
     
-    // Metrics and gallery
+    // Metrics and gallery - FIX: key_metrics is the metrics array, not detailed_results
     key_metrics: caseStudy?.key_metrics || [],
     gallery_images: caseStudy?.gallery_images || [],
     process_steps: caseStudy?.process_steps || [],
+    
+    // Store detailed_results separately if it exists (it's a different metrics format)
+    detailed_metrics: caseStudy?.detailed_results || [],
     
     // Media
     hero_image: caseStudy?.hero_image || '',
@@ -205,9 +209,11 @@ const CaseStudyEditor = ({
       }
       
       // Auto-generate meta description from challenge (if rich text)
-      if (field === 'challenge' && !prev.meta_description) {
-        const text = typeof value === 'object' ? value.text : value;
-        updated.meta_description = text ? text.substring(0, 160) : '';
+      if (field === 'challenge' && !prev.meta_description && value) {
+        const text = typeof value === 'object' && value.content ? 
+          value.content[0]?.content?.[0]?.text || '' : 
+          typeof value === 'string' ? value : '';
+        updated.meta_description = text.substring(0, 160);
       }
       
       // Calculate project duration from dates
@@ -216,53 +222,66 @@ const CaseStudyEditor = ({
         const start = new Date(updated.project_start_date);
         const end = new Date(updated.project_end_date);
         const months = Math.round((end - start) / (1000 * 60 * 60 * 24 * 30));
-        updated.project_duration = `${months} months`;
+        updated.project_duration = months > 0 ? `${months} months` : updated.project_duration;
       }
       
-      // Calculate read time from rich text content
-      if (['challenge', 'solution', 'implementation_process', 'results_narrative'].includes(field)) {
-        const totalWords = ['challenge', 'solution', 'implementation_process', 'results_narrative']
-          .reduce((sum, f) => {
-            const content = f === field ? value : updated[f];
-            return sum + (content?.wordCount || 0);
-          }, 0);
-        updated.read_time = Math.ceil(totalWords / 200);
-      }
-      
-      // Calculate SEO score (Phase 2)
-      if (['meta_title', 'meta_description', 'meta_keywords'].includes(field)) {
+      // Calculate SEO score
+      if (['meta_title', 'meta_description', 'meta_keywords', 'og_image', 'hero_image'].includes(field)) {
         updated.seo_score = calculateSEOScore(updated);
       }
       
       return updated;
     });
     
-    clearError(field);
-  }, [clearError, caseStudy]);
+    // Clear validation error for this field
+    if (validationAttempted) {
+      clearError(field);
+    }
+  }, [clearError, caseStudy, validationAttempted]);
 
   // Calculate SEO Score
   const calculateSEOScore = (data) => {
     let score = 0;
-    if (data.meta_title && data.meta_title.length > 30 && data.meta_title.length <= 60) score += 25;
-    if (data.meta_description && data.meta_description.length > 120 && data.meta_description.length <= 160) score += 25;
+    if (data.meta_title && data.meta_title.length >= 30 && data.meta_title.length <= 60) score += 25;
+    if (data.meta_description && data.meta_description.length >= 120 && data.meta_description.length <= 160) score += 25;
     if (data.meta_keywords && data.meta_keywords.length >= 3) score += 25;
-    if (data.og_image) score += 25;
+    if (data.og_image || data.hero_image) score += 25;
     return score;
   };
 
-  // Handle save
+  // Handle save with improved error display
   const handleSave = async () => {
     setSaving(true);
+    setValidationAttempted(true);
     
     // Validate form
     const validationErrors = validateForm(formData);
     if (Object.keys(validationErrors).length > 0) {
-      const tabsWithErrors = getTabsWithErrors(validationErrors);
-      if (tabsWithErrors.length > 0) {
-        setActiveTab(tabsWithErrors[0]);
+      // Find which tab has errors
+      const tabErrors = getTabErrors();
+      const firstTabWithErrors = Object.keys(tabErrors).find(tab => 
+        tabErrors[tab].length > 0
+      );
+      
+      if (firstTabWithErrors) {
+        setActiveTab(firstTabWithErrors);
       }
       
-      toast.error('Validation failed', 'Please fix the errors before saving');
+      // Create detailed error message
+      const errorList = Object.entries(tabErrors)
+        .filter(([tab, errs]) => errs.length > 0)
+        .map(([tab, errs]) => {
+          const tabName = tab.charAt(0).toUpperCase() + tab.slice(1);
+          const errorMessages = errs.map(e => `• ${e.error}`).join('\n');
+          return `${tabName} Tab:\n${errorMessages}`;
+        })
+        .join('\n\n');
+      
+      toast.error(
+        'Please fix the following errors',
+        errorList
+      );
+      
       setSaving(false);
       return false;
     }
@@ -272,11 +291,6 @@ const CaseStudyEditor = ({
     // Auto-generate canonical URL if not provided
     if (!sanitized.canonical_url && sanitized.slug) {
       sanitized.canonical_url = `https://rule27design.com/case-studies/${sanitized.slug}`;
-    }
-    
-    // Track version (Phase 2)
-    if (caseStudy?.id) {
-      sanitized.version = (caseStudy.version || 1) + 1;
     }
     
     let result;
@@ -296,6 +310,7 @@ const CaseStudyEditor = ({
         await onSave(result.data);
       }
       setSaving(false);
+      setValidationAttempted(false);
       return true;
     } else {
       toast.error('Save failed', result.error);
@@ -313,7 +328,7 @@ const CaseStudyEditor = ({
     setTimeout(() => handleSave(), 100);
   };
 
-  // Handle scheduling (Phase 3)
+  // Handle scheduling
   const handleSchedule = async (scheduledDate) => {
     setFormData(prev => ({ 
       ...prev, 
@@ -324,48 +339,35 @@ const CaseStudyEditor = ({
   };
 
   // Tab configuration with error indicators
-  const getTabsWithErrors = (currentErrors = errors) => {
-    const tabErrors = {
-      overview: ['title', 'slug', 'client_name', 'client_industry', 'service_type', 'project_start_date', 'project_end_date'],
-      results: ['challenge', 'solution', 'implementation_process', 'key_metrics', 'results_narrative'],
-      media: ['hero_image', 'gallery_images'],
-      details: ['meta_title', 'meta_description', 'status', 'internal_notes']
-    };
-    
-    const tabsWithErrors = [];
-    Object.entries(tabErrors).forEach(([tab, fields]) => {
-      if (fields.some(field => currentErrors[field])) {
-        tabsWithErrors.push(tab);
-      }
-    });
-    
-    return tabsWithErrors;
-  };
-
+  const tabErrors = getTabErrors();
   const tabs = [
     { 
       id: 'overview', 
       label: 'Overview',
       icon: 'FileText',
-      hasErrors: getTabsWithErrors().includes('overview')
+      hasErrors: tabErrors.overview.length > 0,
+      errorCount: tabErrors.overview.length
     },
     { 
       id: 'results', 
       label: 'Results',
       icon: 'TrendingUp',
-      hasErrors: getTabsWithErrors().includes('results')
+      hasErrors: tabErrors.results.length > 0,
+      errorCount: tabErrors.results.length
     },
     { 
       id: 'media', 
       label: 'Media',
       icon: 'Image',
-      hasErrors: getTabsWithErrors().includes('media')
+      hasErrors: tabErrors.media.length > 0,
+      errorCount: tabErrors.media.length
     },
     { 
       id: 'details', 
       label: 'Details & SEO',
       icon: 'Settings',
-      hasErrors: getTabsWithErrors().includes('details')
+      hasErrors: tabErrors.details.length > 0,
+      errorCount: tabErrors.details.length
     }
   ];
 
@@ -375,7 +377,8 @@ const CaseStudyEditor = ({
       id: 'analytics',
       label: 'Analytics',
       icon: 'BarChart',
-      hasErrors: false
+      hasErrors: false,
+      errorCount: 0
     });
   }
 
@@ -461,8 +464,11 @@ const CaseStudyEditor = ({
       {formData.challenge && (
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-3">The Challenge</h2>
-          {typeof formData.challenge === 'object' && formData.challenge.html ? (
-            <div dangerouslySetInnerHTML={{ __html: formData.challenge.html }} />
+          {typeof formData.challenge === 'object' && formData.challenge.content ? (
+            <div className="text-gray-700">
+              {/* Simple rendering - you might want to use a proper TipTap renderer here */}
+              {formData.challenge.content[0]?.content?.[0]?.text || ''}
+            </div>
           ) : (
             <p className="text-gray-700">{formData.challenge}</p>
           )}
@@ -473,34 +479,12 @@ const CaseStudyEditor = ({
       {formData.solution && (
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-3">Our Solution</h2>
-          {typeof formData.solution === 'object' && formData.solution.html ? (
-            <div dangerouslySetInnerHTML={{ __html: formData.solution.html }} />
+          {typeof formData.solution === 'object' && formData.solution.content ? (
+            <div className="text-gray-700">
+              {formData.solution.content[0]?.content?.[0]?.text || ''}
+            </div>
           ) : (
             <p className="text-gray-700">{formData.solution}</p>
-          )}
-        </div>
-      )}
-      
-      {/* Implementation Process - Render rich text */}
-      {formData.implementation_process && (
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-3">Implementation Process</h2>
-          {typeof formData.implementation_process === 'object' && formData.implementation_process.html ? (
-            <div dangerouslySetInnerHTML={{ __html: formData.implementation_process.html }} />
-          ) : (
-            <p className="text-gray-700">{formData.implementation_process}</p>
-          )}
-        </div>
-      )}
-      
-      {/* Results - Render rich text */}
-      {formData.results_narrative && (
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-3">Results</h2>
-          {typeof formData.results_narrative === 'object' && formData.results_narrative.html ? (
-            <div dangerouslySetInnerHTML={{ __html: formData.results_narrative.html }} />
-          ) : (
-            <p className="text-gray-700">{formData.results_narrative}</p>
           )}
         </div>
       )}
@@ -530,20 +514,6 @@ const CaseStudyEditor = ({
           </div>
         </div>
       )}
-      
-      {/* Technologies */}
-      {formData.technologies_used && formData.technologies_used.length > 0 && (
-        <div className="mt-8 pt-8 border-t">
-          <h3 className="text-lg font-semibold mb-3">Technologies Used</h3>
-          <div className="flex flex-wrap gap-2">
-            {formData.technologies_used.map((tech, index) => (
-              <span key={index} className="px-3 py-1 bg-gray-100 rounded-full text-sm">
-                {tech}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 
@@ -557,7 +527,7 @@ const CaseStudyEditor = ({
     }
   ];
 
-  // Add schedule action (Phase 3)
+  // Add schedule action
   if (formData.status === 'draft') {
     modalActions.push({
       label: 'Schedule',
@@ -594,7 +564,7 @@ const CaseStudyEditor = ({
             {saveStatus === 'saving' && 'Auto-saving...'}
             {saveStatus === 'saved' && 'All changes saved'}
             {formData.version > 1 && ` • Version ${formData.version}`}
-            {formData.seo_score && ` • SEO Score: ${formData.seo_score}%`}
+            {formData.seo_score > 0 && ` • SEO Score: ${formData.seo_score}%`}
           </>
         }
         tabs={tabs}
@@ -603,11 +573,12 @@ const CaseStudyEditor = ({
         isDirty={isDirty}
         isSaving={saving}
         actions={modalActions}
+        showValidationErrors={validationAttempted && Object.keys(errors).length > 0}
       >
         {activeTab === 'overview' && (
           <OverviewTab
             formData={formData}
-            errors={errors}
+            errors={validationAttempted ? errors : {}}
             onChange={handleFieldChange}
             userProfile={userProfile}
           />
@@ -616,7 +587,7 @@ const CaseStudyEditor = ({
         {activeTab === 'results' && (
           <ResultsTab
             formData={formData}
-            errors={errors}
+            errors={validationAttempted ? errors : {}}
             onChange={handleFieldChange}
             testimonials={testimonials}
           />
@@ -625,7 +596,7 @@ const CaseStudyEditor = ({
         {activeTab === 'media' && (
           <MediaTab
             formData={formData}
-            errors={errors}
+            errors={validationAttempted ? errors : {}}
             onChange={handleFieldChange}
           />
         )}
@@ -633,7 +604,7 @@ const CaseStudyEditor = ({
         {activeTab === 'details' && (
           <DetailsTab
             formData={formData}
-            errors={errors}
+            errors={validationAttempted ? errors : {}}
             onChange={handleFieldChange}
           />
         )}
