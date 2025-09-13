@@ -156,8 +156,8 @@ const CapabilityUniverse = () => {
         <meta property="og:title" content="Capabilities | Rule27 Design - Full-Stack Digital Services" />
         <meta property="og:description" content="From brand strategy to development, discover our comprehensive digital services." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://rule27design.com/capabilities" />
-        <link rel="canonical" href="https://rule27design.com/capabilities" />
+        <meta property="og:url" content="https://www.rule27design.com/capabilities" />
+        <link rel="canonical" href="https://www.rule27design.com/capabilities" />
       </Helmet>
       
       <div className="min-h-screen bg-background">

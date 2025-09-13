@@ -36,7 +36,7 @@ class ArticleOperationsService {
 
         // Auto-generate canonical URL if not provided
         if (!sanitized.canonical_url && sanitized.slug) {
-        sanitized.canonical_url = `https://rule27design.com/articles/${sanitized.slug}`;
+        sanitized.canonical_url = `https://www.rule27design.com/articles/${sanitized.slug}`;
         }
 
         // Calculate read time if content exists

@@ -48,6 +48,7 @@ const CaseStudyEditor = ({
     client_website: caseStudy?.client_website || '',
     client_industry: caseStudy?.client_industry || '',
     client_company_size: caseStudy?.client_company_size || '',
+    business_stage: caseStudy?.business_stage || '',
     
     // Project details
     project_duration: caseStudy?.project_duration || '',

@@ -60,7 +60,7 @@ const SEOTab = ({ formData, errors, onChange }) => {
             label="Canonical URL"
             value={formData.canonical_url}
             onChange={(e) => onChange('canonical_url', e.target.value)}
-            placeholder={`https://rule27design.com/articles/${formData.slug || 'article-slug'}`}
+            placeholder={`https://www.rule27design.com/articles/${formData.slug || 'article-slug'}`}
             error={errors.canonical_url}
           />
         </div>
@@ -156,7 +156,7 @@ const SEOTab = ({ formData, errors, onChange }) => {
             {formData.meta_title || formData.title || 'Article Title'}
           </div>
           <div className="text-green-700 text-sm">
-            https://rule27design.com/articles/{formData.slug || 'article-slug'}
+            https://www.rule27design.com/articles/{formData.slug || 'article-slug'}
           </div>
           <div className="text-gray-600 text-sm mt-1">
             {formData.meta_description || formData.excerpt || 'Article description will appear here...'}
