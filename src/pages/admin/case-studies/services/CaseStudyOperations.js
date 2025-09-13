@@ -38,7 +38,7 @@ class CaseStudyOperationsService {
       const validColumns = [
         // Core fields
         'title', 'slug', 'client_name', 'client_logo', 'client_website',
-        'client_industry', 'client_company_size', 'project_duration',
+        'client_industry', 'client_company_size','business_stage', 'project_duration',
         'project_start_date', 'project_end_date', 'project_investment',
         'service_type', 'service_category', 'deliverables', 'technologies_used',
         'team_size', 'team_members', 
