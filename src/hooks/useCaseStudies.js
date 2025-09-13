@@ -44,7 +44,8 @@ const transformCaseStudy = (study) => {
     clientWebsite: study.client_website,
     industry: study.client_industry || 'Technology',
     serviceType: study.service_type || 'Web Development',
-    businessStage: study.client_company_size || 'Growth Stage',
+    businessStage: study.business_stage || 'Growth Stage',
+    companySize: study.client_company_size || '',
     heroImage: study.hero_image || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop',
     description: study.results_summary || extractTextFromRichText(study.challenge) || '',
     challenge: extractTextFromRichText(study.challenge),
@@ -225,7 +226,7 @@ export const useCaseStudy = (slug) => {
         hero_image: study.hero_image || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop',
         service_type: study.service_type,
         client_company_size: study.client_company_size,
-        business_stage: study.client_company_size || 'Growth Stage',
+        business_stage: study.business_stage || 'Growth Stage',
         is_featured: study.is_featured,
         project_duration: study.project_duration,
         project_start_date: study.project_start_date,
@@ -272,6 +273,7 @@ export const useCaseStudyFilters = () => {
     industries: [],
     serviceTypes: [],
     businessStages: [],
+    companySizes: [],
     loading: true
   });
 
@@ -283,19 +285,21 @@ export const useCaseStudyFilters = () => {
     try {
       const { data: studies } = await supabase
         .from('case_studies')
-        .select('client_industry, service_type, client_company_size')
+        .select('client_industry, service_type, business_stage, client_company_size')
         .eq('status', 'published')
         .eq('is_active', true);
 
       if (studies) {
         const industries = [...new Set(studies.map(s => s.client_industry).filter(Boolean))];
         const serviceTypes = [...new Set(studies.map(s => s.service_type).filter(Boolean))];
-        const businessStages = [...new Set(studies.map(s => s.client_company_size).filter(Boolean))];
+        const businessStages = [...new Set(studies.map(s => s.business_stage).filter(Boolean))];
+        const companySizes = [...new Set(studies.map(s => s.client_company_size).filter(Boolean))];
 
         setFilters({
           industries: industries.length > 0 ? industries : ['Technology', 'Healthcare', 'Finance', 'Retail'],
           serviceTypes: serviceTypes.length > 0 ? serviceTypes : ['Web Development', 'Branding', 'Marketing'],
-          businessStages: businessStages.length > 0 ? businessStages : ['Startup', 'Growth Stage', 'Enterprise'],
+          businessStages: businessStages.length > 0 ? businessStages : ['Startup', 'Growth Stage', 'Scale-up', 'Enterprise'],
+          companySizes: companySizes.length > 0 ? companySizes : ['1-10 employees', '11-50 employees', '51-200 employees', '201-500 employees', '501-1000 employees', '1000+ employees'],
           loading: false
         });
       }
@@ -307,7 +311,8 @@ export const useCaseStudyFilters = () => {
         // Provide defaults if fetch fails
         industries: ['Technology', 'Healthcare', 'Finance', 'Retail'],
         serviceTypes: ['Web Development', 'Branding', 'Marketing'],
-        businessStages: ['Startup', 'Growth Stage', 'Enterprise']
+        businessStages: ['Startup', 'Growth Stage', 'Scale-up', 'Enterprise'],
+        companySizes: ['1-10 employees', '11-50 employees', '51-200 employees', '201-500 employees', '501-1000 employees', '1000+ employees']
       }));
     }
   };
