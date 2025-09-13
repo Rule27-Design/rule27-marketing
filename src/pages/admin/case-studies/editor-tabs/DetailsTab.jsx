@@ -66,16 +66,32 @@ const DetailsTab = ({ formData, errors, onChange }) => {
     });
   };
 
+  // Helper to get text from rich text content
+  const getRichTextPreview = (content) => {
+    if (!content) return '';
+    if (typeof content === 'string') return content.substring(0, 160);
+    if (content.type === 'doc' && content.content) {
+      const firstParagraph = content.content.find(node => node.type === 'paragraph');
+      if (firstParagraph?.content?.[0]?.text) {
+        return firstParagraph.content[0].text.substring(0, 160);
+      }
+    }
+    return '';
+  };
+
   return (
     <div className="space-y-6">
-      {/* Quality Check */}
+      {/* Quality Check - Pass the scores from formData */}
       <QualityCheck 
-        data={formData} 
+        data={{
+          ...formData,
+          qualityScore: formData.performance_score || 0,
+          seoScore: formData.seo_score || 0
+        }} 
         config="case-study"
         onScoreChange={(score) => {
-          if (score !== formData.qualityScore) {
-            onChange('qualityScore', score);
-          }
+          // This is handled by the parent component now
+          console.log('Quality score:', score);
         }}
       />
       
@@ -215,11 +231,7 @@ const DetailsTab = ({ formData, errors, onChange }) => {
             <textarea
               value={formData.meta_description}
               onChange={(e) => onChange('meta_description', e.target.value)}
-              placeholder={formData.challenge ? 
-                (typeof formData.challenge === 'object' ? 
-                  formData.challenge.text?.substring(0, 160) : 
-                  formData.challenge.substring(0, 160)) : 
-                "SEO description (155-160 characters)"}
+              placeholder={getRichTextPreview(formData.challenge) || "SEO description (155-160 characters)"}
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent"
               rows={3}
               maxLength={160}
@@ -393,12 +405,20 @@ const DetailsTab = ({ formData, errors, onChange }) => {
               <dd className="text-gray-900">{formData.inquiry_count || 0}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-gray-500">Performance Score:</dt>
-              <dd className="text-gray-900">{formData.performance_score || 0}%</dd>
+              <dt className="text-gray-500">Quality Score:</dt>
+              <dd className="text-gray-900 font-medium">
+                <span className={formData.performance_score >= 70 ? 'text-green-600' : formData.performance_score >= 40 ? 'text-yellow-600' : 'text-red-600'}>
+                  {formData.performance_score || 0}%
+                </span>
+              </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">SEO Score:</dt>
-              <dd className="text-gray-900">{formData.seo_score || 0}%</dd>
+              <dd className="text-gray-900 font-medium">
+                <span className={formData.seo_score >= 70 ? 'text-green-600' : formData.seo_score >= 40 ? 'text-yellow-600' : 'text-red-600'}>
+                  {formData.seo_score || 0}%
+                </span>
+              </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">Created:</dt>
