@@ -7,15 +7,13 @@ import Button from '../../../../components/ui/Button';
 import Icon from '../../../../components/AdminIcon';
 
 const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
-  // Key metrics management
+  // Key metrics management (simplified version)
   const addMetric = () => {
     const newMetric = {
       label: '',
       value: '',
-      unit: '',
-      improvement: '',
-      before: '',
-      after: ''
+      unit: '%',
+      improvement: ''
     };
     onChange('key_metrics', [...(formData.key_metrics || []), newMetric]);
   };
@@ -37,6 +35,36 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
     const [movedItem] = newMetrics.splice(fromIndex, 1);
     newMetrics.splice(toIndex, 0, movedItem);
     onChange('key_metrics', newMetrics);
+  };
+
+  // Detailed results management
+  const addDetailedResult = () => {
+    const newResult = {
+      type: 'percentage',
+      value: '',
+      metric: '',
+      description: ''
+    };
+    onChange('detailed_results', [...(formData.detailed_results || []), newResult]);
+  };
+
+  const updateDetailedResult = (index, field, value) => {
+    const newResults = [...(formData.detailed_results || [])];
+    newResults[index] = { ...newResults[index], [field]: value };
+    onChange('detailed_results', newResults);
+  };
+
+  const removeDetailedResult = (index) => {
+    const newResults = [...(formData.detailed_results || [])];
+    newResults.splice(index, 1);
+    onChange('detailed_results', newResults);
+  };
+
+  const moveDetailedResult = (fromIndex, toIndex) => {
+    const newResults = [...(formData.detailed_results || [])];
+    const [movedItem] = newResults.splice(fromIndex, 1);
+    newResults.splice(toIndex, 0, movedItem);
+    onChange('detailed_results', newResults);
   };
 
   // Process steps management
@@ -75,6 +103,20 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
     const newDeliverables = [...(formData.deliverables || [])];
     newDeliverables.splice(index, 1);
     onChange('deliverables', newDeliverables);
+  };
+
+  // Format value for display
+  const formatMetricValue = (value, type) => {
+    if (!value) return '';
+    if (type === 'currency') {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(value);
+    }
+    return `${value}%`;
   };
 
   return (
@@ -117,12 +159,15 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
         />
       </div>
 
-      {/* Key Metrics */}
+      {/* Key Metrics - Simplified version for quick stats */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <label className="text-sm font-medium text-gray-700">
-            Key Metrics & Results <span className="text-red-500">*</span>
-          </label>
+          <div>
+            <label className="text-sm font-medium text-gray-700">
+              Key Metrics <span className="text-red-500">*</span>
+            </label>
+            <p className="text-xs text-gray-500 mt-1">Quick highlight metrics for listings and summaries</p>
+          </div>
           <Button
             variant="outline"
             size="sm"
@@ -136,7 +181,7 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
         {(formData.key_metrics || []).length === 0 ? (
           <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
             <Icon name="BarChart" size={48} className="mx-auto text-gray-400 mb-3" />
-            <p className="text-gray-600 mb-3">No metrics added yet</p>
+            <p className="text-gray-600 mb-3">No key metrics added yet</p>
             <Button
               variant="primary"
               size="sm"
@@ -146,12 +191,12 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
             </Button>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {formData.key_metrics.map((metric, index) => (
-              <div key={index} className="bg-white border rounded-lg p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <span className="text-sm font-medium text-gray-700">
-                    Metric #{index + 1}
+              <div key={index} className="bg-white border rounded-lg p-3">
+                <div className="flex items-start justify-between mb-2">
+                  <span className="text-xs font-medium text-gray-500">
+                    Key Metric #{index + 1}
                   </span>
                   <div className="flex items-center gap-1">
                     {index > 0 && (
@@ -161,7 +206,7 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
                         className="p-1 hover:bg-gray-100 rounded"
                         title="Move up"
                       >
-                        <Icon name="ChevronUp" size={14} />
+                        <Icon name="ChevronUp" size={12} />
                       </button>
                     )}
                     {index < formData.key_metrics.length - 1 && (
@@ -171,7 +216,7 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
                         className="p-1 hover:bg-gray-100 rounded"
                         title="Move down"
                       >
-                        <Icon name="ChevronDown" size={14} />
+                        <Icon name="ChevronDown" size={12} />
                       </button>
                     )}
                     <button
@@ -180,56 +225,34 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
                       className="p-1 hover:bg-red-100 text-red-500 rounded"
                       title="Remove"
                     >
-                      <Icon name="X" size={14} />
+                      <Icon name="X" size={12} />
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Input
-                    label="Metric Label"
-                    value={metric.label}
-                    onChange={(e) => updateMetric(index, 'label', e.target.value)}
-                    placeholder="e.g., Revenue Growth"
-                    required
-                  />
-                  
-                  <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="col-span-2">
                     <Input
-                      label="Value"
-                      value={metric.value}
-                      onChange={(e) => updateMetric(index, 'value', e.target.value)}
-                      placeholder="150"
+                      label="Label"
+                      value={metric.label}
+                      onChange={(e) => updateMetric(index, 'label', e.target.value)}
+                      placeholder="e.g., Revenue Growth"
                       required
                     />
-                    <Input
-                      label="Unit"
-                      value={metric.unit}
-                      onChange={(e) => updateMetric(index, 'unit', e.target.value)}
-                      placeholder="%"
-                    />
                   </div>
-
-                  <Input
-                    label="Before"
-                    value={metric.before}
-                    onChange={(e) => updateMetric(index, 'before', e.target.value)}
-                    placeholder="Previous value"
-                  />
-                  
-                  <Input
-                    label="After"
-                    value={metric.after}
-                    onChange={(e) => updateMetric(index, 'after', e.target.value)}
-                    placeholder="New value"
-                  />
-
-                  <Input
-                    label="Improvement"
-                    value={metric.improvement}
-                    onChange={(e) => updateMetric(index, 'improvement', e.target.value)}
-                    placeholder="e.g., +150%"
-                  />
+                  <div className="flex gap-1">
+                    <Input
+                      label="Value"
+                      type="number"
+                      value={metric.value}
+                      onChange={(e) => updateMetric(index, 'value', e.target.value)}
+                      placeholder="400"
+                      required
+                    />
+                    <div className="mt-6">
+                      <span className="text-lg text-gray-600">%</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -238,6 +261,136 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
 
         {errors.key_metrics && (
           <p className="text-sm text-red-500 mt-1">{errors.key_metrics}</p>
+        )}
+      </div>
+
+      {/* Detailed Results - NEW structured format */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <label className="text-sm font-medium text-gray-700">
+              Detailed Results & Metrics
+            </label>
+            <p className="text-xs text-gray-500 mt-1">Comprehensive metrics with descriptions</p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={addDetailedResult}
+          >
+            <Icon name="Plus" size={16} className="mr-2" />
+            Add Result
+          </Button>
+        </div>
+
+        {(formData.detailed_results || []).length === 0 ? (
+          <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+            <Icon name="TrendingUp" size={48} className="mx-auto text-gray-400 mb-3" />
+            <p className="text-gray-600 mb-3">No detailed results added yet</p>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={addDetailedResult}
+            >
+              Add Your First Result
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {formData.detailed_results.map((result, index) => (
+              <div key={index} className="bg-white border rounded-lg p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-gray-700">
+                    Result #{index + 1}
+                    {result.value && result.type && (
+                      <span className="ml-2 text-accent font-bold">
+                        {formatMetricValue(result.value, result.type)}
+                      </span>
+                    )}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {index > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => moveDetailedResult(index, index - 1)}
+                        className="p-1 hover:bg-gray-100 rounded"
+                        title="Move up"
+                      >
+                        <Icon name="ChevronUp" size={14} />
+                      </button>
+                    )}
+                    {index < formData.detailed_results.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={() => moveDetailedResult(index, index + 1)}
+                        className="p-1 hover:bg-gray-100 rounded"
+                        title="Move down"
+                      >
+                        <Icon name="ChevronDown" size={14} />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeDetailedResult(index)}
+                      className="p-1 hover:bg-red-100 text-red-500 rounded"
+                      title="Remove"
+                    >
+                      <Icon name="X" size={14} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Input
+                    label="Metric Name"
+                    value={result.metric}
+                    onChange={(e) => updateDetailedResult(index, 'metric', e.target.value)}
+                    placeholder="e.g., Monthly Revenue"
+                    required
+                  />
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <Select
+                      label="Type"
+                      value={result.type}
+                      onChange={(value) => updateDetailedResult(index, 'type', value)}
+                      options={[
+                        { value: 'percentage', label: 'Percentage' },
+                        { value: 'currency', label: 'Currency (USD)' }
+                      ]}
+                      required
+                    />
+                    
+                    <Input
+                      label={result.type === 'currency' ? 'Value ($)' : 'Value (%)'}
+                      type="number"
+                      value={result.value}
+                      onChange={(e) => updateDetailedResult(index, 'value', e.target.value)}
+                      placeholder={result.type === 'currency' ? '2500000' : '340'}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      value={result.description}
+                      onChange={(e) => updateDetailedResult(index, 'description', e.target.value)}
+                      placeholder="e.g., From $500K to $2.5M monthly recurring revenue"
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent"
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {errors.detailed_results && (
+          <p className="text-sm text-red-500 mt-1">{errors.detailed_results}</p>
         )}
       </div>
 
@@ -261,18 +414,6 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
         {errors.results_summary && (
           <p className="text-sm text-red-500 mt-1">{errors.results_summary}</p>
         )}
-      </div>
-
-      {/* Results Narrative - Using TiptapContentEditor */}
-      <div>
-        <TiptapContentEditor
-          value={formData.results_narrative}
-          onChange={(content) => onChange('results_narrative', content)}
-          label="Detailed Results Narrative"
-          placeholder="Provide a detailed narrative of the results achieved..."
-          minHeight="300px"
-          error={errors.results_narrative}
-        />
       </div>
 
       {/* Process Steps */}
@@ -414,37 +555,20 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
         )}
       </div>
 
-      {/* Content Statistics */}
-      {(formData.challenge || formData.solution || formData.results_narrative) && (
+      {/* Results Statistics */}
+      {((formData.key_metrics && formData.key_metrics.length > 0) || 
+        (formData.detailed_results && formData.detailed_results.length > 0)) && (
         <div className="bg-gray-50 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-900 mb-3">Content Statistics</h3>
+          <h3 className="text-sm font-medium text-gray-900 mb-3">Results Overview</h3>
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-white rounded-lg p-3 border border-gray-200">
               <div className="flex items-center space-x-2">
-                <Icon name="FileText" size={16} className="text-gray-400" />
+                <Icon name="BarChart" size={16} className="text-gray-400" />
                 <div>
                   <div className="text-2xl font-bold text-gray-900">
-                    {[formData.challenge, formData.solution, formData.implementation_process, formData.results_narrative]
-                      .filter(Boolean)
-                      .reduce((sum, content) => sum + (content.wordCount || 0), 0)}
+                    {(formData.key_metrics?.length || 0)}
                   </div>
-                  <div className="text-xs text-gray-500">Total Words</div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-lg p-3 border border-gray-200">
-              <div className="flex items-center space-x-2">
-                <Icon name="Clock" size={16} className="text-gray-400" />
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">
-                    {Math.ceil(
-                      [formData.challenge, formData.solution, formData.implementation_process, formData.results_narrative]
-                        .filter(Boolean)
-                        .reduce((sum, content) => sum + (content.wordCount || 0), 0) / 200
-                    )}
-                  </div>
-                  <div className="text-xs text-gray-500">Min Read</div>
+                  <div className="text-xs text-gray-500">Key Metrics</div>
                 </div>
               </div>
             </div>
@@ -454,9 +578,21 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
                 <Icon name="TrendingUp" size={16} className="text-gray-400" />
                 <div>
                   <div className="text-2xl font-bold text-gray-900">
-                    {formData.key_metrics?.length || 0}
+                    {(formData.detailed_results?.length || 0)}
                   </div>
-                  <div className="text-xs text-gray-500">Metrics</div>
+                  <div className="text-xs text-gray-500">Detailed Results</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg p-3 border border-gray-200">
+              <div className="flex items-center space-x-2">
+                <Icon name="Target" size={16} className="text-gray-400" />
+                <div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {(formData.deliverables?.length || 0)}
+                  </div>
+                  <div className="text-xs text-gray-500">Deliverables</div>
                 </div>
               </div>
             </div>
@@ -468,12 +604,12 @@ const ResultsTab = ({ formData, errors, onChange, testimonials = [] }) => {
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h3 className="text-sm font-medium text-blue-900 mb-2">Tips for Compelling Results</h3>
         <ul className="text-sm text-blue-700 space-y-1">
-          <li>• Use specific numbers and percentages whenever possible</li>
-          <li>• Include before/after comparisons to show impact</li>
+          <li>• Use Key Metrics for 3-5 high-level stats that grab attention</li>
+          <li>• Use Detailed Results for comprehensive metrics with context</li>
+          <li>• Include before/after comparisons in descriptions</li>
           <li>• Focus on business outcomes (revenue, efficiency, growth)</li>
-          <li>• Add context to make metrics meaningful to readers</li>
+          <li>• Use specific numbers rather than vague statements</li>
           <li>• Order metrics by importance or impact</li>
-          <li>• Use rich formatting to highlight key points</li>
         </ul>
       </div>
     </div>
