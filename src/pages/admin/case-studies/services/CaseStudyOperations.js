@@ -963,21 +963,27 @@ class CaseStudyOperationsService {
   }
 
   // Track event (Phase 3)
-  async trackEvent(eventType, eventData) {
+  async trackEvent(eventType, entityId, metadata = {}) {
     try {
-      // Check if analytics_events table exists before inserting
-      await supabase
+        const { error } = await supabase
         .from('analytics_events')
         .insert({
-          event_type: eventType,
-          event_data: eventData,
-          created_at: new Date().toISOString()
+            event_type: eventType,
+            entity_type: 'case_study',
+            entity_id: entityId,
+            metadata,
+            user_id: this.userProfile?.id
         });
+        
+        // Silently ignore analytics errors
+        if (error) {
+        console.log('Analytics tracking skipped:', error.message);
+        }
     } catch (error) {
-      // Silently fail if table doesn't exist
-      console.log('Analytics event tracking skipped:', eventType);
+        // Silently fail if analytics isn't set up
+        console.log('Analytics not configured');
     }
-  }
+}
 
   // Get AI suggestions (Phase 4)
   async getAISuggestions(caseStudyData) {
