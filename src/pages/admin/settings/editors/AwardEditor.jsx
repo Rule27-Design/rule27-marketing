@@ -47,7 +47,6 @@ const AwardEditor = ({ award, isOpen, onClose, onSave }) => {
     return true;
   };
 
-  // Generate year options (last 20 years)
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 20 }, (_, i) => ({
     value: (currentYear - i).toString(),

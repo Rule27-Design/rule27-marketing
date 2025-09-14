@@ -28,8 +28,8 @@ const CategoryEditor = ({ category, isOpen, onClose, onSave }) => {
         slug: '',
         description: '',
         type: 'article',
-        icon: '',
-        color: '',
+        icon: 'Folder',
+        color: 'bg-gray-100',
         sort_order: 0,
         is_active: true
       });

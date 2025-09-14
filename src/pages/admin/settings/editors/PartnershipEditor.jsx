@@ -21,7 +21,7 @@ const PartnershipEditor = ({ partnership, isOpen, onClose, onSave }) => {
     certification_count: 0,
     project_count: 0,
     benefits: [],
-    features: [], // This is jsonb
+    features: [],
     is_active: true,
     is_featured: false,
     sort_order: 0
@@ -30,21 +30,34 @@ const PartnershipEditor = ({ partnership, isOpen, onClose, onSave }) => {
   const [activeTab, setActiveTab] = useState('basic');
   const [newService, setNewService] = useState('');
   const [newBenefit, setNewBenefit] = useState('');
-  const [newFeature, setNewFeature] = useState('');
+  const [newFeatureName, setNewFeatureName] = useState('');
+  const [newFeatureValue, setNewFeatureValue] = useState('');
 
   useEffect(() => {
     if (partnership) {
+      // Parse features if it's a string
+      let parsedFeatures = partnership.features;
+      if (typeof partnership.features === 'string') {
+        try {
+          parsedFeatures = JSON.parse(partnership.features);
+        } catch (e) {
+          console.error('Failed to parse features:', e);
+          parsedFeatures = [];
+        }
+      }
+      
       setFormData({
         ...partnership,
-        features: partnership.features || []
+        features: parsedFeatures || [],
+        color: partnership.color || 'bg-gray-100'
       });
     } else {
       setFormData({
         slug: '',
         name: '',
         category: '',
-        icon: '',
-        color: '',
+        icon: 'Handshake',
+        color: 'bg-blue-100',
         description: '',
         services: [],
         certification_count: 0,
@@ -63,36 +76,69 @@ const PartnershipEditor = ({ partnership, isOpen, onClose, onSave }) => {
       alert('Partnership name is required');
       return false;
     }
-    await onSave(formData);
+    
+    // Ensure features is properly formatted as JSON for storage
+    const dataToSave = {
+      ...formData,
+      features: formData.features // Keep as array, let backend handle stringification if needed
+    };
+    
+    await onSave(dataToSave);
     return true;
   };
 
-  const addItem = (type, value) => {
-    if (value.trim()) {
-      if (type === 'features') {
-        // Features is jsonb array - store as objects
-        const newFeature = { name: value.trim() };
-        setFormData({
-          ...formData,
-          features: [...(formData.features || []), newFeature]
-        });
-        setNewFeature('');
-      } else {
-        // Services and benefits are text arrays
-        setFormData({
-          ...formData,
-          [type]: [...(formData[type] || []), value.trim()]
-        });
-        if (type === 'services') setNewService('');
-        if (type === 'benefits') setNewBenefit('');
-      }
+  const addService = () => {
+    if (newService.trim()) {
+      setFormData({
+        ...formData,
+        services: [...(formData.services || []), newService.trim()]
+      });
+      setNewService('');
     }
   };
 
-  const removeItem = (type, index) => {
+  const removeService = (index) => {
     setFormData({
       ...formData,
-      [type]: formData[type].filter((_, i) => i !== index)
+      services: formData.services.filter((_, i) => i !== index)
+    });
+  };
+
+  const addBenefit = () => {
+    if (newBenefit.trim()) {
+      setFormData({
+        ...formData,
+        benefits: [...(formData.benefits || []), newBenefit.trim()]
+      });
+      setNewBenefit('');
+    }
+  };
+
+  const removeBenefit = (index) => {
+    setFormData({
+      ...formData,
+      benefits: formData.benefits.filter((_, i) => i !== index)
+    });
+  };
+
+  const addFeature = () => {
+    if (newFeatureName.trim() && newFeatureValue.trim()) {
+      setFormData({
+        ...formData,
+        features: [...(formData.features || []), { 
+          name: newFeatureName.trim(), 
+          value: newFeatureValue.trim() 
+        }]
+      });
+      setNewFeatureName('');
+      setNewFeatureValue('');
+    }
+  };
+
+  const removeFeature = (index) => {
+    setFormData({
+      ...formData,
+      features: formData.features.filter((_, i) => i !== index)
     });
   };
 
@@ -133,16 +179,17 @@ const PartnershipEditor = ({ partnership, isOpen, onClose, onSave }) => {
 
           <Select
             label="Category"
-            value={formData.category}
+            value={formData.category || ''}
             onChange={(value) => setFormData({ ...formData, category: value })}
             options={[
-              { value: 'cloud', label: 'Cloud Platform' },
-              { value: 'analytics', label: 'Analytics' },
-              { value: 'crm', label: 'CRM' },
-              { value: 'development', label: 'Development Tools' },
-              { value: 'security', label: 'Security' },
-              { value: 'marketing', label: 'Marketing' },
-              { value: 'other', label: 'Other' }
+              { value: '', label: 'Select Category' },
+              { value: 'Development Platform', label: 'Development Platform' },
+              { value: 'Cloud Platform', label: 'Cloud Platform' },
+              { value: 'Analytics', label: 'Analytics' },
+              { value: 'CRM', label: 'CRM' },
+              { value: 'Marketing', label: 'Marketing' },
+              { value: 'Security', label: 'Security' },
+              { value: 'Other', label: 'Other' }
             ]}
           />
 
@@ -162,11 +209,15 @@ const PartnershipEditor = ({ partnership, isOpen, onClose, onSave }) => {
               value={formData.icon}
               onChange={(value) => setFormData({ ...formData, icon: value })}
             />
-            <ColorPicker
-              label="Color"
-              value={formData.color}
-              onChange={(value) => setFormData({ ...formData, color: value })}
-            />
+            
+            <div>
+              <label className="block text-sm font-medium mb-2">Color</label>
+              <Input
+                value={formData.color}
+                onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                placeholder="#000000 or bg-blue-100"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -198,14 +249,14 @@ const PartnershipEditor = ({ partnership, isOpen, onClose, onSave }) => {
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
-                    addItem('services', newService);
+                    addService();
                   }
                 }}
               />
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => addItem('services', newService)}
+                onClick={addService}
               >
                 Add
               </Button>
@@ -218,7 +269,7 @@ const PartnershipEditor = ({ partnership, isOpen, onClose, onSave }) => {
                     type="button"
                     variant="ghost"
                     size="xs"
-                    onClick={() => removeItem('services', index)}
+                    onClick={() => removeService(index)}
                   >
                     <Icon name="X" size={14} />
                   </Button>
@@ -241,14 +292,14 @@ const PartnershipEditor = ({ partnership, isOpen, onClose, onSave }) => {
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
-                    addItem('benefits', newBenefit);
+                    addBenefit();
                   }
                 }}
               />
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => addItem('benefits', newBenefit)}
+                onClick={addBenefit}
               >
                 Add
               </Button>
@@ -261,7 +312,7 @@ const PartnershipEditor = ({ partnership, isOpen, onClose, onSave }) => {
                     type="button"
                     variant="ghost"
                     size="xs"
-                    onClick={() => removeItem('benefits', index)}
+                    onClick={() => removeBenefit(index)}
                   >
                     <Icon name="X" size={14} />
                   </Button>
@@ -271,23 +322,24 @@ const PartnershipEditor = ({ partnership, isOpen, onClose, onSave }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Features</label>
+            <label className="block text-sm font-medium mb-2">Features / Stats</label>
             <div className="flex space-x-2 mb-2">
               <Input
-                value={newFeature}
-                onChange={(e) => setNewFeature(e.target.value)}
-                placeholder="Add a feature..."
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addItem('features', newFeature);
-                  }
-                }}
+                value={newFeatureName}
+                onChange={(e) => setNewFeatureName(e.target.value)}
+                placeholder="Feature name..."
+                className="flex-1"
+              />
+              <Input
+                value={newFeatureValue}
+                onChange={(e) => setNewFeatureValue(e.target.value)}
+                placeholder="Value..."
+                className="flex-1"
               />
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => addItem('features', newFeature)}
+                onClick={addFeature}
               >
                 Add
               </Button>
@@ -296,13 +348,13 @@ const PartnershipEditor = ({ partnership, isOpen, onClose, onSave }) => {
               {(formData.features || []).map((feature, index) => (
                 <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
                   <span className="text-sm">
-                    {typeof feature === 'object' ? feature.name : feature}
+                    <strong>{feature.name}:</strong> {feature.value}
                   </span>
                   <Button
                     type="button"
                     variant="ghost"
                     size="xs"
-                    onClick={() => removeItem('features', index)}
+                    onClick={() => removeFeature(index)}
                   >
                     <Icon name="X" size={14} />
                   </Button>
