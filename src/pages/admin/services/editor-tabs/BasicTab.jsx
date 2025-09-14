@@ -2,7 +2,6 @@
 import React from 'react';
 import Input from '../../../../components/ui/Input';
 import Select from '../../../../components/ui/Select';
-import { Checkbox } from '../../../../components/ui/Checkbox';
 import Icon from '../../../../components/AdminIcon';
 import { generateSlug } from '../../../../utils';
 
@@ -11,7 +10,7 @@ const BasicTab = ({ formData, errors, onChange, zones }) => {
   const iconOptions = [
     'Zap', 'Code', 'Palette', 'Globe', 'ShoppingCart',
     'TrendingUp', 'Users', 'Settings', 'Database', 'Cloud',
-    'Smartphone', 'Monitor', 'Layout', 'Package', 'Wrench' // Changed from 'Tool' to 'Wrench'
+    'Smartphone', 'Monitor', 'Layout', 'Package', 'Wrench'
   ];
 
   // Category suggestions
@@ -24,7 +23,7 @@ const BasicTab = ({ formData, errors, onChange, zones }) => {
   const handleTitleChange = (value) => {
     onChange('title', value);
     
-    // Auto-generate slug if new service (check if formData has an id)
+    // Auto-generate slug if new service
     if (!formData.id && !formData.slug) {
       onChange('slug', generateSlug(value));
     }
@@ -161,21 +160,35 @@ const BasicTab = ({ formData, errors, onChange, zones }) => {
             />
           </div>
 
-          {/* Status */}
-          <div className="flex items-center space-x-6 pt-4 border-t">
-            <Checkbox
-              checked={formData.is_active}
-              onCheckedChange={(checked) => onChange('is_active', checked)}
-              label="Active"
-              description="Service is visible to users"
-            />
-            
-            <Checkbox
-              checked={formData.is_featured}
-              onCheckedChange={(checked) => onChange('is_featured', checked)}
-              label="Featured"
-              description="Highlight this service"
-            />
+          {/* Status - Using native checkboxes instead of Checkbox component */}
+          <div className="pt-4 border-t">
+            <div className="space-y-3">
+              <label className="flex items-center space-x-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.is_active}
+                  onChange={(e) => onChange('is_active', e.target.checked)}
+                  className="h-4 w-4 text-accent border-gray-300 rounded focus:ring-accent"
+                />
+                <div>
+                  <span className="text-sm font-medium text-gray-700">Active</span>
+                  <p className="text-xs text-gray-500">Service is visible to users</p>
+                </div>
+              </label>
+              
+              <label className="flex items-center space-x-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.is_featured}
+                  onChange={(e) => onChange('is_featured', e.target.checked)}
+                  className="h-4 w-4 text-accent border-gray-300 rounded focus:ring-accent"
+                />
+                <div>
+                  <span className="text-sm font-medium text-gray-700">Featured</span>
+                  <p className="text-xs text-gray-500">Highlight this service</p>
+                </div>
+              </label>
+            </div>
           </div>
         </div>
       </div>
