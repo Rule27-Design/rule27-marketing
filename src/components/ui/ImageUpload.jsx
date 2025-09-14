@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import Button from './Button';
 import Icon from '../AppIcon';
 import { cn } from '../../utils/cn';
+import { optimizeImage } from '../../utils/imageOptimization';
 
 const ImageUpload = ({ 
   value = '', 
@@ -16,7 +17,13 @@ const ImageUpload = ({
   className = '',
   showPreview = true,
   multiple = false,
-  disabled = false
+  disabled = false,
+  optimize = true, // Add optimization flag
+  optimizeOptions = {
+    maxWidth: 800,
+    maxHeight: 800,
+    quality: 0.9
+  }
 }) => {
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -37,15 +44,32 @@ const ImageUpload = ({
         throw new Error('Please select an image file');
       }
 
+      // Optimize image if enabled and file is larger than 500KB
+      let fileToUpload = file;
+      if (optimize && file.size > 500 * 1024) {
+        try {
+          console.log(`Optimizing image from ${(file.size / 1024).toFixed(2)}KB...`);
+          fileToUpload = await optimizeImage(
+            file,
+            optimizeOptions.maxWidth,
+            optimizeOptions.maxHeight,
+            optimizeOptions.quality
+          );
+          console.log(`Optimized to ${(fileToUpload.size / 1024).toFixed(2)}KB`);
+        } catch (error) {
+          console.warn('Image optimization failed, using original:', error);
+        }
+      }
+
       // Generate unique filename
-      const fileExt = file.name.split('.').pop();
+      const fileExt = fileToUpload.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
       const filePath = `${folder}/${fileName}`;
 
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage
         .from(bucket)
-        .upload(filePath, file, {
+        .upload(filePath, fileToUpload, {
           cacheControl: '3600',
           upsert: false
         });
@@ -58,17 +82,22 @@ const ImageUpload = ({
         .getPublicUrl(filePath);
 
       // Also store in media table for tracking
-      await supabase.from('media').insert({
-        file_name: fileName,
-        original_name: file.name,
-        file_url: publicUrl,
-        file_path: filePath,
-        file_type: 'image',
-        mime_type: file.type,
-        file_size: file.size,
-        folder: folder,
-        is_public: true
-      });
+      try {
+        await supabase.from('media').insert({
+          file_name: fileName,
+          original_name: file.name,
+          file_url: publicUrl,
+          file_path: filePath,
+          file_type: 'image',
+          mime_type: fileToUpload.type,
+          file_size: fileToUpload.size,
+          folder: folder,
+          bucket: bucket,
+          is_public: true
+        });
+      } catch (mediaError) {
+        console.warn('Failed to track in media table:', mediaError);
+      }
 
       onChange(publicUrl);
       setUploadProgress(100);
@@ -155,6 +184,7 @@ const ImageUpload = ({
             size="icon"
             onClick={handleRemove}
             className="absolute -top-2 -right-2 h-6 w-6 bg-red-500 hover:bg-red-600 text-white rounded-full"
+            disabled={disabled}
           >
             <Icon name="X" size={12} />
           </Button>
@@ -190,7 +220,9 @@ const ImageUpload = ({
               <div className="animate-spin mx-auto h-8 w-8 text-accent">
                 <Icon name="RefreshCw" size={32} />
               </div>
-              <p className="text-sm text-gray-600">Uploading...</p>
+              <p className="text-sm text-gray-600">
+                {optimize && uploadProgress < 50 ? 'Optimizing...' : 'Uploading...'}
+              </p>
               {uploadProgress > 0 && (
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
@@ -210,6 +242,11 @@ const ImageUpload = ({
                 <p className="text-xs text-gray-500">
                   PNG, JPG, JPEG up to {maxSize / 1024 / 1024}MB
                 </p>
+                {optimize && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    Images will be automatically optimized
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -239,6 +276,7 @@ const ImageUpload = ({
               size="icon"
               onClick={handleRemove}
               className="shrink-0"
+              disabled={disabled}
             >
               <Icon name="X" size={16} />
             </Button>
@@ -249,7 +287,7 @@ const ImageUpload = ({
   );
 };
 
-// Gallery Upload Component for multiple images
+// Gallery Upload Component remains the same
 export const GalleryUpload = ({ 
   value = [], 
   onChange, 
