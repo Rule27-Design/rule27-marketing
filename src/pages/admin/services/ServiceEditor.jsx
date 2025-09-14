@@ -1,26 +1,26 @@
 // src/pages/admin/services/ServiceEditor.jsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   EditorModal,
-  StatusBadge,
   PreviewModal
 } from '../../../components/admin';
 import { generateSlug, sanitizeData } from '../../../utils';
 import { useFormValidation } from './hooks/useFormValidation';
+import { useAutoSave } from './hooks/useAutoSave';
 import { serviceOperations } from './services/ServiceOperations';
 import { useToast } from '../../../components/ui/Toast';
+import Button from '../../../components/ui/Button';
 
 // Import tab components
-import BasicInfoTab from './editor-tabs/BasicInfoTab';
+import BasicTab from './editor-tabs/BasicTab';
 import FeaturesTab from './editor-tabs/FeaturesTab';
 import PricingTab from './editor-tabs/PricingTab';
-import ProcessTab from './editor-tabs/ProcessTab';
-import MediaTab from './editor-tabs/MediaTab';
-import SettingsTab from './editor-tabs/SettingsTab';
+import SEOTab from './editor-tabs/SEOTab';
 
 const ServiceEditor = ({
   service = null,
   userProfile,
+  zones = [],
   isOpen,
   onClose,
   onSave
@@ -28,189 +28,181 @@ const ServiceEditor = ({
   const toast = useToast();
   const [activeTab, setActiveTab] = useState('basic');
   const [showPreview, setShowPreview] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [validationAttempted, setValidationAttempted] = useState(false);
   
   // Initialize form data
   const initialData = {
-    // Basic Info
-    name: '',
-    slug: '',
-    category: '',
-    zone: '',
-    icon: '',
-    short_description: '',
-    long_description: '',
-    value_proposition: '',
-    target_audience: '',
-    
-    // Features
-    features: [],
-    benefits: [],
-    key_features: [],
-    
-    // Pricing
-    pricing_model: 'tiered', // fixed, tiered, custom, subscription
-    starting_price: null,
-    pricing_unit: '',
-    pricing_tiers: [],
-    custom_pricing_note: '',
-    payment_terms: '',
-    
-    // Process
-    process_steps: [],
-    timeline: '',
-    deliverables: [],
-    
-    // Media
-    hero_image: '',
-    hero_video: '',
-    gallery: [],
-    tools_used: [],
-    technologies: [],
-    integrations: [],
-    
-    // FAQs
-    faqs: [],
-    
-    // Settings
-    status: 'draft',
-    is_featured: false,
-    is_popular: false,
-    is_new: false,
-    sort_order: 0,
-    parent_service: null,
-    related_services: [],
-    
-    // SEO
-    meta_title: '',
-    meta_description: '',
-    meta_keywords: [],
-    og_title: '',
-    og_description: '',
-    og_image: '',
-    canonical_url: '',
-    
-    internal_notes: '',
-    ...service
+    title: service?.title || '',
+    slug: service?.slug || '',
+    category: service?.category || '',
+    zone_id: service?.zone_id || '',
+    icon: service?.icon || 'Zap',
+    description: service?.description || '',
+    full_description: service?.full_description || '',
+    features: service?.features || [],
+    technologies: service?.technologies || [],
+    process_steps: service?.process_steps || [],
+    expected_results: service?.expected_results || [],
+    pricing_tiers: service?.pricing_tiers || [
+      { name: 'Basic', price: '', billing: 'Per month', features: [] },
+      { name: 'Pro', price: '', billing: 'Per month', features: [] },
+      { name: 'Enterprise', price: 'Custom', billing: 'Contact us', features: [] }
+    ],
+    is_active: service?.is_active !== false,
+    is_featured: service?.is_featured || false,
+    meta_title: service?.meta_title || '',
+    meta_description: service?.meta_description || '',
+    view_count: service?.view_count || 0,
+    unique_view_count: service?.unique_view_count || 0,
+    inquiry_count: service?.inquiry_count || 0,
+    created_at: service?.created_at || null,
+    updated_at: service?.updated_at || null
   };
 
   const [formData, setFormData] = useState(initialData);
+  const [isDirty, setIsDirty] = useState(false);
 
   // Form validation
   const { errors, validateForm, clearError, getTabErrors } = useFormValidation();
 
+  // Auto-save functionality (only for existing services)
+  const { saveStatus, triggerAutoSave } = useAutoSave(
+    formData, 
+    service?.id,
+    service?.id ? true : false
+  );
+
+  // Track dirty state
+  useEffect(() => {
+    setIsDirty(JSON.stringify(formData) !== JSON.stringify(initialData));
+  }, [formData]);
+
+  // Auto-save trigger
+  useEffect(() => {
+    if (service?.id && isDirty) {
+      const timer = setTimeout(() => {
+        triggerAutoSave();
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [formData, service?.id, isDirty, triggerAutoSave]);
+
   // Handle field changes
-  const handleFieldChange = useCallback((field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const handleFieldChange = (field, value) => {
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+      
+      // Auto-generate slug from title
+      if (field === 'title' && !service && !prev.slug) {
+        updated.slug = generateSlug(value);
+      }
+      
+      // Auto-generate meta title
+      if (field === 'title' && !prev.meta_title) {
+        updated.meta_title = value.substring(0, 60);
+      }
+      
+      return updated;
+    });
     
-    clearError(field);
-
-    // Auto-generate slug from name
-    if (field === 'name' && !service) {
-      const slug = generateSlug(value);
-      setFormData(prev => ({
-        ...prev,
-        slug
-      }));
+    // Clear validation error
+    if (validationAttempted) {
+      clearError(field);
     }
-
-    // Update starting price based on pricing tiers
-    if (field === 'pricing_tiers' && value?.length > 0) {
-      const lowestPrice = Math.min(...value.map(tier => tier.price).filter(p => p > 0));
-      setFormData(prev => ({
-        ...prev,
-        starting_price: lowestPrice
-      }));
-    }
-  }, [clearError, service]);
+  };
 
   // Handle save
   const handleSave = async () => {
+    setSaving(true);
+    setValidationAttempted(true);
+    
     // Validate form
     const validationErrors = validateForm(formData);
     if (Object.keys(validationErrors).length > 0) {
-      toast.error('Validation failed', 'Please fix the errors before saving');
+      const tabErrors = getTabErrors();
+      const firstTabWithErrors = Object.keys(tabErrors).find(tab => 
+        tabErrors[tab].length > 0
+      );
       
-      // Switch to first tab with errors
-      const tabsWithErrors = ['basic', 'features', 'pricing', 'process', 'media', 'faq', 'settings'];
-      for (const tab of tabsWithErrors) {
-        if (getTabErrors(tab, validationErrors).length > 0) {
-          setActiveTab(tab);
-          break;
-        }
+      if (firstTabWithErrors) {
+        setActiveTab(firstTabWithErrors);
       }
+      
+      toast.error('Please fix validation errors');
+      setSaving(false);
       return false;
     }
 
     const sanitized = sanitizeData(formData);
     
-    // Calculate service metrics
-    if (sanitized.pricing_tiers?.length > 0) {
-      sanitized.starting_price = Math.min(...sanitized.pricing_tiers.map(t => t.price));
-      sanitized.tier_count = sanitized.pricing_tiers.length;
-    }
-    
     let result;
     if (service?.id) {
-      result = await serviceOperations.update(service.id, sanitized);
+      result = await serviceOperations.update(service.id, sanitized, userProfile);
     } else {
-      result = await serviceOperations.create(sanitized);
+      result = await serviceOperations.create(sanitized, userProfile);
     }
 
     if (result.success) {
       toast.success(
         service ? 'Service updated' : 'Service created',
-        `"${formData.name}" has been saved successfully`
+        `"${formData.title}" has been saved successfully`
       );
       
       if (onSave) {
         await onSave(result.data);
       }
+      setSaving(false);
+      setValidationAttempted(false);
       return true;
     } else {
       toast.error('Save failed', result.error);
+      setSaving(false);
       return false;
     }
   };
 
   // Tab configuration
+  const tabErrors = getTabErrors();
   const tabs = [
     { 
       id: 'basic', 
       label: 'Basic Info',
-      errors: getTabErrors('basic', errors)
+      icon: 'FileText',
+      hasErrors: tabErrors.basic.length > 0,
+      errorCount: tabErrors.basic.length
     },
     { 
       id: 'features', 
       label: 'Features',
-      errors: getTabErrors('features', errors)
+      icon: 'List',
+      hasErrors: tabErrors.features.length > 0,
+      errorCount: tabErrors.features.length
     },
     { 
       id: 'pricing', 
       label: 'Pricing',
-      errors: getTabErrors('pricing', errors)
+      icon: 'DollarSign',
+      hasErrors: tabErrors.pricing.length > 0,
+      errorCount: tabErrors.pricing.length
     },
     { 
-      id: 'process', 
-      label: 'Process',
-      errors: getTabErrors('process', errors)
-    },
-    { 
-      id: 'media', 
-      label: 'Media',
-      errors: getTabErrors('media', errors)
-    },
-    { 
-      id: 'faq', 
-      label: 'FAQs',
-      errors: getTabErrors('faq', errors)
-    },
-    { 
-      id: 'settings', 
-      label: 'Settings',
-      errors: getTabErrors('settings', errors)
+      id: 'seo', 
+      label: 'SEO & Analytics',
+      icon: 'Search',
+      hasErrors: tabErrors.seo.length > 0,
+      errorCount: tabErrors.seo.length
+    }
+  ];
+
+  // Modal actions
+  const modalActions = [
+    {
+      label: 'Preview',
+      icon: 'Eye',
+      onClick: () => setShowPreview(true),
+      variant: 'ghost'
     }
   ];
 
@@ -220,44 +212,32 @@ const ServiceEditor = ({
         isOpen={isOpen}
         onClose={onClose}
         onSave={handleSave}
-        title={service ? 'Edit Service' : 'New Service'}
+        title={service ? `Edit: ${service.title}` : 'New Service'}
+        subtitle={
+          saveStatus === 'saving' ? 'Auto-saving...' : 
+          saveStatus === 'saved' ? 'All changes saved' : ''
+        }
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        isDirty={JSON.stringify(formData) !== JSON.stringify(initialData)}
-        actions={[
-          {
-            label: 'Preview',
-            icon: 'Eye',
-            onClick: () => setShowPreview(true),
-            variant: 'ghost'
-          },
-          service?.id && {
-            label: 'Duplicate',
-            icon: 'Copy',
-            onClick: async () => {
-              const result = await serviceOperations.duplicate(service.id);
-              if (result.success) {
-                toast.success('Service duplicated');
-                onSave && onSave(result.data);
-              }
-            },
-            variant: 'ghost'
-          }
-        ].filter(Boolean)}
+        isDirty={isDirty}
+        isSaving={saving}
+        actions={modalActions}
+        showValidationErrors={validationAttempted && Object.keys(errors).length > 0}
       >
         {activeTab === 'basic' && (
-          <BasicInfoTab
+          <BasicTab
             formData={formData}
-            errors={errors}
+            errors={validationAttempted ? errors : {}}
             onChange={handleFieldChange}
+            zones={zones}
           />
         )}
         
         {activeTab === 'features' && (
           <FeaturesTab
             formData={formData}
-            errors={errors}
+            errors={validationAttempted ? errors : {}}
             onChange={handleFieldChange}
           />
         )}
@@ -265,32 +245,17 @@ const ServiceEditor = ({
         {activeTab === 'pricing' && (
           <PricingTab
             formData={formData}
-            errors={errors}
+            errors={validationAttempted ? errors : {}}
             onChange={handleFieldChange}
           />
         )}
         
-        {activeTab === 'process' && (
-          <ProcessTab
+        {activeTab === 'seo' && (
+          <SEOTab
             formData={formData}
-            errors={errors}
+            errors={validationAttempted ? errors : {}}
             onChange={handleFieldChange}
-          />
-        )}
-        
-        {activeTab === 'media' && (
-          <MediaTab
-            formData={formData}
-            errors={errors}
-            onChange={handleFieldChange}
-          />
-        )}
-        
-        {activeTab === 'settings' && (
-          <SettingsTab
-            formData={formData}
-            errors={errors}
-            onChange={handleFieldChange}
+            serviceId={service?.id}
           />
         )}
       </EditorModal>
@@ -300,146 +265,18 @@ const ServiceEditor = ({
         <PreviewModal
           isOpen={showPreview}
           onClose={() => setShowPreview(false)}
-          title={formData.name || 'Service Preview'}
+          title="Service Preview"
+          subtitle={`Preview of: ${formData.title || 'Untitled'}`}
         >
-          <ServicePreview data={formData} />
+          {/* Service preview content */}
+          <div className="prose prose-lg max-w-none">
+            <h1>{formData.title}</h1>
+            <p className="lead">{formData.description}</p>
+            {/* Add more preview content */}
+          </div>
         </PreviewModal>
       )}
     </>
-  );
-};
-
-// Preview Component
-const ServicePreview = ({ data }) => {
-  return (
-    <div className="prose max-w-none">
-      {/* Hero Section */}
-      {data.hero_image && (
-        <img 
-          src={data.hero_image} 
-          alt={data.name}
-          className="w-full h-64 object-cover rounded-lg mb-6"
-        />
-      )}
-      
-      <div className="flex items-center space-x-3 mb-4">
-        {data.icon && (
-          <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-            <span className="text-2xl">{data.icon}</span>
-          </div>
-        )}
-        <div>
-          <h1 className="m-0">{data.name}</h1>
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <span>{data.category}</span>
-            {data.zone && (
-              <>
-                <span>•</span>
-                <span>{data.zone}</span>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-      
-      {data.short_description && (
-        <div className="lead text-lg text-gray-600 mb-6">
-          {data.short_description}
-        </div>
-      )}
-      
-      {/* Value Proposition */}
-      {data.value_proposition && (
-        <div className="bg-accent/5 p-6 rounded-lg mb-8">
-          <h3 className="mt-0">Why Choose This Service?</h3>
-          <p>{data.value_proposition}</p>
-        </div>
-      )}
-      
-      {/* Features */}
-      {data.key_features?.length > 0 && (
-        <div className="mb-8">
-          <h2>Key Features</h2>
-          <div className="grid grid-cols-2 gap-4">
-            {data.key_features.map((feature, idx) => (
-              <div key={idx} className="flex items-start space-x-2">
-                <span className="text-green-500 mt-1">✓</span>
-                <div>
-                  <div className="font-medium">{feature.title}</div>
-                  {feature.description && (
-                    <div className="text-sm text-gray-600">{feature.description}</div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      
-      {/* Pricing Tiers */}
-      {data.pricing_tiers?.length > 0 && (
-        <div className="mb-8">
-          <h2>Pricing Options</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {data.pricing_tiers.map((tier, idx) => (
-              <div 
-                key={idx} 
-                className={`border rounded-lg p-6 ${tier.is_popular ? 'border-accent bg-accent/5' : ''}`}
-              >
-                {tier.is_popular && (
-                  <div className="text-xs bg-accent text-white px-2 py-1 rounded-full inline-block mb-2">
-                    Most Popular
-                  </div>
-                )}
-                <h3 className="mt-0">{tier.name}</h3>
-                <div className="text-3xl font-bold mb-2">
-                  ${tier.price}
-                  {tier.billing_period && (
-                    <span className="text-sm text-gray-500">/{tier.billing_period}</span>
-                  )}
-                </div>
-                {tier.description && (
-                  <p className="text-sm text-gray-600 mb-4">{tier.description}</p>
-                )}
-                {tier.features?.length > 0 && (
-                  <ul className="space-y-2">
-                    {tier.features.map((feature, fidx) => (
-                      <li key={fidx} className="flex items-center text-sm">
-                        <span className="text-green-500 mr-2">✓</span>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      
-      {/* Process Steps */}
-      {data.process_steps?.length > 0 && (
-        <div className="mb-8">
-          <h2>Our Process</h2>
-          <div className="space-y-4">
-            {data.process_steps.map((step, idx) => (
-              <div key={idx} className="flex space-x-4">
-                <div className="flex-shrink-0 w-8 h-8 bg-accent text-white rounded-full flex items-center justify-center font-bold">
-                  {idx + 1}
-                </div>
-                <div>
-                  <h4 className="font-medium mb-1">{step.title}</h4>
-                  <p className="text-sm text-gray-600">{step.description}</p>
-                  {step.duration && (
-                    <span className="text-xs text-gray-500">Duration: {step.duration}</span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
   );
 };
 

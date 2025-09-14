@@ -1,336 +1,333 @@
 // src/pages/admin/services/editor-tabs/FeaturesTab.jsx
-import React, { useState } from 'react';
+import React from 'react';
 import Input from '../../../../components/ui/Input';
 import Button from '../../../../components/ui/Button';
 import Icon from '../../../../components/AdminIcon';
-import TiptapContentEditor from '../../../../components/ui/TiptapContentEditor';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { cn } from '../../../../utils';
 
 const FeaturesTab = ({ formData, errors, onChange }) => {
-  const [expandedFeature, setExpandedFeature] = useState(null);
-
-  // Handle Features
+  // Features management
   const addFeature = () => {
-    const newFeatures = [...(formData.features || [])];
-    newFeatures.push({ title: '', description: '', icon: '' });
-    onChange('features', newFeatures);
+    onChange('features', [...(formData.features || []), '']);
   };
 
-  const updateFeature = (index, field, value) => {
+  const updateFeature = (index, value) => {
     const newFeatures = [...(formData.features || [])];
-    newFeatures[index] = { ...newFeatures[index], [field]: value };
+    newFeatures[index] = value;
     onChange('features', newFeatures);
   };
 
   const removeFeature = (index) => {
-    onChange('features', formData.features.filter((_, i) => i !== index));
+    const newFeatures = [...(formData.features || [])];
+    newFeatures.splice(index, 1);
+    onChange('features', newFeatures);
   };
 
-  const reorderFeatures = (startIndex, endIndex) => {
-    const result = Array.from(formData.features || []);
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
-    onChange('features', result);
+  const moveFeature = (fromIndex, toIndex) => {
+    const newFeatures = [...(formData.features || [])];
+    const [movedItem] = newFeatures.splice(fromIndex, 1);
+    newFeatures.splice(toIndex, 0, movedItem);
+    onChange('features', newFeatures);
   };
 
-  // Handle Benefits
-  const addBenefit = () => {
-    const newBenefits = [...(formData.benefits || [])];
-    newBenefits.push('');
-    onChange('benefits', newBenefits);
+  // Technologies management
+  const addTechnology = () => {
+    onChange('technologies', [...(formData.technologies || []), '']);
   };
 
-  const updateBenefit = (index, value) => {
-    const newBenefits = [...(formData.benefits || [])];
-    newBenefits[index] = value;
-    onChange('benefits', newBenefits);
+  const updateTechnology = (index, value) => {
+    const newTechnologies = [...(formData.technologies || [])];
+    newTechnologies[index] = value;
+    onChange('technologies', newTechnologies);
   };
 
-  const removeBenefit = (index) => {
-    onChange('benefits', formData.benefits.filter((_, i) => i !== index));
+  const removeTechnology = (index) => {
+    const newTechnologies = [...(formData.technologies || [])];
+    newTechnologies.splice(index, 1);
+    onChange('technologies', newTechnologies);
   };
 
-  // Handle Key Features
-  const addKeyFeature = () => {
-    const newKeyFeatures = [...(formData.key_features || [])];
-    newKeyFeatures.push({
+  // Process steps management
+  const addProcessStep = () => {
+    const newStep = {
       title: '',
       description: '',
-      icon: '',
-      is_highlighted: false
-    });
-    onChange('key_features', newKeyFeatures);
-    setExpandedFeature(newKeyFeatures.length - 1);
+      duration: ''
+    };
+    onChange('process_steps', [...(formData.process_steps || []), newStep]);
   };
 
-  const updateKeyFeature = (index, field, value) => {
-    const newKeyFeatures = [...(formData.key_features || [])];
-    newKeyFeatures[index] = { ...newKeyFeatures[index], [field]: value };
-    onChange('key_features', newKeyFeatures);
+  const updateProcessStep = (index, field, value) => {
+    const newSteps = [...(formData.process_steps || [])];
+    newSteps[index] = { ...newSteps[index], [field]: value };
+    onChange('process_steps', newSteps);
   };
 
-  const removeKeyFeature = (index) => {
-    onChange('key_features', formData.key_features.filter((_, i) => i !== index));
-    if (expandedFeature === index) {
-      setExpandedFeature(null);
-    }
+  const removeProcessStep = (index) => {
+    const newSteps = [...(formData.process_steps || [])];
+    newSteps.splice(index, 1);
+    onChange('process_steps', newSteps);
   };
 
-  const featureIcons = ['✓', '★', '⚡', '🎯', '🚀', '💡', '🛡️', '📊'];
+  // Expected results management
+  const addExpectedResult = () => {
+    const newResult = {
+      metric: '',
+      description: '',
+      timeframe: ''
+    };
+    onChange('expected_results', [...(formData.expected_results || []), newResult]);
+  };
+
+  const updateExpectedResult = (index, field, value) => {
+    const newResults = [...(formData.expected_results || [])];
+    newResults[index] = { ...newResults[index], [field]: value };
+    onChange('expected_results', newResults);
+  };
+
+  const removeExpectedResult = (index) => {
+    const newResults = [...(formData.expected_results || [])];
+    newResults.splice(index, 1);
+    onChange('expected_results', newResults);
+  };
 
   return (
     <div className="space-y-6">
-      {/* Key Features */}
+      {/* Features */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <label className="text-sm font-medium text-gray-700">
-            Key Features
+            Service Features
           </label>
           <Button
             variant="outline"
-            size="xs"
-            onClick={addKeyFeature}
-            iconName="Plus"
-          >
-            Add Key Feature
-          </Button>
-        </div>
-        
-        <div className="space-y-3">
-          {(formData.key_features || []).map((feature, index) => (
-            <div
-              key={index}
-              className={cn(
-                "border rounded-lg",
-                expandedFeature === index ? 'ring-2 ring-accent' : ''
-              )}
-            >
-              <div
-                className="p-3 cursor-pointer"
-                onClick={() => setExpandedFeature(expandedFeature === index ? null : index)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    {feature.icon && (
-                      <span className="text-2xl">{feature.icon}</span>
-                    )}
-                    <div>
-                      <h4 className="font-medium text-gray-900">
-                        {feature.title || 'Untitled Feature'}
-                      </h4>
-                      {feature.description && !expandedFeature && (
-                        <p className="text-xs text-gray-500 line-clamp-1">
-                          {feature.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {feature.is_highlighted && (
-                      <Icon name="Star" size={16} className="text-yellow-500" />
-                    )}
-                    <Icon
-                      name={expandedFeature === index ? 'ChevronUp' : 'ChevronDown'}
-                      size={16}
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              {expandedFeature === index && (
-                <div className="p-3 border-t space-y-3">
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">Title</label>
-                    <Input
-                      type="text"
-                      value={feature.title || ''}
-                      onChange={(e) => updateKeyFeature(index, 'title', e.target.value)}
-                      placeholder="Feature title"
-                      size="sm"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">Description</label>
-                    <textarea
-                      value={feature.description || ''}
-                      onChange={(e) => updateKeyFeature(index, 'description', e.target.value)}
-                      placeholder="Feature description"
-                      rows={2}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">Icon</label>
-                    <div className="flex items-center space-x-2">
-                      <div className="flex gap-1">
-                        {featureIcons.map((icon) => (
-                          <button
-                            key={icon}
-                            type="button"
-                            onClick={() => updateKeyFeature(index, 'icon', icon)}
-                            className={cn(
-                              "w-8 h-8 rounded border flex items-center justify-center",
-                              feature.icon === icon
-                                ? "border-accent bg-accent/10"
-                                : "border-gray-200"
-                            )}
-                          >
-                            {icon}
-                          </button>
-                        ))}
-                      </div>
-                      <Input
-                        type="text"
-                        value={feature.icon || ''}
-                        onChange={(e) => updateKeyFeature(index, 'icon', e.target.value)}
-                        placeholder="Custom"
-                        size="sm"
-                        className="w-24"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={feature.is_highlighted || false}
-                        onChange={(e) => updateKeyFeature(index, 'is_highlighted', e.target.checked)}
-                        className="rounded"
-                      />
-                      <span className="text-sm">Highlight this feature</span>
-                    </label>
-                    
-                    <Button
-                      variant="ghost"
-                      size="xs"
-                      onClick={() => removeKeyFeature(index)}
-                      className="text-red-500"
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Standard Features */}
-      <div className="border-t pt-6">
-        <div className="flex items-center justify-between mb-3">
-          <label className="text-sm font-medium text-gray-700">
-            Standard Features
-          </label>
-          <Button
-            variant="outline"
-            size="xs"
+            size="sm"
             onClick={addFeature}
-            iconName="Plus"
           >
+            <Icon name="Plus" size={16} className="mr-2" />
             Add Feature
           </Button>
         </div>
-        
-        <DragDropContext onDragEnd={(result) => {
-          if (!result.destination) return;
-          reorderFeatures(result.source.index, result.destination.index);
-        }}>
-          <Droppable droppableId="features">
-            {(provided) => (
-              <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                {(formData.features || []).map((feature, index) => (
-                  <Draggable key={index} draggableId={`feature-${index}`} index={index}>
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        className={cn(
-                          "flex items-center space-x-2 p-2 bg-gray-50 rounded",
-                          snapshot.isDragging ? 'shadow-lg' : ''
-                        )}
-                      >
-                        <div {...provided.dragHandleProps}>
-                          <Icon name="GripVertical" size={16} className="text-gray-400" />
-                        </div>
-                        <Input
-                          type="text"
-                          value={feature.title || ''}
-                          onChange={(e) => updateFeature(index, 'title', e.target.value)}
-                          placeholder="Feature title"
-                          size="sm"
-                          className="flex-1"
-                        />
-                        <Input
-                          type="text"
-                          value={feature.description || ''}
-                          onChange={(e) => updateFeature(index, 'description', e.target.value)}
-                          placeholder="Short description"
-                          size="sm"
-                          className="flex-1"
-                        />
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => removeFeature(index)}
-                          className="text-red-500"
-                        >
-                          <Icon name="X" size={16} />
-                        </Button>
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
+
+        {(formData.features || []).length === 0 ? (
+          <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+            <Icon name="List" size={48} className="mx-auto text-gray-400 mb-3" />
+            <p className="text-gray-600 mb-3">No features added yet</p>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={addFeature}
+            >
+              Add Your First Feature
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {formData.features.map((feature, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  {index > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => moveFeature(index, index - 1)}
+                      className="p-1 hover:bg-gray-100 rounded"
+                    >
+                      <Icon name="ChevronUp" size={14} />
+                    </button>
+                  )}
+                  {index < formData.features.length - 1 && (
+                    <button
+                      type="button"
+                      onClick={() => moveFeature(index, index + 1)}
+                      className="p-1 hover:bg-gray-100 rounded"
+                    >
+                      <Icon name="ChevronDown" size={14} />
+                    </button>
+                  )}
+                </div>
+                <Input
+                  value={feature}
+                  onChange={(e) => updateFeature(index, e.target.value)}
+                  placeholder="Feature description"
+                  className="flex-1"
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeFeature(index)}
+                >
+                  <Icon name="X" size={16} />
+                </Button>
               </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Benefits */}
-      <div className="border-t pt-6">
+      {/* Technologies */}
+      <div>
         <div className="flex items-center justify-between mb-3">
           <label className="text-sm font-medium text-gray-700">
-            Key Benefits
+            Technologies Used
           </label>
           <Button
             variant="outline"
-            size="xs"
-            onClick={addBenefit}
-            iconName="Plus"
+            size="sm"
+            onClick={addTechnology}
           >
-            Add Benefit
+            <Icon name="Plus" size={16} className="mr-2" />
+            Add Technology
           </Button>
         </div>
-        
-        <div className="space-y-2">
-          {(formData.benefits || []).map((benefit, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <Icon name="CheckCircle" size={16} className="text-green-500" />
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {(formData.technologies || []).map((tech, index) => (
+            <div key={index} className="flex items-center gap-1">
               <Input
-                type="text"
-                value={benefit}
-                onChange={(e) => updateBenefit(index, e.target.value)}
-                placeholder="Enter benefit"
-                size="sm"
+                value={tech}
+                onChange={(e) => updateTechnology(index, e.target.value)}
+                placeholder="Technology"
                 className="flex-1"
               />
               <Button
                 variant="ghost"
-                size="xs"
-                onClick={() => removeBenefit(index)}
-                className="text-red-500"
+                size="icon"
+                onClick={() => removeTechnology(index)}
               >
-                <Icon name="X" size={16} />
+                <Icon name="X" size={14} />
               </Button>
             </div>
           ))}
+          {(formData.technologies || []).length === 0 && (
+            <Button
+              variant="outline"
+              onClick={addTechnology}
+              className="col-span-full"
+            >
+              Add Technology
+            </Button>
+          )}
         </div>
+      </div>
+
+      {/* Process Steps */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <label className="text-sm font-medium text-gray-700">
+            Process Steps
+          </label>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={addProcessStep}
+          >
+            <Icon name="Plus" size={16} className="mr-2" />
+            Add Step
+          </Button>
+        </div>
+
+        {(formData.process_steps || []).length > 0 && (
+          <div className="space-y-3">
+            {formData.process_steps.map((step, index) => (
+              <div key={index} className="bg-gray-50 rounded-lg p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <span className="text-sm font-medium">Step {index + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeProcessStep(index)}
+                    className="text-red-500 hover:bg-red-100 p-1 rounded"
+                  >
+                    <Icon name="X" size={14} />
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  <Input
+                    label="Title"
+                    value={step.title}
+                    onChange={(e) => updateProcessStep(index, 'title', e.target.value)}
+                    placeholder="Step title"
+                  />
+                  <textarea
+                    value={step.description}
+                    onChange={(e) => updateProcessStep(index, 'description', e.target.value)}
+                    placeholder="Step description"
+                    className="w-full px-3 py-2 border rounded-lg"
+                    rows={2}
+                  />
+                  <Input
+                    label="Duration"
+                    value={step.duration}
+                    onChange={(e) => updateProcessStep(index, 'duration', e.target.value)}
+                    placeholder="e.g., 1-2 weeks"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Expected Results */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <label className="text-sm font-medium text-gray-700">
+            Expected Results
+          </label>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={addExpectedResult}
+          >
+            <Icon name="Plus" size={16} className="mr-2" />
+            Add Result
+          </Button>
+        </div>
+
+        {(formData.expected_results || []).length > 0 && (
+          <div className="space-y-3">
+            {formData.expected_results.map((result, index) => (
+              <div key={index} className="bg-white border rounded-lg p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <span className="text-sm font-medium text-accent">
+                    Result #{index + 1}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeExpectedResult(index)}
+                    className="text-red-500 hover:bg-red-100 p-1 rounded"
+                  >
+                    <Icon name="X" size={14} />
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <Input
+                    label="Metric"
+                    value={result.metric}
+                    onChange={(e) => updateExpectedResult(index, 'metric', e.target.value)}
+                    placeholder="e.g., Conversion Rate"
+                  />
+                  <Input
+                    label="Timeframe"
+                    value={result.timeframe}
+                    onChange={(e) => updateExpectedResult(index, 'timeframe', e.target.value)}
+                    placeholder="e.g., 3-6 months"
+                  />
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      value={result.description}
+                      onChange={(e) => updateExpectedResult(index, 'description', e.target.value)}
+                      placeholder="Expected outcome description"
+                      className="w-full px-3 py-2 border rounded-lg"
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

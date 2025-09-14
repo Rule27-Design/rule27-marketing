@@ -2,15 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { 
-  FilterBar,
   BulkActions,
   StatusBadge,
   EmptyState,
   ErrorState,
   ExportButton,
-  VirtualTable,
   SkeletonTable,
-  MetricsDisplay,
   SearchBar,
   QuickActions
 } from '../../../components/admin';
@@ -18,11 +15,12 @@ import { Checkbox } from '../../../components/ui/Checkbox';
 import Button from '../../../components/ui/Button';
 import Icon from '../../../components/AdminIcon';
 import ServiceEditor from './ServiceEditor';
+import ServiceZonesManager from './ServiceZonesManager';
 import { useServices } from './hooks/useServices';
 import { useServiceEvents } from './hooks/useServiceEvents';
 import { serviceOperations } from './services/ServiceOperations';
 import { useToast } from '../../../components/ui/Toast';
-import { formatDate, cn } from '../../../utils';
+import { formatDate } from '../../../utils';
 
 const Services = () => {
   const { userProfile } = useOutletContext();
@@ -31,8 +29,9 @@ const Services = () => {
   
   const [showEditor, setShowEditor] = useState(false);
   const [editingService, setEditingService] = useState(null);
-  const [viewMode, setViewMode] = useState('grid'); // grid | table
-  const [groupBy, setGroupBy] = useState('none'); // none | zone | category
+  const [showZonesManager, setShowZonesManager] = useState(false);
+  const [zones, setZones] = useState([]);
+  const [categories, setCategories] = useState([]);
   
   const {
     services,
@@ -40,117 +39,78 @@ const Services = () => {
     error,
     filters,
     setFilters,
-    selectedItems,
-    setSelectedItems,
+    selectedServices,
+    setSelectedServices,
     pagination,
     changePage,
-    refreshServices
+    changePageSize,
+    refreshServices,
+    selectAll,
+    deselectAll,
+    toggleSelection
   } = useServices({
-    status: searchParams.get('status') || 'all',
-    zone: searchParams.get('zone') || 'all'
+    zone: searchParams.get('zone') || 'all',
+    status: searchParams.get('status') || 'all'
   });
 
   const { subscribeToEvents } = useServiceEvents();
-
-  // Service zones configuration
-  const serviceZones = [
-    { id: 'discovery', name: 'Discovery', color: 'blue', icon: 'Search' },
-    { id: 'strategy', name: 'Strategy', color: 'purple', icon: 'Target' },
-    { id: 'design', name: 'Design', color: 'pink', icon: 'Palette' },
-    { id: 'development', name: 'Development', color: 'green', icon: 'Code' },
-    { id: 'growth', name: 'Growth', color: 'orange', icon: 'TrendingUp' },
-    { id: 'support', name: 'Support', color: 'gray', icon: 'Headphones' }
-  ];
 
   // Subscribe to real-time updates
   useEffect(() => {
     const unsubscribe = subscribeToEvents('service:updated', (service) => {
       refreshServices();
-      toast.info('Service updated', `"${service.name}" has been updated`);
     });
 
     return unsubscribe;
-  }, [subscribeToEvents, refreshServices, toast]);
+  }, []);
 
-  // Group services by zone or category
-  const groupedServices = React.useMemo(() => {
-    if (groupBy === 'none') return { all: services };
-    
-    return services.reduce((acc, service) => {
-      const key = groupBy === 'zone' ? (service.zone || 'uncategorized') : (service.category || 'uncategorized');
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(service);
-      return acc;
-    }, {});
-  }, [services, groupBy]);
+  // Fetch zones and categories
+  useEffect(() => {
+    fetchFilterData();
+  }, []);
 
-  // Filter configuration with zones
-  const filterConfig = [
-    {
-      id: 'status',
-      label: 'Status',
-      type: 'select',
-      defaultValue: 'all',
-      options: [
-        { value: 'all', label: 'All Status' },
-        { value: 'draft', label: 'Draft' },
-        { value: 'published', label: 'Published' },
-        { value: 'archived', label: 'Archived' }
-      ]
-    },
-    {
-      id: 'zone',
-      label: 'Zone',
-      type: 'select',
-      defaultValue: 'all',
-      options: [
-        { value: 'all', label: 'All Zones' },
-        ...serviceZones.map(zone => ({
-          value: zone.id,
-          label: zone.name
-        }))
-      ]
-    },
-    {
-      id: 'category',
-      label: 'Category',
-      type: 'select',
-      defaultValue: 'all',
-      options: [
-        { value: 'all', label: 'All Categories' },
-        { value: 'development', label: 'Development' },
-        { value: 'design', label: 'Design' },
-        { value: 'marketing', label: 'Marketing' },
-        { value: 'consulting', label: 'Consulting' },
-        { value: 'support', label: 'Support' }
-      ]
-    },
-    {
-      id: 'featured',
-      label: 'Featured',
-      type: 'select',
-      defaultValue: 'all',
-      options: [
-        { value: 'all', label: 'All Services' },
-        { value: 'featured', label: 'Featured Only' },
-        { value: 'popular', label: 'Popular Only' }
-      ]
+  const fetchFilterData = async () => {
+    try {
+      const zonesData = await serviceOperations.getZones();
+      if (zonesData.success) {
+        setZones(zonesData.data);
+      }
+
+      const categoriesData = await serviceOperations.getCategories();
+      if (categoriesData.success) {
+        setCategories(categoriesData.data);
+      }
+    } catch (error) {
+      console.error('Error fetching filter data:', error);
     }
-  ];
+  };
+
+  // Handle filter change
+  const handleFilterChange = (filterId, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterId]: value === 'all' ? null : value
+    }));
+  };
 
   // Bulk action configuration
   const bulkActionConfig = [
     {
-      id: 'publish',
-      label: 'Publish',
-      icon: 'Send',
-      variant: 'primary',
-      requireConfirm: true
+      id: 'activate',
+      label: 'Activate',
+      icon: 'Check',
+      variant: 'primary'
     },
     {
-      id: 'archive',
-      label: 'Archive',
-      icon: 'Archive',
+      id: 'deactivate',
+      label: 'Deactivate',
+      icon: 'X',
+      variant: 'ghost'
+    },
+    {
+      id: 'feature',
+      label: 'Feature',
+      icon: 'Star',
       variant: 'ghost'
     },
     {
@@ -175,17 +135,24 @@ const Services = () => {
       let result;
       
       switch (actionId) {
-        case 'publish':
-          result = await serviceOperations.bulkPublish(selectedIds);
+        case 'activate':
+          result = await serviceOperations.bulkUpdateStatus(selectedIds, true);
           if (result.success) {
-            toast.success('Services published', `${selectedIds.length} services have been published`);
+            toast.success('Services activated', `${selectedIds.length} services have been activated`);
           }
           break;
           
-        case 'archive':
-          result = await serviceOperations.bulkArchive(selectedIds);
+        case 'deactivate':
+          result = await serviceOperations.bulkUpdateStatus(selectedIds, false);
           if (result.success) {
-            toast.success('Services archived', `${selectedIds.length} services have been archived`);
+            toast.success('Services deactivated', `${selectedIds.length} services have been deactivated`);
+          }
+          break;
+          
+        case 'feature':
+          result = await serviceOperations.bulkToggleFeatured(selectedIds, true);
+          if (result.success) {
+            toast.success('Services featured', `${selectedIds.length} services have been featured`);
           }
           break;
           
@@ -207,7 +174,7 @@ const Services = () => {
       if (result && !result.success) {
         toast.error('Action failed', result.error);
       } else {
-        setSelectedItems([]);
+        setSelectedServices([]);
         await refreshServices();
       }
     } catch (error) {
@@ -216,228 +183,26 @@ const Services = () => {
     }
   };
 
-  // Table columns configuration
-  const tableColumns = [
+  // Quick actions configuration
+  const quickActionsConfig = [
     {
-      key: 'select',
-      header: () => (
-        <Checkbox
-          checked={services.length > 0 && selectedItems.length === services.length}
-          onChange={(checked) => {
-            setSelectedItems(checked ? services.map(s => s.id) : []);
-          }}
-        />
-      ),
-      cell: (service) => (
-        <Checkbox
-          checked={selectedItems.includes(service.id)}
-          onChange={(checked) => {
-            setSelectedItems(prev =>
-              checked 
-                ? [...prev, service.id]
-                : prev.filter(id => id !== service.id)
-            );
-          }}
-        />
-      ),
-      width: 40
-    },
-    {
-      key: 'name',
-      header: 'Service',
-      cell: (service) => {
-        const zone = serviceZones.find(z => z.id === service.zone);
-        return (
-          <div className="flex items-center space-x-3">
-            {service.icon && (
-              <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                <span className="text-lg">{service.icon}</span>
-              </div>
-            )}
-            <div>
-              <div className="font-medium text-text-primary">
-                {service.name}
-                {service.is_featured && (
-                  <Icon name="Star" size={12} className="inline ml-1 text-yellow-500" />
-                )}
-              </div>
-              <div className="text-xs text-text-secondary">
-                {zone?.name} • {service.category}
-              </div>
-            </div>
-          </div>
-        );
+      id: 'new',
+      label: 'New Service',
+      icon: 'Plus',
+      variant: 'primary',
+      onClick: () => {
+        setEditingService(null);
+        setShowEditor(true);
       }
     },
     {
-      key: 'status',
-      header: 'Status',
-      cell: (service) => <StatusBadge status={service.status} size="xs" />,
-      width: 120
-    },
-    {
-      key: 'pricing',
-      header: 'Pricing',
-      cell: (service) => (
-        <div className="text-sm">
-          {service.starting_price ? (
-            <span className="font-medium">${service.starting_price}</span>
-          ) : (
-            <span className="text-gray-500">Custom</span>
-          )}
-          {service.pricing_tiers?.length > 0 && (
-            <span className="text-xs text-gray-500 ml-1">
-              ({service.pricing_tiers.length} tiers)
-            </span>
-          )}
-        </div>
-      ),
-      width: 120
-    },
-    {
-      key: 'metrics',
-      header: 'Performance',
-      cell: (service) => (
-        <MetricsDisplay
-          metrics={[
-            { value: service.view_count || 0, icon: 'Eye' },
-            { value: service.inquiry_count || 0, icon: 'MessageSquare' }
-          ]}
-          compact
-        />
-      ),
-      width: 150
-    },
-    {
-      key: 'date',
-      header: 'Modified',
-      cell: (service) => (
-        <div className="text-xs text-text-secondary">
-          {formatDate(service.updated_at, 'MMM d, yyyy')}
-        </div>
-      ),
-      width: 100
-    },
-    {
-      key: 'actions',
-      header: '',
-      cell: (service) => (
-        <div className="flex items-center space-x-1">
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={() => {
-              setEditingService(service);
-              setShowEditor(true);
-            }}
-            iconName="Edit2"
-          />
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={async () => {
-              if (window.confirm('Are you sure you want to delete this service?')) {
-                const result = await serviceOperations.delete(service.id);
-                if (result.success) {
-                  toast.success('Service deleted');
-                  refreshServices();
-                }
-              }
-            }}
-            iconName="Trash2"
-            className="text-red-500"
-          />
-        </div>
-      ),
-      width: 100
+      id: 'zones',
+      label: 'Manage Zones',
+      icon: 'Grid',
+      variant: 'outline',
+      onClick: () => setShowZonesManager(true)
     }
   ];
-
-  // Service card for grid view
-  const ServiceCard = ({ service }) => {
-    const zone = serviceZones.find(z => z.id === service.zone);
-    
-    return (
-      <div className="bg-white rounded-lg border hover:shadow-lg transition-shadow p-6">
-        {/* Zone indicator */}
-        {zone && (
-          <div className={cn(
-            'inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs mb-3',
-            `bg-${zone.color}-100 text-${zone.color}-700`
-          )}>
-            <Icon name={zone.icon} size={12} />
-            <span>{zone.name}</span>
-          </div>
-        )}
-        
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            {service.icon && (
-              <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-                <span className="text-2xl">{service.icon}</span>
-              </div>
-            )}
-            <div>
-              <h3 className="font-medium text-text-primary">
-                {service.name}
-              </h3>
-              <StatusBadge status={service.status} size="xs" />
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-1">
-            {service.is_featured && (
-              <Icon name="Star" size={16} className="text-yellow-500" />
-            )}
-            {service.is_popular && (
-              <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded">
-                Popular
-              </span>
-            )}
-            {service.is_new && (
-              <span className="text-xs bg-green-100 text-green-600 px-1.5 py-0.5 rounded">
-                New
-              </span>
-            )}
-          </div>
-        </div>
-        
-        <p className="text-sm text-text-secondary line-clamp-2 mb-4">
-          {service.short_description}
-        </p>
-        
-        <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-          <span>{service.category}</span>
-          <span>
-            {service.starting_price 
-              ? `From $${service.starting_price}`
-              : 'Custom pricing'}
-          </span>
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <MetricsDisplay
-            metrics={[
-              { value: service.view_count || 0, icon: 'Eye' },
-              { value: service.inquiry_count || 0, icon: 'MessageSquare' }
-            ]}
-            compact
-          />
-          
-          <Button
-            variant="outline"
-            size="xs"
-            onClick={() => {
-              setEditingService(service);
-              setShowEditor(true);
-            }}
-          >
-            Edit
-          </Button>
-        </div>
-      </div>
-    );
-  };
 
   // Loading state
   if (loading && services.length === 0) {
@@ -457,220 +222,268 @@ const Services = () => {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header with Services Management title and count */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <h1 className="text-2xl font-heading-bold uppercase tracking-wider">
-              Services Management
-            </h1>
-          </div>
-          <Button
-            variant="default"
-            iconName="Plus"
-            iconPosition="left"
-            onClick={() => {
-              setEditingService(null);
-              setShowEditor(true);
-            }}
-          >
-            New Service
-          </Button>
-        </div>
-        
-        {/* Services count and view options */}
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-text-secondary">
-            All Services ({services.length})
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-heading-bold uppercase tracking-wider">Services</h1>
+          <p className="text-sm text-text-secondary mt-1">
+            Manage your service offerings and pricing
           </p>
-          
-          {/* Group By Options */}
-          <div className="flex items-center space-x-2">
-            <span className="text-xs text-gray-500">Group by:</span>
-            <div className="flex items-center bg-gray-100 rounded-lg p-1">
-              <button
-                onClick={() => setGroupBy('none')}
-                className={cn(
-                  'px-3 py-1 text-xs rounded transition-colors',
-                  groupBy === 'none' 
-                    ? 'bg-white text-accent shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-900'
-                )}
-              >
-                None
-              </button>
-              <button
-                onClick={() => setGroupBy('zone')}
-                className={cn(
-                  'px-3 py-1 text-xs rounded transition-colors',
-                  groupBy === 'zone' 
-                    ? 'bg-white text-accent shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-900'
-                )}
-              >
-                By Zone
-              </button>
-              <button
-                onClick={() => setGroupBy('category')}
-                className={cn(
-                  'px-3 py-1 text-xs rounded transition-colors',
-                  groupBy === 'category' 
-                    ? 'bg-white text-accent shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-900'
-                )}
-              >
-                By Category
-              </button>
-            </div>
-            
-            <div className="flex items-center bg-gray-100 rounded-lg p-1 ml-4">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={cn(
-                  'p-1.5 rounded transition-colors',
-                  viewMode === 'grid' 
-                    ? 'bg-white text-accent shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-900'
-                )}
-              >
-                <Icon name="Grid" size={16} />
-              </button>
-              <button
-                onClick={() => setViewMode('table')}
-                className={cn(
-                  'p-1.5 rounded transition-colors',
-                  viewMode === 'table' 
-                    ? 'bg-white text-accent shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-900'
-                )}
-              >
-                <Icon name="List" size={16} />
-              </button>
-            </div>
-          </div>
         </div>
+        <QuickActions actions={quickActionsConfig} />
       </div>
-
-      {/* Zone Stats Cards */}
-      {groupBy === 'zone' && (
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
-          {serviceZones.map(zone => {
-            const zoneServices = services.filter(s => s.zone === zone.id);
-            return (
-              <button
-                key={zone.id}
-                onClick={() => setFilters({ ...filters, zone: zone.id })}
-                className={cn(
-                  'p-3 rounded-lg border transition-all',
-                  filters.zone === zone.id 
-                    ? 'border-accent bg-accent/5' 
-                    : 'border-gray-200 hover:border-gray-300'
-                )}
-              >
-                <Icon name={zone.icon} size={20} className={`text-${zone.color}-500 mb-2`} />
-                <div className="text-sm font-medium">{zone.name}</div>
-                <div className="text-xs text-gray-500">{zoneServices.length} services</div>
-              </button>
-            );
-          })}
-        </div>
-      )}
 
       {/* Search and Filters */}
       <div className="mb-4 space-y-3">
         <SearchBar
-          value={filters.search || ''}
-          onChange={(value) => setFilters({ ...filters, search: value })}
           placeholder="Search services..."
+          onSearch={(value) => setFilters({ ...filters, search: value })}
+          debounceMs={300}
         />
         
-        <FilterBar
-          filters={filterConfig}
-          onFilterChange={setFilters}
-          onReset={() => setFilters({})}
-        />
+        <div className="flex items-center gap-3">
+          {/* Zone Filter */}
+          <select
+            value={filters.zone || 'all'}
+            onChange={(e) => handleFilterChange('zone', e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="all">All Zones</option>
+            {zones.map(zone => (
+              <option key={zone.id} value={zone.id}>
+                {zone.title}
+              </option>
+            ))}
+          </select>
+
+          {/* Category Filter */}
+          <select
+            value={filters.category || 'all'}
+            onChange={(e) => handleFilterChange('category', e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="all">All Categories</option>
+            {categories.map(cat => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+
+          {/* Status Filter */}
+          <select
+            value={filters.status || 'all'}
+            onChange={(e) => handleFilterChange('status', e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="featured">Featured</option>
+          </select>
+
+          {/* Clear Filters */}
+          {Object.keys(filters).some(key => filters[key] && filters[key] !== 'all') && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setFilters({})}
+              className="text-gray-500"
+            >
+              <Icon name="X" size={16} className="mr-1" />
+              Clear
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Bulk Actions */}
-      {selectedItems.length > 0 && (
+      {selectedServices.length > 0 && (
         <BulkActions
-          selectedItems={selectedItems}
+          selectedItems={selectedServices}
           actions={bulkActionConfig}
           onAction={handleBulkAction}
           position="top"
         />
       )}
 
-      {/* Services Display */}
-      {services.length === 0 ? (
-        <EmptyState
-          icon="Zap"
-          title="No services found"
-          message="Create your first service to start showcasing your offerings"
-          action={{
-            label: 'Create Service',
-            onClick: () => {
-              setEditingService(null);
-              setShowEditor(true);
-            }
-          }}
-        />
-      ) : (
-        <>
-          {/* Display based on grouping */}
-          {groupBy !== 'none' ? (
-            // Grouped View
-            <div className="space-y-6">
-              {Object.entries(groupedServices).map(([group, groupServices]) => (
-                <div key={group}>
-                  <h3 className="text-lg font-medium text-gray-900 mb-3 capitalize">
-                    {group} ({groupServices.length})
-                  </h3>
-                  {viewMode === 'grid' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {groupServices.map(service => (
-                        <ServiceCard key={service.id} service={service} />
-                      ))}
-                    </div>
-                  ) : (
-                    <VirtualTable
-                      data={groupServices}
-                      columns={tableColumns}
-                      rowHeight={80}
-                      onRowClick={(service) => {
-                        setEditingService(service);
-                        setShowEditor(true);
-                      }}
+      {/* Services Table */}
+      <div className="flex-1 bg-white rounded-lg shadow overflow-hidden">
+        {services.length === 0 && !loading ? (
+          <EmptyState
+            icon="Zap"
+            title="No services found"
+            message="Create your first service to get started"
+            action={{
+              label: 'Create Service',
+              onClick: () => {
+                setEditingService(null);
+                setShowEditor(true);
+              }
+            }}
+          />
+        ) : (
+          <div className="overflow-x-auto h-full">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50 sticky top-0">
+                <tr>
+                  <th className="w-12 px-4 py-3">
+                    <Checkbox
+                      checked={selectedServices.length === services.length && services.length > 0}
+                      onChange={(checked) => checked ? selectAll() : deselectAll()}
                     />
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            // Regular View (No Grouping)
-            viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {services.map(service => (
-                  <ServiceCard key={service.id} service={service} />
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
+                  <th className="w-32 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Zone</th>
+                  <th className="w-32 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                  <th className="w-28 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="w-24 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Views</th>
+                  <th className="w-24 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Inquiries</th>
+                  <th className="w-24 px-4 py-3"></th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {services.map((service) => (
+                  <tr
+                    key={service.id}
+                    onClick={() => {
+                      setEditingService(service);
+                      setShowEditor(true);
+                    }}
+                    className="hover:bg-gray-50 cursor-pointer"
+                  >
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={selectedServices.includes(service.id)}
+                        onChange={() => toggleSelection(service.id)}
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center space-x-3">
+                        <Icon name={service.icon || 'Zap'} size={20} className="text-accent flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className="font-medium text-gray-900">
+                            {service.title}
+                            {service.is_featured && (
+                              <Icon name="Star" size={12} className="inline ml-1 text-yellow-500" />
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-500 truncate">
+                            {service.description}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="px-2 py-1 text-xs rounded-lg bg-gray-100">
+                        {zones.find(z => z.id === service.zone_id)?.title || 'No Zone'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {service.category}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          service.is_active 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {service.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-center text-sm text-gray-600">
+                      {service.view_count || 0}
+                    </td>
+                    <td className="px-4 py-3 text-center text-sm text-gray-600">
+                      {service.inquiry_count || 0}
+                    </td>
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => {
+                            setEditingService(service);
+                            setShowEditor(true);
+                          }}
+                        >
+                          <Icon name="Edit2" size={14} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={async () => {
+                            if (window.confirm('Delete this service?')) {
+                              const result = await serviceOperations.delete(service.id);
+                              if (result.success) {
+                                toast.success('Service deleted');
+                                refreshServices();
+                              }
+                            }
+                          }}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Icon name="Trash2" size={14} />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
                 ))}
-              </div>
-            ) : (
-              <VirtualTable
-                data={services}
-                columns={tableColumns}
-                rowHeight={80}
-                onRowClick={(service) => {
-                  setEditingService(service);
-                  setShowEditor(true);
-                }}
-                pagination={{
-                  ...pagination,
-                  onPageChange: changePage
-                }}
-              />
-            )
-          )}
-        </>
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Pagination */}
+      {services.length > 0 && (
+        <div className="mt-4 flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            Showing {(pagination.page - 1) * pagination.pageSize + 1} to{' '}
+            {Math.min(pagination.page * pagination.pageSize, pagination.total)} of{' '}
+            {pagination.total} services
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => changePage(pagination.page - 1)}
+              disabled={pagination.page === 1}
+            >
+              Previous
+            </Button>
+            
+            {/* Page numbers */}
+            <div className="flex items-center space-x-1">
+              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                const pageNum = i + 1;
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={pageNum === pagination.page ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => changePage(pageNum)}
+                    className="w-8 h-8 p-0"
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => changePage(pagination.page + 1)}
+              disabled={pagination.page === pagination.totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Export Button */}
@@ -680,12 +493,13 @@ const Services = () => {
             data={services}
             filename="services"
             columns={[
-              { key: 'name', label: 'Name' },
-              { key: 'zone', label: 'Zone' },
+              { key: 'title', label: 'Title' },
               { key: 'category', label: 'Category' },
-              { key: 'status', label: 'Status' },
-              { key: 'short_description', label: 'Description' },
-              { key: 'starting_price', label: 'Starting Price' },
+              { key: 'zone_title', label: 'Zone' },
+              { key: 'is_active', label: 'Active' },
+              { key: 'is_featured', label: 'Featured' },
+              { key: 'view_count', label: 'Views' },
+              { key: 'inquiry_count', label: 'Inquiries' },
               { key: 'created_at', label: 'Created' }
             ]}
           />
@@ -697,6 +511,7 @@ const Services = () => {
         <ServiceEditor
           service={editingService}
           userProfile={userProfile}
+          zones={zones}
           isOpen={showEditor}
           onClose={() => {
             setShowEditor(false);
@@ -706,6 +521,18 @@ const Services = () => {
             refreshServices();
             setShowEditor(false);
             setEditingService(null);
+          }}
+        />
+      )}
+
+      {/* Service Zones Manager */}
+      {showZonesManager && (
+        <ServiceZonesManager
+          isOpen={showZonesManager}
+          onClose={() => setShowZonesManager(false)}
+          onUpdate={() => {
+            fetchFilterData();
+            refreshServices();
           }}
         />
       )}

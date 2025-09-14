@@ -1,5 +1,5 @@
 // src/pages/admin/services/hooks/useServiceEvents.js
-import { useEffect, useRef, useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { supabase } from '../../../../lib/supabase';
 
 class EventBus {
@@ -32,8 +32,8 @@ export const useServiceEvents = () => {
   const subscriptionRef = useRef(null);
 
   useEffect(() => {
-    // Subscribe to realtime changes
-    subscriptionRef.current = supabase
+    // Subscribe to realtime changes for services
+    const servicesChannel = supabase
       .channel('services_changes')
       .on(
         'postgres_changes',
@@ -45,24 +45,41 @@ export const useServiceEvents = () => {
               break;
             case 'UPDATE':
               serviceEventBus.emit('service:updated', payload.new);
-              if (payload.old?.status !== payload.new.status) {
-                if (payload.new.status === 'published') {
-                  serviceEventBus.emit('service:published', payload.new);
-                }
-              }
               break;
             case 'DELETE':
               serviceEventBus.emit('service:deleted', payload.old);
               break;
           }
         }
-      )
-      .subscribe();
+      );
+
+    // Subscribe to service zones changes
+    const zonesChannel = supabase
+      .channel('service_zones_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'service_zones' },
+        (payload) => {
+          switch (payload.eventType) {
+            case 'INSERT':
+              serviceEventBus.emit('zone:created', payload.new);
+              break;
+            case 'UPDATE':
+              serviceEventBus.emit('zone:updated', payload.new);
+              break;
+            case 'DELETE':
+              serviceEventBus.emit('zone:deleted', payload.old);
+              break;
+          }
+        }
+      );
+
+    servicesChannel.subscribe();
+    zonesChannel.subscribe();
 
     return () => {
-      if (subscriptionRef.current) {
-        supabase.removeChannel(subscriptionRef.current);
-      }
+      supabase.removeChannel(servicesChannel);
+      supabase.removeChannel(zonesChannel);
     };
   }, []);
 
@@ -85,6 +102,7 @@ export const SERVICE_EVENTS = {
   CREATED: 'service:created',
   UPDATED: 'service:updated',
   DELETED: 'service:deleted',
-  PUBLISHED: 'service:published',
-  BULK_ACTION: 'service:bulk_action'
+  ZONE_CREATED: 'zone:created',
+  ZONE_UPDATED: 'zone:updated',
+  ZONE_DELETED: 'zone:deleted'
 };
