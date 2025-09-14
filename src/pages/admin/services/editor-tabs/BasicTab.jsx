@@ -7,11 +7,11 @@ import Icon from '../../../../components/AdminIcon';
 import { generateSlug } from '../../../../utils';
 
 const BasicTab = ({ formData, errors, onChange, zones }) => {
-  // Icon options
+  // Icon options - using valid Lucide icon names
   const iconOptions = [
     'Zap', 'Code', 'Palette', 'Globe', 'ShoppingCart',
     'TrendingUp', 'Users', 'Settings', 'Database', 'Cloud',
-    'Smartphone', 'Monitor', 'Layout', 'Package', 'Tool'
+    'Smartphone', 'Monitor', 'Layout', 'Package', 'Wrench' // Changed from 'Tool' to 'Wrench'
   ];
 
   // Category suggestions
@@ -24,7 +24,7 @@ const BasicTab = ({ formData, errors, onChange, zones }) => {
   const handleTitleChange = (value) => {
     onChange('title', value);
     
-    // Auto-generate slug if new service
+    // Auto-generate slug if new service (check if formData has an id)
     if (!formData.id && !formData.slug) {
       onChange('slug', generateSlug(value));
     }

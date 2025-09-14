@@ -106,7 +106,8 @@ export const useServices = (initialFilters = {}) => {
       console.error('Error fetching services:', err);
       if (isMountedRef.current) {
         setError(err.message);
-        if (!err.message.includes('Failed to fetch')) {
+        // Only show toast for non-network errors
+        if (!err.message.includes('Failed to fetch') && !err.message.includes('ERR_INSUFFICIENT_RESOURCES')) {
           toast.error('Failed to load services', err.message);
         }
       }
@@ -116,17 +117,49 @@ export const useServices = (initialFilters = {}) => {
         setLoading(false);
       }
     }
-  }, [filters, pagination.page, pagination.pageSize, toast]);
+  }, [
+    filters.zone,
+    filters.category, 
+    filters.status,
+    filters.search,
+    filters.sortBy, 
+    filters.sortOrder, 
+    pagination.page, 
+    pagination.pageSize, 
+    toast
+  ]);
 
+  // Single effect for initial load only
   useEffect(() => {
     isMountedRef.current = true;
-    fetchServices();
+    
+    // Only fetch once on mount
+    if (!isFetchingRef.current) {
+      fetchServices();
+    }
     
     return () => {
       isMountedRef.current = false;
       isFetchingRef.current = false;
     };
-  }, [fetchServices]);
+  }, []); // Empty dependency array for mount only
+
+  // Separate effect for filter/pagination changes
+  useEffect(() => {
+    // Skip initial render
+    if (isMountedRef.current && !isFetchingRef.current) {
+      fetchServices();
+    }
+  }, [
+    filters.zone,
+    filters.category,
+    filters.status,
+    filters.search,
+    filters.sortBy,
+    filters.sortOrder,
+    pagination.page,
+    pagination.pageSize
+  ]);
 
   // Refresh services manually
   const refreshServices = useCallback(() => {
