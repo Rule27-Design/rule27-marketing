@@ -1,48 +1,21 @@
 // src/pages/admin/services/editor-tabs/PricingTab.jsx
-import React, { useState } from 'react';
+import React from 'react';
 import Input from '../../../../components/ui/Input';
-import Select from '../../../../components/ui/Select';
 import Button from '../../../../components/ui/Button';
 import Icon from '../../../../components/AdminIcon';
-import { Checkbox } from '../../../../components/ui/Checkbox';
-import { cn } from '../../../../utils';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 const PricingTab = ({ formData, errors, onChange }) => {
-  const [expandedTier, setExpandedTier] = useState(null);
-
-  const pricingModels = [
-    { value: 'fixed', label: 'Fixed Price' },
-    { value: 'tiered', label: 'Tiered Pricing' },
-    { value: 'subscription', label: 'Subscription' },
-    { value: 'custom', label: 'Custom Quote' }
-  ];
-
-  const billingPeriods = [
-    { value: 'one-time', label: 'One Time' },
-    { value: 'hourly', label: 'Per Hour' },
-    { value: 'monthly', label: 'Per Month' },
-    { value: 'quarterly', label: 'Per Quarter' },
-    { value: 'yearly', label: 'Per Year' },
-    { value: 'project', label: 'Per Project' }
-  ];
-
-  // Handle Pricing Tiers
+  // Pricing tiers management
   const addPricingTier = () => {
-    const newTiers = [...(formData.pricing_tiers || [])];
-    newTiers.push({
+    const newTier = {
       name: '',
-      price: 0,
-      billing_period: 'monthly',
-      description: '',
+      price: '',
+      billing: 'Per month',
       features: [],
-      is_popular: false,
-      is_featured: false,
-      max_users: null,
-      setup_fee: null
-    });
-    onChange('pricing_tiers', newTiers);
-    setExpandedTier(newTiers.length - 1);
+      highlighted: false,
+      cta_text: 'Get Started'
+    };
+    onChange('pricing_tiers', [...(formData.pricing_tiers || []), newTier]);
   };
 
   const updatePricingTier = (index, field, value) => {
@@ -52,349 +25,212 @@ const PricingTab = ({ formData, errors, onChange }) => {
   };
 
   const removePricingTier = (index) => {
-    onChange('pricing_tiers', formData.pricing_tiers.filter((_, i) => i !== index));
-    if (expandedTier === index) {
-      setExpandedTier(null);
-    }
-  };
-
-  const reorderPricingTiers = (startIndex, endIndex) => {
-    const result = Array.from(formData.pricing_tiers || []);
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
-    onChange('pricing_tiers', result);
-  };
-
-  // Handle tier features
-  const addTierFeature = (tierIndex, feature) => {
-    if (!feature.trim()) return;
-    
     const newTiers = [...(formData.pricing_tiers || [])];
-    const currentFeatures = newTiers[tierIndex].features || [];
-    newTiers[tierIndex].features = [...currentFeatures, feature];
+    newTiers.splice(index, 1);
+    onChange('pricing_tiers', newTiers);
+  };
+
+  // Tier features management
+  const addTierFeature = (tierIndex) => {
+    const newTiers = [...(formData.pricing_tiers || [])];
+    newTiers[tierIndex].features = [...(newTiers[tierIndex].features || []), ''];
+    onChange('pricing_tiers', newTiers);
+  };
+
+  const updateTierFeature = (tierIndex, featureIndex, value) => {
+    const newTiers = [...(formData.pricing_tiers || [])];
+    newTiers[tierIndex].features[featureIndex] = value;
     onChange('pricing_tiers', newTiers);
   };
 
   const removeTierFeature = (tierIndex, featureIndex) => {
     const newTiers = [...(formData.pricing_tiers || [])];
-    newTiers[tierIndex].features = newTiers[tierIndex].features.filter((_, i) => i !== featureIndex);
+    newTiers[tierIndex].features.splice(featureIndex, 1);
+    onChange('pricing_tiers', newTiers);
+  };
+
+  const moveTier = (fromIndex, toIndex) => {
+    const newTiers = [...(formData.pricing_tiers || [])];
+    const [movedItem] = newTiers.splice(fromIndex, 1);
+    newTiers.splice(toIndex, 0, movedItem);
     onChange('pricing_tiers', newTiers);
   };
 
   return (
     <div className="space-y-6">
-      {/* Pricing Model */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Pricing Model *
-        </label>
-        <Select
-          value={formData.pricing_model || 'tiered'}
-          onChange={(value) => onChange('pricing_model', value)}
-          options={pricingModels}
-        />
-      </div>
-
-      {/* Starting Price (for display) */}
-      {formData.pricing_model !== 'custom' && (
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Starting Price
-            </label>
-            <Input
-              type="number"
-              value={formData.starting_price || ''}
-              onChange={(e) => onChange('starting_price', parseFloat(e.target.value))}
-              placeholder="0.00"
-              min="0"
-              step="0.01"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Pricing Unit
-            </label>
-            <Input
-              type="text"
-              value={formData.pricing_unit || ''}
-              onChange={(e) => onChange('pricing_unit', e.target.value)}
-              placeholder="e.g., per user, per month"
-            />
-          </div>
-        </div>
-      )}
-
       {/* Pricing Tiers */}
-      {formData.pricing_model === 'tiered' && (
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <label className="text-sm font-medium text-gray-700">
-              Pricing Tiers
-            </label>
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">Pricing Tiers</h3>
+            <p className="text-sm text-gray-500 mt-1">
+              Define pricing options for this service
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={addPricingTier}
+          >
+            <Icon name="Plus" size={16} className="mr-2" />
+            Add Tier
+          </Button>
+        </div>
+
+        {errors.pricing_tiers && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+            <p className="text-sm text-red-600">{errors.pricing_tiers}</p>
+          </div>
+        )}
+
+        {(formData.pricing_tiers || []).length === 0 ? (
+          <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+            <Icon name="DollarSign" size={48} className="mx-auto text-gray-400 mb-3" />
+            <p className="text-gray-600 mb-3">No pricing tiers defined</p>
             <Button
-              variant="outline"
-              size="xs"
+              variant="primary"
+              size="sm"
               onClick={addPricingTier}
-              iconName="Plus"
             >
-              Add Tier
+              Add Your First Pricing Tier
             </Button>
           </div>
-          
-          <DragDropContext onDragEnd={(result) => {
-            if (!result.destination) return;
-            reorderPricingTiers(result.source.index, result.destination.index);
-          }}>
-            <Droppable droppableId="pricing-tiers">
-              {(provided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
-                  {(formData.pricing_tiers || []).map((tier, index) => (
-                    <Draggable key={index} draggableId={`tier-${index}`} index={index}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          className={cn(
-                            "border rounded-lg bg-white",
-                            snapshot.isDragging ? 'shadow-lg' : '',
-                            expandedTier === index ? 'ring-2 ring-accent' : '',
-                            tier.is_popular ? 'border-accent' : ''
-                          )}
-                        >
-                          <div
-                            className="p-4 cursor-pointer"
-                            onClick={() => setExpandedTier(expandedTier === index ? null : index)}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-3">
-                                <div {...provided.dragHandleProps}>
-                                  <Icon name="GripVertical" size={16} className="text-gray-400" />
-                                </div>
-                                <div>
-                                  <h4 className="font-medium text-gray-900">
-                                    {tier.name || 'Untitled Tier'}
-                                  </h4>
-                                  <div className="flex items-center space-x-2 text-sm text-gray-500">
-                                    <span>${tier.price || 0}</span>
-                                    <span>/</span>
-                                    <span>{tier.billing_period}</span>
-                                    {tier.is_popular && (
-                                      <span className="px-2 py-0.5 bg-accent text-white text-xs rounded-full">
-                                        Popular
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                              <Icon
-                                name={expandedTier === index ? 'ChevronUp' : 'ChevronDown'}
-                                size={16}
-                              />
-                            </div>
-                          </div>
-                          
-                          {expandedTier === index && (
-                            <div className="px-4 pb-4 border-t space-y-3">
-                              <div className="grid grid-cols-2 gap-3 mt-3">
-                                <div>
-                                  <label className="block text-xs text-gray-600 mb-1">Tier Name</label>
-                                  <Input
-                                    type="text"
-                                    value={tier.name || ''}
-                                    onChange={(e) => updatePricingTier(index, 'name', e.target.value)}
-                                    placeholder="e.g., Starter"
-                                    size="sm"
-                                  />
-                                </div>
-                                
-                                <div>
-                                  <label className="block text-xs text-gray-600 mb-1">Price</label>
-                                  <Input
-                                    type="number"
-                                    value={tier.price || ''}
-                                    onChange={(e) => updatePricingTier(index, 'price', parseFloat(e.target.value))}
-                                    placeholder="0.00"
-                                    min="0"
-                                    step="0.01"
-                                    size="sm"
-                                  />
-                                </div>
-                              </div>
-                              
-                              <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                  <label className="block text-xs text-gray-600 mb-1">Billing Period</label>
-                                  <Select
-                                    value={tier.billing_period || 'monthly'}
-                                    onChange={(value) => updatePricingTier(index, 'billing_period', value)}
-                                    options={billingPeriods}
-                                    size="sm"
-                                  />
-                                </div>
-                                
-                                <div>
-                                  <label className="block text-xs text-gray-600 mb-1">Setup Fee</label>
-                                  <Input
-                                    type="number"
-                                    value={tier.setup_fee || ''}
-                                    onChange={(e) => updatePricingTier(index, 'setup_fee', parseFloat(e.target.value))}
-                                    placeholder="Optional"
-                                    min="0"
-                                    step="0.01"
-                                    size="sm"
-                                  />
-                                </div>
-                              </div>
-                              
-                              <div>
-                                <label className="block text-xs text-gray-600 mb-1">Description</label>
-                                <textarea
-                                  value={tier.description || ''}
-                                  onChange={(e) => updatePricingTier(index, 'description', e.target.value)}
-                                  placeholder="Brief description of this tier"
-                                  rows={2}
-                                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md"
-                                />
-                              </div>
-                              
-                              <div>
-                                <label className="block text-xs text-gray-600 mb-1">Features</label>
-                                <div className="space-y-2">
-                                  <div className="flex items-center space-x-2">
-                                    <Input
-                                      type="text"
-                                      placeholder="Add feature..."
-                                      size="sm"
-                                      onKeyPress={(e) => {
-                                        if (e.key === 'Enter') {
-                                          e.preventDefault();
-                                          addTierFeature(index, e.target.value);
-                                          e.target.value = '';
-                                        }
-                                      }}
-                                    />
-                                  </div>
-                                  
-                                  {tier.features?.length > 0 && (
-                                    <ul className="space-y-1">
-                                      {tier.features.map((feature, fIdx) => (
-                                        <li key={fIdx} className="flex items-center justify-between text-sm">
-                                          <span className="flex items-center">
-                                            <Icon name="Check" size={14} className="text-green-500 mr-2" />
-                                            {feature}
-                                          </span>
-                                          <button
-                                            onClick={() => removeTierFeature(index, fIdx)}
-                                            className="text-red-500 hover:text-red-600"
-                                          >
-                                            ×
-                                          </button>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  )}
-                                </div>
-                              </div>
-                              
-                              <div>
-                                <label className="block text-xs text-gray-600 mb-1">Max Users</label>
-                                <Input
-                                  type="number"
-                                  value={tier.max_users || ''}
-                                  onChange={(e) => updatePricingTier(index, 'max_users', parseInt(e.target.value))}
-                                  placeholder="Unlimited"
-                                  min="1"
-                                  size="sm"
-                                />
-                              </div>
-                              
-                              <div className="flex items-center justify-between">
-                                <div className="space-x-4">
-                                  <label className="inline-flex items-center">
-                                    <Checkbox
-                                      checked={tier.is_popular || false}
-                                      onChange={(checked) => updatePricingTier(index, 'is_popular', checked)}
-                                    />
-                                    <span className="ml-2 text-sm">Popular</span>
-                                  </label>
-                                  
-                                  <label className="inline-flex items-center">
-                                    <Checkbox
-                                      checked={tier.is_featured || false}
-                                      onChange={(checked) => updatePricingTier(index, 'is_featured', checked)}
-                                    />
-                                    <span className="ml-2 text-sm">Featured</span>
-                                  </label>
-                                </div>
-                                
-                                <Button
-                                  variant="ghost"
-                                  size="xs"
-                                  onClick={() => removePricingTier(index)}
-                                  className="text-red-500"
-                                >
-                                  Remove Tier
-                                </Button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
-          
-          {(!formData.pricing_tiers || formData.pricing_tiers.length === 0) && (
-            <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
-              <Icon name="DollarSign" size={32} className="mx-auto text-gray-400 mb-2" />
-              <p className="text-sm text-gray-500">No pricing tiers added yet</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={addPricingTier}
-                className="mt-2"
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {formData.pricing_tiers.map((tier, tierIndex) => (
+              <div 
+                key={tierIndex} 
+                className={`border rounded-lg p-4 ${
+                  tier.highlighted ? 'border-accent bg-accent/5' : 'border-gray-200 bg-white'
+                }`}
               >
-                Add First Tier
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-gray-700">
+                    Tier {tierIndex + 1}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {tierIndex > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => moveTier(tierIndex, tierIndex - 1)}
+                        className="p-1 hover:bg-gray-100 rounded"
+                        title="Move left"
+                      >
+                        <Icon name="ChevronLeft" size={14} />
+                      </button>
+                    )}
+                    {tierIndex < formData.pricing_tiers.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={() => moveTier(tierIndex, tierIndex + 1)}
+                        className="p-1 hover:bg-gray-100 rounded"
+                        title="Move right"
+                      >
+                        <Icon name="ChevronRight" size={14} />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removePricingTier(tierIndex)}
+                      className="p-1 hover:bg-red-100 text-red-500 rounded"
+                      title="Remove"
+                    >
+                      <Icon name="X" size={14} />
+                    </button>
+                  </div>
+                </div>
 
-      {/* Custom Pricing Note */}
-      {formData.pricing_model === 'custom' && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Custom Pricing Note
-          </label>
-          <textarea
-            value={formData.custom_pricing_note || ''}
-            onChange={(e) => onChange('custom_pricing_note', e.target.value)}
-            placeholder="Explain how custom pricing works for this service..."
-            rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-          />
-        </div>
-      )}
+                <div className="space-y-3">
+                  <Input
+                    label="Tier Name"
+                    value={tier.name}
+                    onChange={(e) => updatePricingTier(tierIndex, 'name', e.target.value)}
+                    placeholder="e.g., Basic, Pro, Enterprise"
+                    required
+                  />
 
-      {/* Payment Terms */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Payment Terms
-        </label>
-        <textarea
-          value={formData.payment_terms || ''}
-          onChange={(e) => onChange('payment_terms', e.target.value)}
-          placeholder="e.g., 50% upfront, 50% on completion"
-          rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md"
-        />
+                  <Input
+                    label="Price"
+                    value={tier.price}
+                    onChange={(e) => updatePricingTier(tierIndex, 'price', e.target.value)}
+                    placeholder="e.g., $99, Custom"
+                  />
+
+                  <Input
+                    label="Billing Period"
+                    value={tier.billing}
+                    onChange={(e) => updatePricingTier(tierIndex, 'billing', e.target.value)}
+                    placeholder="e.g., Per month, Per year"
+                  />
+
+                  <Input
+                    label="CTA Button Text"
+                    value={tier.cta_text || 'Get Started'}
+                    onChange={(e) => updatePricingTier(tierIndex, 'cta_text', e.target.value)}
+                    placeholder="e.g., Get Started, Contact Us"
+                  />
+
+                  <div>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={tier.highlighted || false}
+                        onChange={(e) => updatePricingTier(tierIndex, 'highlighted', e.target.checked)}
+                        className="h-4 w-4 text-accent border-gray-300 rounded focus:ring-accent"
+                      />
+                      <span className="text-sm text-gray-700">Highlight as recommended</span>
+                    </label>
+                  </div>
+
+                  {/* Tier Features */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-2">
+                      Features
+                    </label>
+                    {(tier.features || []).map((feature, featureIndex) => (
+                      <div key={featureIndex} className="flex gap-1 mb-1">
+                        <Input
+                          value={feature}
+                          onChange={(e) => updateTierFeature(tierIndex, featureIndex, e.target.value)}
+                          placeholder="Feature"
+                          className="flex-1"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeTierFeature(tierIndex, featureIndex)}
+                        >
+                          <Icon name="X" size={12} />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      onClick={() => addTierFeature(tierIndex)}
+                      className="mt-1 w-full"
+                    >
+                      <Icon name="Plus" size={12} className="mr-1" />
+                      Add Feature
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Pricing Notes */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h4 className="text-sm font-medium text-blue-900 mb-2">Pricing Best Practices</h4>
+        <ul className="text-sm text-blue-700 space-y-1">
+          <li>• Use 3 tiers for optimal conversion (Basic, Pro, Enterprise)</li>
+          <li>• Highlight your most popular tier to guide decisions</li>
+          <li>• List 5-7 key features per tier for clarity</li>
+          <li>• Use "Custom" or "Contact Us" for enterprise pricing</li>
+          <li>• Include value propositions in feature descriptions</li>
+        </ul>
       </div>
     </div>
   );

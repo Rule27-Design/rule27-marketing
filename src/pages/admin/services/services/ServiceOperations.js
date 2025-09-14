@@ -1,26 +1,56 @@
 // src/pages/admin/services/services/ServiceOperations.js
 import { supabase } from '../../../../lib/supabase';
-import { sanitizeData } from '../../../../utils';
+import { generateSlug, sanitizeData } from '../../../../utils/validation';
 
-export class ServiceOperationsService {
+class ServiceOperationsService {
   // Create service
-  async create(data) {
+  async create(serviceData, userProfile) {
     try {
-      const cleanData = sanitizeData(data);
+      const validColumns = [
+        'title', 'slug', 'category', 'zone_id', 'icon',
+        'description', 'full_description', 'features', 'technologies',
+        'process_steps', 'expected_results', 'pricing_tiers',
+        'is_active', 'is_featured', 'meta_title', 'meta_description',
+        'created_by', 'updated_by'
+      ];
 
-      const { data: service, error } = await supabase
+      const cleanData = {};
+      validColumns.forEach(column => {
+        if (serviceData[column] !== undefined) {
+          cleanData[column] = serviceData[column];
+        }
+      });
+
+      const sanitized = sanitizeData(cleanData);
+      
+      // Generate slug if not provided
+      if (!sanitized.slug && sanitized.title) {
+        sanitized.slug = generateSlug(sanitized.title);
+      }
+
+      // Set metadata
+      if (userProfile) {
+        sanitized.created_by = userProfile.id;
+        sanitized.updated_by = userProfile.id;
+      }
+
+      // Clean arrays
+      if (sanitized.features) {
+        sanitized.features = sanitized.features.filter(Boolean);
+      }
+      if (sanitized.technologies) {
+        sanitized.technologies = sanitized.technologies.filter(Boolean);
+      }
+
+      const { data, error } = await supabase
         .from('services')
-        .insert([{
-          ...cleanData,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }])
+        .insert(sanitized)
         .select()
         .single();
 
       if (error) throw error;
 
-      return { success: true, data: service };
+      return { success: true, data };
     } catch (error) {
       console.error('Error creating service:', error);
       return { success: false, error: error.message };
@@ -28,23 +58,49 @@ export class ServiceOperationsService {
   }
 
   // Update service
-  async update(id, data) {
+  async update(serviceId, serviceData, userProfile) {
     try {
-      const cleanData = sanitizeData(data);
+      const validColumns = [
+        'title', 'slug', 'category', 'zone_id', 'icon',
+        'description', 'full_description', 'features', 'technologies',
+        'process_steps', 'expected_results', 'pricing_tiers',
+        'is_active', 'is_featured', 'meta_title', 'meta_description',
+        'updated_by'
+      ];
 
-      const { data: service, error } = await supabase
+      const cleanData = {};
+      validColumns.forEach(column => {
+        if (serviceData[column] !== undefined) {
+          cleanData[column] = serviceData[column];
+        }
+      });
+
+      const sanitized = sanitizeData(cleanData);
+
+      // Update metadata
+      sanitized.updated_at = new Date().toISOString();
+      if (userProfile) {
+        sanitized.updated_by = userProfile.id;
+      }
+
+      // Clean arrays
+      if (sanitized.features) {
+        sanitized.features = sanitized.features.filter(Boolean);
+      }
+      if (sanitized.technologies) {
+        sanitized.technologies = sanitized.technologies.filter(Boolean);
+      }
+
+      const { data, error } = await supabase
         .from('services')
-        .update({
-          ...cleanData,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id)
+        .update(sanitized)
+        .eq('id', serviceId)
         .select()
         .single();
 
       if (error) throw error;
 
-      return { success: true, data: service };
+      return { success: true, data };
     } catch (error) {
       console.error('Error updating service:', error);
       return { success: false, error: error.message };
@@ -52,15 +108,14 @@ export class ServiceOperationsService {
   }
 
   // Delete service
-  async delete(id) {
+  async delete(serviceId) {
     try {
       const { error } = await supabase
         .from('services')
         .delete()
-        .eq('id', id);
+        .eq('id', serviceId);
 
       if (error) throw error;
-
       return { success: true };
     } catch (error) {
       console.error('Error deleting service:', error);
@@ -68,100 +123,47 @@ export class ServiceOperationsService {
     }
   }
 
-  // Duplicate service
-  async duplicate(id) {
-    try {
-      // Get original service
-      const { data: original, error: fetchError } = await supabase
-        .from('services')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      // Create duplicate
-      const duplicate = {
-        ...original,
-        id: undefined,
-        name: `${original.name} (Copy)`,
-        slug: `${original.slug}-copy-${Date.now()}`,
-        status: 'draft',
-        is_featured: false,
-        is_popular: false,
-        is_new: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        view_count: 0,
-        inquiry_count: 0,
-        conversion_rate: 0
-      };
-
-      const { data: newService, error: insertError } = await supabase
-        .from('services')
-        .insert([duplicate])
-        .select()
-        .single();
-
-      if (insertError) throw insertError;
-
-      return { success: true, data: newService };
-    } catch (error) {
-      console.error('Error duplicating service:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  // Bulk operations
-  async bulkPublish(ids) {
+  // Bulk update status
+  async bulkUpdateStatus(serviceIds, isActive) {
     try {
       const { error } = await supabase
         .from('services')
-        .update({ 
-          status: 'published',
-          published_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .in('id', ids);
+        .update({ is_active: isActive })
+        .in('id', serviceIds);
 
       if (error) throw error;
-
       return { success: true };
     } catch (error) {
-      console.error('Error bulk publishing:', error);
+      console.error('Error bulk updating status:', error);
       return { success: false, error: error.message };
     }
   }
 
-  async bulkArchive(ids) {
+  // Bulk toggle featured
+  async bulkToggleFeatured(serviceIds, isFeatured) {
     try {
       const { error } = await supabase
         .from('services')
-        .update({ 
-          status: 'archived',
-          archived_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .in('id', ids);
+        .update({ is_featured: isFeatured })
+        .in('id', serviceIds);
 
       if (error) throw error;
-
       return { success: true };
     } catch (error) {
-      console.error('Error bulk archiving:', error);
+      console.error('Error bulk toggling featured:', error);
       return { success: false, error: error.message };
     }
   }
 
-  async bulkDelete(ids) {
+  // Bulk delete
+  async bulkDelete(serviceIds) {
     try {
       const { error } = await supabase
         .from('services')
         .delete()
-        .in('id', ids);
+        .in('id', serviceIds);
 
       if (error) throw error;
-
       return { success: true };
     } catch (error) {
       console.error('Error bulk deleting:', error);
@@ -169,34 +171,66 @@ export class ServiceOperationsService {
     }
   }
 
+  // Get zones
+  async getZones() {
+    try {
+      const { data, error } = await supabase
+        .from('service_zones')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order');
+
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching zones:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Get categories
+  async getCategories() {
+    try {
+      const { data, error } = await supabase
+        .from('services')
+        .select('category')
+        .order('category');
+
+      if (error) throw error;
+      
+      const uniqueCategories = [...new Set(data.map(s => s.category).filter(Boolean))];
+      return { success: true, data: uniqueCategories };
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
   // Export services
-  async exportServices(ids = null) {
+  async exportServices(serviceIds = null, format = 'csv') {
     try {
       let query = supabase
         .from('services')
         .select('*');
 
-      if (ids && ids.length > 0) {
-        query = query.in('id', ids);
+      if (serviceIds) {
+        query = query.in('id', serviceIds);
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
 
       // Convert to CSV
       const csv = this.convertToCSV(data);
-      
-      // Download CSV
       const blob = new Blob([csv], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `services-${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `services-export-${Date.now()}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
       return { success: true };
     } catch (error) {
@@ -205,84 +239,40 @@ export class ServiceOperationsService {
     }
   }
 
-  // Helper: Convert to CSV
+  // Convert to CSV
   convertToCSV(data) {
-    if (data.length === 0) return '';
-
-    const headers = [
-      'name',
-      'category',
-      'zone',
-      'status',
-      'short_description',
-      'starting_price',
-      'is_featured',
-      'is_popular',
-      'created_at'
-    ];
-
+    if (!data || data.length === 0) return '';
+    
+    const headers = ['Title', 'Category', 'Zone', 'Active', 'Featured', 'Views', 'Inquiries'];
     const csvHeaders = headers.join(',');
-    const csvRows = data.map(row => {
-      return headers.map(header => {
-        const value = row[header] || '';
-        const escaped = String(value).replace(/"/g, '""');
-        return escaped.includes(',') ? `"${escaped}"` : escaped;
-      }).join(',');
+    
+    const csvRows = data.map(service => {
+      const row = [
+        this.escapeCSV(service.title),
+        this.escapeCSV(service.category),
+        this.escapeCSV(service.zone_id || ''),
+        service.is_active ? 'Yes' : 'No',
+        service.is_featured ? 'Yes' : 'No',
+        service.view_count || 0,
+        service.inquiry_count || 0
+      ];
+      return row.join(',');
     });
-
+    
     return [csvHeaders, ...csvRows].join('\n');
   }
 
-  // Update metrics
-  async updateViewCount(id) {
-    try {
-      const { data: service } = await supabase
-        .from('services')
-        .select('view_count')
-        .eq('id', id)
-        .single();
-
-      await supabase
-        .from('services')
-        .update({
-          view_count: (service?.view_count || 0) + 1
-        })
-        .eq('id', id);
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error updating view count:', error);
-      return { success: false, error: error.message };
+  // Escape CSV values
+  escapeCSV(value) {
+    if (value === null || value === undefined) return '';
+    const stringValue = String(value);
+    
+    if (stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')) {
+      return `"${stringValue.replace(/"/g, '""')}"`;
     }
-  }
-
-  async updateInquiryCount(id) {
-    try {
-      const { data: service } = await supabase
-        .from('services')
-        .select('inquiry_count, view_count')
-        .eq('id', id)
-        .single();
-
-      const newInquiryCount = (service?.inquiry_count || 0) + 1;
-      const viewCount = service?.view_count || 1;
-      const conversionRate = (newInquiryCount / viewCount) * 100;
-
-      await supabase
-        .from('services')
-        .update({
-          inquiry_count: newInquiryCount,
-          conversion_rate: Math.round(conversionRate * 100) / 100
-        })
-        .eq('id', id);
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error updating inquiry count:', error);
-      return { success: false, error: error.message };
-    }
+    
+    return stringValue;
   }
 }
 
-// Export singleton instance
 export const serviceOperations = new ServiceOperationsService();
