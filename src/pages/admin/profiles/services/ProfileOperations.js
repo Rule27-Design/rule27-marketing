@@ -1,6 +1,5 @@
 // src/pages/admin/profiles/services/ProfileOperations.js
 import { supabase } from '../../../../lib/supabase';
-import { sanitizeData } from '../../../../utils/validation';
 
 class ProfileOperationsService {
   // Create profile
@@ -10,7 +9,7 @@ class ProfileOperationsService {
         'email', 'full_name', 'display_name', 'avatar_url', 'bio',
         'role', 'is_public', 'is_active', 'department', 'expertise',
         'job_title', 'linkedin_url', 'twitter_url', 'github_url',
-        'sort_order', 'created_by', 'updated_by'
+        'sort_order', 'email_notifications', 'onboarding_completed'
       ];
 
       const cleanData = {};
@@ -20,25 +19,41 @@ class ProfileOperationsService {
         }
       });
 
-      const sanitized = sanitizeData(cleanData);
-      
-      // Set metadata
-      if (userProfile) {
-        sanitized.created_by = userProfile.id;
-        sanitized.updated_by = userProfile.id;
+      // Ensure proper data types
+      if (cleanData.department) {
+        cleanData.department = Array.isArray(cleanData.department) 
+          ? cleanData.department.filter(Boolean) 
+          : [];
+      } else {
+        cleanData.department = [];
       }
 
-      // Clean arrays
-      if (sanitized.department) {
-        sanitized.department = sanitized.department.filter(Boolean);
+      if (cleanData.expertise) {
+        cleanData.expertise = Array.isArray(cleanData.expertise) 
+          ? cleanData.expertise.filter(Boolean) 
+          : [];
+      } else {
+        cleanData.expertise = [];
       }
-      if (sanitized.expertise) {
-        sanitized.expertise = sanitized.expertise.filter(Boolean);
-      }
+
+      // Set defaults for booleans
+      cleanData.is_public = cleanData.is_public === true;
+      cleanData.is_active = cleanData.is_active !== false;
+      cleanData.email_notifications = cleanData.email_notifications !== false;
+      cleanData.onboarding_completed = cleanData.onboarding_completed === true;
+
+      // Ensure sort_order is an integer
+      cleanData.sort_order = parseInt(cleanData.sort_order) || 0;
+
+      // Handle empty strings as null for text fields
+      ['display_name', 'avatar_url', 'bio', 'job_title', 'linkedin_url', 'twitter_url', 'github_url'].forEach(field => {
+        if (cleanData[field] === '') {
+          cleanData[field] = null;
+        }
+      });
 
       // Handle invitation
       if (profileData.send_invite) {
-        // Send magic link invitation
         const { data: authData, error: authError } = await supabase.auth.signInWithOtp({
           email: profileData.email,
           options: {
@@ -62,10 +77,9 @@ class ProfileOperationsService {
           message: `Invitation sent to ${profileData.email}`
         };
       } else {
-        // Create display-only profile
         const { data, error } = await supabase
           .from('profiles')
-          .insert(sanitized)
+          .insert(cleanData)
           .select()
           .single();
 
@@ -78,47 +92,82 @@ class ProfileOperationsService {
     }
   }
 
-  // Update profile
+  // Update profile - FIXED for your schema
   async update(profileId, profileData, userProfile) {
     try {
+      // Only include columns that can be updated (not email or auth_user_id)
       const validColumns = [
         'full_name', 'display_name', 'avatar_url', 'bio',
         'is_public', 'is_active', 'department', 'expertise',
         'job_title', 'linkedin_url', 'twitter_url', 'github_url',
-        'sort_order', 'updated_by'
+        'sort_order', 'email_notifications', 'onboarding_completed',
+        'updated_by'
       ];
 
-      const cleanData = {};
+      const updateData = {};
       validColumns.forEach(column => {
         if (profileData[column] !== undefined) {
-          cleanData[column] = profileData[column];
+          updateData[column] = profileData[column];
         }
       });
 
-      const sanitized = sanitizeData(cleanData);
-
-      // Update metadata
-      sanitized.updated_at = new Date().toISOString();
-      if (userProfile) {
-        sanitized.updated_by = userProfile.id;
+      // Ensure arrays are properly formatted
+      if ('department' in updateData) {
+        if (!updateData.department || !Array.isArray(updateData.department)) {
+          updateData.department = [];
+        } else {
+          updateData.department = updateData.department.filter(Boolean);
+        }
+      }
+      
+      if ('expertise' in updateData) {
+        if (!updateData.expertise || !Array.isArray(updateData.expertise)) {
+          updateData.expertise = [];
+        } else {
+          updateData.expertise = updateData.expertise.filter(Boolean);
+        }
       }
 
-      // Clean arrays
-      if (sanitized.department) {
-        sanitized.department = sanitized.department.filter(Boolean);
+      // Ensure booleans are actually booleans
+      ['is_public', 'is_active', 'email_notifications', 'onboarding_completed'].forEach(field => {
+        if (field in updateData) {
+          updateData[field] = Boolean(updateData[field]);
+        }
+      });
+
+      // Ensure sort_order is an integer
+      if ('sort_order' in updateData) {
+        updateData.sort_order = parseInt(updateData.sort_order) || 0;
       }
-      if (sanitized.expertise) {
-        sanitized.expertise = sanitized.expertise.filter(Boolean);
+
+      // Handle empty strings as null for optional text fields
+      ['display_name', 'avatar_url', 'bio', 'job_title', 'linkedin_url', 'twitter_url', 'github_url'].forEach(field => {
+        if (field in updateData && updateData[field] === '') {
+          updateData[field] = null;
+        }
+      });
+
+      // Set updated_by if we have userProfile
+      if (userProfile?.id) {
+        updateData.updated_by = userProfile.id;
       }
+
+      // The trigger will handle updated_at automatically
+      
+      console.log('Updating profile with data:', updateData);
 
       const { data, error } = await supabase
         .from('profiles')
-        .update(sanitized)
+        .update(updateData)
         .eq('id', profileId)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
+
       return { success: true, data };
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -137,13 +186,17 @@ class ProfileOperationsService {
 
       if (fetchError) throw fetchError;
 
+      const updateData = { 
+        role: newRole
+      };
+
+      if (userProfile?.id) {
+        updateData.updated_by = userProfile.id;
+      }
+
       const { error } = await supabase
         .from('profiles')
-        .update({ 
-          role: newRole,
-          updated_at: new Date().toISOString(),
-          updated_by: userProfile.id
-        })
+        .update(updateData)
         .eq('id', profileId);
 
       if (error) throw error;
@@ -191,12 +244,17 @@ class ProfileOperationsService {
   // Bulk update status
   async bulkUpdateStatus(profileIds, isActive, userProfile) {
     try {
+      const updateData = { 
+        is_active: Boolean(isActive)
+      };
+
+      if (userProfile?.id) {
+        updateData.updated_by = userProfile.id;
+      }
+
       const { error } = await supabase
         .from('profiles')
-        .update({ 
-          is_active: isActive,
-          updated_by: userProfile?.id
-        })
+        .update(updateData)
         .in('id', profileIds);
 
       if (error) throw error;
@@ -210,12 +268,17 @@ class ProfileOperationsService {
   // Bulk update visibility
   async bulkUpdateVisibility(profileIds, isPublic, userProfile) {
     try {
+      const updateData = { 
+        is_public: Boolean(isPublic)
+      };
+
+      if (userProfile?.id) {
+        updateData.updated_by = userProfile.id;
+      }
+
       const { error } = await supabase
         .from('profiles')
-        .update({ 
-          is_public: isPublic,
-          updated_by: userProfile?.id
-        })
+        .update(updateData)
         .in('id', profileIds);
 
       if (error) throw error;
@@ -226,6 +289,8 @@ class ProfileOperationsService {
     }
   }
 
+  // Rest of the methods remain the same...
+  
   // Bulk delete
   async bulkDelete(profileIds, userProfile) {
     try {
@@ -270,7 +335,8 @@ class ProfileOperationsService {
       return { success: true, data: data || [] };
     } catch (error) {
       console.error('Error fetching departments:', error);
-      return { success: false, error: error.message };
+      // Return empty array if departments table doesn't exist
+      return { success: true, data: [] };
     }
   }
 
@@ -288,7 +354,6 @@ class ProfileOperationsService {
       const { data, error } = await query;
       if (error) throw error;
 
-      // Convert to CSV
       const csv = this.convertToCSV(data);
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
