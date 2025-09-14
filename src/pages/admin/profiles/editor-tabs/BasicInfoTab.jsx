@@ -11,19 +11,25 @@ const BasicInfoTab = ({ formData, errors, onChange, isEditing }) => {
         <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
         
         <div className="space-y-4">
-          {/* Profile Photo Upload - Using existing ImageUpload */}
+          {/* Profile Photo Upload - Using correct bucket */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <ImageUpload
                 label="Profile Photo"
                 value={formData.avatar_url || ''}
                 onChange={(value) => onChange('avatar_url', value)}
-                bucket="avatars"
+                bucket="profile"  // Changed from avatars to profile
                 folder="profiles"
                 accept="image/*"
                 maxSize={2 * 1024 * 1024} // 2MB
                 showPreview={true}
                 className="w-full"
+                optimize={true}
+                optimizeOptions={{
+                  maxWidth: 400,
+                  maxHeight: 400,
+                  quality: 0.9
+                }}
               />
             </div>
             

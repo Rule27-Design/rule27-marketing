@@ -18,7 +18,7 @@ const ImageUpload = ({
   showPreview = true,
   multiple = false,
   disabled = false,
-  optimize = true, // Add optimization flag
+  optimize = true,
   optimizeOptions = {
     maxWidth: 800,
     maxHeight: 800,
@@ -92,7 +92,6 @@ const ImageUpload = ({
           mime_type: fileToUpload.type,
           file_size: fileToUpload.size,
           folder: folder,
-          bucket: bucket,
           is_public: true
         });
       } catch (mediaError) {
