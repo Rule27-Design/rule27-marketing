@@ -45,6 +45,7 @@ const iconMap = {
   'TrendingUp': LucideIcons.TrendingUp,
   'TrendingDown': LucideIcons.TrendingDown,
   'BarChart': LucideIcons.BarChart,
+  'Palette': LucideIcons.Palette,
   
   // UI
   'Bell': LucideIcons.Bell,
