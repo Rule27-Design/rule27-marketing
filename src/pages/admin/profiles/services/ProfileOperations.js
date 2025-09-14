@@ -20,21 +20,13 @@ class ProfileOperationsService {
       });
 
       // Ensure proper data types
-      if (cleanData.department) {
-        cleanData.department = Array.isArray(cleanData.department) 
-          ? cleanData.department.filter(Boolean) 
-          : [];
-      } else {
-        cleanData.department = [];
-      }
+      cleanData.department = Array.isArray(cleanData.department) 
+        ? cleanData.department.filter(Boolean) 
+        : [];
 
-      if (cleanData.expertise) {
-        cleanData.expertise = Array.isArray(cleanData.expertise) 
-          ? cleanData.expertise.filter(Boolean) 
-          : [];
-      } else {
-        cleanData.expertise = [];
-      }
+      cleanData.expertise = Array.isArray(cleanData.expertise) 
+        ? cleanData.expertise.filter(Boolean) 
+        : [];
 
       // Set defaults for booleans
       cleanData.is_public = cleanData.is_public === true;
@@ -45,7 +37,7 @@ class ProfileOperationsService {
       // Ensure sort_order is an integer
       cleanData.sort_order = parseInt(cleanData.sort_order) || 0;
 
-      // Handle empty strings as null for text fields
+      // Handle empty strings as null
       ['display_name', 'avatar_url', 'bio', 'job_title', 'linkedin_url', 'twitter_url', 'github_url'].forEach(field => {
         if (cleanData[field] === '') {
           cleanData[field] = null;
@@ -92,16 +84,40 @@ class ProfileOperationsService {
     }
   }
 
-  // Update profile - FIXED for your schema
+  // Update profile - FIXED with RLS handling
   async update(profileId, profileData, userProfile) {
     try {
-      // Only include columns that can be updated (not email or auth_user_id)
+      // First, verify the profile exists and we can access it
+      const { data: existingProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', profileId)
+        .single();
+
+      if (fetchError) {
+        console.error('Cannot fetch profile to update:', fetchError);
+        if (fetchError.code === 'PGRST116') {
+          return { 
+            success: false, 
+            error: 'Profile not found or you do not have permission to edit it' 
+          };
+        }
+        throw fetchError;
+      }
+
+      if (!existingProfile) {
+        return { 
+          success: false, 
+          error: 'Profile not found' 
+        };
+      }
+
+      // Only include columns that can be updated
       const validColumns = [
         'full_name', 'display_name', 'avatar_url', 'bio',
         'is_public', 'is_active', 'department', 'expertise',
         'job_title', 'linkedin_url', 'twitter_url', 'github_url',
-        'sort_order', 'email_notifications', 'onboarding_completed',
-        'updated_by'
+        'sort_order', 'email_notifications', 'onboarding_completed'
       ];
 
       const updateData = {};
@@ -147,28 +163,39 @@ class ProfileOperationsService {
         }
       });
 
-      // Set updated_by if we have userProfile
-      if (userProfile?.id) {
+      // Only set updated_by if we have userProfile and it's not the same user
+      // Some RLS policies might prevent updating your own updated_by field
+      if (userProfile?.id && profileId !== userProfile.id) {
         updateData.updated_by = userProfile.id;
       }
 
-      // The trigger will handle updated_at automatically
-      
-      console.log('Updating profile with data:', updateData);
+      console.log('Updating profile:', profileId, 'with data:', updateData);
 
-      const { data, error } = await supabase
+      // Use a simpler update without select() first to see if it works
+      const { error: updateError } = await supabase
         .from('profiles')
         .update(updateData)
-        .eq('id', profileId)
-        .select()
-        .single();
+        .eq('id', profileId);
 
-      if (error) {
-        console.error('Supabase update error:', error);
-        throw error;
+      if (updateError) {
+        console.error('Update error:', updateError);
+        throw updateError;
       }
 
-      return { success: true, data };
+      // Now fetch the updated profile separately
+      const { data: updatedProfile, error: refetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', profileId)
+        .single();
+
+      if (refetchError) {
+        console.warn('Could not refetch updated profile:', refetchError);
+        // Update succeeded but we couldn't fetch the result
+        return { success: true, data: { ...existingProfile, ...updateData } };
+      }
+
+      return { success: true, data: updatedProfile };
     } catch (error) {
       console.error('Error updating profile:', error);
       return { success: false, error: error.message };
@@ -190,7 +217,7 @@ class ProfileOperationsService {
         role: newRole
       };
 
-      if (userProfile?.id) {
+      if (userProfile?.id && profileId !== userProfile.id) {
         updateData.updated_by = userProfile.id;
       }
 
@@ -289,8 +316,6 @@ class ProfileOperationsService {
     }
   }
 
-  // Rest of the methods remain the same...
-  
   // Bulk delete
   async bulkDelete(profileIds, userProfile) {
     try {
@@ -372,11 +397,63 @@ class ProfileOperationsService {
     }
   }
 
+  // Get statistics
+  async getStatistics(dateRange = null) {
+    try {
+      let query = supabase
+        .from('profiles')
+        .select('*', { count: 'exact' });
+      
+      if (dateRange) {
+        if (dateRange.start) {
+          query = query.gte('created_at', dateRange.start);
+        }
+        if (dateRange.end) {
+          query = query.lte('created_at', dateRange.end);
+        }
+      }
+      
+      const { data, error, count } = await query;
+      if (error) throw error;
+      
+      const stats = {
+        total: count || 0,
+        byRole: {},
+        byDepartment: {},
+        public: 0,
+        active: 0,
+        withLogin: 0
+      };
+      
+      data.forEach(profile => {
+        // Role breakdown
+        stats.byRole[profile.role] = (stats.byRole[profile.role] || 0) + 1;
+        
+        // Department breakdown
+        if (profile.department && profile.department.length > 0) {
+          profile.department.forEach(dept => {
+            stats.byDepartment[dept] = (stats.byDepartment[dept] || 0) + 1;
+          });
+        }
+        
+        // Status counts
+        if (profile.is_public) stats.public++;
+        if (profile.is_active) stats.active++;
+        if (profile.auth_user_id) stats.withLogin++;
+      });
+      
+      return { success: true, stats };
+    } catch (error) {
+      console.error('Error getting statistics:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
   // Convert to CSV
   convertToCSV(data) {
     if (!data || data.length === 0) return '';
     
-    const headers = ['Name', 'Email', 'Role', 'Department', 'Job Title', 'Active', 'Public'];
+    const headers = ['Name', 'Email', 'Role', 'Department', 'Job Title', 'Active', 'Public', 'Created'];
     const csvHeaders = headers.join(',');
     
     const csvRows = data.map(profile => {
@@ -387,7 +464,8 @@ class ProfileOperationsService {
         this.escapeCSV(profile.department?.join('; ') || ''),
         this.escapeCSV(profile.job_title || ''),
         profile.is_active ? 'Yes' : 'No',
-        profile.is_public ? 'Yes' : 'No'
+        profile.is_public ? 'Yes' : 'No',
+        new Date(profile.created_at).toLocaleDateString()
       ];
       return row.join(',');
     });
