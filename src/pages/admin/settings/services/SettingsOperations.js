@@ -71,6 +71,7 @@ class SettingsOperationsService {
   }
 
   async updateTag(id, tagData) {
+    // Tags table doesn't have updated_at
     const { data, error } = await supabase
       .from('tags')
       .update(tagData)
@@ -149,9 +150,17 @@ class SettingsOperationsService {
 
   async createPartnership(partnershipData) {
     const slug = partnershipData.slug || this.generateSlug(partnershipData.name);
+    
+    // Ensure features is properly formatted as JSONB
+    const dataToInsert = {
+      ...partnershipData,
+      slug,
+      features: partnershipData.features || []
+    };
+    
     const { data, error } = await supabase
       .from('partnerships')
-      .insert({ ...partnershipData, slug })
+      .insert(dataToInsert)
       .select()
       .single();
     
@@ -160,9 +169,15 @@ class SettingsOperationsService {
   }
 
   async updatePartnership(id, partnershipData) {
+    // Ensure features is properly formatted
+    const dataToUpdate = {
+      ...partnershipData,
+      features: partnershipData.features || []
+    };
+    
     const { data, error } = await supabase
       .from('partnerships')
-      .update(partnershipData)
+      .update(dataToUpdate)
       .eq('id', id)
       .select()
       .single();
@@ -225,7 +240,7 @@ class SettingsOperationsService {
     return true;
   }
 
-  // Departments
+  // Departments - FIXED: No updated_at field
   async getDepartments() {
     const { data, error } = await supabase
       .from('departments')
@@ -238,9 +253,21 @@ class SettingsOperationsService {
 
   async createDepartment(departmentData) {
     const slug = departmentData.slug || this.generateSlug(departmentData.name);
+    
+    // Only include fields that exist in the table
+    const dataToInsert = {
+      name: departmentData.name,
+      slug: slug,
+      description: departmentData.description || null,
+      icon: departmentData.icon || null,
+      color: departmentData.color || null,
+      sort_order: departmentData.sort_order || 0,
+      is_active: departmentData.is_active !== false
+    };
+    
     const { data, error } = await supabase
       .from('departments')
-      .insert({ ...departmentData, slug })
+      .insert(dataToInsert)
       .select()
       .single();
     
@@ -249,14 +276,31 @@ class SettingsOperationsService {
   }
 
   async updateDepartment(id, departmentData) {
+    // Only include fields that exist in the departments table
+    const dataToUpdate = {};
+    
+    if ('name' in departmentData) dataToUpdate.name = departmentData.name;
+    if ('slug' in departmentData) dataToUpdate.slug = departmentData.slug;
+    if ('description' in departmentData) dataToUpdate.description = departmentData.description;
+    if ('icon' in departmentData) dataToUpdate.icon = departmentData.icon;
+    if ('color' in departmentData) dataToUpdate.color = departmentData.color;
+    if ('sort_order' in departmentData) dataToUpdate.sort_order = departmentData.sort_order;
+    if ('is_active' in departmentData) dataToUpdate.is_active = departmentData.is_active;
+    
+    // Note: departments table doesn't have updated_at field
+    
     const { data, error } = await supabase
       .from('departments')
-      .update(departmentData)
+      .update(dataToUpdate)
       .eq('id', id)
       .select()
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Department update error:', error);
+      throw error;
+    }
+    
     return data;
   }
 
