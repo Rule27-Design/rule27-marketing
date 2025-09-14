@@ -12,6 +12,7 @@ const ServiceZonesManager = ({ isOpen, onClose, onUpdate }) => {
   const [zones, setZones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingZone, setEditingZone] = useState(null);
+  const [showIconSelector, setShowIconSelector] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
@@ -21,6 +22,19 @@ const ServiceZonesManager = ({ isOpen, onClose, onUpdate }) => {
     is_active: true
   });
   const toast = useToast();
+
+  // Available icons for zones
+  const zoneIcons = [
+    'Grid', 'Layers', 'Box', 'Package', 'Folder',
+    'Archive', 'Server', 'Database', 'HardDrive', 'Cpu',
+    'Zap', 'Globe', 'Map', 'Navigation', 'Compass',
+    'Layout', 'PanelTop', 'Columns', 'Square', 'Circle',
+    'Hexagon', 'Triangle', 'Star', 'Heart', 'Flag',
+    'Target', 'Award', 'Trophy', 'Shield', 'Lock',
+    'Key', 'Settings', 'Wrench', 'Hammer', 'Paintbrush',
+    'Palette', 'Camera', 'Image', 'Film', 'Music',
+    'Headphones', 'Mic', 'Volume2', 'Wifi', 'Cloud'
+  ];
 
   useEffect(() => {
     fetchZones();
@@ -104,6 +118,12 @@ const ServiceZonesManager = ({ isOpen, onClose, onUpdate }) => {
       sort_order: 0,
       is_active: true
     });
+    setShowIconSelector(false);
+  };
+
+  const selectIcon = (iconName) => {
+    setFormData({ ...formData, icon: iconName });
+    setShowIconSelector(false);
   };
 
   return (
@@ -135,11 +155,50 @@ const ServiceZonesManager = ({ isOpen, onClose, onUpdate }) => {
               placeholder="auto-generated"
             />
             
-            <Input
-              label="Icon"
-              value={formData.icon}
-              onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-            />
+            {/* Icon Selector */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Icon
+              </label>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setShowIconSelector(!showIconSelector)}
+                  className="flex items-center space-x-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  <Icon name={formData.icon} size={20} />
+                  <span>{formData.icon}</span>
+                  <Icon name="ChevronDown" size={16} className="text-gray-400" />
+                </button>
+                <Input
+                  value={formData.icon}
+                  onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                  placeholder="Or type icon name"
+                  className="flex-1"
+                />
+              </div>
+              
+              {/* Icon Grid Dropdown */}
+              {showIconSelector && (
+                <div className="absolute z-10 mt-2 p-4 bg-white border rounded-lg shadow-lg max-h-64 overflow-auto">
+                  <div className="grid grid-cols-8 gap-2">
+                    {zoneIcons.map(iconName => (
+                      <button
+                        key={iconName}
+                        type="button"
+                        onClick={() => selectIcon(iconName)}
+                        className={`p-2 rounded hover:bg-gray-100 ${
+                          formData.icon === iconName ? 'bg-accent/10 border-accent border' : ''
+                        }`}
+                        title={iconName}
+                      >
+                        <Icon name={iconName} size={20} className="mx-auto" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
             
             <Input
               label="Sort Order"
@@ -149,13 +208,30 @@ const ServiceZonesManager = ({ isOpen, onClose, onUpdate }) => {
             />
             
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-2">Description</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent"
                 rows={3}
+                placeholder="Brief description of this service zone..."
               />
+            </div>
+
+            {/* Active Status */}
+            <div className="md:col-span-2">
+              <label className="flex items-center space-x-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.is_active}
+                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                  className="h-4 w-4 text-accent border-gray-300 rounded focus:ring-accent"
+                />
+                <div>
+                  <span className="text-sm font-medium text-gray-700">Active</span>
+                  <p className="text-xs text-gray-500">Zone is visible and services can be assigned to it</p>
+                </div>
+              </label>
             </div>
             
             <div className="md:col-span-2 flex justify-end space-x-2">
@@ -173,7 +249,7 @@ const ServiceZonesManager = ({ isOpen, onClose, onUpdate }) => {
 
         {/* Zones List */}
         <div>
-          <h3 className="font-medium mb-4">Existing Zones</h3>
+          <h3 className="font-medium mb-4">Existing Zones ({zones.length})</h3>
           
           {loading ? (
             <div className="text-center py-8">
@@ -186,12 +262,24 @@ const ServiceZonesManager = ({ isOpen, onClose, onUpdate }) => {
           ) : (
             <div className="space-y-2">
               {zones.map((zone) => (
-                <div key={zone.id} className="bg-white border rounded-lg p-4 flex items-center justify-between">
+                <div key={zone.id} className="bg-white border rounded-lg p-4 flex items-center justify-between hover:shadow-sm transition-shadow">
                   <div className="flex items-center space-x-3">
-                    <Icon name={zone.icon || 'Grid'} size={20} className="text-gray-400" />
+                    <div className="p-2 bg-gray-100 rounded-lg">
+                      <Icon name={zone.icon || 'Grid'} size={20} className="text-gray-600" />
+                    </div>
                     <div>
                       <p className="font-medium">{zone.title}</p>
-                      <p className="text-sm text-gray-500">{zone.slug}</p>
+                      <div className="flex items-center space-x-3 text-sm text-gray-500">
+                        <span>/{zone.slug}</span>
+                        <span>•</span>
+                        <span>Order: {zone.sort_order}</span>
+                        {zone.service_count > 0 && (
+                          <>
+                            <span>•</span>
+                            <span>{zone.service_count} services</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                   
@@ -210,14 +298,14 @@ const ServiceZonesManager = ({ isOpen, onClose, onUpdate }) => {
                         setFormData(zone);
                       }}
                     >
-                      <Icon name="Edit" size={14} />
+                      <Icon name="Edit2" size={14} />
                     </Button>
                     
                     <Button
                       variant="ghost"
                       size="xs"
                       onClick={() => handleDelete(zone.id)}
-                      className="text-red-500"
+                      className="text-red-500 hover:text-red-700"
                     >
                       <Icon name="Trash2" size={14} />
                     </Button>
