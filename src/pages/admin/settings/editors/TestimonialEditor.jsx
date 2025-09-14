@@ -177,9 +177,9 @@ const TestimonialEditor = ({ testimonial, isOpen, onClose, onSave }) => {
         <div className="space-y-4">
           <ImageUpload
             label="Client Avatar"
-            value={formData.client_avatar}
+            value={formData.client_avatar || ''}
             onChange={(value) => setFormData({ ...formData, client_avatar: value })}
-            bucket="profile"  // Using profile bucket
+            bucket="profile"
             folder="profiles"
             maxSize={1 * 1024 * 1024}
             optimize={true}
@@ -192,7 +192,7 @@ const TestimonialEditor = ({ testimonial, isOpen, onClose, onSave }) => {
 
           <ImageUpload
             label="Company Logo"
-            value={formData.client_logo}
+            value={formData.client_logo || ''}
             onChange={(value) => setFormData({ ...formData, client_logo: value })}
             bucket="media"
             folder="logos"
@@ -201,7 +201,7 @@ const TestimonialEditor = ({ testimonial, isOpen, onClose, onSave }) => {
 
           <ImageUpload
             label="Video Thumbnail"
-            value={formData.video_thumbnail}
+            value={formData.video_thumbnail || ''}
             onChange={(value) => setFormData({ ...formData, video_thumbnail: value })}
             bucket="media"
             folder="thumbnails"
