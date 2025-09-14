@@ -1,4 +1,4 @@
-// src/pages/admin/profiles/ProfileEditor.jsx
+// src/pages/admin/profiles/ProfileEditor.jsx (relevant section)
 import React, { useState, useEffect } from 'react';
 import { EditorModal } from '../../../components/admin';
 import { useFormValidation } from './hooks/useFormValidation';
@@ -25,12 +25,12 @@ const ProfileEditor = ({
   const [saving, setSaving] = useState(false);
   const [validationAttempted, setValidationAttempted] = useState(false);
   
-  // Initialize form data
+  // Initialize form data - ensure avatar_url is always a string
   const initialData = {
     email: profile?.email || '',
     full_name: profile?.full_name || '',
     display_name: profile?.display_name || '',
-    avatar_url: profile?.avatar_url || '',
+    avatar_url: profile?.avatar_url || '', // Ensure it's never null/undefined
     bio: profile?.bio || '',
     role: profile?.role || 'standard',
     is_public: profile?.is_public || false,
@@ -43,7 +43,9 @@ const ProfileEditor = ({
     github_url: profile?.github_url || '',
     sort_order: profile?.sort_order || 0,
     send_invite: false,
-    auth_user_id: profile?.auth_user_id || null
+    auth_user_id: profile?.auth_user_id || null,
+    email_notifications: profile?.email_notifications !== false,
+    onboarding_completed: profile?.onboarding_completed || false
   };
 
   const [formData, setFormData] = useState(initialData);
@@ -59,7 +61,10 @@ const ProfileEditor = ({
 
   // Handle field changes
   const handleFieldChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => ({ 
+      ...prev, 
+      [field]: value === undefined ? '' : value // Convert undefined to empty string
+    }));
     
     // Clear validation error
     if (validationAttempted) {
@@ -99,7 +104,7 @@ const ProfileEditor = ({
     if (result.success) {
       toast.success(
         profile ? 'Profile updated' : 'Profile created',
-        `${formData.full_name} has been saved successfully`
+        result.message || `${formData.full_name} has been saved successfully`
       );
       
       if (onSave) {
