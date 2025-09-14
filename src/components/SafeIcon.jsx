@@ -11,6 +11,8 @@ const iconMap = {
   'ArrowRight': LucideIcons.ArrowRight,
   'ChevronLeft': LucideIcons.ChevronLeft,
   'ChevronRight': LucideIcons.ChevronRight,
+  'ChevronDown': LucideIcons.ChevronDown,
+  'ChevronUp': LucideIcons.ChevronUp,
   
   // Actions
   'Plus': LucideIcons.Plus,
@@ -30,6 +32,7 @@ const iconMap = {
   'Users': LucideIcons.Users,
   'UserCheck': LucideIcons.UserCheck,
   'Lock': LucideIcons.Lock,
+  'Unlock': LucideIcons.Unlock,
   'Key': LucideIcons.Key,
   'Mail': LucideIcons.Mail,
   'LogOut': LucideIcons.LogOut,
@@ -59,6 +62,12 @@ const iconMap = {
   'Clock': LucideIcons.Clock,
   'Calendar': LucideIcons.Calendar,
   'Search': LucideIcons.Search,
+  'Filter': LucideIcons.Filter,
+  'Link': LucideIcons.Link,
+  'ExternalLink': LucideIcons.ExternalLink,
+  'Copy': LucideIcons.Copy,
+  'MoreHorizontal': LucideIcons.MoreHorizontal,
+  'MoreVertical': LucideIcons.MoreVertical,
   
   // Panels
   'PanelLeftClose': LucideIcons.PanelLeftClose,
@@ -67,6 +76,32 @@ const iconMap = {
   'Database': LucideIcons.Database,
   'Cloud': LucideIcons.Cloud,
   'MessageSquare': LucideIcons.MessageSquare,
+  
+  // Business/Settings Icons
+  'Folder': LucideIcons.Folder,
+  'Tag': LucideIcons.Tag,
+  'Award': LucideIcons.Award,
+  'Handshake': LucideIcons.Handshake,
+  'Building': LucideIcons.Building,
+  'Globe': LucideIcons.Globe,
+  'Code': LucideIcons.Code,
+  'Package': LucideIcons.Package,
+  'Layers': LucideIcons.Layers,
+  'Target': LucideIcons.Target,
+  'Tool': LucideIcons.Tool,
+  
+  // Social
+  'Linkedin': LucideIcons.Linkedin,
+  'Twitter': LucideIcons.Twitter,
+  'Github': LucideIcons.Github,
+  'Share2': LucideIcons.Share2,
+  
+  // Media
+  'Image': LucideIcons.Image,
+  'Camera': LucideIcons.Camera,
+  'Video': LucideIcons.Video,
+  'Play': LucideIcons.Play,
+  'Pause': LucideIcons.Pause,
 };
 
 class SafeIcon extends React.Component {
@@ -117,17 +152,20 @@ class SafeIcon extends React.Component {
     }
 
     try {
+      // Trim whitespace from icon name
+      const iconName = name?.trim();
+      
       // Try to get icon from our map first
-      let IconComponent = iconMap[name];
+      let IconComponent = iconMap[iconName];
       
       // If not in map, try to get directly from Lucide
-      if (!IconComponent && LucideIcons[name]) {
-        IconComponent = LucideIcons[name];
+      if (!IconComponent && LucideIcons[iconName]) {
+        IconComponent = LucideIcons[iconName];
       }
       
       // If still no icon, show a placeholder
       if (!IconComponent) {
-        console.warn(`Icon "${name}" not found`);
+        console.warn(`Icon "${iconName}" not found`);
         return (
           <svg
             width={size}
