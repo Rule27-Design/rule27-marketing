@@ -9,6 +9,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sessionWarning, setSessionWarning] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -30,12 +31,28 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
     return true;
   });
 
+  // Load notification count
+  useEffect(() => {
+    loadNotifications();
+  }, []);
+
+  const loadNotifications = async () => {
+    try {
+      const { count } = await supabase
+        .from('contact_submissions')
+        .select('*', { count: 'exact', head: true })
+        .eq('lead_status', 'new');
+      
+      setNotificationCount(count || 0);
+    } catch (error) {
+      console.error('Failed to load notifications:', error);
+    }
+  };
+
   // Session management
   useEffect(() => {
-    // Check session on mount
     checkSession();
     
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth event:', event);
@@ -47,7 +64,6 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
           console.log('Session refreshed successfully');
           setSessionWarning(false);
         } else if (event === 'USER_UPDATED') {
-          // Reload profile data when user is updated
           if (session?.user?.id) {
             const { data: profile } = await supabase
               .from('profiles')
@@ -64,12 +80,10 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
       }
     );
     
-    // Set up session check interval (every 5 minutes)
     const sessionInterval = setInterval(() => {
       checkSession();
     }, 5 * 60 * 1000);
     
-    // Cleanup
     return () => {
       subscription.unsubscribe();
       clearInterval(sessionInterval);
@@ -92,16 +106,13 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
         return;
       }
       
-      // Check if session is about to expire
       const expiresAt = new Date(session.expires_at * 1000);
       const now = new Date();
       const timeUntilExpiry = expiresAt - now;
       
-      // Show warning if less than 10 minutes until expiry
       if (timeUntilExpiry < 10 * 60 * 1000 && timeUntilExpiry > 0) {
         setSessionWarning(true);
         
-        // Try to refresh if less than 5 minutes
         if (timeUntilExpiry < 5 * 60 * 1000) {
           console.log('Session expiring soon, attempting refresh...');
           const { data, error: refreshError } = await supabase.auth.refreshSession();
@@ -132,7 +143,6 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
       navigate('/admin/login');
     } catch (error) {
       console.error('Sign out failed:', error);
-      // Force redirect even if signout fails
       navigate('/admin/login');
     }
   };
@@ -155,6 +165,27 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
       navigate('/admin/login');
     }
   };
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location]);
+
+  // Handle window resize for responsive sidebar
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setMobileMenuOpen(false);
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -194,7 +225,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
           variant="ghost"
           size="icon"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="bg-white shadow-md"
+          className="bg-white shadow-md hover:shadow-lg"
         >
           <Icon name={mobileMenuOpen ? 'X' : 'Menu'} size={24} />
         </Button>
@@ -203,16 +234,15 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
       {/* Sidebar */}
       <aside className={`
         fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform transition-transform duration-300
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-        lg:translate-x-0
-        ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        lg:${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex h-16 items-center justify-between px-6 border-b">
             <Link to="/admin" className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
-                <span className="text-white font-bold">27</span>
+                <Icon name="Zap" size={20} className="text-white" />
               </div>
               <div>
                 <div className="font-heading-bold text-xl">RULE27</div>
@@ -224,12 +254,12 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
           {/* User Info */}
           <div className="px-6 py-4 border-b bg-gray-50">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
                 {userProfile?.avatar_url ? (
                   <img 
                     src={userProfile.avatar_url} 
                     alt={userProfile.full_name}
-                    className="w-full h-full rounded-full object-cover"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <Icon name="User" size={20} className="text-gray-600" />
@@ -280,7 +310,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
               <span>View Site</span>
             </Link>
             <Link
-              to="/admin/setup-profile"
+              to="/admin/profile"
               className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <Icon name="User" size={20} />
@@ -300,12 +330,12 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
       {/* Main Content */}
       <div className={`
         transition-all duration-300
-        ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-0'}
+        ${sidebarOpen && window.innerWidth >= 1024 ? 'lg:ml-64' : 'lg:ml-0'}
         ${sessionWarning ? 'pt-10' : ''}
       `}>
         {/* Top Bar */}
         <header className="bg-white shadow-sm border-b">
-          <div className="flex items-center justify-between h-16 px-6">
+          <div className="flex items-center justify-between h-16 px-4 lg:px-6">
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -313,45 +343,40 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
               >
                 <Icon name={sidebarOpen ? 'PanelLeftClose' : 'PanelLeftOpen'} size={24} />
               </button>
-              <h1 className="text-xl font-heading-bold uppercase">
+              <h1 className="text-lg lg:text-xl font-heading-bold uppercase ml-14 lg:ml-0">
                 {filteredNavigation.find(item => isActivePath(item.path))?.name || 'Admin'}
               </h1>
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               {/* Session Status Indicator */}
-              <div className="flex items-center space-x-2">
+              <div className="hidden sm:flex items-center space-x-2">
                 <div className={`w-2 h-2 rounded-full ${sessionWarning ? 'bg-yellow-500' : 'bg-green-500'}`} />
                 <span className="text-xs text-gray-500">
                   {sessionWarning ? 'Session Expiring' : 'Connected'}
                 </span>
               </div>
               
-              {/* Quick Actions */}
+              {/* Notifications */}
               <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/admin/articles?action=new')}
-                iconName="Plus"
-              >
-                New Article
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
+                variant="ghost"
+                size="icon"
                 onClick={() => navigate('/admin/leads')}
                 className="relative"
               >
                 <Icon name="Bell" size={20} />
-                {/* Notification dot */}
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full"></span>
+                {notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-accent text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                    {notificationCount > 99 ? '99+' : notificationCount}
+                  </span>
+                )}
               </Button>
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="p-6">
+        <main className="p-4 lg:p-6">
           <Outlet context={{ userProfile, checkSession }} />
         </main>
       </div>
