@@ -92,12 +92,12 @@ const AuthCallback = () => {
         }
       } else {
         console.log('No session found, redirecting to login');
-        navigate('/admin/login');
+        navigate('/login'); // Changed from '/admin/login'
       }
     } catch (error) {
       console.error('Auth callback error:', error);
       setError(error.message || 'Authentication failed');
-      setTimeout(() => navigate('/admin/login'), 3000);
+      setTimeout(() => navigate('/login'), 3000); // Changed from '/admin/login'
     } finally {
       setLoading(false);
     }
@@ -112,7 +112,7 @@ const AuthCallback = () => {
     // FLOW LOGIC:
     // 1. First check if password needs to be set (ALWAYS FIRST for new users)
     // 2. Then check if profile needs completion
-    // 3. Finally route to admin or no-access based on role
+    // 3. Route based on role: admin/contributor -> /admin, standard -> /client
     
     const hasPassword = userData?.has_password === true;
     const isFirstLogin = userData?.first_login !== false;
@@ -135,15 +135,20 @@ const AuthCallback = () => {
       console.log('Redirecting to profile setup');
       navigate('/admin/setup-profile?step=profile');
     }
-    // STEP 3: Check role access
+    // STEP 3: Route based on role
     else if (profile.role === 'admin' || profile.role === 'contributor') {
       console.log('Redirecting to admin dashboard');
       navigate('/admin');
     }
-    // STEP 4: No admin access
+    // STEP 4: Standard users go to client portal
+    else if (profile.role === 'standard') {
+      console.log('Redirecting to client portal');
+      navigate('/client');
+    }
+    // STEP 5: Unknown role - redirect to home
     else {
-      console.log('User has standard role, no admin access');
-      navigate('/no-access');
+      console.log('Unknown role, redirecting to home');
+      navigate('/');
     }
   };
 
