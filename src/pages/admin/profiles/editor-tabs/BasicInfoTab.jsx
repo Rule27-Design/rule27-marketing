@@ -18,7 +18,7 @@ const BasicInfoTab = ({ formData, errors, onChange, isEditing }) => {
                 label="Profile Photo"
                 value={formData.avatar_url || ''}
                 onChange={(value) => onChange('avatar_url', value)}
-                bucket="profile"  // Changed from avatars to profile
+                bucket="avatar"  // Changed from avatars to profile
                 folder="profiles"
                 accept="image/*"
                 maxSize={2 * 1024 * 1024} // 2MB
