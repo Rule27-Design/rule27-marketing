@@ -406,7 +406,7 @@ const Routes = ({ session }) => {
           
           {/* Admin Auth Routes (Outside of protected routes) */}
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/setup-profile" element={<SetupProfile />} />
+          <Route path="/admin/profile" element={<SetupProfile />} />
           <Route path="/admin/forgot-password" element={<ForgotPassword />} />
           <Route path="/admin/reset-password" element={<ResetPassword />} />
           
