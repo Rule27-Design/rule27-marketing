@@ -228,7 +228,15 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
                 <img 
                   src="/assets/Logo/rule27-icon-color.png" 
                   alt="Rule27" 
-                  className="w-full h-full"
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    // Fallback if image fails to load
+                    e.target.style.display = 'none';
+                    const fallback = document.createElement('div');
+                    fallback.className = 'w-10 h-10 bg-accent rounded-full flex items-center justify-center';
+                    fallback.innerHTML = '<span class="text-white font-bold text-lg">27</span>';
+                    e.target.parentElement.appendChild(fallback);
+                  }}
                 />
               </div>
               {sidebarOpen && (
@@ -353,7 +361,14 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
                 <img 
                   src="/assets/Logo/rule27-icon-color.png" 
                   alt="Rule27" 
-                  className="w-full h-full"
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    const fallback = document.createElement('div');
+                    fallback.className = 'w-10 h-10 bg-accent rounded-full flex items-center justify-center';
+                    fallback.innerHTML = '<span class="text-white font-bold text-lg">27</span>';
+                    e.target.parentElement.appendChild(fallback);
+                  }}
                 />
               </div>
               <div>
