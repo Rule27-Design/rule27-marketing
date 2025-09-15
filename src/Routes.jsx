@@ -20,6 +20,7 @@ import WorkShowcaseTheater from './pages/work-showcase-theater';
 import CaseStudyDetail from './pages/case-study-detail';
 import ArticlesHub from './pages/articles-hub';
 import AboutProcessStudio from './pages/about-process-studio';
+import ContactConsultationPortal from './pages/contact-consultation-portal';
 import AcceptInvite from './pages/AcceptInvite';
 
 // Auth Pages
