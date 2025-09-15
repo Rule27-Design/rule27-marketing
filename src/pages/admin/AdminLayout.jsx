@@ -18,16 +18,19 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
     { name: 'Services', path: '/admin/services', icon: 'Zap' },
     { name: 'Articles', path: '/admin/articles', icon: 'FileText' },
     { name: 'Case Studies', path: '/admin/case-studies', icon: 'Briefcase' },
-    { name: 'Profiles', path: '/admin/profiles', icon: 'Users', adminOnly: true },
+    { name: 'Profiles', path: '/admin/profiles', icon: 'Users', roles: ['admin'] },
     { name: 'Leads', path: '/admin/leads', icon: 'UserCheck' },
+    { name: 'Clients', path: '/admin/clients', icon: 'Building', roles: ['admin', 'client_manager'] },
     { name: 'Analytics', path: '/admin/analytics', icon: 'TrendingUp' },
-    { name: 'Settings', path: '/admin/settings', icon: 'Settings', adminOnly: true },
+    { name: 'Settings', path: '/admin/settings', icon: 'Settings', roles: ['admin'] },
   ];
 
   const filteredNavigation = navigation.filter(item => {
-    if (item.adminOnly && userProfile?.role !== 'admin') {
-      return false;
+    // If item has specific roles requirement, check if user has one of those roles
+    if (item.roles && item.roles.length > 0) {
+      return item.roles.includes(userProfile?.role);
     }
+    // If no roles specified, it's available to all admin panel users
     return true;
   });
 
@@ -171,6 +174,20 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
     setMobileMenuOpen(false);
   }, [location]);
 
+  // Get role display text
+  const getRoleDisplay = (role) => {
+    switch(role) {
+      case 'admin':
+        return 'Administrator';
+      case 'client_manager':
+        return 'Client Manager';
+      case 'contributor':
+        return 'Contributor';
+      default:
+        return role || 'User';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Session Warning Banner */}
@@ -268,7 +285,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
                     {userProfile?.full_name || 'User'}
                   </p>
                   <p className="text-xs text-gray-500 uppercase">
-                    {userProfile?.role || 'contributor'}
+                    {getRoleDisplay(userProfile?.role)}
                   </p>
                 </div>
               )}
@@ -295,7 +312,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
                 {sidebarOpen && (
                   <>
                     <span className="font-medium">{item.name}</span>
-                    {item.adminOnly && (
+                    {item.roles && item.roles.includes('admin') && item.roles.length === 1 && (
                       <span className="ml-auto text-xs opacity-60">Admin</span>
                     )}
                   </>
@@ -397,7 +414,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
                   {userProfile?.full_name || 'User'}
                 </p>
                 <p className="text-xs text-gray-500 uppercase">
-                  {userProfile?.role || 'contributor'}
+                  {getRoleDisplay(userProfile?.role)}
                 </p>
               </div>
             </div>
@@ -420,7 +437,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
               >
                 <Icon name={item.icon} size={20} />
                 <span className="font-medium">{item.name}</span>
-                {item.adminOnly && (
+                {item.roles && item.roles.includes('admin') && item.roles.length === 1 && (
                   <span className="ml-auto text-xs opacity-60">Admin</span>
                 )}
               </Link>
