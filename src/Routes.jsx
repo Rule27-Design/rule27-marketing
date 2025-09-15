@@ -1,4 +1,4 @@
-// src/Routes.jsx - Updated with unified login and role-based routing
+// src/Routes.jsx
 import React, { useEffect } from "react";
 import { BrowserRouter, Routes as RouterRoutes, Route, Navigate, useNavigate } from "react-router-dom";
 import ScrollToTop from "components/ScrollToTop";
@@ -23,7 +23,7 @@ import AboutProcessStudio from './pages/about-process-studio';
 import ContactConsultationPortal from './pages/contact-consultation-portal';
 
 // Auth Pages
-import Login from './pages/Login'; // Unified login page
+import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import SetupProfile from './pages/admin/SetupProfile';
@@ -38,8 +38,13 @@ import AdminProfiles from './pages/admin/profiles/Profiles';
 import AdminSettings from './pages/admin/settings/Settings';
 import AdminLeads from './pages/admin/Leads';
 import AdminAnalytics from './pages/admin/Analytics';
+import AdminClients from './pages/admin/clients/Clients';
+import InviteClient from './pages/admin/clients/InviteClient';
+import ClientInvitations from './pages/admin/clients/Invitations';
+import ClientDetail from './pages/admin/clients/ClientDetail';
+import EditClient from './pages/admin/clients/EditClient';
 
-// Client Pages (create these as needed)
+// Client Pages
 import ClientLayout from './pages/client/ClientLayout';
 import ClientDashboard from './pages/client/Dashboard';
 import ClientProjects from './pages/client/Projects';
@@ -266,8 +271,8 @@ const AuthCallback = () => {
       emitSettings('auth:redirect_profile_setup', redirectData);
       navigate('/admin/setup-profile?step=profile');
     }
-    // STEP 3: Route based on role
-    else if (profile.role === 'admin' || profile.role === 'contributor') {
+    // STEP 3: Route based on role - FIXED TO INCLUDE client_manager
+    else if (profile.role === 'admin' || profile.role === 'contributor' || profile.role === 'client_manager') {
       console.log('Redirecting to admin dashboard');
       const redirectData = { 
         userId: session.user.id, 
@@ -427,9 +432,9 @@ const Routes = ({ session }) => {
           {/* Profile Setup Route (accessible during onboarding) */}
           <Route path="/admin/setup-profile" element={<SetupProfile />} />
 
-          {/* Protected Admin Routes - For admin and contributor roles */}
+          {/* Protected Admin Routes - For admin, contributor, and client_manager roles */}
           <Route path="/admin" element={
-            <ProtectedRoute session={session} requiredRoles={['admin', 'contributor']}>
+            <ProtectedRoute session={session} requiredRoles={['admin', 'contributor', 'client_manager']}>
               <AdminLayout />
             </ProtectedRoute>
           }>
@@ -437,11 +442,49 @@ const Routes = ({ session }) => {
             <Route path="services" element={<AdminServices />} />
             <Route path="articles" element={<AdminArticles />} />
             <Route path="case-studies" element={<AdminCaseStudies />} />
-            <Route path="profiles" element={<AdminProfiles />} />
+            
+            {/* Only admins can see profiles and settings */}
+            <Route path="profiles" element={
+              <ProtectedRoute session={session} requiredRoles={['admin']}>
+                <AdminProfiles />
+              </ProtectedRoute>
+            } />
+            <Route path="settings" element={
+              <ProtectedRoute session={session} requiredRoles={['admin']}>
+                <AdminSettings />
+              </ProtectedRoute>
+            } />
+            
+            {/* Admins and client managers can manage clients */}
+            <Route path="clients" element={
+              <ProtectedRoute session={session} requiredRoles={['admin', 'client_manager']}>
+                <AdminClients />
+              </ProtectedRoute>
+            } />
+            <Route path="clients/invite" element={
+              <ProtectedRoute session={session} requiredRoles={['admin']}>
+                <InviteClient />
+              </ProtectedRoute>
+            } />
+            <Route path="clients/invitations" element={
+              <ProtectedRoute session={session} requiredRoles={['admin']}>
+                <ClientInvitations />
+              </ProtectedRoute>
+            } />
+            <Route path="clients/:id" element={
+              <ProtectedRoute session={session} requiredRoles={['admin', 'client_manager']}>
+                <ClientDetail />
+              </ProtectedRoute>
+            } />
+            <Route path="clients/:id/edit" element={
+              <ProtectedRoute session={session} requiredRoles={['admin', 'client_manager']}>
+                <EditClient />
+              </ProtectedRoute>
+            } />
+            
             <Route path="profile" element={<SetupProfile />} />
             <Route path="leads" element={<AdminLeads />} />
             <Route path="analytics" element={<AdminAnalytics />} />
-            <Route path="settings" element={<AdminSettings />} />
           </Route>
 
           {/* Protected Client Portal Routes - For standard role (paying clients) */}
