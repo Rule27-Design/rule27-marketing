@@ -244,7 +244,7 @@ const AcceptInvite = () => {
                   Welcome {invitation.metadata?.full_name?.split(' ')[0] || 'Aboard'}!
                 </h2>
                 <p className="text-gray-400">
-                  You've been invited to join the Rule27 Design client portal
+                  You're about to join Rule27 Design on your journey toward something great.
                 </p>
               </div>
 
