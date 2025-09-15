@@ -307,7 +307,7 @@ const AcceptInvite = () => {
                 className="bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white font-heading-regular uppercase tracking-wider transform hover:scale-[1.02] transition-all duration-300"
                 iconName="ArrowRight"
               >
-                Accept Invitation
+                 Let's Get Started
               </Button>
 
               {/* Expiry Notice */}
