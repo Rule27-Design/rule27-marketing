@@ -20,7 +20,7 @@ import WorkShowcaseTheater from './pages/work-showcase-theater';
 import CaseStudyDetail from './pages/case-study-detail';
 import ArticlesHub from './pages/articles-hub';
 import AboutProcessStudio from './pages/about-process-studio';
-import ContactConsultationPortal from './pages/contact-consultation-portal';
+import AcceptInvite from './pages/AcceptInvite';
 
 // Auth Pages
 import Login from './pages/Login';
@@ -50,6 +50,7 @@ import ClientDashboard from './pages/client/Dashboard';
 import ClientProjects from './pages/client/Projects';
 import ClientInvoices from './pages/client/Invoices';
 import ClientSupport from './pages/client/Support';
+import ClientProfile from './pages/client/Profile';
 import ClientProfile from './pages/client/Profile';
 
 // Utils
@@ -422,7 +423,10 @@ const Routes = ({ session }) => {
           <Route path="/articles" element={<ArticlesHub />} />
           <Route path="/about" element={<AboutProcessStudio />} />
           <Route path="/contact" element={<ContactConsultationPortal />} />
-          
+
+          {/* Add this public route for accepting invites */}
+          <Route path="/accept-invite" element={<AcceptInvite />} />
+
           {/* Auth Routes - Unified Login */}
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
