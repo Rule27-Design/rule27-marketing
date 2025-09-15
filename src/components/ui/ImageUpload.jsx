@@ -84,29 +84,37 @@ const ImageUpload = ({
         .from(bucket)
         .getPublicUrl(filePath);
 
-      // Optionally store in media table for tracking (with proper auth)
+      // Optionally store in media table for tracking
       try {
         // Get the current user session
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session?.user) {
-          // Only try to insert if we have a user
-          const { error: mediaError } = await supabase.from('media').insert({
-            file_name: fileName,
-            original_name: file.name,
-            file_url: publicUrl,
-            file_path: filePath,
-            file_type: 'image',
-            mime_type: fileToUpload.type,
-            file_size: fileToUpload.size,
-            folder: folder,
-            is_public: true,
-            uploaded_by: session.user.id // Include the user ID for RLS
-          });
+          // Get the profile ID for the current user
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('auth_user_id', session.user.id)
+            .single();
 
-          if (mediaError) {
-            // Log but don't fail the upload
-            console.warn('Failed to track in media table:', mediaError);
+          if (profile) {
+            // Insert with the profile ID, not the auth user ID
+            const { error: mediaError } = await supabase.from('media').insert({
+              file_name: fileName,
+              original_name: file.name,
+              file_url: publicUrl,
+              file_path: filePath,
+              file_type: 'image',
+              mime_type: fileToUpload.type,
+              file_size: fileToUpload.size,
+              folder: folder,
+              is_public: true,
+              uploaded_by: profile.id // Use profile.id, not session.user.id
+            });
+
+            if (mediaError) {
+              console.warn('Failed to track in media table:', mediaError);
+            }
           }
         }
       } catch (mediaError) {
