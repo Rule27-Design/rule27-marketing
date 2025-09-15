@@ -179,7 +179,7 @@ const TestimonialEditor = ({ testimonial, isOpen, onClose, onSave }) => {
             label="Client Avatar"
             value={formData.client_avatar || ''}
             onChange={(value) => setFormData({ ...formData, client_avatar: value })}
-            bucket="profile"
+            bucket="avatar"
             folder="profiles"
             maxSize={1 * 1024 * 1024}
             optimize={true}
