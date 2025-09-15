@@ -51,7 +51,6 @@ import ClientProjects from './pages/client/Projects';
 import ClientInvoices from './pages/client/Invoices';
 import ClientSupport from './pages/client/Support';
 import ClientProfile from './pages/client/Profile';
-import ClientProfile from './pages/client/Profile';
 
 // Utils
 import ProtectedRoute from './components/ProtectedRoute';
