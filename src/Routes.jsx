@@ -1,4 +1,4 @@
-// src/Routes.jsx - Updated with correct import paths for all admin modules
+// src/Routes.jsx - Updated with unified login and role-based routing
 import React, { useEffect } from "react";
 import { BrowserRouter, Routes as RouterRoutes, Route, Navigate, useNavigate } from "react-router-dom";
 import ScrollToTop from "components/ScrollToTop";
@@ -10,7 +10,7 @@ import { useArticleEvents, ARTICLE_EVENTS } from './pages/admin/articles/hooks/u
 import { useCaseStudyEvents, CASE_STUDY_EVENTS } from './pages/admin/case-studies/hooks/useCaseStudyEvents';
 import { useServiceEvents, SERVICE_EVENTS } from './pages/admin/services/hooks/useServiceEvents';
 import { useProfileEvents, PROFILE_EVENTS } from './pages/admin/profiles/hooks/useProfileEvents';
-import { useSettingsEvents } from './pages/admin/settings/hooks/useSettingsEvents'; // Added
+import { useSettingsEvents } from './pages/admin/settings/hooks/useSettingsEvents';
 
 // Public Pages
 import HomepageExperienceHub from './pages/homepage-experience-hub';
@@ -22,31 +22,43 @@ import ArticlesHub from './pages/articles-hub';
 import AboutProcessStudio from './pages/about-process-studio';
 import ContactConsultationPortal from './pages/contact-consultation-portal';
 
-// Admin Pages - All with correct paths
+// Auth Pages
+import Login from './pages/Login'; // Unified login page
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import SetupProfile from './pages/admin/SetupProfile';
+
+// Admin Pages
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminServices from './pages/admin/services/Services';
 import AdminArticles from './pages/admin/articles/Articles';
 import AdminCaseStudies from './pages/admin/case-studies/CaseStudies';
 import AdminProfiles from './pages/admin/profiles/Profiles';
-import AdminSettings from './pages/admin/settings/Settings'; // Updated path
+import AdminSettings from './pages/admin/settings/Settings';
 import AdminLeads from './pages/admin/Leads';
 import AdminAnalytics from './pages/admin/Analytics';
-import AdminLogin from './pages/admin/Login';
+
+// Client Pages (create these as needed)
+import ClientLayout from './pages/client/ClientLayout';
+import ClientDashboard from './pages/client/Dashboard';
+import ClientProjects from './pages/client/Projects';
+import ClientInvoices from './pages/client/Invoices';
+import ClientSupport from './pages/client/Support';
+import ClientProfile from './pages/client/Profile';
+
+// Utils
 import ProtectedRoute from './components/ProtectedRoute';
-import SetupProfile from './pages/admin/SetupProfile';
-import ForgotPassword from './pages/admin/ForgotPassword';
-import ResetPassword from './pages/admin/ResetPassword';
 import { supabase } from './lib/supabase';
 
-// Auth Callback Component with Event Integration for all modules
+// Auth Callback Component with Event Integration and Role-Based Routing
 const AuthCallback = () => {
   const navigate = useNavigate();
   const { emit: emitArticle } = useArticleEvents();
   const { emit: emitCaseStudy } = useCaseStudyEvents();
   const { emit: emitService } = useServiceEvents();
   const { emit: emitProfile } = useProfileEvents();
-  const { emit: emitSettings } = useSettingsEvents(); // Added
+  const { emit: emitSettings } = useSettingsEvents();
 
   React.useEffect(() => {
     handleAuthCallback();
@@ -59,7 +71,7 @@ const AuthCallback = () => {
       emitCaseStudy('auth:callback_started', { timestamp: Date.now() });
       emitService('auth:callback_started', { timestamp: Date.now() });
       emitProfile('auth:callback_started', { timestamp: Date.now() });
-      emitSettings('auth:callback_started', { timestamp: Date.now() }); // Added
+      emitSettings('auth:callback_started', { timestamp: Date.now() });
 
       // Get the session from the URL
       const { data: { session }, error } = await supabase.auth.getSession();
@@ -70,8 +82,8 @@ const AuthCallback = () => {
         emitCaseStudy('auth:callback_failed', { error: error.message });
         emitService('auth:callback_failed', { error: error.message });
         emitProfile('auth:callback_failed', { error: error.message });
-        emitSettings('auth:callback_failed', { error: error.message }); // Added
-        navigate('/admin/login');
+        emitSettings('auth:callback_failed', { error: error.message });
+        navigate('/login');
         return;
       }
       
@@ -87,7 +99,7 @@ const AuthCallback = () => {
         emitCaseStudy('auth:session_found', authData);
         emitService('auth:session_found', authData);
         emitProfile('auth:session_found', authData);
-        emitSettings('auth:session_found', authData); // Added
+        emitSettings('auth:session_found', authData);
         
         // Wait a moment for the trigger to create/update the profile
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -111,7 +123,7 @@ const AuthCallback = () => {
           emitCaseStudy('auth:profile_creating', profileCreatingData);
           emitService('auth:profile_creating', profileCreatingData);
           emitProfile('auth:profile_creating', profileCreatingData);
-          emitSettings('auth:profile_creating', profileCreatingData); // Added
+          emitSettings('auth:profile_creating', profileCreatingData);
           
           const userData = session.user.user_metadata;
           const { data: newProfile, error: createError } = await supabase
@@ -138,7 +150,7 @@ const AuthCallback = () => {
             emitCaseStudy('auth:profile_creation_failed', errorData);
             emitService('auth:profile_creation_failed', errorData);
             emitProfile('auth:profile_creation_failed', errorData);
-            emitSettings('auth:profile_creation_failed', errorData); // Added
+            emitSettings('auth:profile_creation_failed', errorData);
             
             // Try to fetch existing profile by email
             const { data: existingProfile } = await supabase
@@ -159,10 +171,10 @@ const AuthCallback = () => {
               emitCaseStudy('auth:profile_linked', linkedData);
               emitService('auth:profile_linked', linkedData);
               emitProfile('auth:profile_linked', linkedData);
-              emitSettings('auth:profile_linked', linkedData); // Added
+              emitSettings('auth:profile_linked', linkedData);
               handleNavigation(session, existingProfile);
             } else {
-              navigate('/admin/login');
+              navigate('/login');
             }
           } else {
             const createdData = { profileId: newProfile.id };
@@ -170,7 +182,7 @@ const AuthCallback = () => {
             emitCaseStudy('auth:profile_created', createdData);
             emitService('auth:profile_created', createdData);
             emitProfile('auth:profile_created', createdData);
-            emitSettings('auth:profile_created', createdData); // Added
+            emitSettings('auth:profile_created', createdData);
             handleNavigation(session, newProfile);
           }
         } else {
@@ -179,7 +191,7 @@ const AuthCallback = () => {
           emitCaseStudy('auth:profile_found', foundData);
           emitService('auth:profile_found', foundData);
           emitProfile('auth:profile_found', foundData);
-          emitSettings('auth:profile_found', foundData); // Added
+          emitSettings('auth:profile_found', foundData);
           handleNavigation(session, profile);
         }
       } else {
@@ -189,8 +201,8 @@ const AuthCallback = () => {
         emitCaseStudy('auth:no_session', noSessionData);
         emitService('auth:no_session', noSessionData);
         emitProfile('auth:no_session', noSessionData);
-        emitSettings('auth:no_session', noSessionData); // Added
-        navigate('/admin/login');
+        emitSettings('auth:no_session', noSessionData);
+        navigate('/login');
       }
     } catch (error) {
       console.error('Auth callback error:', error);
@@ -199,8 +211,8 @@ const AuthCallback = () => {
       emitCaseStudy('auth:callback_error', errorData);
       emitService('auth:callback_error', errorData);
       emitProfile('auth:callback_error', errorData);
-      emitSettings('auth:callback_error', errorData); // Added
-      navigate('/admin/login');
+      emitSettings('auth:callback_error', errorData);
+      navigate('/login');
     }
   };
 
@@ -230,7 +242,7 @@ const AuthCallback = () => {
     emitCaseStudy('auth:navigation_decision', navData);
     emitService('auth:navigation_decision', navData);
     emitProfile('auth:navigation_decision', navData);
-    emitSettings('auth:navigation_decision', navData); // Added
+    emitSettings('auth:navigation_decision', navData);
     
     // STEP 1: Password setup (for invited users who haven't set password)
     if (!hasPassword && isFirstLogin) {
@@ -240,7 +252,7 @@ const AuthCallback = () => {
       emitCaseStudy('auth:redirect_password_setup', redirectData);
       emitService('auth:redirect_password_setup', redirectData);
       emitProfile('auth:redirect_password_setup', redirectData);
-      emitSettings('auth:redirect_password_setup', redirectData); // Added
+      emitSettings('auth:redirect_password_setup', redirectData);
       navigate('/admin/setup-profile?step=password');
     }
     // STEP 2: Profile setup (if password is set but profile not complete)
@@ -251,10 +263,10 @@ const AuthCallback = () => {
       emitCaseStudy('auth:redirect_profile_setup', redirectData);
       emitService('auth:redirect_profile_setup', redirectData);
       emitProfile('auth:redirect_profile_setup', redirectData);
-      emitSettings('auth:redirect_profile_setup', redirectData); // Added
+      emitSettings('auth:redirect_profile_setup', redirectData);
       navigate('/admin/setup-profile?step=profile');
     }
-    // STEP 3: Check role access
+    // STEP 3: Route based on role
     else if (profile.role === 'admin' || profile.role === 'contributor') {
       console.log('Redirecting to admin dashboard');
       const redirectData = { 
@@ -265,21 +277,26 @@ const AuthCallback = () => {
       emitCaseStudy('auth:redirect_admin', redirectData);
       emitService('auth:redirect_admin', redirectData);
       emitProfile('auth:redirect_admin', redirectData);
-      emitSettings('auth:redirect_admin', redirectData); // Added
+      emitSettings('auth:redirect_admin', redirectData);
       navigate('/admin');
     }
-    // STEP 4: No admin access
-    else {
-      console.log('User has standard role, no admin access');
+    // STEP 4: Standard users go to client portal
+    else if (profile.role === 'standard') {
+      console.log('Redirecting to client portal');
       const redirectData = { 
         userId: session.user.id, 
         role: profile.role 
       };
-      emitArticle('auth:redirect_home', redirectData);
-      emitCaseStudy('auth:redirect_home', redirectData);
-      emitService('auth:redirect_home', redirectData);
-      emitProfile('auth:redirect_home', redirectData);
-      emitSettings('auth:redirect_home', redirectData); // Added
+      emitArticle('auth:redirect_client', redirectData);
+      emitCaseStudy('auth:redirect_client', redirectData);
+      emitService('auth:redirect_client', redirectData);
+      emitProfile('auth:redirect_client', redirectData);
+      emitSettings('auth:redirect_client', redirectData);
+      navigate('/client');
+    }
+    // STEP 5: Unknown role or no access
+    else {
+      console.log('Unknown role, redirecting to home');
       navigate('/');
     }
   };
@@ -301,7 +318,7 @@ const Routes = ({ session }) => {
   const { emit: emitCaseStudy, subscribeToEvents: subscribeCaseStudy } = useCaseStudyEvents();
   const { emit: emitService, subscribeToEvents: subscribeService } = useServiceEvents();
   const { emit: emitProfile, subscribeToEvents: subscribeProfile } = useProfileEvents();
-  const { emit: emitSettings, subscribeToEvents: subscribeSettings } = useSettingsEvents(); // Added
+  const { emit: emitSettings, subscribeToEvents: subscribeSettings } = useSettingsEvents();
 
   // Set up global route change tracking
   useEffect(() => {
@@ -316,7 +333,7 @@ const Routes = ({ session }) => {
       emitCaseStudy('navigation:route_changed', routeData);
       emitService('navigation:route_changed', routeData);
       emitProfile('navigation:route_changed', routeData);
-      emitSettings('navigation:route_changed', routeData); // Added
+      emitSettings('navigation:route_changed', routeData);
     };
 
     // Listen for popstate events (back/forward navigation)
@@ -342,7 +359,7 @@ const Routes = ({ session }) => {
       emitCaseStudy('session:established', sessionData);
       emitService('session:established', sessionData);
       emitProfile('session:established', sessionData);
-      emitSettings('session:established', sessionData); // Added
+      emitSettings('session:established', sessionData);
     } else {
       const clearedData = {
         timestamp: Date.now()
@@ -351,7 +368,7 @@ const Routes = ({ session }) => {
       emitCaseStudy('session:cleared', clearedData);
       emitService('session:cleared', clearedData);
       emitProfile('session:cleared', clearedData);
-      emitSettings('session:cleared', clearedData); // Added
+      emitSettings('session:cleared', clearedData);
     }
   }, [session, emitArticle, emitCaseStudy, emitService, emitProfile, emitSettings]);
 
@@ -401,18 +418,18 @@ const Routes = ({ session }) => {
           <Route path="/about" element={<AboutProcessStudio />} />
           <Route path="/contact" element={<ContactConsultationPortal />} />
           
-          {/* Auth Routes */}
+          {/* Auth Routes - Unified Login */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           
-          {/* Admin Auth Routes (Outside of protected routes) */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/setup-profile" element={<SetupProfile />} /> {/* Changed from /admin/profile */}
-          <Route path="/admin/forgot-password" element={<ForgotPassword />} />
-          <Route path="/admin/reset-password" element={<ResetPassword />} />
+          {/* Profile Setup Route (accessible during onboarding) */}
+          <Route path="/admin/setup-profile" element={<SetupProfile />} />
 
-          {/* Protected Admin Routes - All event-enabled */}
+          {/* Protected Admin Routes - For admin and contributor roles */}
           <Route path="/admin" element={
-            <ProtectedRoute session={session}>
+            <ProtectedRoute session={session} requiredRoles={['admin', 'contributor']}>
               <AdminLayout />
             </ProtectedRoute>
           }>
@@ -421,10 +438,23 @@ const Routes = ({ session }) => {
             <Route path="articles" element={<AdminArticles />} />
             <Route path="case-studies" element={<AdminCaseStudies />} />
             <Route path="profiles" element={<AdminProfiles />} />
-            <Route path="profile" element={<SetupProfile />} /> {/* This one has navigation */}
+            <Route path="profile" element={<SetupProfile />} />
             <Route path="leads" element={<AdminLeads />} />
             <Route path="analytics" element={<AdminAnalytics />} />
             <Route path="settings" element={<AdminSettings />} />
+          </Route>
+
+          {/* Protected Client Portal Routes - For standard role (paying clients) */}
+          <Route path="/client" element={
+            <ProtectedRoute session={session} requiredRoles={['standard']}>
+              <ClientLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<ClientDashboard />} />
+            <Route path="projects" element={<ClientProjects />} />
+            <Route path="invoices" element={<ClientInvoices />} />
+            <Route path="support" element={<ClientSupport />} />
+            <Route path="profile" element={<ClientProfile />} />
           </Route>
           
           {/* 404 - Not Found */}
