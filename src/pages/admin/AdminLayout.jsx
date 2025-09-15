@@ -171,22 +171,6 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
     setMobileMenuOpen(false);
   }, [location]);
 
-  // Handle window resize for responsive sidebar
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setMobileMenuOpen(false);
-        setSidebarOpen(true);
-      } else {
-        setSidebarOpen(false);
-      }
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Session Warning Banner */}
@@ -231,18 +215,146 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
         </Button>
       </div>
 
-      {/* Sidebar - Fixed the dynamic classes issue */}
+      {/* Desktop Sidebar - Always visible, changes width based on state */}
       <aside className={`
-        fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform transition-transform duration-300
+        hidden lg:block fixed inset-y-0 left-0 z-30 bg-white shadow-lg transition-all duration-300
+        ${sidebarOpen ? 'w-64' : 'w-20'}
+      `}>
+        <div className="flex h-full flex-col">
+          {/* Logo */}
+          <div className={`flex h-16 items-center border-b ${sidebarOpen ? 'px-6' : 'px-5 justify-center'}`}>
+            <Link to="/admin" className="flex items-center space-x-3">
+              <div className="w-10 h-10 flex-shrink-0">
+                <img 
+                  src="/assets/Logo/rule27-icon-color.svg" 
+                  alt="Rule27" 
+                  className="w-full h-full"
+                />
+              </div>
+              {sidebarOpen && (
+                <div>
+                  <div className="font-heading-bold text-xl">RULE27</div>
+                  <div className="text-xs text-gray-600 uppercase tracking-wider">Admin Panel</div>
+                </div>
+              )}
+            </Link>
+          </div>
+
+          {/* User Info */}
+          <div className={`border-b bg-gray-50 ${sidebarOpen ? 'px-6 py-4' : 'p-3'}`}>
+            <div className={`flex items-center ${sidebarOpen ? 'space-x-3' : 'justify-center'}`}>
+              <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+                {userProfile?.avatar_url ? (
+                  <img 
+                    src={userProfile.avatar_url} 
+                    alt={userProfile.full_name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Icon name="User" size={20} className="text-gray-600" />
+                )}
+              </div>
+              {sidebarOpen && (
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {userProfile?.full_name || 'User'}
+                  </p>
+                  <p className="text-xs text-gray-500 uppercase">
+                    {userProfile?.role || 'contributor'}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <nav className={`flex-1 space-y-1 py-4 overflow-y-auto ${sidebarOpen ? 'px-3' : 'px-2'}`}>
+            {filteredNavigation.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`
+                  flex items-center rounded-lg transition-all duration-200 relative group
+                  ${sidebarOpen ? 'px-3 py-2 space-x-3' : 'p-3 justify-center'}
+                  ${isActivePath(item.path)
+                    ? 'bg-accent text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                  }
+                `}
+                title={!sidebarOpen ? item.name : ''}
+              >
+                <Icon name={item.icon} size={20} className="flex-shrink-0" />
+                {sidebarOpen && (
+                  <>
+                    <span className="font-medium">{item.name}</span>
+                    {item.adminOnly && (
+                      <span className="ml-auto text-xs opacity-60">Admin</span>
+                    )}
+                  </>
+                )}
+                {!sidebarOpen && (
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                    {item.name}
+                  </div>
+                )}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Bottom Actions */}
+          <div className={`border-t space-y-2 ${sidebarOpen ? 'p-4' : 'p-2'}`}>
+            <Link
+              to="/"
+              className={`
+                flex items-center text-gray-700 hover:bg-gray-100 rounded-lg transition-colors
+                ${sidebarOpen ? 'px-3 py-2 space-x-3' : 'p-3 justify-center'}
+              `}
+              title={!sidebarOpen ? 'View Site' : ''}
+            >
+              <Icon name="Home" size={20} className="flex-shrink-0" />
+              {sidebarOpen && <span>View Site</span>}
+            </Link>
+            <Link
+              to="/admin/profile"
+              className={`
+                flex items-center text-gray-700 hover:bg-gray-100 rounded-lg transition-colors
+                ${sidebarOpen ? 'px-3 py-2 space-x-3' : 'p-3 justify-center'}
+              `}
+              title={!sidebarOpen ? 'My Profile' : ''}
+            >
+              <Icon name="User" size={20} className="flex-shrink-0" />
+              {sidebarOpen && <span>My Profile</span>}
+            </Link>
+            <button
+              onClick={handleSignOut}
+              className={`
+                w-full flex items-center text-gray-700 hover:bg-gray-100 rounded-lg transition-colors
+                ${sidebarOpen ? 'px-3 py-2 space-x-3' : 'p-3 justify-center'}
+              `}
+              title={!sidebarOpen ? 'Sign Out' : ''}
+            >
+              <Icon name="LogOut" size={20} className="flex-shrink-0" />
+              {sidebarOpen && <span>Sign Out</span>}
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Mobile Sidebar - Slide in/out */}
+      <aside className={`
+        lg:hidden fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform transition-transform duration-300
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-        ${sidebarOpen ? 'lg:translate-x-0' : 'lg:-translate-x-full'}
       `}>
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex h-16 items-center justify-between px-6 border-b">
             <Link to="/admin" className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
-                <Icon name="Zap" size={20} className="text-white" />
+              <div className="w-10 h-10">
+                <img 
+                  src="/assets/Logo/rule27-icon-color.svg" 
+                  alt="Rule27" 
+                  className="w-full h-full"
+                />
               </div>
               <div>
                 <div className="font-heading-bold text-xl">RULE27</div>
@@ -330,7 +442,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
       {/* Main Content */}
       <div className={`
         transition-all duration-300
-        ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-0'}
+        ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'}
         ${sessionWarning ? 'pt-10' : ''}
       `}>
         {/* Top Bar */}
