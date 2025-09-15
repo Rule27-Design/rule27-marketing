@@ -74,28 +74,44 @@ const ImageUpload = ({
           upsert: false
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Storage upload error:', error);
+        throw error;
+      }
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from(bucket)
         .getPublicUrl(filePath);
 
-      // Also store in media table for tracking
+      // Optionally store in media table for tracking (with proper auth)
       try {
-        await supabase.from('media').insert({
-          file_name: fileName,
-          original_name: file.name,
-          file_url: publicUrl,
-          file_path: filePath,
-          file_type: 'image',
-          mime_type: fileToUpload.type,
-          file_size: fileToUpload.size,
-          folder: folder,
-          is_public: true
-        });
+        // Get the current user session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          // Only try to insert if we have a user
+          const { error: mediaError } = await supabase.from('media').insert({
+            file_name: fileName,
+            original_name: file.name,
+            file_url: publicUrl,
+            file_path: filePath,
+            file_type: 'image',
+            mime_type: fileToUpload.type,
+            file_size: fileToUpload.size,
+            folder: folder,
+            is_public: true,
+            uploaded_by: session.user.id // Include the user ID for RLS
+          });
+
+          if (mediaError) {
+            // Log but don't fail the upload
+            console.warn('Failed to track in media table:', mediaError);
+          }
+        }
       } catch (mediaError) {
-        console.warn('Failed to track in media table:', mediaError);
+        // Don't fail the upload if media tracking fails
+        console.warn('Media tracking skipped:', mediaError);
       }
 
       onChange(publicUrl);
@@ -286,7 +302,7 @@ const ImageUpload = ({
   );
 };
 
-// Gallery Upload Component remains the same
+// Gallery Upload Component
 export const GalleryUpload = ({ 
   value = [], 
   onChange, 
