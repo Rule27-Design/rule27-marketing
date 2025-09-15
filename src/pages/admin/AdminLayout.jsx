@@ -59,7 +59,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
         
         if (event === 'SIGNED_OUT') {
           console.log('User signed out, redirecting to login');
-          navigate('/admin/login');
+          navigate('/login');
         } else if (event === 'TOKEN_REFRESHED') {
           console.log('Session refreshed successfully');
           setSessionWarning(false);
@@ -96,13 +96,13 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
       
       if (error) {
         console.error('Session check error:', error);
-        navigate('/admin/login');
+        navigate('/login');
         return;
       }
       
       if (!session) {
         console.log('No active session, redirecting to login');
-        navigate('/admin/login');
+        navigate('/login');
         return;
       }
       
@@ -130,7 +130,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
       }
     } catch (error) {
       console.error('Session check failed:', error);
-      navigate('/admin/login');
+      navigate('/login');
     }
   };
 
@@ -140,10 +140,10 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
       if (error) {
         console.error('Sign out error:', error);
       }
-      navigate('/admin/login');
+      navigate('/login');
     } catch (error) {
       console.error('Sign out failed:', error);
-      navigate('/admin/login');
+      navigate('/login');
     }
   };
 
@@ -162,7 +162,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
       console.log('Session manually refreshed');
     } catch (error) {
       console.error('Manual refresh failed:', error);
-      navigate('/admin/login');
+      navigate('/login');
     }
   };
 
