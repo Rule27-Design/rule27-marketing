@@ -231,11 +231,11 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
         </Button>
       </div>
 
-      {/* Sidebar */}
+      {/* Sidebar - Fixed the dynamic classes issue */}
       <aside className={`
         fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform transition-transform duration-300
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-        lg:${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        ${sidebarOpen ? 'lg:translate-x-0' : 'lg:-translate-x-full'}
       `}>
         <div className="flex h-full flex-col">
           {/* Logo */}
@@ -330,7 +330,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
       {/* Main Content */}
       <div className={`
         transition-all duration-300
-        ${sidebarOpen && window.innerWidth >= 1024 ? 'lg:ml-64' : 'lg:ml-0'}
+        ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-0'}
         ${sessionWarning ? 'pt-10' : ''}
       `}>
         {/* Top Bar */}
