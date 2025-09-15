@@ -226,7 +226,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
             <Link to="/admin" className="flex items-center space-x-3">
               <div className="w-10 h-10 flex-shrink-0">
                 <img 
-                  src="/assets/Logo/rule27-icon-color.svg" 
+                  src="/assets/Logo/rule27-icon-color.png" 
                   alt="Rule27" 
                   className="w-full h-full"
                 />
@@ -351,7 +351,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
             <Link to="/admin" className="flex items-center space-x-3">
               <div className="w-10 h-10">
                 <img 
-                  src="/assets/Logo/rule27-icon-color.svg" 
+                  src="/assets/Logo/rule27-icon-color.png" 
                   alt="Rule27" 
                   className="w-full h-full"
                 />
