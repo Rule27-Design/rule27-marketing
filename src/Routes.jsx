@@ -421,6 +421,7 @@ const Routes = ({ session }) => {
             <Route path="articles" element={<AdminArticles />} />
             <Route path="case-studies" element={<AdminCaseStudies />} />
             <Route path="profiles" element={<AdminProfiles />} />
+            <Route path="profile" element={<SetupProfile />} /> {/* Add this line */}
             <Route path="leads" element={<AdminLeads />} />
             <Route path="analytics" element={<AdminAnalytics />} />
             <Route path="settings" element={<AdminSettings />} />
