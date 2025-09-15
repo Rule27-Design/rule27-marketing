@@ -1,6 +1,6 @@
 // src/pages/Login.jsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import Button from '../components/ui/Button';
@@ -11,6 +11,7 @@ import Logo from '../components/ui/Logo';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -18,11 +19,45 @@ const Login = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [mode, setMode] = useState('login'); // 'login' or 'signup'
+  const [invitationToken, setInvitationToken] = useState(null);
+  const [invitationData, setInvitationData] = useState(null);
 
   useEffect(() => {
     setIsVisible(true);
     checkSession();
-  }, []);
+    
+    // Check if this is a signup from invitation
+    if (searchParams.get('mode') === 'signup') {
+      setMode('signup');
+      setEmail(searchParams.get('email') || '');
+      const token = searchParams.get('invitation');
+      setInvitationToken(token);
+      
+      // Load invitation data
+      if (token) {
+        loadInvitationData(token);
+      }
+    }
+  }, [searchParams]);
+
+  // Load invitation metadata
+  const loadInvitationData = async (token) => {
+    try {
+      const { data: invitation } = await supabase
+        .from('client_invitations')
+        .select('*')
+        .eq('token', token)
+        .single();
+      
+      if (invitation) {
+        setInvitationData(invitation);
+      }
+    } catch (err) {
+      console.error('Failed to load invitation:', err);
+    }
+  };
 
   // Mouse move effect for glow
   useEffect(() => {
@@ -84,6 +119,100 @@ const Login = () => {
       if (error) throw error;
 
       await routeUserByRole(data.session);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    // Validate password length
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Create the account
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: invitationData?.metadata?.full_name || '',
+            company_name: invitationData?.metadata?.company_name || '',
+            company_website: invitationData?.metadata?.company_website || '',
+            industry: invitationData?.metadata?.industry || '',
+            role: 'standard',
+            invitation_token: invitationToken
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      // Create profile record
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            auth_user_id: data.user.id,
+            email: email,
+            full_name: invitationData?.metadata?.full_name || '',
+            company_name: invitationData?.metadata?.company_name || '',
+            company_website: invitationData?.metadata?.company_website || '',
+            industry: invitationData?.metadata?.industry || '',
+            role: 'standard',
+            client_type: invitationData?.metadata?.client_type || 'standard',
+            billing_cycle: invitationData?.metadata?.billing_cycle || 'monthly',
+            onboarding_completed: false,
+            created_at: new Date().toISOString()
+          });
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+        }
+      }
+
+      // Update invitation status
+      if (invitationToken) {
+        await supabase
+          .from('client_invitations')
+          .update({ 
+            status: 'accepted',
+            accepted_at: new Date().toISOString()
+          })
+          .eq('token', invitationToken);
+      }
+
+      // Sign them in automatically
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (signInError) throw signInError;
+
+      setSuccess('Account created successfully!');
+      
+      // Route to profile setup
+      setTimeout(() => {
+        navigate('/admin/setup-profile');
+      }, 1500);
+      
     } catch (error) {
       setError(error.message);
     } finally {
@@ -223,47 +352,161 @@ const Login = () => {
             </div>
           </div>
           <h1 className="text-4xl font-heading-bold text-white uppercase tracking-wider">
-            Welcome Back
+            {mode === 'signup' ? 'Create Account' : 'Welcome Back'}
           </h1>
           <p className="text-gray-400 mt-2 font-sans">
-            Enter your credentials to access your account
+            {mode === 'signup' 
+              ? invitationData ? `Complete your registration for ${invitationData.metadata?.company_name || 'Rule27 Design'}` : 'Set up your account'
+              : 'Enter your credentials to access your account'
+            }
           </p>
         </motion.div>
 
-        {/* Login Form */}
+        {/* Login/Signup Form */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isVisible ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.2 }}
           className="bg-white/5 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/10"
         >
-          {/* Auth Method Tabs */}
-          <div className="flex space-x-2 mb-6">
-            <button
-              type="button"
-              onClick={() => setAuthMethod('password')}
-              className={`flex-1 py-2 px-4 rounded-lg transition-all duration-300 font-heading-regular uppercase tracking-wider ${
-                authMethod === 'password'
-                  ? 'bg-gradient-to-r from-accent to-red-500 text-white'
-                  : 'bg-white/10 text-gray-400 hover:bg-white/20'
-              }`}
-            >
-              Password
-            </button>
-            <button
-              type="button"
-              onClick={() => setAuthMethod('magic')}
-              className={`flex-1 py-2 px-4 rounded-lg transition-all duration-300 font-heading-regular uppercase tracking-wider ${
-                authMethod === 'magic'
-                  ? 'bg-gradient-to-r from-accent to-red-500 text-white'
-                  : 'bg-white/10 text-gray-400 hover:bg-white/20'
-              }`}
-            >
-              Magic Link
-            </button>
-          </div>
+          {/* Show tabs only for login mode */}
+          {mode === 'login' && (
+            <div className="flex space-x-2 mb-6">
+              <button
+                type="button"
+                onClick={() => setAuthMethod('password')}
+                className={`flex-1 py-2 px-4 rounded-lg transition-all duration-300 font-heading-regular uppercase tracking-wider ${
+                  authMethod === 'password'
+                    ? 'bg-gradient-to-r from-accent to-red-500 text-white'
+                    : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                }`}
+              >
+                Password
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMethod('magic')}
+                className={`flex-1 py-2 px-4 rounded-lg transition-all duration-300 font-heading-regular uppercase tracking-wider ${
+                  authMethod === 'magic'
+                    ? 'bg-gradient-to-r from-accent to-red-500 text-white'
+                    : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                }`}
+              >
+                Magic Link
+              </button>
+            </div>
+          )}
 
-          {authMethod === 'password' ? (
+          {/* Signup Form */}
+          {mode === 'signup' ? (
+            <form onSubmit={handleSignup} className="space-y-6">
+              {invitationData && (
+                <div className="bg-accent/10 rounded-lg p-3 border border-accent/20">
+                  <p className="text-sm text-gray-300">
+                    Invitation from: <span className="font-medium">{invitationData.metadata?.invited_by_name || 'Rule27 Design'}</span>
+                  </p>
+                </div>
+              )}
+
+              <div>
+                <Input
+                  type="email"
+                  label="Email Address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={!!invitationToken} // Disable if from invitation
+                  className="w-full bg-white/10 border-white/20 text-white placeholder-gray-500 disabled:opacity-50"
+                  labelClassName="text-gray-300"
+                />
+              </div>
+
+              <div>
+                <Input
+                  type="password"
+                  label="Create Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="Choose a strong password"
+                  className="w-full bg-white/10 border-white/20 text-white placeholder-gray-500"
+                  labelClassName="text-gray-300"
+                />
+                <p className="text-xs text-gray-400 mt-2">
+                  Must be at least 8 characters
+                </p>
+              </div>
+
+              <div>
+                <Input
+                  type="password"
+                  label="Confirm Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  placeholder="Re-enter your password"
+                  className="w-full bg-white/10 border-white/20 text-white placeholder-gray-500"
+                  labelClassName="text-gray-300"
+                />
+              </div>
+
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="p-3 rounded-lg text-sm bg-red-500/10 text-red-400 border border-red-500/20"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Icon name="AlertCircle" size={16} />
+                    <span>{error}</span>
+                  </div>
+                </motion.div>
+              )}
+
+              {success && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="p-3 rounded-lg text-sm bg-green-500/10 text-green-400 border border-green-500/20"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Icon name="CheckCircle" size={16} />
+                    <span>{success}</span>
+                  </div>
+                </motion.div>
+              )}
+
+              <Button
+                type="submit"
+                variant="default"
+                fullWidth
+                loading={loading}
+                disabled={loading || !password || !confirmPassword}
+                className="bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white font-heading-regular uppercase tracking-wider transform hover:scale-[1.02] transition-all duration-300"
+              >
+                Create Account
+              </Button>
+
+              <div className="text-center">
+                <p className="text-gray-400 text-sm">
+                  Already have an account?{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode('login');
+                      setError(null);
+                      setPassword('');
+                      setConfirmPassword('');
+                      navigate('/login');
+                    }}
+                    className="text-accent hover:text-red-400 transition-colors font-medium"
+                  >
+                    Sign In
+                  </button>
+                </p>
+              </div>
+            </form>
+          ) : authMethod === 'password' ? (
             <form onSubmit={handlePasswordLogin} className="space-y-6">
               <div>
                 <Input
@@ -379,18 +622,20 @@ const Login = () => {
             </div>
           )}
 
-          {/* Divider */}
-          <div className="mt-8 pt-6 border-t border-white/10 text-center">
-            <p className="text-gray-400 text-sm font-sans">
-              Need an account?{' '}
-              <Link 
-                to="/contact" 
-                className="text-accent hover:text-red-400 transition-colors font-medium"
-              >
-                Contact Us
-              </Link>
-            </p>
-          </div>
+          {/* Divider - only show for login mode */}
+          {mode === 'login' && (
+            <div className="mt-8 pt-6 border-t border-white/10 text-center">
+              <p className="text-gray-400 text-sm font-sans">
+                Need an account?{' '}
+                <Link 
+                  to="/contact" 
+                  className="text-accent hover:text-red-400 transition-colors font-medium"
+                >
+                  Contact Us
+                </Link>
+              </p>
+            </div>
+          )}
         </motion.div>
 
         {/* Bottom Links */}
