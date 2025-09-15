@@ -229,7 +229,7 @@ const SetupProfile = () => {
                   label="Profile Photo"
                   value={formData.avatar_url}
                   onChange={(value) => setFormData({ ...formData, avatar_url: value })}
-                  bucket="profile"
+                  bucket="avatarss"
                   folder="profiles"
                   accept="image/*"
                   maxSize={2 * 1024 * 1024}
