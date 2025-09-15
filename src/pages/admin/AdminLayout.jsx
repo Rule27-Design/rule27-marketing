@@ -26,15 +26,12 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
   ];
 
   const filteredNavigation = navigation.filter(item => {
-    // If item has specific roles requirement, check if user has one of those roles
     if (item.roles && item.roles.length > 0) {
       return item.roles.includes(userProfile?.role);
     }
-    // If no roles specified, it's available to all admin panel users
     return true;
   });
 
-  // Load notification count
   useEffect(() => {
     loadNotifications();
   }, []);
@@ -52,7 +49,6 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
     }
   };
 
-  // Session management
   useEffect(() => {
     checkSession();
     
@@ -169,12 +165,10 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
     }
   };
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location]);
 
-  // Get role display text
   const getRoleDisplay = (role) => {
     switch(role) {
       case 'admin':
@@ -232,14 +226,14 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
         </Button>
       </div>
 
-      {/* Desktop Sidebar - Always visible, changes width based on state */}
+      {/* Desktop Sidebar - Fixed scroll issue */}
       <aside className={`
-        hidden lg:block fixed inset-y-0 left-0 z-30 bg-white shadow-lg transition-all duration-300
+        hidden lg:block fixed inset-y-0 left-0 z-30 bg-white shadow-lg transition-all duration-300 h-screen
         ${sidebarOpen ? 'w-64' : 'w-20'}
       `}>
-        <div className="flex h-full flex-col">
+        <div className="flex h-full flex-col overflow-hidden">
           {/* Logo */}
-          <div className={`flex h-16 items-center border-b ${sidebarOpen ? 'px-6' : 'px-5 justify-center'}`}>
+          <div className={`flex h-16 items-center border-b flex-shrink-0 ${sidebarOpen ? 'px-6' : 'px-5 justify-center'}`}>
             <Link to="/admin" className="flex items-center space-x-3">
               <div className="w-10 h-10 flex-shrink-0">
                 <img 
@@ -247,7 +241,6 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
                   alt="Rule27" 
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    // Fallback if image fails to load
                     e.target.style.display = 'none';
                     const fallback = document.createElement('div');
                     fallback.className = 'w-10 h-10 bg-accent rounded-full flex items-center justify-center';
@@ -266,7 +259,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
           </div>
 
           {/* User Info */}
-          <div className={`border-b bg-gray-50 ${sidebarOpen ? 'px-6 py-4' : 'p-3'}`}>
+          <div className={`border-b bg-gray-50 flex-shrink-0 ${sidebarOpen ? 'px-6 py-4' : 'p-3'}`}>
             <div className={`flex items-center ${sidebarOpen ? 'space-x-3' : 'justify-center'}`}>
               <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
                 {userProfile?.avatar_url ? (
@@ -292,42 +285,44 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
             </div>
           </div>
 
-          {/* Navigation */}
-          <nav className={`flex-1 space-y-1 py-4 overflow-y-auto ${sidebarOpen ? 'px-3' : 'px-2'}`}>
-            {filteredNavigation.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`
-                  flex items-center rounded-lg transition-all duration-200 relative group
-                  ${sidebarOpen ? 'px-3 py-2 space-x-3' : 'p-3 justify-center'}
-                  ${isActivePath(item.path)
-                    ? 'bg-accent text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                  }
-                `}
-                title={!sidebarOpen ? item.name : ''}
-              >
-                <Icon name={item.icon} size={20} className="flex-shrink-0" />
-                {sidebarOpen && (
-                  <>
-                    <span className="font-medium">{item.name}</span>
-                    {item.roles && item.roles.includes('admin') && item.roles.length === 1 && (
-                      <span className="ml-auto text-xs opacity-60">Admin</span>
-                    )}
-                  </>
-                )}
-                {!sidebarOpen && (
-                  <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
-                    {item.name}
-                  </div>
-                )}
-              </Link>
-            ))}
+          {/* Navigation - Fixed scroll */}
+          <nav className={`flex-1 min-h-0 py-4 ${sidebarOpen ? 'px-3' : 'px-2'}`}>
+            <div className="h-full overflow-y-auto overflow-x-hidden space-y-1">
+              {filteredNavigation.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`
+                    flex items-center rounded-lg transition-all duration-200 relative group
+                    ${sidebarOpen ? 'px-3 py-2 space-x-3' : 'p-3 justify-center'}
+                    ${isActivePath(item.path)
+                      ? 'bg-accent text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                    }
+                  `}
+                  title={!sidebarOpen ? item.name : ''}
+                >
+                  <Icon name={item.icon} size={20} className="flex-shrink-0" />
+                  {sidebarOpen && (
+                    <>
+                      <span className="font-medium">{item.name}</span>
+                      {item.roles && item.roles.includes('admin') && item.roles.length === 1 && (
+                        <span className="ml-auto text-xs opacity-60">Admin</span>
+                      )}
+                    </>
+                  )}
+                  {!sidebarOpen && (
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                      {item.name}
+                    </div>
+                  )}
+                </Link>
+              ))}
+            </div>
           </nav>
 
-          {/* Bottom Actions */}
-          <div className={`border-t space-y-2 ${sidebarOpen ? 'p-4' : 'p-2'}`}>
+          {/* Bottom Actions - Fixed position */}
+          <div className={`flex-shrink-0 border-t space-y-2 ${sidebarOpen ? 'p-4' : 'p-2'}`}>
             <Link
               to="/"
               className={`
@@ -365,7 +360,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
         </div>
       </aside>
 
-      {/* Mobile Sidebar - Slide in/out */}
+      {/* Mobile Sidebar */}
       <aside className={`
         lg:hidden fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform transition-transform duration-300
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
@@ -493,7 +488,6 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
             </div>
 
             <div className="flex items-center space-x-3">
-              {/* Session Status Indicator */}
               <div className="hidden sm:flex items-center space-x-2">
                 <div className={`w-2 h-2 rounded-full ${sessionWarning ? 'bg-yellow-500' : 'bg-green-500'}`} />
                 <span className="text-xs text-gray-500">
@@ -501,7 +495,6 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
                 </span>
               </div>
               
-              {/* Notifications */}
               <Button
                 variant="ghost"
                 size="icon"
