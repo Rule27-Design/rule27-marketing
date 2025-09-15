@@ -54,4 +54,4 @@ const ClientInvoices = () => {
   );
 };
 
-export default ClientInvoices;
+export default ClientInvoices; // Added default export
