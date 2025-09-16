@@ -37,12 +37,17 @@ const InviteClient = () => {
         .eq('auth_user_id', user.id)
         .single();
 
-      // Check if user already exists
-      const { data: existingProfile } = await supabase
+      // Check if user already exists - FIX: Use maybeSingle() to avoid 406 error
+      const { data: existingProfile, error: checkError } = await supabase
         .from('profiles')
         .select('id')
         .eq('email', formData.email)
-        .single();
+        .maybeSingle(); // This won't throw 406 if no records found
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Check error:', checkError);
+        throw checkError;
+      }
 
       if (existingProfile) {
         toast.error('A user with this email already exists');
@@ -62,7 +67,7 @@ const InviteClient = () => {
           email: formData.email,
           invited_by: inviter.id,
           token,
-          expires_at: expiresAt,
+          expires_at: expiresAt.toISOString(), // Ensure ISO string format
           status: 'pending',
           metadata: {
             full_name: formData.full_name,
@@ -80,50 +85,61 @@ const InviteClient = () => {
 
       if (inviteError) throw inviteError;
 
+      // Generate invite link
+      const inviteUrl = `${window.location.origin}/accept-invite?token=${token}`;
+
       // Send email if requested
       if (formData.send_welcome_email) {
         setSendingEmail(true);
         try {
           const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-invitation-email', {
             body: {
-              email: formData.email,
-              token,
-              metadata: {
-                full_name: formData.full_name,
-                company_name: formData.company_name,
-                personal_message: formData.personal_message,
-                invited_by_name: inviter.full_name
-              },
-              type: 'invitation'
+              to: formData.email, // Changed from 'email' to 'to' to match edge function
+              fullName: formData.full_name,
+              companyName: formData.company_name,
+              personalMessage: formData.personal_message,
+              invitedBy: inviter.full_name,
+              invitationToken: token
             }
           });
 
           if (emailError) {
             console.error('Email error:', emailError);
             // Don't throw - invitation was created successfully
-            toast.warning('Invitation created but email failed to send. You can copy the link manually.');
-          } else if (emailResult?.success) {
+            toast.warning('Invitation created but email failed to send. Link copied to clipboard!');
+            
+            // Copy link to clipboard as fallback
+            try {
+              await navigator.clipboard.writeText(inviteUrl);
+            } catch (clipboardErr) {
+              console.error('Clipboard error:', clipboardErr);
+            }
+          } else {
             toast.success('Invitation sent successfully!');
           }
         } catch (emailErr) {
           console.error('Email send error:', emailErr);
-          toast.warning('Invitation created but email failed to send. You can copy the link manually.');
+          toast.warning('Invitation created but email failed to send. Link copied to clipboard!');
+          
+          // Copy link to clipboard as fallback
+          try {
+            await navigator.clipboard.writeText(inviteUrl);
+          } catch (clipboardErr) {
+            console.error('Clipboard error:', clipboardErr);
+          }
         } finally {
           setSendingEmail(false);
         }
-      }
-
-      // Generate and copy invite link
-      const inviteUrl = `${window.location.origin}/accept-invite?token=${token}`;
-      
-      // Try to copy to clipboard
-      try {
-        await navigator.clipboard.writeText(inviteUrl);
-        if (!formData.send_welcome_email) {
+      } else {
+        // Manual sharing - copy to clipboard
+        try {
+          await navigator.clipboard.writeText(inviteUrl);
           toast.success('Invitation link copied to clipboard!');
+        } catch (clipboardErr) {
+          console.error('Clipboard error:', clipboardErr);
+          // Fallback: show the link
+          window.prompt('Copy this invitation link:', inviteUrl);
         }
-      } catch (clipboardErr) {
-        console.error('Clipboard error:', clipboardErr);
       }
 
       // Show success modal or redirect
@@ -150,7 +166,7 @@ const InviteClient = () => {
           navigate('/admin/clients');
         }
       } else {
-        // Email was sent, just redirect
+        // Email was sent, redirect after short delay
         setTimeout(() => {
           navigate('/admin/clients');
         }, 2000);
