@@ -84,16 +84,21 @@ const Login = () => {
       .single();
 
     if (profile) {
-      // Check onboarding first
+      // Check onboarding first - route to appropriate setup based on role
       if (!profile.onboarding_completed) {
-        navigate('/admin/setup-profile');
+        if (profile.role === 'standard') {
+          navigate('/client/setup-profile');
+        } else {
+          navigate('/admin/setup-profile');
+        }
         return;
       }
 
-      // Route based on role
+      // Route based on role after onboarding
       switch (profile.role) {
         case 'admin':
         case 'contributor':
+        case 'client_manager':
           navigate('/admin');
           break;
         case 'standard':
@@ -187,7 +192,7 @@ const Login = () => {
       // Now create profile - check if it already exists first
       const { data: existingProfile } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, role')
         .eq('auth_user_id', signUpData.user.id)
         .single();
 
@@ -222,7 +227,7 @@ const Login = () => {
       }
 
       // Create clients record ONLY for standard role users
-      if (profileData) {
+      if (profileData && profileData.role === 'standard') {
         // Check if client record already exists
         const { data: existingClient } = await supabase
           .from('clients')
@@ -268,9 +273,13 @@ const Login = () => {
 
       setSuccess('Account created successfully! Redirecting...');
       
-      // Route to appropriate dashboard
+      // Route to appropriate setup based on role
       setTimeout(() => {
-        navigate('/admin/setup-profile');
+        if (profileData.role === 'standard') {
+          navigate('/client/setup-profile');
+        } else {
+          navigate('/admin/setup-profile');
+        }
       }, 2000);
       
     } catch (error) {
