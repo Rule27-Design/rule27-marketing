@@ -4,14 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
-import Icon from '../../../components/AdminIcon';
+import Icon from '../../../components/AppIcon'; // Fixed: Changed from AdminIcon
 import { useToast } from '../../../components/ui/Toast';
 
 const InviteClient = () => {
   const navigate = useNavigate();
   const toast = useToast();
   const [loading, setLoading] = useState(false);
-  const [sendingEmail, setSendingEmail] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     full_name: '',
@@ -37,12 +36,12 @@ const InviteClient = () => {
         .eq('auth_user_id', user.id)
         .single();
 
-      // Check if user already exists - FIX: Use maybeSingle() to avoid 406 error
+      // Check if user already exists
       const { data: existingProfile, error: checkError } = await supabase
         .from('profiles')
         .select('id')
         .eq('email', formData.email)
-        .maybeSingle(); // This won't throw 406 if no records found
+        .maybeSingle();
 
       if (checkError && checkError.code !== 'PGRST116') {
         console.error('Check error:', checkError);
@@ -67,7 +66,7 @@ const InviteClient = () => {
           email: formData.email,
           invited_by: inviter.id,
           token,
-          expires_at: expiresAt.toISOString(), // Ensure ISO string format
+          expires_at: expiresAt.toISOString(),
           status: 'pending',
           metadata: {
             full_name: formData.full_name,
@@ -88,63 +87,18 @@ const InviteClient = () => {
       // Generate invite link
       const inviteUrl = `${window.location.origin}/accept-invite?token=${token}`;
 
-      // Send email if requested
-      if (formData.send_welcome_email) {
-        setSendingEmail(true);
-        try {
-          const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-invitation-email', {
-            body: {
-              to: formData.email, // Changed from 'email' to 'to' to match edge function
-              fullName: formData.full_name,
-              companyName: formData.company_name,
-              personalMessage: formData.personal_message,
-              invitedBy: inviter.full_name,
-              invitationToken: token
-            }
-          });
-
-          if (emailError) {
-            console.error('Email error:', emailError);
-            // Don't throw - invitation was created successfully
-            toast.warning('Invitation created but email failed to send. Link copied to clipboard!');
-            
-            // Copy link to clipboard as fallback
-            try {
-              await navigator.clipboard.writeText(inviteUrl);
-            } catch (clipboardErr) {
-              console.error('Clipboard error:', clipboardErr);
-            }
-          } else {
-            toast.success('Invitation sent successfully!');
-          }
-        } catch (emailErr) {
-          console.error('Email send error:', emailErr);
-          toast.warning('Invitation created but email failed to send. Link copied to clipboard!');
-          
-          // Copy link to clipboard as fallback
-          try {
-            await navigator.clipboard.writeText(inviteUrl);
-          } catch (clipboardErr) {
-            console.error('Clipboard error:', clipboardErr);
-          }
-        } finally {
-          setSendingEmail(false);
-        }
-      } else {
-        // Manual sharing - copy to clipboard
-        try {
-          await navigator.clipboard.writeText(inviteUrl);
-          toast.success('Invitation link copied to clipboard!');
-        } catch (clipboardErr) {
-          console.error('Clipboard error:', clipboardErr);
-          // Fallback: show the link
-          window.prompt('Copy this invitation link:', inviteUrl);
-        }
+      // Always copy to clipboard
+      try {
+        await navigator.clipboard.writeText(inviteUrl);
+        toast.success('Invitation created! Link copied to clipboard.');
+      } catch (clipboardErr) {
+        console.error('Clipboard error:', clipboardErr);
+        window.prompt('Copy this invitation link:', inviteUrl);
       }
 
-      // Show success modal or redirect
+      // Handle success flow based on email preference
       if (!formData.send_welcome_email) {
-        // Show the link for manual sharing
+        // Manual sharing flow
         const shouldContinue = window.confirm(
           `Invitation created!\n\nInvite Link:\n${inviteUrl}\n\nCopy this link and send it to ${formData.email}\n\nAdd another client?`
         );
@@ -166,10 +120,16 @@ const InviteClient = () => {
           navigate('/admin/clients');
         }
       } else {
-        // Email was sent, redirect after short delay
+        // Auto email selected - show link for manual sending (temporary until email service is set up)
+        alert(
+          `Invitation created successfully!\n\n` +
+          `Please email this link to ${formData.email}:\n${inviteUrl}\n\n` +
+          `(The link has been copied to your clipboard)`
+        );
+        
         setTimeout(() => {
           navigate('/admin/clients');
-        }, 2000);
+        }, 1500);
       }
 
     } catch (error) {
@@ -323,14 +283,14 @@ const InviteClient = () => {
               className="mr-2"
             />
             <label htmlFor="send_welcome_email" className="text-sm">
-              Send invitation email automatically
+              Send invitation email automatically (currently manual)
             </label>
           </div>
 
           {!formData.send_welcome_email && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="flex">
-                <Icon name="AlertTriangle" size={20} className="text-yellow-600 mr-2" />
+              <div className="flex items-center">
+                <Icon name="AlertTriangle" size={20} className="text-yellow-600 mr-2 flex-shrink-0" />
                 <div>
                   <p className="text-sm text-yellow-800">
                     The invitation link will be generated and copied to your clipboard.
@@ -340,6 +300,19 @@ const InviteClient = () => {
               </div>
             </div>
           )}
+
+          {/* Info Message */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <Icon name="Info" size={20} className="text-blue-600 mr-2 flex-shrink-0" />
+              <div>
+                <p className="text-sm text-blue-800">
+                  Note: Automatic email sending will be available once email service is configured. 
+                  For now, the invitation link will be copied to your clipboard for manual sending.
+                </p>
+              </div>
+            </div>
+          </div>
 
           {/* Actions */}
           <div className="flex justify-end space-x-3">
@@ -353,11 +326,11 @@ const InviteClient = () => {
             <Button
               type="submit"
               variant="default"
-              loading={loading || sendingEmail}
-              disabled={loading || sendingEmail}
+              loading={loading}
+              disabled={loading}
               className="bg-accent hover:bg-accent/90"
             >
-              {sendingEmail ? 'Sending Email...' : 'Send Invitation'}
+              Create Invitation
             </Button>
           </div>
         </form>
