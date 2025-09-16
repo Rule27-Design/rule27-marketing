@@ -52,6 +52,7 @@ import ClientProjects from './pages/client/Projects';
 import ClientInvoices from './pages/client/Invoices';
 import ClientSupport from './pages/client/Support';
 import ClientProfile from './pages/client/Profile';
+import ClientSetupProfile from './pages/client/ClientSetupProfile';
 
 // Utils
 import ProtectedRoute from './components/ProtectedRoute';
@@ -250,58 +251,23 @@ const AuthCallback = () => {
     emitProfile('auth:navigation_decision', navData);
     emitSettings('auth:navigation_decision', navData);
     
-    // STEP 1: Password setup (for invited users who haven't set password)
-    if (!hasPassword && isFirstLogin) {
-      console.log('Redirecting to password setup');
-      const redirectData = { userId: session.user.id };
-      emitArticle('auth:redirect_password_setup', redirectData);
-      emitCaseStudy('auth:redirect_password_setup', redirectData);
-      emitService('auth:redirect_password_setup', redirectData);
-      emitProfile('auth:redirect_password_setup', redirectData);
-      emitSettings('auth:redirect_password_setup', redirectData);
-      navigate('/admin/setup-profile?step=password');
-    }
-    // STEP 2: Profile setup (if password is set but profile not complete)
-    else if (!profileCompleted) {
-      console.log('Redirecting to profile setup');
-      const redirectData = { userId: session.user.id };
-      emitArticle('auth:redirect_profile_setup', redirectData);
-      emitCaseStudy('auth:redirect_profile_setup', redirectData);
-      emitService('auth:redirect_profile_setup', redirectData);
-      emitProfile('auth:redirect_profile_setup', redirectData);
-      emitSettings('auth:redirect_profile_setup', redirectData);
-      navigate('/admin/setup-profile?step=profile');
-    }
-    // STEP 3: Route based on role - FIXED TO INCLUDE client_manager
-    else if (profile.role === 'admin' || profile.role === 'contributor' || profile.role === 'client_manager') {
+    // Route based on role and onboarding status
+    if (!profileCompleted) {
+      // Route to appropriate setup based on role
+      if (profile.role === 'standard') {
+        console.log('Redirecting to client profile setup');
+        navigate('/client/setup-profile');
+      } else {
+        console.log('Redirecting to admin profile setup');
+        navigate('/admin/setup-profile');
+      }
+    } else if (profile.role === 'admin' || profile.role === 'contributor' || profile.role === 'client_manager') {
       console.log('Redirecting to admin dashboard');
-      const redirectData = { 
-        userId: session.user.id, 
-        role: profile.role 
-      };
-      emitArticle('auth:redirect_admin', redirectData);
-      emitCaseStudy('auth:redirect_admin', redirectData);
-      emitService('auth:redirect_admin', redirectData);
-      emitProfile('auth:redirect_admin', redirectData);
-      emitSettings('auth:redirect_admin', redirectData);
       navigate('/admin');
-    }
-    // STEP 4: Standard users go to client portal
-    else if (profile.role === 'standard') {
+    } else if (profile.role === 'standard') {
       console.log('Redirecting to client portal');
-      const redirectData = { 
-        userId: session.user.id, 
-        role: profile.role 
-      };
-      emitArticle('auth:redirect_client', redirectData);
-      emitCaseStudy('auth:redirect_client', redirectData);
-      emitService('auth:redirect_client', redirectData);
-      emitProfile('auth:redirect_client', redirectData);
-      emitSettings('auth:redirect_client', redirectData);
       navigate('/client');
-    }
-    // STEP 5: Unknown role or no access
-    else {
+    } else {
       console.log('Unknown role, redirecting to home');
       navigate('/');
     }
@@ -433,8 +399,13 @@ const Routes = ({ session }) => {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           
-          {/* Profile Setup Route (accessible during onboarding) */}
+          {/* Profile Setup Routes - Outside of layouts for full-screen experience */}
           <Route path="/admin/setup-profile" element={<SetupProfile />} />
+          <Route path="/client/setup-profile" element={
+            <ProtectedRoute session={session} requiredRoles={['standard']}>
+              <ClientSetupProfile />
+            </ProtectedRoute>
+          } />
 
           {/* Protected Admin Routes - For admin, contributor, and client_manager roles */}
           <Route path="/admin" element={
