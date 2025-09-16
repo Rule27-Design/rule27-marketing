@@ -130,6 +130,7 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(null);
 
     // Validate passwords match
     if (password !== confirmPassword) {
@@ -147,7 +148,7 @@ const Login = () => {
 
     try {
       // Create the account
-      const { data, error } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -160,23 +161,44 @@ const Login = () => {
         }
       });
 
-      if (error) throw error;
+      if (signUpError) throw signUpError;
 
-      // Sign them in immediately after signup to establish auth context
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      // With email confirmation OFF, user is automatically signed in
+      if (!signUpData.user) {
+        throw new Error('Failed to create user account');
+      }
 
-      if (signInError) throw signInError;
+      // Wait a moment for auth to stabilize
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Now create profile with proper auth context
-      if (signInData.user) {
-        // 1. Create profile record
-        const { data: profileData, error: profileError } = await supabase
+      // Get current session to ensure we're authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        // If no session, try to sign in
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        
+        if (signInError) throw signInError;
+      }
+
+      // Now create profile - check if it already exists first
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('auth_user_id', signUpData.user.id)
+        .single();
+
+      let profileData = existingProfile;
+
+      if (!existingProfile) {
+        // Create profile record
+        const { data: newProfile, error: profileError } = await supabase
           .from('profiles')
           .insert({
-            auth_user_id: signInData.user.id,
+            auth_user_id: signUpData.user.id,
             email: email,
             full_name: invitationData?.metadata?.full_name || '',
             company_name: invitationData?.metadata?.company_name || '', 
@@ -196,8 +218,19 @@ const Login = () => {
           throw profileError;
         }
 
-        // 2. Create clients record ONLY for standard role users
-        if (profileData && profileData.role === 'standard') {
+        profileData = newProfile;
+      }
+
+      // Create clients record ONLY for standard role users
+      if (profileData) {
+        // Check if client record already exists
+        const { data: existingClient } = await supabase
+          .from('clients')
+          .select('id')
+          .eq('profile_id', profileData.id)
+          .single();
+
+        if (!existingClient) {
           const { error: clientError } = await supabase
             .from('clients')
             .insert({
@@ -219,43 +252,30 @@ const Login = () => {
             console.error('Client record creation error:', clientError);
           }
         }
+      }
 
-        // 3. Update invitation status
-        if (invitationToken) {
-          const updateData = {
+      // Update invitation status
+      if (invitationToken) {
+        await supabase
+          .from('client_invitations')
+          .update({
             status: 'accepted',
             accepted_at: new Date().toISOString(),
             profile_id: profileData?.id
-          };
-
-          if (profileData?.role === 'standard') {
-            const { data: clientData } = await supabase
-              .from('clients')
-              .select('id')
-              .eq('profile_id', profileData.id)
-              .single();
-            
-            if (clientData) {
-              updateData.client_id = clientData.id;
-            }
-          }
-
-          await supabase
-            .from('client_invitations')
-            .update(updateData)
-            .eq('token', invitationToken);
-        }
-
-        setSuccess('Account created successfully!');
-        
-        // Route to appropriate dashboard
-        setTimeout(() => {
-          navigate('/admin/setup-profile');
-        }, 1500);
+          })
+          .eq('token', invitationToken);
       }
+
+      setSuccess('Account created successfully! Redirecting...');
+      
+      // Route to appropriate dashboard
+      setTimeout(() => {
+        navigate('/admin/setup-profile');
+      }, 2000);
       
     } catch (error) {
-      setError(error.message);
+      console.error('Signup error:', error);
+      setError(error.message || 'Failed to create account');
     } finally {
       setLoading(false);
     }
