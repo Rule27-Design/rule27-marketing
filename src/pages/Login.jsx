@@ -162,17 +162,26 @@ const Login = () => {
 
       if (error) throw error;
 
-      if (data.user) {
-        // 1. Create profile record (only basic info, no client-specific fields)
+      // Sign them in immediately after signup to establish auth context
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (signInError) throw signInError;
+
+      // Now create profile with proper auth context
+      if (signInData.user) {
+        // 1. Create profile record
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .insert({
-            auth_user_id: data.user.id,
+            auth_user_id: signInData.user.id,
             email: email,
             full_name: invitationData?.metadata?.full_name || '',
-            company_name: invitationData?.metadata?.company_name || '', // Keep for display
+            company_name: invitationData?.metadata?.company_name || '', 
             role: 'standard',
-            client_status: 'active', // Relationship status
+            client_status: 'active',
             onboarding_completed: false,
             invited_by: invitationData?.invited_by || null,
             invitation_status: 'accepted',
@@ -195,7 +204,7 @@ const Login = () => {
               profile_id: profileData.id,
               client_type: invitationData?.metadata?.client_type || 'standard',
               billing_cycle: invitationData?.metadata?.billing_cycle || 'monthly',
-              account_status: 'active', // Billing/account status
+              account_status: 'active',
               contract_start: new Date().toISOString().split('T')[0],
               company_website: invitationData?.metadata?.company_website || null,
               industry: invitationData?.metadata?.industry || null,
@@ -208,11 +217,10 @@ const Login = () => {
 
           if (clientError) {
             console.error('Client record creation error:', clientError);
-            // Don't throw - profile was created successfully
           }
         }
 
-        // 3. Update invitation status and link to profile
+        // 3. Update invitation status
         if (invitationToken) {
           const updateData = {
             status: 'accepted',
@@ -220,7 +228,6 @@ const Login = () => {
             profile_id: profileData?.id
           };
 
-          // If client record exists, link it too
           if (profileData?.role === 'standard') {
             const { data: clientData } = await supabase
               .from('clients')
@@ -238,27 +245,12 @@ const Login = () => {
             .update(updateData)
             .eq('token', invitationToken);
         }
-      }
 
-      // Sign them in automatically
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (signInError) {
-        setSuccess('Account created! Please sign in with your new credentials.');
-        setTimeout(() => {
-          setMode('login');
-          setPassword('');
-          setConfirmPassword('');
-        }, 2000);
-      } else {
         setSuccess('Account created successfully!');
         
         // Route to appropriate dashboard
         setTimeout(() => {
-          navigate('/admin/setup-profile'); // Will redirect to /client after onboarding
+          navigate('/admin/setup-profile');
         }, 1500);
       }
       
