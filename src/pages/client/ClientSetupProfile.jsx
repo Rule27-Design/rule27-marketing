@@ -7,15 +7,14 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Icon from '../../components/AppIcon';
 import Logo from '../../components/ui/Logo';
-import { useToast } from '../../components/ui/Toast';
 
 const ClientSetupProfile = () => {
   const navigate = useNavigate();
-  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [isVisible, setIsVisible] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [profileId, setProfileId] = useState(null);
   const [profileData, setProfileData] = useState({
     full_name: '',
     company_name: '',
@@ -24,7 +23,7 @@ const ClientSetupProfile = () => {
     company_website: '',
     industry: '',
     company_size: '',
-    timezone: '',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     communication_preference: 'email'
   });
 
@@ -51,13 +50,20 @@ const ClientSetupProfile = () => {
         return;
       }
 
-      const { data: profile } = await supabase
+      // Get profile using auth_user_id
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('auth_user_id', user.id)
         .single();
 
+      if (profileError) {
+        console.error('Error loading profile:', profileError);
+        return;
+      }
+
       if (profile) {
+        setProfileId(profile.id);
         setProfileData(prev => ({
           ...prev,
           full_name: profile.full_name || '',
@@ -66,20 +72,21 @@ const ClientSetupProfile = () => {
           job_title: profile.job_title || ''
         }));
 
-        // Load client data
-        const { data: client } = await supabase
+        // Load client data using profile_id
+        const { data: client, error: clientError } = await supabase
           .from('clients')
           .select('*')
           .eq('profile_id', profile.id)
           .single();
 
-        if (client) {
+        if (!clientError && client) {
           setProfileData(prev => ({
             ...prev,
             company_website: client.company_website || '',
             industry: client.industry || '',
             company_size: profile.company_size || '',
-            timezone: client.metadata?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
+            timezone: client.metadata?.timezone || prev.timezone,
+            communication_preference: client.metadata?.communication_preference || 'email'
           }));
         }
       }
@@ -103,51 +110,104 @@ const ClientSetupProfile = () => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      if (!profileId) {
+        console.error('No profile ID found');
+        return;
+      }
+
       // Update profile
-      const { data: profile, error: profileError } = await supabase
+      const { error: profileError } = await supabase
         .from('profiles')
         .update({
           full_name: profileData.full_name,
           company_name: profileData.company_name,
-          phone: profileData.phone,
-          job_title: profileData.job_title,
-          company_size: profileData.company_size,
+          phone: profileData.phone || null,
+          job_title: profileData.job_title || null,
+          company_size: profileData.company_size || null,
           onboarding_completed: true,
           updated_at: new Date().toISOString()
         })
-        .eq('auth_user_id', user.id)
-        .select()
+        .eq('id', profileId);
+
+      if (profileError) {
+        console.error('Profile update error:', profileError);
+        throw profileError;
+      }
+
+      // Check if client record exists
+      const { data: existingClient } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('profile_id', profileId)
         .single();
 
-      if (profileError) throw profileError;
+      if (existingClient) {
+        // Update existing client record
+        const { error: clientError } = await supabase
+          .from('clients')
+          .update({
+            company_website: profileData.company_website || null,
+            industry: profileData.industry || null,
+            metadata: {
+              timezone: profileData.timezone,
+              communication_preference: profileData.communication_preference,
+              onboarding_completed_at: new Date().toISOString()
+            },
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingClient.id);
 
-      // Update client record
-      const { error: clientError } = await supabase
-        .from('clients')
-        .update({
-          company_website: profileData.company_website,
-          industry: profileData.industry,
-          metadata: {
-            timezone: profileData.timezone,
-            communication_preference: profileData.communication_preference,
-            onboarding_completed_at: new Date().toISOString()
-          },
-          updated_at: new Date().toISOString()
-        })
-        .eq('profile_id', profile.id);
+        if (clientError) {
+          console.error('Client update error:', clientError);
+          throw clientError;
+        }
+      } else {
+        // Create new client record if it doesn't exist
+        const { error: clientError } = await supabase
+          .from('clients')
+          .insert({
+            profile_id: profileId,
+            client_type: 'standard',
+            account_status: 'active',
+            billing_cycle: 'monthly',
+            contract_start: new Date().toISOString().split('T')[0],
+            company_website: profileData.company_website || null,
+            industry: profileData.industry || null,
+            metadata: {
+              timezone: profileData.timezone,
+              communication_preference: profileData.communication_preference,
+              onboarding_completed_at: new Date().toISOString()
+            }
+          });
 
-      if (clientError) throw clientError;
+        if (clientError) {
+          console.error('Client creation error:', clientError);
+          throw clientError;
+        }
+      }
 
-      toast.success('Profile setup complete!');
+      // Success - navigate to client dashboard
       navigate('/client');
     } catch (error) {
       console.error('Setup error:', error);
-      toast.error('Failed to complete setup');
+      alert('Failed to complete setup. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSkip = async () => {
+    // Mark onboarding as completed even if skipping
+    if (profileId) {
+      await supabase
+        .from('profiles')
+        .update({
+          onboarding_completed: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', profileId);
+    }
+    navigate('/client');
   };
 
   // Animated background particles
@@ -404,7 +464,6 @@ const ClientSetupProfile = () => {
               <Logo 
                 variant="icon"
                 colorScheme="white"
-                linkTo="#"
                 className="transform transition-all duration-500 group-hover:scale-110 group-hover:rotate-3"
               />
               <motion.div 
@@ -507,9 +566,7 @@ const ClientSetupProfile = () => {
           className="text-center mt-6"
         >
           <button
-            onClick={() => {
-              navigate('/client');
-            }}
+            onClick={handleSkip}
             className="text-gray-400 hover:text-accent transition-colors text-sm"
           >
             Skip for now →
