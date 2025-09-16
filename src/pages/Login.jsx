@@ -154,8 +154,6 @@ const Login = () => {
           data: {
             full_name: invitationData?.metadata?.full_name || '',
             company_name: invitationData?.metadata?.company_name || '',
-            company_website: invitationData?.metadata?.company_website || '',
-            industry: invitationData?.metadata?.industry || '',
             role: 'standard',
             invitation_token: invitationToken
           }
@@ -164,38 +162,82 @@ const Login = () => {
 
       if (error) throw error;
 
-      // Create profile record
       if (data.user) {
-        const { error: profileError } = await supabase
+        // 1. Create profile record (only basic info, no client-specific fields)
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .insert({
             auth_user_id: data.user.id,
             email: email,
             full_name: invitationData?.metadata?.full_name || '',
-            company_name: invitationData?.metadata?.company_name || '',
-            company_website: invitationData?.metadata?.company_website || '',
-            industry: invitationData?.metadata?.industry || '',
+            company_name: invitationData?.metadata?.company_name || '', // Keep for display
             role: 'standard',
-            client_type: invitationData?.metadata?.client_type || 'standard',
-            billing_cycle: invitationData?.metadata?.billing_cycle || 'monthly',
+            client_status: 'active', // Relationship status
             onboarding_completed: false,
+            invited_by: invitationData?.invited_by || null,
+            invitation_status: 'accepted',
+            invitation_token: invitationToken,
             created_at: new Date().toISOString()
-          });
+          })
+          .select()
+          .single();
 
         if (profileError) {
           console.error('Profile creation error:', profileError);
+          throw profileError;
         }
-      }
 
-      // Update invitation status
-      if (invitationToken) {
-        await supabase
-          .from('client_invitations')
-          .update({ 
+        // 2. Create clients record ONLY for standard role users
+        if (profileData && profileData.role === 'standard') {
+          const { error: clientError } = await supabase
+            .from('clients')
+            .insert({
+              profile_id: profileData.id,
+              client_type: invitationData?.metadata?.client_type || 'standard',
+              billing_cycle: invitationData?.metadata?.billing_cycle || 'monthly',
+              account_status: 'active', // Billing/account status
+              contract_start: new Date().toISOString().split('T')[0],
+              company_website: invitationData?.metadata?.company_website || null,
+              industry: invitationData?.metadata?.industry || null,
+              metadata: {
+                personal_message: invitationData?.metadata?.personal_message || '',
+                invited_by_name: invitationData?.metadata?.invited_by_name || '',
+                original_invitation: invitationToken
+              }
+            });
+
+          if (clientError) {
+            console.error('Client record creation error:', clientError);
+            // Don't throw - profile was created successfully
+          }
+        }
+
+        // 3. Update invitation status and link to profile
+        if (invitationToken) {
+          const updateData = {
             status: 'accepted',
-            accepted_at: new Date().toISOString()
-          })
-          .eq('token', invitationToken);
+            accepted_at: new Date().toISOString(),
+            profile_id: profileData?.id
+          };
+
+          // If client record exists, link it too
+          if (profileData?.role === 'standard') {
+            const { data: clientData } = await supabase
+              .from('clients')
+              .select('id')
+              .eq('profile_id', profileData.id)
+              .single();
+            
+            if (clientData) {
+              updateData.client_id = clientData.id;
+            }
+          }
+
+          await supabase
+            .from('client_invitations')
+            .update(updateData)
+            .eq('token', invitationToken);
+        }
       }
 
       // Sign them in automatically
@@ -204,14 +246,21 @@ const Login = () => {
         password
       });
 
-      if (signInError) throw signInError;
-
-      setSuccess('Account created successfully!');
-      
-      // Route to profile setup
-      setTimeout(() => {
-        navigate('/admin/setup-profile');
-      }, 1500);
+      if (signInError) {
+        setSuccess('Account created! Please sign in with your new credentials.');
+        setTimeout(() => {
+          setMode('login');
+          setPassword('');
+          setConfirmPassword('');
+        }, 2000);
+      } else {
+        setSuccess('Account created successfully!');
+        
+        // Route to appropriate dashboard
+        setTimeout(() => {
+          navigate('/admin/setup-profile'); // Will redirect to /client after onboarding
+        }, 1500);
+      }
       
     } catch (error) {
       setError(error.message);
