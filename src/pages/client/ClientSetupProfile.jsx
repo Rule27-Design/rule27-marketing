@@ -480,7 +480,7 @@ const ClientSetupProfile = () => {
             </div>
           </div>
           <h1 className="text-4xl font-heading-bold text-white uppercase tracking-wider">
-            Welcome to Rule27
+            Welcome to Rule27 Design
           </h1>
           <p className="text-gray-400 mt-2 font-sans">
             Let's get your account set up
