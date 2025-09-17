@@ -190,11 +190,17 @@ const Login = () => {
       }
 
       // Now create profile - check if it already exists first
-      const { data: existingProfile } = await supabase
+      // FIX: Use maybeSingle() instead of single()
+      const { data: existingProfile, error: profileCheckError } = await supabase
         .from('profiles')
         .select('id, role')
         .eq('auth_user_id', signUpData.user.id)
-        .single();
+        .maybeSingle();
+
+      if (profileCheckError && profileCheckError.code !== 'PGRST116') {
+        console.error('Profile check error:', profileCheckError);
+        throw profileCheckError;
+      }
 
       let profileData = existingProfile;
 
@@ -229,11 +235,16 @@ const Login = () => {
       // Create clients record ONLY for standard role users
       if (profileData && profileData.role === 'standard') {
         // Check if client record already exists
-        const { data: existingClient } = await supabase
+        // FIX: Use maybeSingle() instead of single()
+        const { data: existingClient, error: clientCheckError } = await supabase
           .from('clients')
           .select('id')
           .eq('profile_id', profileData.id)
-          .single();
+          .maybeSingle();
+
+        if (clientCheckError && clientCheckError.code !== 'PGRST116') {
+          console.error('Client check error:', clientCheckError);
+        }
 
         if (!existingClient) {
           const { error: clientError } = await supabase
@@ -255,6 +266,7 @@ const Login = () => {
 
           if (clientError) {
             console.error('Client record creation error:', clientError);
+            // Don't throw - profile was created successfully
           }
         }
       }
