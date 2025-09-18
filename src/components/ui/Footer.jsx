@@ -42,12 +42,12 @@ const Footer = () => {
             <div className="mb-6 flex justify-center md:justify-start">
               {/* Try white PNG first, fallback to color with filter */}
               <img 
-                src="/assets/logo/rule27-white-red.png"
+                src="/assets/Logo/rule27-white-red.png"
                 alt="Rule27 Design"
                 className="h-12 w-auto"
                 onError={(e) => {
                   // If white PNG fails, use color PNG with filter
-                  e.target.src = '/assets/logo/rule27-color.png';
+                  e.target.src = '/assets/Logo/rule27-color.png';
                   e.target.style.filter = 'brightness(0) invert(1)';
                   e.target.style.WebkitFilter = 'brightness(0) invert(1)';
                 }}

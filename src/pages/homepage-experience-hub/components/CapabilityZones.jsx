@@ -228,7 +228,7 @@ const CapabilityZones = ({ serviceZones = [] }) => {
       </div>
 
       {/* Animation Styles */}
-      <style jsx>{`
+      <style>{`
         @keyframes fadeInUp {
           from {
             opacity: 0;

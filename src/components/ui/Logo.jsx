@@ -41,7 +41,7 @@ const Logo = ({
 
   // Get logo source - SVG first, PNG fallback
   const getLogoSrc = () => {
-    const basePath = '/assets/logo';
+    const basePath = '/assets/Logo';
     const format = imageError ? 'png' : 'svg'; // Use SVG by default, PNG if SVG fails
     
     // For full logo with text
@@ -71,7 +71,7 @@ const Logo = ({
   const CSSFallbackLogo = () => (
     <div className="flex items-center space-x-3 group">
       <div className={`${currentSize.iconSize} bg-[#E53E3E] rounded-full flex items-center justify-center transition-all duration-300 transform group-hover:scale-110`}>
-        <span className={`${currentSize.number} text-white font-bold`}>27</span>
+        <span className={`${currentSize.number} text-white font-bold`}></span>
       </div>
       {variant !== 'icon' && (
         <div className="flex flex-col leading-none">

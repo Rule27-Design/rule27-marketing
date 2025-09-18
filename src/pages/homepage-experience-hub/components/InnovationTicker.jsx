@@ -224,7 +224,7 @@ const InnovationTicker = () => {
         </div>
       </div>
       {/* Custom CSS for marquee animation */}
-      <style jsx>{`
+      <style>{`
         @keyframes marquee {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }

@@ -72,8 +72,8 @@ const InnovationLaboratory = () => {
         <link rel="canonical" href="https://www.rule27design.com/innovation" />
         
         {/* Preload critical resources */}
-        <link rel="preload" href="/assets/logo/rule27-color.svg" as="image" />
-        <link rel="preload" href="/assets/logo/rule27-icon-white.svg" as="image" />
+        <link rel="preload" href="/assets/Logo/rule27-color.svg" as="image" />
+        <link rel="preload" href="/assets/Logo/rule27-icon-white.svg" as="image" />
       </Helmet>
 
       <div className="min-h-screen bg-background overflow-x-hidden">
@@ -121,7 +121,7 @@ const InnovationLaboratory = () => {
       </div>
 
       {/* Page-specific styles */}
-      <style jsx>{`
+      <style>{`
         .page-loaded {
           animation: pageLoad 0.6s ease-out;
         }

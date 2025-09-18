@@ -239,11 +239,9 @@ const EnhancedCapabilityAssessment = memo(() => {
       
       setAssessmentId(data.id);
       
-      // Create email notification for admin
       await supabase
         .from('email_notifications')
         .insert({
-          recipient_email: 'admin@rule27design.com',
           subject: 'New Capability Assessment Completed',
           template: 'assessment_complete',
           data: {
