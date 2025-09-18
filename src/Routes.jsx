@@ -24,8 +24,8 @@ const Routes = () => {
           <Route path="/" element={<HomepageExperienceHub />} />
           <Route path="/capabilities" element={<CapabilityUniverse />} />
           <Route path="/innovation" element={<InnovationLaboratory />} />
-          <Route path="/work" element={<WorkShowcaseTheater />} />
-          <Route path="/case-study/:slug" element={<CaseStudyDetail />} />
+          <Route path="/case-studies" element={<WorkShowcaseTheater />} />
+          <Route path="/case-studies/:slug" element={<CaseStudyDetail />} />
           <Route path="/articles" element={<ArticlesHub />} />
           <Route path="/about" element={<AboutProcessStudio />} />
           <Route path="/contact" element={<ContactConsultationPortal />} />

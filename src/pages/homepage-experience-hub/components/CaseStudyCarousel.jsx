@@ -42,8 +42,8 @@ const CaseStudyCarousel = ({ caseStudies = [] }) => {
   // Navigate to case study detail page (future implementation)
   const handleViewCaseStudy = (caseStudy) => {
     // For now, navigate to work page
-    // In future: navigate(`/work/${caseStudy.slug}`);
-    navigate('/work');
+    navigate(`/case-studies/${caseStudy.slug}`);
+    //navigate('/case-studies/${caseStudy.slug}`);
   };
 
   return (
@@ -205,7 +205,7 @@ defy expectations, break conventions, and deliver extraordinary results.
 
         {/* Bottom CTA */}
         <div className="text-center mt-16">
-          <Link to="/work">
+          <Link to="/case-studies">
             <Button
               variant="default"
               size="lg"
