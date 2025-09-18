@@ -73,7 +73,6 @@ const InnovationLaboratory = () => {
         
         {/* Preload critical resources */}
         <link rel="preload" href="/assets/Logo/rule27-color.svg" as="image" />
-        <link rel="preload" href="/assets/Logo/rule27-icon-white.svg" as="image" />
       </Helmet>
 
       <div className="min-h-screen bg-background overflow-x-hidden">
