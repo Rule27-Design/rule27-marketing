@@ -74,7 +74,6 @@ export const STATUS_CONFIG = {
 
 // User roles
 export const ROLES = {
-  ADMIN: 'admin',
   EDITOR: 'editor',
   AUTHOR: 'author',
   CONTRIBUTOR: 'contributor',
@@ -137,11 +136,6 @@ export const CACHE_CONFIG = {
 // API endpoints
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: '/auth/login',
-    LOGOUT: '/auth/logout',
-    REFRESH: '/auth/refresh',
-    VERIFY: '/auth/verify',
-    RESET_PASSWORD: '/auth/reset-password'
   },
   ARTICLES: {
     BASE: '/api/articles',
@@ -255,7 +249,6 @@ export const DEBOUNCE_DELAYS = {
 
 // Local storage keys
 export const STORAGE_KEYS = {
-  AUTH_TOKEN: 'auth_token',
   REFRESH_TOKEN: 'refresh_token',
   USER_PREFERENCES: 'user_preferences',
   THEME: 'theme',
@@ -270,7 +263,6 @@ export const STORAGE_KEYS = {
 export const ERROR_MESSAGES = {
   GENERIC: 'An error occurred. Please try again.',
   NETWORK: 'Network error. Please check your connection.',
-  UNAUTHORIZED: 'You are not authorized to perform this action.',
   NOT_FOUND: 'The requested resource was not found.',
   VALIDATION: 'Please check your input and try again.',
   SERVER: 'Server error. Please try again later.',

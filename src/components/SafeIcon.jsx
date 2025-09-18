@@ -88,7 +88,7 @@ const iconMap = {
   'Package': LucideIcons.Package,
   'Layers': LucideIcons.Layers,
   'Target': LucideIcons.Target,
-  'Tool': LucideIcons.Tool,
+  'Wrench': LucideIcons.Wrench,
   
   // Social
   'Linkedin': LucideIcons.Linkedin,

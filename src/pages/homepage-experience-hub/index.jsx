@@ -72,8 +72,8 @@ const HomepageExperienceHub = () => {
         <meta name="twitter:description" content="Break conventional boundaries with Rule27 Design. We combine creative audacity with technical precision to transform ambitious brands into industry leaders." />
         <meta name="twitter:image" content="/assets/og-image.jpg" />
         <link rel="canonical" href="https://rule27design.com" />
-        <link rel="preload" href="/assets/logo/rule27-color.svg" as="image" />
-        <link rel="preload" href="/assets/logo/rule27-icon-white.svg" as="image" />
+        <link rel="preload" href="/assets/Logo/rule27-color.svg" as="image" />
+        <link rel="preload" href="/assets/Logo/rule27-icon-white.svg" as="image" />
       </Helmet>
 
       <div className="min-h-screen bg-background overflow-x-hidden">
@@ -115,7 +115,7 @@ const HomepageExperienceHub = () => {
         <BackToTop />
       </div>
 
-      <style jsx>{`
+      <style>{`
         .page-loaded {
           animation: pageLoad 0.6s ease-out;
         }

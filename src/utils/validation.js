@@ -94,9 +94,7 @@ export const validationSchemas = {
 
   caseStudy: {
     title: [validators.required, validators.minLength(5), validators.maxLength(200)],
-    client_name: [validators.required, validators.minLength(2), validators.maxLength(100)],
     slug: [validators.slug, validators.maxLength(100)],
-    client_website: [validators.url],
     description: [validators.required, validators.minLength(20), validators.maxLength(500)],
     industry: [validators.required],
     service_type: [validators.required]
@@ -105,7 +103,6 @@ export const validationSchemas = {
   profile: {
     email: [validators.required, validators.email],
     full_name: [validators.required, validators.minLength(2), validators.maxLength(100)],
-    role: [validators.required, validators.oneOf(['admin', 'contributor', 'standard'])],
     linkedin_url: [validators.url],
     twitter_url: [validators.url],
     github_url: [validators.url]
@@ -118,7 +115,6 @@ export const validationSchemas = {
   },
 
   testimonial: {
-    client_name: [validators.required, validators.minLength(2), validators.maxLength(100)],
     quote: [validators.required, validators.minLength(10), validators.maxLength(1000)],
     rating: [validators.required, validators.oneOf([1, 2, 3, 4, 5])]
   }

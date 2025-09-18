@@ -116,13 +116,13 @@ export const BRAND_CONFIG = {
   logo: {
     paths: {
       // Full logos with text
-      color: '/assets/logo/rule27-color',
-      black: '/assets/logo/rule27-black',
-      white: '/assets/logo/rule27-white',
+      color: '/assets/Logo/rule27-color',
+      black: '/assets/Logo/rule27-black',
+      white: '/assets/Logo/rule27-white',
       // Icon only versions
-      iconColor: '/assets/logo/rule27-icon-color',
-      iconBlack: '/assets/logo/rule27-icon-black',
-      iconWhite: '/assets/logo/rule27-icon-white'
+      iconColor: '/assets/Logo/rule27-icon-color',
+      iconBlack: '/assets/Logo/rule27-icon-black',
+      iconWhite: '/assets/Logo/rule27-icon-white'
     },
     formats: ['svg', 'png'], // Priority order
     defaultVariant: 'color'

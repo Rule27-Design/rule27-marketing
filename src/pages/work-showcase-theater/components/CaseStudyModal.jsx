@@ -264,7 +264,7 @@ const CaseStudyModal = React.memo(({ caseStudy, isOpen, onClose }) => {
       </div>
 
       {/* Animation Styles */}
-      <style jsx>{`
+      <style>{`
         @keyframes slide-up {
           from {
             transform: translateY(100%);

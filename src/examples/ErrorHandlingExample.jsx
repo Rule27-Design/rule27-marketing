@@ -223,7 +223,6 @@ export const setupGlobalErrorListeners = () => {
     errorCount++;
     if (errorCount > 10) {
       console.warn('High error rate detected!');
-      // Could trigger maintenance mode, alert admins, etc.
     }
   });
 };
