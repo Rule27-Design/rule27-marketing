@@ -73,7 +73,6 @@ const HomepageExperienceHub = () => {
         <meta name="twitter:image" content="/assets/og-image.jpg" />
         <link rel="canonical" href="https://rule27design.com" />
         <link rel="preload" href="/assets/Logo/rule27-color.svg" as="image" />
-        <link rel="preload" href="/assets/Logo/rule27-icon-white.svg" as="image" />
       </Helmet>
 
       <div className="min-h-screen bg-background overflow-x-hidden">
