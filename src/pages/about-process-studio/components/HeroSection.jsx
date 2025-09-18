@@ -313,7 +313,7 @@ const HeroSection = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
         >
-          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed px-4 font-sans">
+          <div className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed px-4 font-sans">
             Born from <span className="text-accent font-semibold">rebellious innovation</span> and crafted with{' '}
             <span className="relative inline-block min-w-[200px] md:min-w-[320px] text-center">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-300 to-white bg-300% animate-gradient font-semibold">
@@ -337,7 +337,7 @@ const HeroSection = () => {
             </span>
             <br />
             Meet the minds, methodology, and culture that make conventional boundaries disappear.
-          </p>
+          </div>
         </motion.div>
 
         {/* Interactive Stats with Enhanced Animations */}
