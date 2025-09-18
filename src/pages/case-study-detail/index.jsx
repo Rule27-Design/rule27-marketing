@@ -140,7 +140,7 @@ const CaseStudyDetail = () => {
             <p className="text-text-secondary mb-4 font-sans">{error || 'The case study you are looking for does not exist.'}</p>
             <Button
               variant="outline"
-              onClick={() => navigate('/work')}
+              onClick={() => navigate('/case-studies')}
               className="border-accent text-accent hover:bg-accent hover:text-white"
             >
               <span className="font-heading-regular tracking-wider uppercase">Back to Work</span>

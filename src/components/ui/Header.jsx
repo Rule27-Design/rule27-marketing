@@ -9,7 +9,7 @@ const NAVIGATION_CONFIG = {
   primary: [
     { name: 'Home', path: '/', icon: 'Home' },
     { name: 'Capabilities', path: '/capabilities', icon: 'Zap' },
-    { name: 'Work', path: '/work', icon: 'Eye' },
+    { name: 'Case Studies', path: '/case-studies', icon: 'Eye' },
     { name: 'Articles', path: '/articles', icon: 'FileText' },
     { name: 'Innovation', path: '/innovation', icon: 'Lightbulb' },
     { name: 'About', path: '/about', icon: 'Users' }
