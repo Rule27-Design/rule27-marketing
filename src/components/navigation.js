@@ -16,8 +16,8 @@ export const NAVIGATION_CONFIG = {
       keywords: ['services', 'skills', 'expertise', 'offerings']
     },
     {
-      name: 'Work',
-      path: '/work',
+      name: 'Case Studies',
+      path: '/case-studies',
       icon: 'Eye',
       description: 'View our portfolio and case studies',
       keywords: ['portfolio', 'projects', 'case studies', 'examples']

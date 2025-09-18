@@ -174,16 +174,16 @@ const WorkShowcaseTheater = () => {
   return (
     <>
       <Helmet>
-        <title>Our Work | Rule27 Design - Transformational Case Studies</title>
+        <title>Our Case Studies | Rule27 Design - Transformational Case Studies</title>
         <meta 
           name="description" 
           content="Explore success stories with 500%+ growth. See how we transform brands through strategic creativity and technical excellence." 
         />
         <meta name="keywords" content="case studies, portfolio, digital transformation, brand strategy, web development, marketing results, client success stories, 500% growth" />
-        <meta property="og:title" content="Our Work | Rule27 Design - Transformational Case Studies" />
+        <meta property="og:title" content="Our Case Studies | Rule27 Design - Transformational Case Studies" />
         <meta property="og:description" content="Explore success stories with 500%+ growth. See how we transform brands through strategic creativity and technical excellence." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="/work" />
+        <link rel="canonical" href="/case-studies" />
       </Helmet>
       
       <div className="min-h-screen bg-background">

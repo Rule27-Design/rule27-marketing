@@ -241,7 +241,7 @@ const SocialProofSection = ({
             Ready to become our next transformation success story?
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/work">
+            <Link to="/case-studies">
               <button className="bg-white text-primary px-8 py-4 rounded-lg font-body font-semibold hover:bg-gray-100 transition-colors duration-300 flex items-center space-x-2">
                 <Icon name="Eye" size={20} />
                 <span className="font-heading-regular tracking-wider uppercase">View All Case Studies</span>

@@ -9,7 +9,7 @@ const Footer = () => {
   const footerLinks = {
     explore: [
       { name: 'Capabilities', path: '/capabilities' },
-      { name: 'Work', path: '/work' },
+      { name: 'Case Studies', path: '/case-studies' },
       { name: 'Articles', path: '/articles' },
       { name: 'Innovation', path: '/innovation' },
       { name: 'About', path: '/about' }
