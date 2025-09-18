@@ -23,7 +23,7 @@ function App() {
       Hotjar.init(parseInt(HOTJAR_ID), 6);
     }
 
-    console.log('Rule27 Marketing Site Initialized');
+    console.log('Site Initialized');
   }, []);
 
   return (
