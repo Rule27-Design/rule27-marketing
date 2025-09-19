@@ -6,12 +6,15 @@ import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import { Checkbox } from '../../../components/ui/Checkbox';
+import { useContactSubmissions } from '../../../hooks/useContactSubmissions';
 
 const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) => {
   const [currentStep, setCurrentStep] = useState(parentStep || 1);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  
+  const { submitContactForm, submitting: isApiSubmitting } = useContactSubmissions();
 
   const totalSteps = 4;
 
@@ -181,11 +184,29 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
 
     setIsSubmitting(true);
     
-    // Simulate submission
-    setTimeout(() => {
-      setIsSubmitting(false);
+    // Combine all form data
+    const fullFormData = {
+      contactInfo,
+      projectDetails,
+      preferences,
+      agreement
+    };
+    
+    // Submit to Supabase
+    const result = await submitContactForm(fullFormData);
+    
+    if (result.success) {
       setIsSuccess(true);
-    }, 2000);
+      // Clear form data after 5 seconds
+      setTimeout(() => {
+        window.location.reload(); // Simple reload to reset everything
+      }, 5000);
+    } else {
+      // Show error message
+      setErrors({ submit: 'Failed to submit form. Please try again or contact us directly at hello@rule27design.com' });
+    }
+    
+    setIsSubmitting(false);
   };
 
   const renderStepContent = () => {
@@ -436,6 +457,13 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
               </p>
             </div>
 
+            {/* Show any submission errors */}
+            {errors.submit && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-600 text-sm">{errors.submit}</p>
+              </div>
+            )}
+
             {/* Summary */}
             <div className="bg-gradient-to-br from-surface to-white rounded-lg sm:rounded-xl p-4 sm:p-6 space-y-3 sm:space-y-4">
               <h4 className="font-heading-regular text-primary text-sm sm:text-base uppercase tracking-wider">
@@ -641,12 +669,12 @@ const ConsultationForm = ({ formData, onFormUpdate, currentStep: parentStep }) =
             <Button
               variant="default"
               onClick={handleSubmit}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isApiSubmitting}
               className="w-full sm:w-auto order-1 sm:order-2 bg-gradient-to-r from-accent to-red-500 hover:from-red-500 hover:to-accent text-white disabled:opacity-50 text-sm sm:text-base shadow-lg font-heading-regular uppercase tracking-wider"
-              iconName={isSubmitting ? "Loader" : "Send"}
+              iconName={isSubmitting || isApiSubmitting ? "Loader" : "Send"}
               iconPosition="right"
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Request'}
+              {isSubmitting || isApiSubmitting ? 'Submitting...' : 'Submit Request'}
             </Button>
           )}
         </div>

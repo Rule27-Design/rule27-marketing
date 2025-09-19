@@ -27,6 +27,7 @@
     "warning": "🚨 CRITICAL: DO NOT REMOVE OR MODIFY ABOVE DEPENDENCIES - Required for app functionality"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.20.9",
     "@dhiwise/component-tagger": "^1.0.10",
     "@hotjar/browser": "^1.0.9",
     "@radix-ui/react-slot": "^1.0.2",
@@ -46,6 +47,8 @@
     "dotenv": "^16.0.1",
     "framer-motion": "^10.16.4",
     "lucide-react": "^0.484.0",
+    "node-cron": "^3.0.3",
+    "openai": "^4.104.0",
     "react": "18.3.1",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "18.3.1",
@@ -64,7 +67,12 @@
   "scripts": {
     "start": "vite",
     "build": "vite build --sourcemap",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "chatbot:init": "node --loader dotenv/config src/scripts/initializeChatbot.js",
+    "chatbot:test": "node --loader dotenv/config src/scripts/testChatbot.js",
+    "chatbot:review": "node --loader dotenv/config src/scripts/processReviewQueue.js",
+    "chatbot:analytics": "node --loader dotenv/config src/scripts/generateAnalytics.js",
+    "chatbot:optimize": "node --loader dotenv/config src/scripts/runOptimization.js"
   },
   "eslintConfig": {
     "extends": [
