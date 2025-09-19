@@ -24,6 +24,7 @@ const ChatBotWidget = ({
   const [uploadedFile, setUploadedFile] = useState(null);
   const [connectionError, setConnectionError] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [dbConnected, setDbConnected] = useState(false);
   
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -39,6 +40,7 @@ const ChatBotWidget = ({
   }, [messages]);
 
   const initializeChat = async () => {
+    console.log('Starting Larry initialization...');
     try {
       setIsInitializing(true);
       setConnectionError(false);
@@ -51,120 +53,123 @@ const ChatBotWidget = ({
       }
       setVisitorId(vid);
 
-      // Create or update visitor profile
-      const { data: existingProfile } = await supabaseClient
-        .from('visitor_profiles')
-        .select('*')
-        .eq('visitor_id', vid)
-        .single();
-
-      let visitorProfile;
-      
-      if (existingProfile) {
-        // Update existing profile
-        const { data: updatedProfile } = await supabaseClient
-          .from('visitor_profiles')
-          .update({
-            last_seen: new Date().toISOString(),
-            total_visits: (existingProfile.total_visits || 0) + 1,
-            pages_visited: [...(existingProfile.pages_visited || []), window.location.pathname]
-          })
-          .eq('visitor_id', vid)
-          .select()
-          .single();
-        
-        visitorProfile = updatedProfile;
+      // Try to connect to Supabase if available
+      let supabaseConnected = false;
+      if (supabaseClient) {
+        try {
+          // Test connection
+          const { error: testError } = await supabaseClient
+            .from('visitor_profiles')
+            .select('id')
+            .limit(1);
+          
+          if (!testError) {
+            supabaseConnected = true;
+            setDbConnected(true);
+            console.log('Supabase connected successfully');
+            
+            // Try to create/update visitor profile
+            try {
+              const { data: profile } = await supabaseClient
+                .from('visitor_profiles')
+                .upsert({
+                  visitor_id: vid,
+                  last_seen: new Date().toISOString(),
+                  pages_visited: [window.location.pathname]
+                }, { 
+                  onConflict: 'visitor_id'
+                })
+                .select()
+                .single();
+              
+              if (profile) {
+                setVisitorProfileId(profile.id);
+              }
+            } catch (profileError) {
+              console.log('Profile creation skipped:', profileError.message);
+            }
+            
+            // Try to create conversation
+            try {
+              const { data: conversation } = await supabaseClient
+                .from('conversations')
+                .insert({
+                  visitor_id: vid,
+                  visitor_profile_id: visitorProfileId,
+                  started_at: new Date().toISOString(),
+                  channel: 'website',
+                  status: 'active',
+                  page_url: window.location.href,
+                  referrer_url: document.referrer || null
+                })
+                .select()
+                .single();
+              
+              if (conversation) {
+                setConversationId(conversation.id);
+              }
+            } catch (convError) {
+              console.log('Conversation creation skipped:', convError.message);
+              setConversationId(`offline_${Date.now()}`);
+            }
+          } else {
+            console.log('Supabase test failed, running offline:', testError.message);
+          }
+        } catch (dbError) {
+          console.log('Supabase unavailable, running offline:', dbError.message);
+        }
       } else {
-        // Create new visitor profile
-        const { data: newProfile } = await supabaseClient
-          .from('visitor_profiles')
-          .insert({
-            visitor_id: vid,
-            first_seen: new Date().toISOString(),
-            last_seen: new Date().toISOString(),
-            total_visits: 1,
-            pages_visited: [window.location.pathname]
-          })
-          .select()
-          .single();
-        
-        visitorProfile = newProfile;
+        console.log('No Supabase client provided, running offline');
+      }
+      
+      // Set conversation ID if not set
+      if (!conversationId) {
+        setConversationId(`offline_${Date.now()}`);
       }
 
-      if (visitorProfile) {
-        setVisitorProfileId(visitorProfile.id);
-      }
+      // Always set welcome message
+      const welcomeText = customWelcome || 
+        "👋 Hey there! I'm Larry, your Rule27 AI assistant. I can help you explore our marketing and development services, or connect you with our team. What brings you here today?";
+      
+      setMessages([{
+        id: 'welcome',
+        text: welcomeText,
+        sender: 'bot',
+        timestamp: new Date(),
+        type: 'text'
+      }]);
 
-      // Create new conversation
-      const { data: conversation, error: convError } = await supabaseClient
-        .from('conversations')
-        .insert({
-          visitor_id: vid,
-          visitor_profile_id: visitorProfile?.id,
-          started_at: new Date().toISOString(),
-          channel: 'website',
-          status: 'active',
-          page_url: window.location.href,
-          referrer_url: document.referrer || null,
-          user_agent: navigator.userAgent
-        })
-        .select()
-        .single();
+      // Set initial quick actions
+      setQuickActions([
+        { icon: '💰', text: 'Pricing Info', value: 'pricing' },
+        { icon: '🚀', text: 'Our Services', value: 'services' },
+        { icon: '📊', text: 'Case Studies', value: 'case-studies' },
+        { icon: '📅', text: 'Book a Call', value: 'consultation' }
+      ]);
 
-      if (convError) {
-        console.error('Error creating conversation:', convError);
-        setConnectionError(true);
-      } else if (conversation) {
-        setConversationId(conversation.id);
-        
-        // Create conversation context
-        await supabaseClient
-          .from('conversation_context')
-          .insert({
-            conversation_id: conversation.id,
-            conversation_stage: 'greeting',
-            current_topic: 'initial_contact'
-          });
+      // Track chat opened event
+      window.dispatchEvent(new CustomEvent('chatbot:opened', { 
+        detail: { conversationId: conversationId || `offline_${Date.now()}`, visitorId: vid } 
+      }));
 
-        // Add welcome message
-        const welcomeText = customWelcome || 
-          "👋 Hey there! I'm Larry, your Rule27 AI assistant. I can help you explore our marketing and development services, or connect you with our team. What brings you here today?";
-        
-        setMessages([{
-          id: 'welcome',
-          text: welcomeText,
-          sender: 'bot',
-          timestamp: new Date(),
-          type: 'text'
-        }]);
-
-        // Set initial quick actions
-        setQuickActions([
-          { icon: '💰', text: 'Pricing Info', value: 'pricing' },
-          { icon: '🚀', text: 'Our Services', value: 'services' },
-          { icon: '📊', text: 'Case Studies', value: 'case-studies' },
-          { icon: '📅', text: 'Book a Call', value: 'consultation' }
-        ]);
-
-        // Track chat opened event
-        await supabaseClient
-          .from('chatbot_analytics')
-          .insert({
-            conversation_id: conversation.id,
-            event_type: 'chat_opened',
-            event_data: { page: window.location.pathname }
-          });
-
-        // Dispatch custom event for analytics
-        window.dispatchEvent(new CustomEvent('chatbot:opened', { 
-          detail: { conversationId: conversation.id, visitorId: vid } 
-        }));
-      }
     } catch (error) {
       console.error('Chat initialization error:', error);
-      setConnectionError(true);
+      // Even on error, show basic chat
+      setConversationId(`error_${Date.now()}`);
+      setMessages([{
+        id: 'welcome',
+        text: "👋 Hi! I'm Larry from Rule27. How can I help you today?",
+        sender: 'bot',
+        timestamp: new Date(),
+        type: 'text'
+      }]);
+      setQuickActions([
+        { icon: '💰', text: 'Pricing Info', value: 'pricing' },
+        { icon: '🚀', text: 'Our Services', value: 'services' }
+      ]);
     } finally {
       setIsInitializing(false);
+      console.log('Larry initialization complete');
     }
   };
 
@@ -174,10 +179,6 @@ const ChatBotWidget = ({
 
   const handleSendMessage = async () => {
     if (!inputValue.trim() && !uploadedFile) return;
-    if (!conversationId) {
-      setConnectionError(true);
-      return;
-    }
 
     const userMessage = {
       id: Date.now(),
@@ -189,39 +190,46 @@ const ChatBotWidget = ({
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = inputValue; // Store for use in API call
     setInputValue('');
     setUploadedFile(null);
     setIsTyping(true);
     setQuickActions([]);
 
     try {
-      // Store user message in database
-      await supabaseClient
-        .from('messages')
-        .insert({
-          conversation_id: conversationId,
-          sender: 'user',
-          content: inputValue,
-          message_type: uploadedFile ? 'file' : 'text',
-          file_attachment: uploadedFile,
-          timestamp: new Date().toISOString()
-        });
+      // Try to store in Supabase if connected
+      if (dbConnected && supabaseClient && conversationId && !conversationId.startsWith('offline')) {
+        try {
+          await supabaseClient
+            .from('messages')
+            .insert({
+              conversation_id: conversationId,
+              sender: 'user',
+              content: currentInput,
+              message_type: uploadedFile ? 'file' : 'text',
+              file_attachment: uploadedFile,
+              timestamp: new Date().toISOString()
+            });
+        } catch (dbError) {
+          console.log('Message storage skipped:', dbError.message);
+        }
+      }
 
       // Call backend API for bot response
-      const response = await fetch('/api/chatbot/message', {
+      const response = await fetch('/.netlify/functions/chatbot-message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: inputValue,
-          conversationId,
-          visitorId,
+          message: currentInput,
+          conversationId: conversationId || 'offline',
+          visitorId: visitorId || 'anonymous',
           visitorProfileId,
           file: uploadedFile
         })
       });
 
       if (!response.ok) {
-        throw new Error('API response not ok');
+        throw new Error(`API error: ${response.status}`);
       }
 
       const data = await response.json();
@@ -241,45 +249,35 @@ const ChatBotWidget = ({
       
       setMessages(prev => [...prev, botMessage]);
       
-      // Store bot message in database
-      await supabaseClient
-        .from('messages')
-        .insert({
-          conversation_id: conversationId,
-          sender: 'bot',
-          content: data.response,
-          message_type: data.type || 'text',
-          detected_intent: data.intent,
-          confidence: data.confidence,
-          quick_actions: data.quickActions,
-          timestamp: new Date().toISOString()
-        });
+      // Try to store bot response in Supabase
+      if (dbConnected && supabaseClient && conversationId && !conversationId.startsWith('offline')) {
+        try {
+          await supabaseClient
+            .from('messages')
+            .insert({
+              conversation_id: conversationId,
+              sender: 'bot',
+              content: data.response,
+              message_type: data.type || 'text',
+              detected_intent: data.intent,
+              confidence: data.confidence,
+              quick_actions: data.quickActions,
+              timestamp: new Date().toISOString()
+            });
+        } catch (dbError) {
+          console.log('Bot message storage skipped:', dbError.message);
+        }
+      }
       
       // Update lead score
       if (data.leadScore) {
         setLeadScore(data.leadScore);
-        
-        // Update conversation with lead score
-        await supabaseClient
-          .from('conversations')
-          .update({ lead_score: data.leadScore })
-          .eq('id', conversationId);
       }
       
       // Check for human takeover
       if (data.escalated) {
         setIsHumanTakeover(true);
         handleHumanTakeover();
-        
-        // Create escalation record
-        await supabaseClient
-          .from('escalations')
-          .insert({
-            conversation_id: conversationId,
-            escalation_reason: data.escalationReason || 'High value lead',
-            lead_score: data.leadScore,
-            status: 'pending'
-          });
       }
       
       // Set new quick actions if provided
@@ -288,21 +286,6 @@ const ChatBotWidget = ({
       }
 
       // Track message event
-      await supabaseClient
-        .from('chatbot_analytics')
-        .insert({
-          conversation_id: conversationId,
-          event_type: 'message_sent',
-          event_data: { 
-            intent: data.intent,
-            confidence: data.confidence
-          },
-          intent: data.intent,
-          confidence: data.confidence,
-          lead_score: data.leadScore
-        });
-
-      // Dispatch custom event for analytics
       window.dispatchEvent(new CustomEvent('chatbot:message', { 
         detail: { intent: data.intent, conversationId } 
       }));
@@ -311,28 +294,19 @@ const ChatBotWidget = ({
       console.error('Error sending message:', error);
       setIsTyping(false);
       
-      // Log error to database
-      await supabaseClient
-        .from('chatbot_errors')
-        .insert({
-          conversation_id: conversationId,
-          error_type: 'message_send_error',
-          error_message: error.message,
-          user_message: inputValue
-        });
-      
+      // Fallback response
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
-        text: "I'm having trouble connecting right now. Would you like me to have someone from our team reach out to you directly?",
+        text: "I'm here to help! Our services start at $25K and we excel at both marketing AND development. For immediate assistance, call us at (555) RULE-27 or email hello@rule27design.com. What specific challenge are you facing?",
         sender: 'bot',
         timestamp: new Date(),
-        type: 'error'
+        type: 'text'
       }]);
       
       setQuickActions([
-        { icon: '📞', text: 'Yes, call me', value: 'request_call' },
-        { icon: '📧', text: 'Email me instead', value: 'request_email' },
-        { icon: '🔄', text: 'Try again', value: 'retry' }
+        { icon: '📞', text: 'Call Us', value: 'call' },
+        { icon: '📧', text: 'Email Us', value: 'email' },
+        { icon: '🔄', text: 'Try Again', value: 'retry' }
       ]);
     }
   };
@@ -340,6 +314,16 @@ const ChatBotWidget = ({
   const handleQuickAction = async (action) => {
     if (action.value === 'retry') {
       await initializeChat();
+      return;
+    }
+    
+    if (action.value === 'call') {
+      window.location.href = 'tel:+15557853277';
+      return;
+    }
+    
+    if (action.value === 'email') {
+      window.location.href = 'mailto:hello@rule27design.com';
       return;
     }
     
@@ -360,7 +344,7 @@ const ChatBotWidget = ({
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      if (file.size > 10 * 1024 * 1024) {
         alert('File size must be less than 10MB');
         return;
       }
@@ -375,8 +359,8 @@ const ChatBotWidget = ({
 
   const handleOpenChat = () => {
     setIsOpen(true);
-    if (connectionError || !conversationId) {
-      initializeChat(); // Retry initialization if there was an error
+    if (!conversationId || conversationId.startsWith('error')) {
+      initializeChat();
     }
   };
 
@@ -433,7 +417,7 @@ const ChatBotWidget = ({
   // Main Render
   return (
     <>
-      {/* Chat Button */}
+      {/* Chat Button - Always visible when chat is closed */}
       {!isOpen && (
         <button
           onClick={handleOpenChat}
@@ -446,7 +430,6 @@ const ChatBotWidget = ({
           }}
         >
           <MessageCircle size={28} className="text-white" />
-          {/* Larry notification badge */}
           <span className="absolute -top-2 -right-2 px-2 py-1 bg-white text-xs font-bold rounded-full shadow-lg"
                 style={{ color: primaryColor }}>
             Larry
@@ -479,7 +462,9 @@ const ChatBotWidget = ({
                 <h3 className="text-white font-semibold">Larry</h3>
                 {!isMinimized && (
                   <p className="text-white/80 text-xs">
-                    {isHumanTakeover ? '🟢 Expert Connected' : '🤖 AI Assistant | Rule27'}
+                    {isHumanTakeover ? '🟢 Expert Connected' : 
+                     dbConnected ? '🤖 AI Assistant | Rule27' : 
+                     '🤖 AI Assistant | Offline Mode'}
                   </p>
                 )}
               </div>
@@ -503,25 +488,6 @@ const ChatBotWidget = ({
 
           {!isMinimized && (
             <>
-              {/* Connection Error Banner */}
-              {connectionError && (
-                <div className="px-4 py-2 bg-yellow-50 border-b border-yellow-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <AlertCircle size={14} className="text-yellow-600" />
-                      <span className="text-xs text-yellow-700">Connection issue</span>
-                    </div>
-                    <button
-                      onClick={initializeChat}
-                      className="text-xs text-yellow-600 hover:text-yellow-700 flex items-center space-x-1"
-                    >
-                      <RefreshCw size={12} />
-                      <span>Retry</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-
               {/* Lead Score Indicator */}
               {leadScore > 0 && (
                 <div className="px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 border-b">
@@ -583,7 +549,7 @@ const ChatBotWidget = ({
                         className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs 
                                  hover:border-red-300 hover:bg-red-50 transition-all duration-200
                                  flex items-center space-x-1"
-                        disabled={isTyping || connectionError}
+                        disabled={isTyping}
                       >
                         <span>{action.icon}</span>
                         <span>{action.text}</span>
@@ -623,7 +589,6 @@ const ChatBotWidget = ({
                     onClick={() => fileInputRef.current?.click()}
                     className="text-gray-400 hover:text-gray-600 transition-colors"
                     title="Attach file"
-                    disabled={connectionError}
                   >
                     <Paperclip size={18} />
                   </button>
@@ -634,11 +599,10 @@ const ChatBotWidget = ({
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                     placeholder={
-                      connectionError ? "Connection issue..." : 
                       isHumanTakeover ? "Chat with our expert..." : 
                       "Type your message..."
                     }
-                    disabled={connectionError || isInitializing}
+                    disabled={isInitializing}
                     className="flex-1 px-4 py-2 border border-gray-200 rounded-full text-sm
                              focus:outline-none focus:border-red-300 transition-colors
                              disabled:bg-gray-50 disabled:text-gray-400"
@@ -646,16 +610,16 @@ const ChatBotWidget = ({
                   
                   <button
                     onClick={handleSendMessage}
-                    disabled={(!inputValue.trim() && !uploadedFile) || connectionError || isInitializing}
+                    disabled={(!inputValue.trim() && !uploadedFile) || isInitializing}
                     className="p-2 rounded-full transition-all duration-200 disabled:opacity-50"
                     style={{
-                      background: (inputValue.trim() || uploadedFile) && !connectionError
+                      background: (inputValue.trim() || uploadedFile)
                         ? `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 100%)`
                         : '#e5e7eb'
                     }}
                   >
                     <Send size={18} className={
-                      (inputValue.trim() || uploadedFile) && !connectionError ? 'text-white' : 'text-gray-400'
+                      (inputValue.trim() || uploadedFile) ? 'text-white' : 'text-gray-400'
                     } />
                   </button>
                 </div>
@@ -667,7 +631,7 @@ const ChatBotWidget = ({
                       onClick={() => handleQuickAction({ text: 'I want to speak with a human', value: 'human' })}
                       className="text-gray-400 hover:text-gray-600 transition-colors"
                       title="Request human assistance"
-                      disabled={connectionError || isHumanTakeover}
+                      disabled={isHumanTakeover}
                     >
                       <Phone size={18} />
                     </button>
@@ -676,7 +640,6 @@ const ChatBotWidget = ({
                       onClick={() => handleQuickAction({ text: 'Email me instead', value: 'email' })}
                       className="text-gray-400 hover:text-gray-600 transition-colors"
                       title="Switch to email"
-                      disabled={connectionError}
                     >
                       <Mail size={18} />
                     </button>
