@@ -1,7 +1,7 @@
 // src/scripts/initializeChatbot.js
 
 import { createClient } from '@supabase/supabase-js';
-import { rule27KnowledgeBase } from '../services/chatbot/trainingData/rule27Knowledge';
+import  rule27KnowledgeBase  from '../services/chatbot/trainingData/rule27Knowledge';
 import { 
   pricingTrainingData,
   serviceTrainingData,
