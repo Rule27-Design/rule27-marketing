@@ -368,3 +368,65 @@ code, pre {
 .prose th {
   border: 1px solid #d1d5db;
 }
+
+/* ========================== */
+/* LARRY CHATBOT ANIMATIONS   */
+/* ========================== */
+
+/* Larry Chat Button Animations */
+@keyframes larry-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes larry-ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Force Larry button to be fixed positioned */
+.larry-chat-button {
+  position: fixed !important;
+  z-index: 9999 !important;
+}
+
+/* Force Larry chat window to be fixed positioned */
+.larry-chat-window {
+  position: fixed !important;
+  z-index: 9999 !important;
+}
+
+/* Ensure animations work properly */
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Override any Tailwind conflicts for Larry */
+button.fixed.bottom-6.right-6 {
+  position: fixed !important;
+}
+
+/* Prevent other elements from overlapping Larry */
+.larry-chat-button,
+.larry-chat-window {
+  isolation: isolate;
+}

@@ -417,40 +417,104 @@ const ChatBotWidget = ({
   // Main Render
   return (
     <>
-      {/* Chat Button - Always visible when chat is closed */}
+      {/* Chat Button - Always visible when chat is closed - FIXED POSITIONING */}
       {!isOpen && (
         <button
           onClick={handleOpenChat}
-          className={`fixed ${position === 'bottom-right' ? 'bottom-6 right-6' : 'bottom-6 left-6'} 
-                     group w-16 h-16 rounded-full shadow-lg flex items-center justify-center 
-                     transform transition-all duration-300 hover:scale-110 z-50
-                     animate-pulse-slow relative`}
+          className="larry-chat-button"
           style={{
-            background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 100%)`
+            position: 'fixed',
+            bottom: '24px',
+            right: position === 'bottom-right' ? '24px' : 'auto',
+            left: position === 'bottom-left' ? '24px' : 'auto',
+            width: '64px',
+            height: '64px',
+            borderRadius: '50%',
+            background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 100%)`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            cursor: 'pointer',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+            border: 'none',
+            outline: 'none',
+            transition: 'all 0.3s ease',
+            animation: 'larry-pulse 3s ease-in-out infinite'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.1)';
+            e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.25)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)';
           }}
         >
-          <MessageCircle size={28} className="text-white" />
-          <span className="absolute -top-2 -right-2 px-2 py-1 bg-white text-xs font-bold rounded-full shadow-lg"
-                style={{ color: primaryColor }}>
+          <MessageCircle size={28} style={{ color: 'white' }} />
+          <span 
+            style={{ 
+              position: 'absolute',
+              top: '-8px',
+              right: '-8px',
+              backgroundColor: 'white',
+              color: primaryColor,
+              padding: '4px 8px',
+              borderRadius: '9999px',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+              whiteSpace: 'nowrap'
+            }}
+          >
             Larry
           </span>
           {leadScore > 50 && (
-            <span className="absolute -top-1 -left-1 w-3 h-3 bg-green-500 rounded-full animate-ping"></span>
+            <span 
+              style={{
+                position: 'absolute',
+                top: '-4px',
+                left: '-4px',
+                width: '12px',
+                height: '12px',
+                backgroundColor: '#10b981',
+                borderRadius: '50%',
+                animation: 'larry-ping 1s cubic-bezier(0, 0, 0.2, 1) infinite'
+              }}
+            />
           )}
         </button>
       )}
 
       {/* Chat Window */}
       {isOpen && (
-        <div className={`fixed ${position === 'bottom-right' ? 'bottom-6 right-6' : 'bottom-6 left-6'} 
-                        ${isMinimized ? 'h-[60px]' : 'h-[600px]'} w-[380px] bg-white rounded-2xl 
-                        shadow-2xl flex flex-col overflow-hidden transition-all duration-300 z-50`}>
+        <div 
+          className="larry-chat-window"
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: position === 'bottom-right' ? '24px' : 'auto',
+            left: position === 'bottom-left' ? '24px' : 'auto',
+            height: isMinimized ? '60px' : '600px',
+            width: '380px',
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            transition: 'all 0.3s ease',
+            zIndex: 9999
+          }}
+        >
           
           {/* Header */}
-          <div className={`flex items-center justify-between ${isMinimized ? 'p-3' : 'p-4'} border-b`}
-               style={{
-                 background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 100%)`
-               }}>
+          <div 
+            className={`flex items-center justify-between ${isMinimized ? 'p-3' : 'p-4'} border-b`}
+            style={{
+              background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 100%)`
+            }}
+          >
             <div className="flex items-center space-x-3">
               <div className="relative">
                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -654,36 +718,6 @@ const ChatBotWidget = ({
           )}
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes pulse-slow {
-          0%, 100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.8;
-          }
-        }
-
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-
-        .animate-pulse-slow {
-          animation: pulse-slow 3s ease-in-out infinite;
-        }
-      `}</style>
     </>
   );
 };
