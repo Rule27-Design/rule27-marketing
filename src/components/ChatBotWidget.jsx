@@ -234,6 +234,15 @@ const ChatBotWidget = ({
 
       const data = await response.json();
       
+      // Debug: Check if using OpenAI or fallback
+      if (data.powered_by === 'openai') {
+        console.log('✅ Response powered by OpenAI');
+      } else if (data.error_fallback) {
+        console.log('⚠️ Using fallback response (OpenAI failed)');
+      } else {
+        console.log('ℹ️ Using standard response');
+      }
+      
       setIsTyping(false);
       
       // Create bot message
