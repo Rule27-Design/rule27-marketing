@@ -171,16 +171,20 @@ const ArticleDetail = () => {
                 {article.title}
               </h1>
 
-              {/* Author Info with Co-Authors */}
+              {/* Author Info with Co-Authors - Updated with clickable links */}
               <div className="flex items-center space-x-4">
                 <img
                   src={article.author.avatar}
                   alt={article.author.name}
-                  className="w-12 h-12 rounded-full border-2 border-white/20"
+                  className="w-12 h-12 rounded-full border-2 border-white/20 cursor-pointer hover:border-white/40 transition-colors"
+                  onClick={() => article.author.slug && navigate(`/team/${article.author.slug}`)}
                 />
                 <div>
                   <div className="flex items-center flex-wrap gap-1">
-                    <p className="text-white font-sans font-semibold">
+                    <p 
+                      className="text-white font-sans font-semibold cursor-pointer hover:text-accent transition-colors"
+                      onClick={() => article.author.slug && navigate(`/team/${article.author.slug}`)}
+                    >
                       {article.author.name}
                     </p>
                     {hasCoAuthors && (
@@ -188,7 +192,15 @@ const ArticleDetail = () => {
                         {' & '}
                         {article.coAuthors.map((coAuthor, index) => (
                           <span key={coAuthor.id}>
-                            {coAuthor.name}
+                            <span 
+                              className="cursor-pointer hover:text-white transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                coAuthor.slug && navigate(`/team/${coAuthor.slug}`);
+                              }}
+                            >
+                              {coAuthor.name}
+                            </span>
                             {index < article.coAuthors.length - 1 && ', '}
                           </span>
                         ))}
@@ -267,7 +279,7 @@ const ArticleDetail = () => {
               )}
             </div>
 
-            {/* Co-Authors Section - Only show if there are co-authors */}
+            {/* Co-Authors Section - Updated with clickable links */}
             {hasCoAuthors && (
               <div className="mt-12 p-6 bg-gray-50 rounded-xl">
                 <h3 className="font-heading-regular text-primary mb-4 tracking-wider uppercase">
@@ -279,10 +291,14 @@ const ArticleDetail = () => {
                       <img
                         src={coAuthor.avatar}
                         alt={coAuthor.name}
-                        className="w-12 h-12 rounded-full flex-shrink-0"
+                        className="w-12 h-12 rounded-full flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-accent transition-all"
+                        onClick={() => coAuthor.slug && navigate(`/team/${coAuthor.slug}`)}
                       />
                       <div className="flex-1">
-                        <p className="font-sans font-medium text-primary">
+                        <p 
+                          className="font-sans font-medium text-primary cursor-pointer hover:text-accent transition-colors inline-block"
+                          onClick={() => coAuthor.slug && navigate(`/team/${coAuthor.slug}`)}
+                        >
                           {coAuthor.name}
                         </p>
                         <p className="text-sm text-text-secondary font-sans">
@@ -293,6 +309,14 @@ const ArticleDetail = () => {
                             {coAuthor.bio}
                           </p>
                         )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => coAuthor.slug && navigate(`/team/${coAuthor.slug}`)}
+                          className="mt-2 -ml-2 text-accent hover:bg-accent/10"
+                        >
+                          <span className="font-sans text-sm">View Profile →</span>
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -320,27 +344,42 @@ const ArticleDetail = () => {
               </div>
             )}
 
-            {/* Main Author Bio */}
+            {/* Main Author Bio - Updated with clickable link */}
             <div className="mt-12 p-6 bg-muted rounded-xl">
               <div className="flex items-start space-x-4">
                 <img
                   src={article.author.avatar}
                   alt={article.author.name}
-                  className="w-16 h-16 rounded-full flex-shrink-0"
+                  className="w-16 h-16 rounded-full flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-accent transition-all"
+                  onClick={() => article.author.slug && navigate(`/team/${article.author.slug}`)}
                 />
                 <div className="flex-1">
                   <h3 className="font-heading-regular text-primary mb-1 tracking-wider uppercase">
                     About the {hasCoAuthors ? 'Lead Author' : 'Author'}
                   </h3>
-                  <p className="font-sans font-medium text-primary">
+                  <p 
+                    className="font-sans font-medium text-primary cursor-pointer hover:text-accent transition-colors inline-block"
+                    onClick={() => article.author.slug && navigate(`/team/${article.author.slug}`)}
+                  >
                     {article.author.name}
                   </p>
                   <p className="text-sm text-text-secondary mb-2 font-sans">
                     {article.author.role} at Rule27 Design
                   </p>
-                  <p className="text-sm text-text-secondary font-sans">
+                  <p className="text-sm text-text-secondary font-sans mb-3">
                     {article.author.bio || `With expertise in digital design and strategy, ${article.author.name} helps brands discover their authentic voice in the digital landscape.`}
                   </p>
+                  {article.author.slug && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/team/${article.author.slug}`)}
+                      className="border-accent text-accent hover:bg-accent hover:text-white"
+                    >
+                      <Icon name="User" size={16} className="mr-2" />
+                      <span className="font-heading-regular tracking-wider uppercase">View Profile</span>
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -385,6 +424,25 @@ const ArticleDetail = () => {
                 </Button>
               </div>
             </div>
+
+            {/* Newsletter CTA */}
+            <div className="mt-12 p-8 bg-primary text-white rounded-xl text-center">
+              <h3 className="text-2xl font-heading-regular mb-3 tracking-wider uppercase">
+                Never Miss an Article
+              </h3>
+              <p className="text-white/90 mb-6 font-sans max-w-2xl mx-auto">
+                Get the latest insights on design, development, and digital marketing delivered to your inbox.
+              </p>
+              <Button
+                variant="default"
+                onClick={() => navigate('/contact')}
+                className="bg-white text-primary hover:bg-white/90"
+                iconName="Mail"
+                iconPosition="left"
+              >
+                <span className="font-heading-regular tracking-wider uppercase">Subscribe to Newsletter</span>
+              </Button>
+            </div>
           </div>
         </article>
 
@@ -426,7 +484,15 @@ const ArticleDetail = () => {
                         {relatedArticle.excerpt}
                       </p>
                       <div className="mt-3 flex items-center text-xs text-text-secondary">
-                        <span className="font-sans">By {relatedArticle.author.name}</span>
+                        <span 
+                          className="font-sans hover:text-accent transition-colors cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            relatedArticle.author.slug && navigate(`/team/${relatedArticle.author.slug}`);
+                          }}
+                        >
+                          By {relatedArticle.author.name}
+                        </span>
                         {relatedArticle.coAuthors && relatedArticle.coAuthors.length > 0 && (
                           <span className="font-sans ml-1">
                             & {relatedArticle.coAuthors.length} other{relatedArticle.coAuthors.length > 1 ? 's' : ''}

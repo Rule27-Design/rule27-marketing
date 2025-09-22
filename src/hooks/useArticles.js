@@ -94,12 +94,14 @@ const transformArticle = (article, profilesMap, categoriesMap) => {
     name: authorProfile.full_name || authorProfile.display_name || 'Rule27 Team',
     role: authorProfile.job_title || 'Team Member',
     avatar: authorProfile.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorProfile.full_name || 'User')}&background=FF6B6B&color=fff`,
-    bio: authorProfile.bio
+    bio: authorProfile.bio,
+    slug: authorProfile.slug // Added slug here
   } : {
     // Fallback if no author found
     name: 'Rule27 Team',
     role: 'Team Member',
-    avatar: 'https://ui-avatars.com/api/?name=Rule27&background=FF6B6B&color=fff'
+    avatar: 'https://ui-avatars.com/api/?name=Rule27&background=FF6B6B&color=fff',
+    slug: null
   };
 
   // Get category from the categories map
@@ -223,7 +225,7 @@ export const useArticles = () => {
             if (validCoAuthorIds.length > 0) {
               const { data: coAuthorData } = await supabase
                 .from('profiles')
-                .select('id, full_name, display_name, avatar_url, job_title, bio')
+                .select('id, full_name, display_name, avatar_url, job_title, bio, slug')
                 .in('id', validCoAuthorIds);
               
               coAuthors = (coAuthorData || []).map(coAuthor => ({
@@ -231,7 +233,8 @@ export const useArticles = () => {
                 name: coAuthor.full_name || coAuthor.display_name || 'Team Member',
                 role: coAuthor.job_title || 'Team Member',
                 bio: coAuthor.bio,
-                avatar: coAuthor.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(coAuthor.full_name || 'User')}&background=FF6B6B&color=fff`
+                avatar: coAuthor.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(coAuthor.full_name || 'User')}&background=FF6B6B&color=fff`,
+                slug: coAuthor.slug // Added slug here
               }));
             }
           }
@@ -330,7 +333,7 @@ export const useArticle = (slug) => {
 
       if (articleError) throw articleError;
 
-      // Fetch the author profile
+      // Fetch the author profile with slug
       let authorProfile = null;
       if (article.author_id) {
         const { data: profile } = await supabase
@@ -369,7 +372,7 @@ export const useArticle = (slug) => {
         if (validCoAuthorIds.length > 0) {
           const { data: coAuthorData } = await supabase
             .from('profiles')
-            .select('id, full_name, display_name, avatar_url, job_title, bio')
+            .select('id, full_name, display_name, avatar_url, job_title, bio, slug')
             .in('id', validCoAuthorIds);
           
           coAuthors = (coAuthorData || []).map(coAuthor => ({
@@ -377,7 +380,8 @@ export const useArticle = (slug) => {
             name: coAuthor.full_name || coAuthor.display_name || 'Team Member',
             role: coAuthor.job_title || 'Team Member',
             bio: coAuthor.bio,
-            avatar: coAuthor.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(coAuthor.full_name || 'User')}&background=FF6B6B&color=fff`
+            avatar: coAuthor.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(coAuthor.full_name || 'User')}&background=FF6B6B&color=fff`,
+            slug: coAuthor.slug // Added slug here
           }));
         }
       }
