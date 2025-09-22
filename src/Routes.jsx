@@ -14,6 +14,8 @@ import ArticlesHub from './pages/articles-insights-hub';
 import AboutProcessStudio from './pages/about-process-studio';
 import ContactConsultationPortal from './pages/contact-consultation-portal';
 import ArticleDetail from "./pages/article-detail";
+import TeamPage from './pages/team';
+import TeamMemberPage from './pages/team/[slug]';
 
 const Routes = () => {
   return (
@@ -29,6 +31,8 @@ const Routes = () => {
           <Route path="/case-studies/:slug" element={<CaseStudyDetail />} />
           <Route path="/articles" element={<ArticlesHub />} />
           <Route path="/article/:slug" element={<ArticleDetail />} />
+          <Route path="/team" element={<TeamPage />} />
+          <Route path="/team/:slug" element={<TeamMemberPage />} />
           <Route path="/about" element={<AboutProcessStudio />} />
           <Route path="/contact" element={<ContactConsultationPortal />} />
           
