@@ -79,7 +79,7 @@ const extractFromJsonContent = (content) => {
 };
 
 // Transform database article to component structure
-const transformArticle = (article) => {
+const transformArticle = (article, profilesMap, categoriesMap) => {
   if (!article) return null;
   
   // Extract content properly
@@ -87,13 +87,14 @@ const transformArticle = (article) => {
   const contentText = typeof contentData === 'string' ? contentData : contentData.text;
   const contentHtml = typeof contentData === 'object' ? contentData.html : null;
   
-  // Get author info from the joined profile
-  const author = article.profiles ? {
-    id: article.profiles.id,
-    name: article.profiles.full_name || article.profiles.display_name || 'Rule27 Team',
-    role: article.profiles.job_title || 'Team Member',
-    avatar: article.profiles.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(article.profiles.full_name || 'User')}&background=FF6B6B&color=fff`,
-    bio: article.profiles.bio
+  // Get author info from the profiles map
+  const authorProfile = profilesMap[article.author_id];
+  const author = authorProfile ? {
+    id: authorProfile.id,
+    name: authorProfile.full_name || authorProfile.display_name || 'Rule27 Team',
+    role: authorProfile.job_title || 'Team Member',
+    avatar: authorProfile.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorProfile.full_name || 'User')}&background=FF6B6B&color=fff`,
+    bio: authorProfile.bio
   } : {
     // Fallback if no author found
     name: 'Rule27 Team',
@@ -101,8 +102,9 @@ const transformArticle = (article) => {
     avatar: 'https://ui-avatars.com/api/?name=Rule27&background=FF6B6B&color=fff'
   };
 
-  // Get category
-  const category = article.categories?.name || 'Insights';
+  // Get category from the categories map
+  const categoryData = categoriesMap[article.category_id];
+  const category = categoryData?.name || 'Insights';
 
   return {
     id: article.id,
@@ -152,36 +154,64 @@ export const useArticles = () => {
 
   const fetchArticles = async () => {
     try {
-      // Fetch published articles with author and category info using direct joins
-      const { data: articles, error } = await supabase
+      // First get the articles
+      const { data: articles, error: articlesError } = await supabase
         .from('articles')
-        .select(`
-          *,
-          profiles!author_id (
-            id,
-            full_name,
-            display_name,
-            avatar_url,
-            job_title,
-            bio
-          ),
-          categories!category_id (
-            id,
-            name,
-            slug
-          )
-        `)
+        .select('*')
         .eq('status', 'published')
         .order('published_at', { ascending: false });
 
-      if (error) {
-        console.error('Articles fetch error:', error);
-        throw error;
+      if (articlesError) throw articlesError;
+
+      if (!articles || articles.length === 0) {
+        setData({
+          articles: [],
+          featuredArticles: [],
+          categories: [],
+          topics: [],
+          loading: false,
+          error: null
+        });
+        return;
       }
+
+      // Get unique author and category IDs
+      const authorIds = [...new Set(articles.map(a => a.author_id))].filter(Boolean);
+      const categoryIds = [...new Set(articles.map(a => a.category_id))].filter(Boolean);
+
+      // Fetch all profiles and categories
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', authorIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+      }
+
+      const { data: categories, error: categoriesError } = await supabase
+        .from('categories')
+        .select('*')
+        .in('id', categoryIds);
+
+      if (categoriesError) {
+        console.error('Error fetching categories:', categoriesError);
+      }
+
+      // Create lookup maps
+      const profilesMap = (profiles || []).reduce((acc, profile) => {
+        acc[profile.id] = profile;
+        return acc;
+      }, {});
+
+      const categoriesMap = (categories || []).reduce((acc, category) => {
+        acc[category.id] = category;
+        return acc;
+      }, {});
 
       // Fetch co-author details for articles that have them
       const articlesWithCoAuthors = await Promise.all(
-        (articles || []).map(async (article) => {
+        articles.map(async (article) => {
           let coAuthors = [];
           
           if (article.co_authors && article.co_authors.length > 0) {
@@ -210,9 +240,9 @@ export const useArticles = () => {
         })
       );
 
-      // Transform articles
+      // Transform articles with the maps
       const transformedArticles = articlesWithCoAuthors.map(article => {
-        const transformed = transformArticle(article);
+        const transformed = transformArticle(article, profilesMap, categoriesMap);
         return {
           ...transformed,
           coAuthors: article.coAuthorDetails
@@ -223,14 +253,14 @@ export const useArticles = () => {
       const featured = transformedArticles.filter(article => article.featured);
 
       // Extract unique categories and topics
-      const categories = [...new Set(transformedArticles.map(a => a.category))].filter(Boolean);
-      const topics = [...new Set(transformedArticles.flatMap(a => a.topics))].filter(Boolean);
+      const uniqueCategories = [...new Set(transformedArticles.map(a => a.category))].filter(Boolean);
+      const uniqueTopics = [...new Set(transformedArticles.flatMap(a => a.topics))].filter(Boolean);
 
       setData({
         articles: transformedArticles,
         featuredArticles: featured.length > 0 ? featured : transformedArticles.slice(0, 3),
-        categories,
-        topics,
+        categories: uniqueCategories,
+        topics: uniqueTopics,
         loading: false,
         error: null
       });
@@ -290,32 +320,43 @@ export const useArticle = (slug) => {
 
   const fetchArticle = async (slug) => {
     try {
-      const { data: article, error } = await supabase
+      // First get the article
+      const { data: article, error: articleError } = await supabase
         .from('articles')
-        .select(`
-          *,
-          profiles!author_id (
-            id,
-            full_name,
-            display_name,
-            avatar_url,
-            job_title,
-            bio
-          ),
-          categories!category_id (
-            id,
-            name,
-            slug
-          )
-        `)
+        .select('*')
         .eq('slug', slug)
         .eq('status', 'published')
         .single();
 
-      if (error) {
-        console.error('Article fetch error:', error);
-        throw error;
+      if (articleError) throw articleError;
+
+      // Fetch the author profile
+      let authorProfile = null;
+      if (article.author_id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', article.author_id)
+          .single();
+        
+        authorProfile = profile;
       }
+
+      // Fetch the category
+      let categoryData = null;
+      if (article.category_id) {
+        const { data: category } = await supabase
+          .from('categories')
+          .select('*')
+          .eq('id', article.category_id)
+          .single();
+        
+        categoryData = category;
+      }
+
+      // Create maps for the transform function
+      const profilesMap = authorProfile ? { [authorProfile.id]: authorProfile } : {};
+      const categoriesMap = categoryData ? { [categoryData.id]: categoryData } : {};
 
       // Fetch co-authors if they exist
       let coAuthors = [];
@@ -342,7 +383,7 @@ export const useArticle = (slug) => {
       }
 
       const transformedArticle = {
-        ...transformArticle(article),
+        ...transformArticle(article, profilesMap, categoriesMap),
         coAuthors
       };
 
