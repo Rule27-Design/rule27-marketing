@@ -14,6 +14,8 @@ const TeamMemberPage = () => {
   const [member, setMember] = useState(null);
   const [loading, setLoading] = useState(true);
   const [relatedMembers, setRelatedMembers] = useState([]);
+  const [articles, setArticles] = useState([]);
+  const [caseStudies, setCaseStudies] = useState([]);
 
   useEffect(() => {
     fetchMember();
@@ -34,6 +36,91 @@ const TeamMemberPage = () => {
 
       setMember(memberData);
 
+      // Fetch articles where this person is author or co-author
+      const { data: authoredArticles } = await supabase
+        .from('articles')
+        .select(`
+          id,
+          title,
+          slug,
+          excerpt,
+          featured_image,
+          read_time,
+          published_at,
+          view_count,
+          like_count,
+          categories:category_id(name)
+        `)
+        .eq('status', 'published')
+        .eq('author_id', memberData.id)
+        .order('published_at', { ascending: false });
+
+      // Fetch articles where this person is a co-author
+      const { data: coAuthoredArticles } = await supabase
+        .from('articles')
+        .select(`
+          id,
+          title,
+          slug,
+          excerpt,
+          featured_image,
+          read_time,
+          published_at,
+          view_count,
+          like_count,
+          categories:category_id(name)
+        `)
+        .eq('status', 'published')
+        .contains('co_authors', [memberData.id])
+        .order('published_at', { ascending: false });
+
+      // Combine and deduplicate articles
+      const allArticles = [...(authoredArticles || []), ...(coAuthoredArticles || [])];
+      const uniqueArticles = Array.from(new Map(allArticles.map(item => [item.id, item])).values());
+      setArticles(uniqueArticles);
+
+      // Fetch case studies where this person is author or co-author
+      const { data: authoredCaseStudies } = await supabase
+        .from('case_studies')
+        .select(`
+          id,
+          title,
+          slug,
+          excerpt,
+          featured_image,
+          client_name,
+          project_duration,
+          published_at,
+          view_count,
+          categories:category_id(name)
+        `)
+        .eq('status', 'published')
+        .eq('author_id', memberData.id)
+        .order('published_at', { ascending: false });
+
+      const { data: coAuthoredCaseStudies } = await supabase
+        .from('case_studies')
+        .select(`
+          id,
+          title,
+          slug,
+          excerpt,
+          featured_image,
+          client_name,
+          project_duration,
+          published_at,
+          view_count,
+          categories:category_id(name)
+        `)
+        .eq('status', 'published')
+        .contains('co_authors', [memberData.id])
+        .order('published_at', { ascending: false });
+
+      // Combine and deduplicate case studies
+      const allCaseStudies = [...(authoredCaseStudies || []), ...(coAuthoredCaseStudies || [])];
+      const uniqueCaseStudies = Array.from(new Map(allCaseStudies.map(item => [item.id, item])).values());
+      setCaseStudies(uniqueCaseStudies);
+
       // Fetch related team members from same department
       if (memberData?.department?.length > 0) {
         const { data: relatedData } = await supabase
@@ -53,6 +140,15 @@ const TeamMemberPage = () => {
       console.error('Error fetching member:', error);
       setLoading(false);
     }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric',
+      month: 'short'
+    });
   };
 
   if (loading) {
@@ -93,6 +189,8 @@ const TeamMemberPage = () => {
     );
   }
 
+  const totalContent = articles.length + caseStudies.length;
+
   return (
     <>
       <Helmet>
@@ -130,6 +228,19 @@ const TeamMemberPage = () => {
                       </div>
                     )}
                   </div>
+
+                  {/* Stats Badge */}
+                  {totalContent > 0 && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.5, type: "spring" }}
+                      className="absolute -bottom-4 -right-4 bg-accent text-white rounded-2xl p-4 shadow-lg"
+                    >
+                      <div className="text-3xl font-heading-regular uppercase">{totalContent}</div>
+                      <div className="text-xs font-sans">Published Works</div>
+                    </motion.div>
+                  )}
                 </div>
               </motion.div>
 
@@ -163,6 +274,28 @@ const TeamMemberPage = () => {
                       {member.bio}
                     </p>
                   )}
+
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    {articles.length > 0 && (
+                      <div className="bg-surface rounded-xl p-4">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <AppIcon name="FileText" size={20} className="text-accent" />
+                          <span className="text-2xl font-heading-regular text-primary uppercase">{articles.length}</span>
+                        </div>
+                        <p className="text-sm text-text-secondary font-sans">Articles Published</p>
+                      </div>
+                    )}
+                    {caseStudies.length > 0 && (
+                      <div className="bg-surface rounded-xl p-4">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <AppIcon name="Briefcase" size={20} className="text-accent" />
+                          <span className="text-2xl font-heading-regular text-primary uppercase">{caseStudies.length}</span>
+                        </div>
+                        <p className="text-sm text-text-secondary font-sans">Case Studies</p>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Social Links */}
                   <div className="flex space-x-4">
@@ -230,6 +363,176 @@ const TeamMemberPage = () => {
                   </motion.div>
                 ))}
               </div>
+            </div>
+          </section>
+        )}
+
+        {/* Published Articles */}
+        {articles.length > 0 && (
+          <section className="py-16 bg-surface">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-3xl font-heading-regular text-primary uppercase tracking-wider">
+                  Published Articles
+                </h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/articles')}
+                  className="border-accent text-accent hover:bg-accent hover:text-white"
+                >
+                  <span className="font-heading-regular tracking-wider uppercase">View All Articles</span>
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {articles.slice(0, 6).map((article) => (
+                  <motion.div
+                    key={article.id}
+                    whileHover={{ y: -5 }}
+                    className="bg-white rounded-2xl overflow-hidden shadow-brand-md hover:shadow-brand-elevation-lg transition-all duration-300 cursor-pointer"
+                    onClick={() => navigate(`/article/${article.slug}`)}
+                  >
+                    {article.featured_image && (
+                      <div className="h-48 overflow-hidden">
+                        <img 
+                          src={article.featured_image} 
+                          alt={article.title}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                        />
+                      </div>
+                    )}
+                    <div className="p-6">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-heading-regular text-accent uppercase tracking-wider">
+                          {article.categories?.name || 'Article'}
+                        </span>
+                        <span className="text-xs text-text-secondary">•</span>
+                        <span className="text-xs text-text-secondary font-sans">
+                          {article.read_time} min read
+                        </span>
+                      </div>
+                      <h3 className="font-heading-regular text-primary text-lg mb-2 uppercase tracking-wider line-clamp-2">
+                        {article.title}
+                      </h3>
+                      <p className="text-sm text-text-secondary font-sans line-clamp-2 mb-3">
+                        {article.excerpt}
+                      </p>
+                      <div className="flex items-center justify-between text-xs text-text-secondary">
+                        <span className="font-sans">{formatDate(article.published_at)}</span>
+                        <div className="flex items-center space-x-3">
+                          <span className="flex items-center space-x-1">
+                            <AppIcon name="Eye" size={14} />
+                            <span>{article.view_count}</span>
+                          </span>
+                          <span className="flex items-center space-x-1">
+                            <AppIcon name="Heart" size={14} />
+                            <span>{article.like_count}</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {articles.length > 6 && (
+                <div className="text-center mt-8">
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate('/articles')}
+                    className="border-accent text-accent hover:bg-accent hover:text-white"
+                  >
+                    <span className="font-heading-regular tracking-wider uppercase">
+                      View All {articles.length} Articles
+                    </span>
+                  </Button>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Published Case Studies */}
+        {caseStudies.length > 0 && (
+          <section className="py-16 bg-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-3xl font-heading-regular text-primary uppercase tracking-wider">
+                  Case Studies
+                </h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/case-studies')}
+                  className="border-accent text-accent hover:bg-accent hover:text-white"
+                >
+                  <span className="font-heading-regular tracking-wider uppercase">View All Case Studies</span>
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {caseStudies.slice(0, 4).map((caseStudy) => (
+                  <motion.div
+                    key={caseStudy.id}
+                    whileHover={{ y: -5 }}
+                    className="bg-surface rounded-2xl overflow-hidden shadow-brand-md hover:shadow-brand-elevation-lg transition-all duration-300 cursor-pointer"
+                    onClick={() => navigate(`/case-study/${caseStudy.slug}`)}
+                  >
+                    <div className="flex">
+                      {caseStudy.featured_image && (
+                        <div className="w-1/3 min-h-[200px]">
+                          <img 
+                            src={caseStudy.featured_image} 
+                            alt={caseStudy.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 p-6">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xs font-heading-regular text-accent uppercase tracking-wider">
+                            {caseStudy.categories?.name || 'Case Study'}
+                          </span>
+                          {caseStudy.project_duration && (
+                            <>
+                              <span className="text-xs text-text-secondary">•</span>
+                              <span className="text-xs text-text-secondary font-sans">
+                                {caseStudy.project_duration}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                        <h3 className="font-heading-regular text-primary text-lg mb-2 uppercase tracking-wider line-clamp-2">
+                          {caseStudy.title}
+                        </h3>
+                        {caseStudy.client_name && (
+                          <p className="text-sm text-accent font-semibold mb-2 font-sans">
+                            {caseStudy.client_name}
+                          </p>
+                        )}
+                        <p className="text-sm text-text-secondary font-sans line-clamp-2">
+                          {caseStudy.excerpt}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {caseStudies.length > 4 && (
+                <div className="text-center mt-8">
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate('/case-studies')}
+                    className="border-accent text-accent hover:bg-accent hover:text-white"
+                  >
+                    <span className="font-heading-regular tracking-wider uppercase">
+                      View All {caseStudies.length} Case Studies
+                    </span>
+                  </Button>
+                </div>
+              )}
             </div>
           </section>
         )}
