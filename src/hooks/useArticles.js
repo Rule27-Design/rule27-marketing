@@ -288,13 +288,16 @@ export const useArticleFilters = () => {
 
   const fetchFilters = async () => {
     try {
-      // Get categories
+      // Get categories specifically for articles
       const { data: categories } = await supabase
         .from('categories')
         .select('name, slug')
+        .eq('type', 'article')  // ✅ Filter for article categories only
+        .eq('is_active', true)  // Only active categories
+        .order('sort_order')
         .order('name');
 
-      // Get unique tags from articles
+      // Get unique tags from published articles
       const { data: articles } = await supabase
         .from('articles')
         .select('tags')
