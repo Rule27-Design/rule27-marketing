@@ -117,6 +117,9 @@ const ArticleDetail = () => {
     );
   }
 
+  // Check if we have co-authors
+  const hasCoAuthors = article.coAuthors && article.coAuthors.length > 0;
+
   return (
     <>
       <Helmet>
@@ -168,7 +171,7 @@ const ArticleDetail = () => {
                 {article.title}
               </h1>
 
-              {/* Author Info */}
+              {/* Author Info with Co-Authors */}
               <div className="flex items-center space-x-4">
                 <img
                   src={article.author.avatar}
@@ -176,9 +179,22 @@ const ArticleDetail = () => {
                   className="w-12 h-12 rounded-full border-2 border-white/20"
                 />
                 <div>
-                  <p className="text-white font-sans font-semibold">
-                    {article.author.name}
-                  </p>
+                  <div className="flex items-center flex-wrap gap-1">
+                    <p className="text-white font-sans font-semibold">
+                      {article.author.name}
+                    </p>
+                    {hasCoAuthors && (
+                      <span className="text-white/70 font-sans">
+                        {' & '}
+                        {article.coAuthors.map((coAuthor, index) => (
+                          <span key={coAuthor.id}>
+                            {coAuthor.name}
+                            {index < article.coAuthors.length - 1 && ', '}
+                          </span>
+                        ))}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-white/70 text-sm font-sans">
                     {article.author.role} • {formatDate(article.publishedDate)}
                   </p>
@@ -239,17 +255,23 @@ const ArticleDetail = () => {
 
             {/* Main Content */}
             <div className="prose prose-lg max-w-none">
-              <div 
-                className="article-content font-sans text-text-primary leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: article.content }}
-              />
+              {article.contentHtml ? (
+                <div 
+                  className="article-content font-sans text-text-primary leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: article.contentHtml }}
+                />
+              ) : (
+                <div className="article-content font-sans text-text-primary leading-relaxed whitespace-pre-wrap">
+                  {article.content}
+                </div>
+              )}
             </div>
 
-            {/* Co-Authors Section */}
-            {article.coAuthors && article.coAuthors.length > 0 && (
+            {/* Co-Authors Section - Only show if there are co-authors */}
+            {hasCoAuthors && (
               <div className="mt-12 p-6 bg-gray-50 rounded-xl">
                 <h3 className="font-heading-regular text-primary mb-4 tracking-wider uppercase">
-                  Contributing Authors
+                  Contributing Author{article.coAuthors.length > 1 ? 's' : ''}
                 </h3>
                 <div className="space-y-4">
                   {article.coAuthors.map((coAuthor) => (
@@ -257,9 +279,9 @@ const ArticleDetail = () => {
                       <img
                         src={coAuthor.avatar}
                         alt={coAuthor.name}
-                        className="w-12 h-12 rounded-full"
+                        className="w-12 h-12 rounded-full flex-shrink-0"
                       />
-                      <div>
+                      <div className="flex-1">
                         <p className="font-sans font-medium text-primary">
                           {coAuthor.name}
                         </p>
@@ -267,7 +289,7 @@ const ArticleDetail = () => {
                           {coAuthor.role}
                         </p>
                         {coAuthor.bio && (
-                          <p className="text-sm text-text-secondary font-sans mt-1">
+                          <p className="text-sm text-text-secondary font-sans mt-2">
                             {coAuthor.bio}
                           </p>
                         )}
@@ -289,6 +311,7 @@ const ArticleDetail = () => {
                     <span
                       key={index}
                       className="px-3 py-1 bg-muted text-sm text-text-secondary rounded-full hover:bg-accent/10 hover:text-accent cursor-pointer transition-colors font-sans"
+                      onClick={() => navigate(`/articles?topic=${encodeURIComponent(topic)}`)}
                     >
                       {topic}
                     </span>
@@ -297,19 +320,22 @@ const ArticleDetail = () => {
               </div>
             )}
 
-            {/* Author Bio */}
+            {/* Main Author Bio */}
             <div className="mt-12 p-6 bg-muted rounded-xl">
               <div className="flex items-start space-x-4">
                 <img
                   src={article.author.avatar}
                   alt={article.author.name}
-                  className="w-16 h-16 rounded-full"
+                  className="w-16 h-16 rounded-full flex-shrink-0"
                 />
                 <div className="flex-1">
                   <h3 className="font-heading-regular text-primary mb-1 tracking-wider uppercase">
-                    About {article.author.name}
+                    About the {hasCoAuthors ? 'Lead Author' : 'Author'}
                   </h3>
-                  <p className="text-sm text-text-secondary mb-3 font-sans">
+                  <p className="font-sans font-medium text-primary">
+                    {article.author.name}
+                  </p>
+                  <p className="text-sm text-text-secondary mb-2 font-sans">
                     {article.author.role} at Rule27 Design
                   </p>
                   <p className="text-sm text-text-secondary font-sans">
@@ -359,6 +385,25 @@ const ArticleDetail = () => {
                 </Button>
               </div>
             </div>
+
+            {/* Newsletter CTA */}
+            <div className="mt-12 p-8 bg-primary text-white rounded-xl text-center">
+              <h3 className="text-2xl font-heading-regular mb-3 tracking-wider uppercase">
+                Never Miss an Article
+              </h3>
+              <p className="text-white/90 mb-6 font-sans max-w-2xl mx-auto">
+                Get the latest insights on design, development, and digital marketing delivered to your inbox.
+              </p>
+              <Button
+                variant="default"
+                onClick={() => navigate('/contact')}
+                className="bg-white text-primary hover:bg-white/90"
+                iconName="Mail"
+                iconPosition="left"
+              >
+                <span className="font-heading-regular tracking-wider uppercase">Subscribe to Newsletter</span>
+              </Button>
+            </div>
           </div>
         </article>
 
@@ -373,14 +418,14 @@ const ArticleDetail = () => {
                 {relatedArticles.map((relatedArticle) => (
                   <div
                     key={relatedArticle.id}
-                    className="bg-white rounded-xl overflow-hidden brand-shadow hover:brand-shadow-lg transition-all duration-300 cursor-pointer"
+                    className="bg-white rounded-xl overflow-hidden brand-shadow hover:brand-shadow-lg transition-all duration-300 cursor-pointer group"
                     onClick={() => navigate(`/article/${relatedArticle.slug}`)}
                   >
                     <div className="h-48 overflow-hidden">
                       <Image
                         src={relatedArticle.featuredImage}
                         alt={relatedArticle.title}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                       />
                     </div>
                     <div className="p-4">
@@ -393,12 +438,20 @@ const ArticleDetail = () => {
                           {relatedArticle.readTime} min read
                         </span>
                       </div>
-                      <h3 className="font-heading-regular text-primary text-lg mb-2 tracking-wider uppercase line-clamp-2">
+                      <h3 className="font-heading-regular text-primary text-lg mb-2 tracking-wider uppercase line-clamp-2 group-hover:text-accent transition-colors">
                         {relatedArticle.title}
                       </h3>
                       <p className="text-sm text-text-secondary font-sans line-clamp-2">
                         {relatedArticle.excerpt}
                       </p>
+                      <div className="mt-3 flex items-center text-xs text-text-secondary">
+                        <span className="font-sans">By {relatedArticle.author.name}</span>
+                        {relatedArticle.coAuthors && relatedArticle.coAuthors.length > 0 && (
+                          <span className="font-sans ml-1">
+                            & {relatedArticle.coAuthors.length} other{relatedArticle.coAuthors.length > 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
