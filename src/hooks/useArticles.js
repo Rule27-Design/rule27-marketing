@@ -30,9 +30,11 @@ const transformArticle = (article) => {
   
   // Get author info from profiles table relationship
   const author = article.author ? {
+    id: article.author.id,
     name: article.author.full_name || article.author.display_name,
     role: article.author.job_title || 'Team Member',
-    avatar: article.author.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(article.author.full_name || 'User')}&background=FF6B6B&color=fff`
+    avatar: article.author.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(article.author.full_name || 'User')}&background=FF6B6B&color=fff`,
+    bio: article.author.bio
   } : {
     name: 'Rule27 Team',
     role: 'Team Member',
@@ -97,7 +99,8 @@ export const useArticles = () => {
             full_name,
             display_name,
             avatar_url,
-            job_title
+            job_title,
+            bio
           ),
           category:categories(
             id,
@@ -110,8 +113,38 @@ export const useArticles = () => {
 
       if (error) throw error;
 
+      // Fetch co-author details for articles that have them
+      const articlesWithCoAuthors = await Promise.all(
+        (articles || []).map(async (article) => {
+          let coAuthors = [];
+          
+          if (article.co_authors && article.co_authors.length > 0) {
+            const { data: coAuthorData } = await supabase
+              .from('profiles')
+              .select('id, full_name, display_name, avatar_url, job_title, bio')
+              .in('id', article.co_authors);
+            
+            coAuthors = coAuthorData?.map(coAuthor => ({
+              id: coAuthor.id,
+              name: coAuthor.full_name || coAuthor.display_name,
+              role: coAuthor.job_title || 'Team Member',
+              bio: coAuthor.bio,
+              avatar: coAuthor.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(coAuthor.full_name || 'User')}&background=FF6B6B&color=fff`
+            })) || [];
+          }
+          
+          return { ...article, coAuthorDetails: coAuthors };
+        })
+      );
+
       // Transform articles
-      const transformedArticles = (articles || []).map(transformArticle);
+      const transformedArticles = articlesWithCoAuthors.map(article => {
+        const transformed = transformArticle(article);
+        return {
+          ...transformed,
+          coAuthors: article.coAuthorDetails
+        };
+      });
       
       // Get featured articles
       const featured = transformedArticles.filter(article => article.featured);
@@ -208,7 +241,27 @@ export const useArticle = (slug) => {
 
       if (error) throw error;
 
-      const transformedArticle = transformArticle(article);
+      // Fetch co-authors if they exist
+      let coAuthors = [];
+      if (article?.co_authors && article.co_authors.length > 0) {
+        const { data: coAuthorData } = await supabase
+          .from('profiles')
+          .select('id, full_name, display_name, avatar_url, job_title, bio')
+          .in('id', article.co_authors);
+        
+        coAuthors = coAuthorData?.map(coAuthor => ({
+          id: coAuthor.id,
+          name: coAuthor.full_name || coAuthor.display_name,
+          role: coAuthor.job_title || 'Team Member',
+          bio: coAuthor.bio,
+          avatar: coAuthor.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(coAuthor.full_name || 'User')}&background=FF6B6B&color=fff`
+        })) || [];
+      }
+
+      const transformedArticle = {
+        ...transformArticle(article),
+        coAuthors
+      };
 
       setData({
         article: transformedArticle,
@@ -292,8 +345,8 @@ export const useArticleFilters = () => {
       const { data: categories } = await supabase
         .from('categories')
         .select('name, slug')
-        .eq('type', 'article')  // ✅ Filter for article categories only
-        .eq('is_active', true)  // Only active categories
+        .eq('type', 'article')
+        .eq('is_active', true)
         .order('sort_order')
         .order('name');
 

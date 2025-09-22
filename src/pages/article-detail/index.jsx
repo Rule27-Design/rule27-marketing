@@ -7,7 +7,6 @@ import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import Image from '../../components/AppImage';
 import { useArticle, useArticles } from '../../hooks/useArticles';
-import { supabase } from '../../lib/supabase';
 
 const ArticleDetail = () => {
   const { slug } = useParams();
@@ -102,14 +101,14 @@ const ArticleDetail = () => {
         <div className="flex items-center justify-center h-[60vh]">
           <div className="text-center">
             <Icon name="AlertCircle" size={48} className="text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-heading-regular text-primary mb-2">Article Not Found</h2>
-            <p className="text-text-secondary mb-4">{error || 'The article you are looking for does not exist.'}</p>
+            <h2 className="text-xl font-heading-regular text-primary mb-2 tracking-wider uppercase">Article Not Found</h2>
+            <p className="text-text-secondary mb-4 font-sans">{error || 'The article you are looking for does not exist.'}</p>
             <Button
               variant="outline"
               onClick={() => navigate('/articles')}
               className="border-accent text-accent hover:bg-accent hover:text-white"
             >
-              Back to Articles
+              <span className="font-heading-regular tracking-wider uppercase">Back to Articles</span>
             </Button>
           </div>
         </div>
@@ -152,14 +151,14 @@ const ArticleDetail = () => {
                 <span className="px-3 py-1 bg-accent/80 backdrop-blur-sm text-white text-sm font-heading-regular tracking-wider uppercase rounded-full">
                   {article.category}
                 </span>
-                <div className="flex items-center space-x-4 text-white/80 text-sm">
+                <div className="flex items-center space-x-4 text-white/80 text-sm font-sans">
                   <span className="flex items-center gap-1">
                     <Icon name="Clock" size={14} />
                     {article.readTime} min read
                   </span>
                   <span className="flex items-center gap-1">
                     <Icon name="Eye" size={14} />
-                    {article.views?.toLocaleString()} views
+                    <span className="font-heading-regular tracking-wider">{article.views?.toLocaleString()}</span> views
                   </span>
                 </div>
               </div>
@@ -201,7 +200,7 @@ const ArticleDetail = () => {
                   className={isLiked ? 'text-accent' : 'text-text-secondary hover:text-accent'}
                 >
                   <Icon name="Heart" size={18} className={isLiked ? 'fill-current' : ''} />
-                  <span className="ml-2">{article.likes + (isLiked ? 1 : 0)}</span>
+                  <span className="ml-2 font-heading-regular tracking-wider">{article.likes + (isLiked ? 1 : 0)}</span>
                 </Button>
                 <Button
                   variant="ghost"
@@ -210,7 +209,7 @@ const ArticleDetail = () => {
                   className={isBookmarked ? 'text-accent' : 'text-text-secondary hover:text-accent'}
                 >
                   <Icon name="Bookmark" size={18} className={isBookmarked ? 'fill-current' : ''} />
-                  <span className="ml-2">Save</span>
+                  <span className="ml-2 font-heading-regular tracking-wider uppercase">Save</span>
                 </Button>
                 <Button
                   variant="ghost"
@@ -219,11 +218,11 @@ const ArticleDetail = () => {
                   className="text-text-secondary hover:text-accent"
                 >
                   <Icon name="Share2" size={18} />
-                  <span className="ml-2">Share</span>
+                  <span className="ml-2 font-heading-regular tracking-wider uppercase">Share</span>
                 </Button>
               </div>
               
-              <div className="text-sm text-text-secondary">
+              <div className="text-sm text-text-secondary font-sans">
                 {article.readTime} min read
               </div>
             </div>
@@ -241,10 +240,43 @@ const ArticleDetail = () => {
             {/* Main Content */}
             <div className="prose prose-lg max-w-none">
               <div 
-                className="article-content"
+                className="article-content font-sans text-text-primary leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: article.content }}
               />
             </div>
+
+            {/* Co-Authors Section */}
+            {article.coAuthors && article.coAuthors.length > 0 && (
+              <div className="mt-12 p-6 bg-gray-50 rounded-xl">
+                <h3 className="font-heading-regular text-primary mb-4 tracking-wider uppercase">
+                  Contributing Authors
+                </h3>
+                <div className="space-y-4">
+                  {article.coAuthors.map((coAuthor) => (
+                    <div key={coAuthor.id} className="flex items-start space-x-4">
+                      <img
+                        src={coAuthor.avatar}
+                        alt={coAuthor.name}
+                        className="w-12 h-12 rounded-full"
+                      />
+                      <div>
+                        <p className="font-sans font-medium text-primary">
+                          {coAuthor.name}
+                        </p>
+                        <p className="text-sm text-text-secondary font-sans">
+                          {coAuthor.role}
+                        </p>
+                        {coAuthor.bio && (
+                          <p className="text-sm text-text-secondary font-sans mt-1">
+                            {coAuthor.bio}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Topics */}
             {article.topics.length > 0 && (
@@ -281,7 +313,7 @@ const ArticleDetail = () => {
                     {article.author.role} at Rule27 Design
                   </p>
                   <p className="text-sm text-text-secondary font-sans">
-                    With expertise in digital design and strategy, {article.author.name} helps brands discover their authentic voice in the digital landscape.
+                    {article.author.bio || `With expertise in digital design and strategy, ${article.author.name} helps brands discover their authentic voice in the digital landscape.`}
                   </p>
                 </div>
               </div>
