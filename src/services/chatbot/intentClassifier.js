@@ -1,155 +1,120 @@
-// services/intentClassifier.js
+// src/services/chatbot/intentClassifier.js
 
 class IntentClassifier {
-  constructor() {
-    // Define intent patterns and keywords
-    this.intents = {
-      // INFORMATIONAL INTENTS
-      pricing_inquiry: {
-        patterns: [
-          /how much/i, /cost/i, /pricing/i, /price/i, 
-          /expensive/i, /affordable/i, /budget/i, /plans/i
-        ],
-        examples: [
-          "How much does it cost?",
-          "What are your pricing plans?",
-          "Is there a free trial?"
-        ],
-        requiresData: ['pricing_table', 'plans']
-      },
+  constructor(supabase) {
+    this.supabase = supabase;
+    this.intents = {};
+    this.loadIntentPatterns(); // Load on initialization
+  }
+
+  // Load intent patterns from database
+  async loadIntentPatterns() {
+    try {
+      const { data: patterns, error } = await this.supabase
+        .from('intent_patterns')
+        .select('*')
+        .eq('active', true);
       
-      feature_question: {
-        patterns: [
-          /can (it|you|the software)/i, /does (it|this)/i,
-          /feature/i, /functionality/i, /capability/i,
-          /is it possible/i, /able to/i
-        ],
-        examples: [
-          "Can it integrate with Salesforce?",
-          "Does it support multiple languages?",
-          "What features do you have?"
-        ],
-        requiresData: ['features', 'capabilities']
-      },
-      
-      integration_inquiry: {
-        patterns: [
-          /integrate/i, /connect/i, /work with/i, /compatible/i,
-          /api/i, /webhook/i, /sync/i
-        ],
-        examples: [
-          "Does it integrate with Slack?",
-          "Can I connect my CRM?",
-          "Do you have an API?"
-        ],
-        requiresData: ['integrations', 'api_docs']
-      },
-      
-      use_case_exploration: {
-        patterns: [
-          /use it for/i, /help me with/i, /solve/i,
-          /use case/i, /scenario/i, /suitable for/i
-        ],
-        examples: [
-          "Can I use this for customer support?",
-          "Will it help with lead generation?",
-          "Is it suitable for e-commerce?"
-        ],
-        requiresData: ['use_cases', 'customer_stories']
-      },
-      
-      // TRANSACTIONAL INTENTS
-      demo_request: {
-        patterns: [
-          /demo/i, /see it in action/i, /try it/i,
-          /show me/i, /walk me through/i
-        ],
-        action: 'schedule_demo',
-        highIntent: true
-      },
-      
-      trial_request: {
-        patterns: [
-          /free trial/i, /try for free/i, /test it/i,
-          /trial period/i, /try before/i
-        ],
-        action: 'start_trial',
-        highIntent: true
-      },
-      
-      // SUPPORT INTENTS
-      technical_support: {
-        patterns: [
-          /not working/i, /error/i, /bug/i, /issue/i,
-          /problem/i, /broken/i, /help with/i
-        ],
-        action: 'route_to_support',
-        requiresAuth: true
-      },
-      
-      // COMPARISON INTENTS
-      competitor_comparison: {
-        patterns: [
-          /versus/i, /vs/i, /compared to/i, /better than/i,
-          /difference between/i, /competitor/i
-        ],
-        requiresData: ['competitor_matrix', 'differentiators']
-      },
-      
-      // OBJECTIONS
-      objection_price: {
-        patterns: [
-          /too expensive/i, /cheaper/i, /discount/i,
-          /lower price/i, /budget is/i
-        ],
-        type: 'objection',
-        handleWithCare: true
+      if (error) {
+        console.error('Failed to load intent patterns:', error);
+        return;
       }
-    };
+
+      // Transform database patterns into usable format
+      patterns.forEach(pattern => {
+        this.intents[pattern.intent_name] = {
+          patterns: pattern.regex_patterns?.map(p => {
+            try {
+              // Remove the /pattern/flags format if present
+              const cleanPattern = p.replace(/^\/|\/[igm]*$/g, '');
+              return new RegExp(cleanPattern, 'i');
+            } catch (e) {
+              console.error(`Invalid regex pattern: ${p}`, e);
+              return null;
+            }
+          }).filter(Boolean) || [],
+          keywords: pattern.keywords || [],
+          examples: pattern.example_phrases || [],
+          confidence_threshold: pattern.confidence_threshold,
+          highIntent: pattern.is_high_intent,
+          requiresData: pattern.required_data,
+          action: pattern.action_type
+        };
+      });
+      
+      console.log(`Loaded ${Object.keys(this.intents).length} intent patterns`);
+    } catch (error) {
+      console.error('Error in loadIntentPatterns:', error);
+    }
   }
 
   async classify(message) {
+    // Ensure patterns are loaded
+    if (Object.keys(this.intents).length === 0) {
+      await this.loadIntentPatterns();
+    }
+
     const scores = {};
     
     // Check each intent pattern
     for (const [intentName, intentConfig] of Object.entries(this.intents)) {
       let score = 0;
       
-      // Pattern matching
-      for (const pattern of intentConfig.patterns) {
-        if (pattern.test(message)) {
-          score += 10;
+      // Keyword matching (more weight)
+      if (intentConfig.keywords) {
+        for (const keyword of intentConfig.keywords) {
+          if (message.toLowerCase().includes(keyword.toLowerCase())) {
+            score += 20;
+          }
         }
       }
       
-      // ML-based classification (if using AI)
-      if (this.mlClassifier) {
-        const mlScore = await this.mlClassifier.predict(message, intentName);
-        score += mlScore * 50;
+      // Pattern matching
+      if (intentConfig.patterns) {
+        for (const pattern of intentConfig.patterns) {
+          if (pattern && pattern.test(message)) {
+            score += 30;
+          }
+        }
       }
       
-      scores[intentName] = score;
+      scores[intentName] = Math.min(score, 100); // Cap at 100
     }
     
     // Get highest scoring intent
-    const topIntent = Object.entries(scores)
-      .sort((a, b) => b[1] - a[1])[0];
+    const sortedIntents = Object.entries(scores)
+      .sort((a, b) => b[1] - a[1]);
     
-    // Check confidence threshold
-    const confidence = topIntent[1] / 100;
-    
-    if (confidence < 0.3) {
+    if (sortedIntents.length === 0 || sortedIntents[0][1] === 0) {
       return {
         intent: 'unknown',
-        confidence: confidence,
+        confidence: 0.30,
         fallback: true
       };
     }
     
+    const [topIntent, topScore] = sortedIntents[0];
+    const confidence = topScore / 100;
+    const threshold = this.intents[topIntent].confidence_threshold || 0.5;
+    
+    // If confidence meets threshold, use the intent
+    if (confidence >= threshold) {
+      return {
+        intent: topIntent,
+        confidence: confidence,
+        config: this.intents[topIntent],
+        highIntent: this.intents[topIntent].highIntent
+      };
+    }
+    
+    // Otherwise, return low confidence
     return {
-      intent: topIntent[0],
-      confidence: confidence,
-      config: this.intents[topIntent[0]]
+      intent: topIntent,
+      confidence: confidence * 0.5, // Reduce confidence if below threshold
+      fallback: true,
+      suggestedIntent: topIntent
     };
   }
 }
+
+export default IntentClassifier;
