@@ -379,30 +379,11 @@ const ArticleDetail = () => {
                   variant="ghost"
                   size="icon"
                   onClick={handleShare}
-                  className="hover:bg-accent/10"
+                  className="hover:bg-accent"
                 >
                   <Icon name="Link" size={20} />
                 </Button>
               </div>
-            </div>
-
-            {/* Newsletter CTA */}
-            <div className="mt-12 p-8 bg-primary text-white rounded-xl text-center">
-              <h3 className="text-2xl font-heading-regular mb-3 tracking-wider uppercase">
-                Never Miss an Article
-              </h3>
-              <p className="text-white/90 mb-6 font-sans max-w-2xl mx-auto">
-                Get the latest insights on design, development, and digital marketing delivered to your inbox.
-              </p>
-              <Button
-                variant="default"
-                onClick={() => navigate('/contact')}
-                className="bg-white text-primary hover:bg-white/90"
-                iconName="Mail"
-                iconPosition="left"
-              >
-                <span className="font-heading-regular tracking-wider uppercase">Subscribe to Newsletter</span>
-              </Button>
             </div>
           </div>
         </article>
