@@ -10,9 +10,10 @@ import CapabilityUniverse from './pages/capability-universe';
 import InnovationLaboratory from './pages/innovation-laboratory';
 import WorkShowcaseTheater from './pages/work-showcase-theater';
 import CaseStudyDetail from './pages/case-study-detail';
-import ArticlesHub from './pages/articles-hub';
+import ArticlesHub from './pages/articles-insights-hub';
 import AboutProcessStudio from './pages/about-process-studio';
 import ContactConsultationPortal from './pages/contact-consultation-portal';
+import ArticleDetail from "./pages/article-detail";
 
 const Routes = () => {
   return (
@@ -27,6 +28,7 @@ const Routes = () => {
           <Route path="/case-studies" element={<WorkShowcaseTheater />} />
           <Route path="/case-studies/:slug" element={<CaseStudyDetail />} />
           <Route path="/articles" element={<ArticlesHub />} />
+          <Route path="/article/:slug" element={<ArticleDetail />} />
           <Route path="/about" element={<AboutProcessStudio />} />
           <Route path="/contact" element={<ContactConsultationPortal />} />
           
