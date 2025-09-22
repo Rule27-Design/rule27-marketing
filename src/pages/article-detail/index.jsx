@@ -355,7 +355,7 @@ const ArticleDetail = () => {
                   variant="ghost"
                   size="icon"
                   onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(window.location.href)}`, '_blank')}
-                  className="hover:bg-accent/10"
+                  className="stroke-accent"
                 >
                   <Icon name="Twitter" size={20} />
                 </Button>
@@ -363,7 +363,7 @@ const ArticleDetail = () => {
                   variant="ghost"
                   size="icon"
                   onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`, '_blank')}
-                  className="hover:bg-accent/10"
+                  className="hover:fill-accent"
                 >
                   <Icon name="Linkedin" size={20} />
                 </Button>
@@ -371,7 +371,7 @@ const ArticleDetail = () => {
                   variant="ghost"
                   size="icon"
                   onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank')}
-                  className="hover:bg-accent/10"
+                  className="hover:text-accent"
                 >
                   <Icon name="Facebook" size={20} />
                 </Button>
