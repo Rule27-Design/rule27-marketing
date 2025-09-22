@@ -362,7 +362,7 @@ const ArticleDetail = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`, '_blank')}
+                  onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`, '_blank','noopener,noreferrer')}
                   className="hover:fill-accent"
                 >
                   <Icon name="Linkedin" size={20} />
