@@ -21,7 +21,7 @@ const CaseStudyCard = React.memo(({ caseStudy }) => {
   }, []);
 
   const handleViewDetails = () => {
-    navigate(`/case-study/${caseStudy.slug}`);
+    navigate(`/case-studies/${caseStudy.slug}`);
   };
 
   return (
