@@ -1,10 +1,12 @@
 import React, { useState, useCallback, useEffect, memo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Image from '../../../components/AppImage';
 
 const ServiceDetailModal = memo(({ service, isOpen, onClose }) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
 
   // Reset tab when modal opens with new service
@@ -35,6 +37,17 @@ const ServiceDetailModal = memo(({ service, isOpen, onClose }) => {
   const handleTabChange = useCallback((tab) => {
     setActiveTab(tab);
   }, []);
+
+  // Handle navigation to contact page
+  const handleContactClick = useCallback((action) => {
+    onClose(); // Close modal first
+    navigate('/contact', { 
+      state: { 
+        service: service?.title,
+        action: action // 'question' or 'consultation'
+      } 
+    });
+  }, [navigate, onClose, service?.title]);
 
   // Handle escape key
   useEffect(() => {
@@ -97,7 +110,7 @@ const ServiceDetailModal = memo(({ service, isOpen, onClose }) => {
                   variant="ghost"
                   size="icon"
                   onClick={onClose}
-                  className="text-text-secondary hover:text-primary"
+                  className="text-text-secondary hover:text-white"
                   aria-label="Close modal"
                 >
                   <Icon name="X" size={24} />
@@ -267,6 +280,7 @@ const ServiceDetailModal = memo(({ service, isOpen, onClose }) => {
                                 variant={tier?.popular ? "default" : "outline"}
                                 fullWidth
                                 size="sm"
+                                onClick={() => handleContactClick('consultation')}
                                 className={`font-heading-regular uppercase tracking-wider ${
                                   tier?.popular 
                                     ? "bg-accent hover:bg-accent/90" 
@@ -295,6 +309,7 @@ const ServiceDetailModal = memo(({ service, isOpen, onClose }) => {
                       variant="outline"
                       iconName="MessageCircle"
                       iconPosition="left"
+                      onClick={() => handleContactClick('question')}
                       className="border-accent text-accent hover:bg-accent hover:text-white font-heading-regular uppercase tracking-wider"
                     >
                       Ask Questions
@@ -303,6 +318,7 @@ const ServiceDetailModal = memo(({ service, isOpen, onClose }) => {
                       variant="default"
                       iconName="Calendar"
                       iconPosition="left"
+                      onClick={() => handleContactClick('consultation')}
                       className="bg-accent hover:bg-accent/90 font-heading-regular uppercase tracking-wider"
                     >
                       Book Consultation

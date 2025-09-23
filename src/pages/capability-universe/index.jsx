@@ -356,7 +356,7 @@ const CapabilityUniverse = () => {
           </section>
 
           {/* CTA Section */}
-          <section className="py-16 md:py-20 bg-gradient-to-r from-primary to-accent text-white">
+          <section className="py-16 md:py-20 bg-gradient-to-r from-accent to-accent text-white">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading-regular mb-4 uppercase tracking-wider">
                 Ready to Transform Your Business?
