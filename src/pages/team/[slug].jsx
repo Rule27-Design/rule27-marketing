@@ -601,4 +601,4 @@ const TeamMemberPage = () => {
   );
 };
 
-export default TeamMemberPage;
+export default TeamMemberPage;  
