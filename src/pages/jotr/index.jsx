@@ -247,7 +247,7 @@ const JotrPage = () => {
           {/* Hero Header Image */}
           <div className="relative h-[40vh] sm:h-[50vh] lg:h-[60vh] overflow-hidden">
             <img 
-              src="/assets/jotr/hero-chicago.jpg" 
+              src="/assets/jotr/og-jotr.jpg" 
               alt="Chicago Skyline"
               className="w-full h-full object-cover"
               onError={(e) => {
@@ -359,11 +359,11 @@ const JotrPage = () => {
                     className="group relative bg-white rounded-xl overflow-hidden cursor-pointer transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl"
                   >
                     {/* Image Container */}
-                    <div className="relative aspect-[4/5] overflow-hidden bg-muted">
+                    <div className="relative aspect-square overflow-hidden bg-muted">
                       <img 
                         src={item.image} 
                         alt={item.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
                         loading="lazy"
                         onError={(e) => {
                           e.target.src = '/assets/jotr/placeholder.jpg';
@@ -373,9 +373,9 @@ const JotrPage = () => {
                       
                       {/* Overlay Gradient */}
                       <div className={`
-                        absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent 
+                        absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent 
                         transition-opacity duration-500
-                        ${hoveredCard === item.id ? 'opacity-100' : 'opacity-0'}
+                        ${hoveredCard === item.id ? 'opacity-100' : 'opacity-70'}
                       `}></div>
 
                       {/* Category Badge */}
@@ -387,20 +387,20 @@ const JotrPage = () => {
 
                       {/* Content Overlay */}
                       <div className={`
-                        absolute inset-x-0 bottom-0 p-6 text-white transform transition-all duration-500
+                        absolute inset-x-0 bottom-0 p-4 sm:p-6 text-white transform transition-all duration-500 z-30
                         ${hoveredCard === item.id ? 'translate-y-0' : 'translate-y-full'}
                       `}>
-                        <h3 className="font-heading-regular text-2xl sm:text-3xl mb-2 uppercase tracking-wider">
+                        <h3 className="font-heading-regular text-xl sm:text-2xl mb-1 uppercase tracking-wider line-clamp-2">
                           {item.title}
                         </h3>
-                        <p className="text-sm sm:text-base text-gray-200 mb-4 font-sans">
+                        <p className="text-xs sm:text-sm text-gray-200 mb-3 font-sans line-clamp-2">
                           {item.description}
                         </p>
 
                         {/* View Project Link */}
-                        <div className="mt-4 inline-flex items-center text-accent font-heading-regular uppercase text-sm tracking-wider">
+                        <div className="inline-flex items-center text-accent font-heading-regular uppercase text-xs sm:text-sm tracking-wider">
                           <span>Check it out</span>
-                          <Icon name="ArrowUpRight" size={16} className="ml-1" />
+                          <Icon name="ArrowUpRight" size={14} className="ml-1" />
                         </div>
                       </div>
                     </div>
