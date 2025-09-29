@@ -23,7 +23,7 @@ const JotrPage = () => {
       image: "/assets/jotr/been-there.jpg",
       link: "https://bit.ly/4eSHZgY",
       year: "2024",
-      metrics: { growth: "320%", engagement: "5x" }
+      metrics: { Subscribers: "440+" }
     },
     {
       id: 2,
