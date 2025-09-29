@@ -16,6 +16,7 @@ import ContactConsultationPortal from './pages/contact-consultation-portal';
 import ArticleDetail from "./pages/article-detail";
 import TeamPage from './pages/team';
 import TeamMemberPage from './pages/team/[slug]';
+import JotrPage from './pages/jotr';
 
 const Routes = () => {
   return (
@@ -35,6 +36,7 @@ const Routes = () => {
           <Route path="/team/:slug" element={<TeamMemberPage />} />
           <Route path="/about" element={<AboutProcessStudio />} />
           <Route path="/contact" element={<ContactConsultationPortal />} />
+          <Route path="/jotr" element={<JotrPage />} />
           
           {/* 404 - Not Found */}
           <Route path="*" element={<NotFound />} />
