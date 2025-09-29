@@ -247,7 +247,7 @@ const JotrPage = () => {
           {/* Hero Header Image */}
           <div className="relative h-[40vh] sm:h-[50vh] lg:h-[60vh] overflow-hidden">
             <img 
-              src="/assets/jotr/og-jotr.jpg" 
+              src="/assets/jotr/hero-chicago.jpg" 
               alt="Chicago Skyline"
               className="w-full h-full object-cover"
               onError={(e) => {
@@ -359,7 +359,7 @@ const JotrPage = () => {
                     className="group relative bg-white rounded-xl overflow-hidden cursor-pointer transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl"
                   >
                     {/* Image Container */}
-                    <div className="relative aspect-square overflow-hidden bg-muted">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                       <img 
                         src={item.image} 
                         alt={item.title}
