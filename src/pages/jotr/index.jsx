@@ -237,7 +237,7 @@ const JotrPage = () => {
         <meta property="og:description" content="Explore Julian's creative journey through radio and digital media." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.rule27design.com/jotr" />
-        <meta property="og:image" content="/assets/jotr/hero-image.jpg" />
+        <meta property="og:image" content="/assets/jotr/og-jotr.jpg" />
         <link rel="canonical" href="https://www.rule27design.com/jotr" />
       </Helmet>
 
