@@ -390,7 +390,7 @@ const JotrPage = () => {
 
                         {/* View Project Link */}
                         <div className="mt-4 inline-flex items-center text-accent font-heading-regular uppercase text-sm tracking-wider">
-                          <span>View Project</span>
+                          <span>Check it out</span>
                           <Icon name="ArrowUpRight" size={16} className="ml-1" />
                         </div>
                       </div>
