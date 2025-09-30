@@ -161,7 +161,7 @@ const JotrPage = () => {
       categoryLabel: "SOCIAL",
       description: "Creative content and more",
       image: "/assets/jotr/tiktok.jpg",
-      link: "https://www.tiktok.com/@julianontheradio?lang=en",
+      link: "https://www.tiktok.com/@julianontheradio",
       year: "2024"
     }
   ];
