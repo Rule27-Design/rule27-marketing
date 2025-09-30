@@ -281,11 +281,11 @@ const JotrPage = () => {
                 className="space-y-6 text-center"
               >
                 <p className="text-lg sm:text-xl text-text-secondary font-sans leading-relaxed">
-                  Welcome to my little corner of the digital world! I'll keep this brief—I'd rather you get to know me organically through my work and weekly podcast. Born and raised in Washington D.C., that's where I caught the radio bug and launched my career. Since then, I've brought my voice to airwaves in Chicago, Phoenix, San Francisco, and most recently Seattle, where I hosted Afternoons on heritage STAR 101.5 from 2021-2024. I've also tracked daily shows for Portland's LIVE 95.5, Louisville's 99.7 DJX, and weekends at 99.7 NOW San Francisco. Beyond the mic, I'm a sneaker enthusiast, fashion collector, Rom-Com defender, and coffee connoisseur who believes the best conversations happen over good food. My passion? Creating content that makes people laugh while connecting across our differences because if we're not experiencing each other's perspectives, are we really living? Currently, I'm open to meaningful opportunities across platforms whether that's radio, podcasting, on-screen hosting, or digital content creation. <br></br><br></br>Let's connect and create something remarkable together.
+                  Welcome to my little corner of the digital world! I'll keep this brief—I'd rather you get to know me organically through my work and weekly podcast. 
                 </p>
                 
                 <p className="text-lg sm:text-xl text-text-secondary font-sans leading-relaxed">
-                  Born and raised in Washington D.C., that's where I caught the radio bug and launched my career. Since then, I've brought my voice to airwaves in Chicago, Phoenix, San Francisco, and most recently Seattle, where I hosted Afternoons on heritage STAR 101.5 from 2021-2024. I've also tracked daily shows for Portland's LIVE 95.5, Louisville's 99.7 DJX, and weekends at 99.7 NOW San Francisco.
+                  Born and raised in Washington D.C., that's where I caught the radio bug and launched my career. Since then, I've brought my voice to airwaves in Chicago, Phoenix, San Francisco, Seattle and most recently Vegas, where I hosted Afternoons on heritage STAR 101.5 from 2021-2024. I've also tracked daily shows for Portland's LIVE 95.5, Louisville's 99.7 DJX, and weekends at 99.7 NOW San Francisco.
                 </p>
                 
                 <p className="text-lg sm:text-xl text-text-secondary font-sans leading-relaxed">
