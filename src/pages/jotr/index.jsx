@@ -281,30 +281,19 @@ const JotrPage = () => {
                 className="space-y-6 text-center"
               >
                 <p className="text-lg sm:text-xl text-text-secondary font-sans leading-relaxed">
-                  Thank you for coming by my little space here in the digital world. I'll keep it brief as I'd 
-                  love for you to get to know me organically through my social media channels, and weekly podcast.
+                  Welcome to my little corner of the digital world! I'll keep this brief—I'd rather you get to know me organically through my work and weekly podcast.
                 </p>
                 
                 <p className="text-lg sm:text-xl text-text-secondary font-sans leading-relaxed">
-                  I'm originally from Washington D.C., and I also went to high school and college there. 
-                  The DMV is also where I got my start in radio. I've worked in Washington DC, Chicago, 
-                  Phoenix and currently based in San Francisco. I'm a simple, quirky, creative, and empathetic 
-                  guy in a nutshell. I'm a big sneaker & fashion collector, I love Rom-Coms, love coffee and 
-                  of course all foods. I especially enjoy creating fun, relatable content that makes people laugh. 
-                  I genuinely love getting to know people from all walks of life because I feel like if we're not 
-                  experiencing each other's differences then how is that living?
+                  Born and raised in Washington D.C., that's where I caught the radio bug and launched my career. Since then, I've brought my voice to airwaves in Chicago, Phoenix, San Francisco, and most recently Seattle, where I hosted Afternoons on heritage STAR 101.5 from 2021-2024. I've also tracked daily shows for Portland's LIVE 95.5, Louisville's 99.7 DJX, and weekends at 99.7 NOW San Francisco.
                 </p>
                 
                 <p className="text-lg sm:text-xl text-text-secondary font-sans leading-relaxed">
-                  I just finished up hosting Afternoons for heritage STAR 101.5 in Seattle from 2021-2024. 
-                  I also tracked daily radio shows for Portland's LIVE 95.5, Louisville's 99.7 DJX, and 
-                  weekends at 99.7 NOW San Francisco. I am free and clear for meaningful conversations.
+                  Beyond the mic, I'm a sneaker enthusiast, fashion collector, Rom-Com defender, and coffee connoisseur who believes the best conversations happen over good food. My passion? Creating content that makes people laugh while connecting across our differences because if we're not experiencing each other's perspectives, are we really living?
                 </p>
                 
                 <p className="text-lg sm:text-xl text-text-secondary font-sans leading-relaxed">
-                  I am always open to chat media opportunities on different platforms as a host, or on-screen 
-                  personality. I'm a very avid consumer of social media and love creating content. Feel free 
-                  to email or message me with any questions.
+                  Currently, I'm open to meaningful opportunities across platforms whether that's radio, podcasting, on-screen hosting, or digital content creation. Let's connect and create something remarkable together.
                 </p>
               </motion.div>
 
