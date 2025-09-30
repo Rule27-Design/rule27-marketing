@@ -245,7 +245,7 @@ const JotrPage = () => {
         {/* Hero Section with Header Image */}
         <section className="relative">
           {/* Hero Header Image */}
-          <div className="relative h-[40vh] sm:h-[50vh] lg:h-[60vh] overflow-hidden">
+          <div className="relative h-[40vh] sm:h-[50vh] lg:h-[80vh] overflow-hidden">
             <img 
               src="/assets/jotr/og-jotr.jpeg" 
               alt="Julian on the Radio"
@@ -371,12 +371,7 @@ const JotrPage = () => {
                         }}
                       />
                       
-                      {/* Overlay Gradient */}
-                      <div className={`
-                        absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent 
-                        transition-opacity duration-500
-                        ${hoveredCard === item.id ? 'opacity-100' : 'opacity-70'}
-                      `}></div>
+
 
                       {/* Category Badge */}
                       <div className="absolute top-4 left-4 z-20">
