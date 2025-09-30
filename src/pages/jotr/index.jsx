@@ -90,7 +90,7 @@ const JotrPage = () => {
       category: "demo",
       categoryLabel: "DEMO",
       description: "B96 Chicago Morning Show",
-      image: "/assets/jotr/b96-chicago-morning.jpg",
+      image: "/assets/jotr/b98-chicago-morning.jpg",
       link: "https://soundcloud.com/julianontheradio/b96-julian-morning-show-demo-1",
       year: "2019"
     },
@@ -100,7 +100,7 @@ const JotrPage = () => {
       category: "demo",
       categoryLabel: "DEMO",
       description: "B96 Chicago Evening Show",
-      image: "/assets/jotr/b96-chicago-evening.jpg",
+      image: "/assets/jotr/b98-chicago-evening.jpg",
       link: "https://soundcloud.com/julianontheradio/b96-julian-night-show-demo-2",
       year: "2019"
     },
@@ -110,7 +110,7 @@ const JotrPage = () => {
       category: "video",
       categoryLabel: "VIDEO SERIES",
       description: "Weekly video podcast production",
-      image: "/assets/jotr/less-than-zero.jpg",
+      image: "/assets/jotr/lessthanzero.jpg",
       link: "https://www.youtube.com/lessthanzero",
       year: "2023"
     },
@@ -237,7 +237,7 @@ const JotrPage = () => {
         <meta property="og:description" content="Explore Julian's creative journey through radio and digital media." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.rule27design.com/jotr" />
-        <meta property="og:image" content="/assets/jotr/og-jotr.jpg" />
+        <meta property="og:image" content="/assets/jotr/og-jotr.jpeg" />
         <link rel="canonical" href="https://www.rule27design.com/jotr" />
       </Helmet>
 
@@ -247,8 +247,8 @@ const JotrPage = () => {
           {/* Hero Header Image */}
           <div className="relative h-[40vh] sm:h-[50vh] lg:h-[60vh] overflow-hidden">
             <img 
-              src="/assets/jotr/hero-chicago.jpg" 
-              alt="Chicago Skyline"
+              src="/assets/jotr/og-jotr.jpeg" 
+              alt="Julian on the Radio"
               className="w-full h-full object-cover"
               onError={(e) => {
                 e.target.style.display = 'none';
