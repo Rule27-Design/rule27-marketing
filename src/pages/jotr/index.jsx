@@ -281,19 +281,23 @@ const JotrPage = () => {
                 className="space-y-6 text-center"
               >
                 <p className="text-lg sm:text-xl text-text-secondary font-sans leading-relaxed">
-                  Welcome to my little corner of the digital world! I'll keep this brief—I'd rather you get to know me organically through my work and weekly podcast. 
+                  Welcome to my little corner in the digital space! I'll keep this brief—I'd rather you get to know me organically through my work and social media. 
                 </p>
                 
                 <p className="text-lg sm:text-xl text-text-secondary font-sans leading-relaxed">
-                  Born and raised in Washington D.C., that's where I caught the radio bug and launched my career. Since then, I've brought my voice to airwaves in Chicago, Phoenix, San Francisco, Seattle and most recently Vegas, where I hosted Afternoons on heritage STAR 101.5 from 2021-2024. I've also tracked daily shows for Portland's LIVE 95.5, Louisville's 99.7 DJX, and weekends at 99.7 NOW San Francisco.
+                  Born and raised in Washington D.C, that's where I caught the radio bug and launched my career in the DMV. Since then, I've brought my voice to airwaves in Chicago, Phoenix, San Francisco, Seattle and most recently Las Vegas, where I co-hosted Mornings on heritage MIX 94.1.  In addition, I've hosted literally every daypart all in competitive situations.
                 </p>
                 
                 <p className="text-lg sm:text-xl text-text-secondary font-sans leading-relaxed">
-                  Beyond the mic, I'm a sneaker enthusiast, fashion collector, Rom-Com defender, and coffee connoisseur who believes the best conversations happen over good food. My passion? Creating content that makes people laugh while connecting across our differences because if we're not experiencing each other's perspectives, are we really living?
+                  I've also tracked daily shows for multiple stations across the country which include, 103.5 KISS-FM Chicago, HOT 995 Washington DC, Z104.3 Baltimore, Portland's LIVE 95.5, Louisville's 99.7 DJX, and weekends at 99.7 NOW San Francisco.
                 </p>
                 
                 <p className="text-lg sm:text-xl text-text-secondary font-sans leading-relaxed">
-                  Currently, I'm open to meaningful opportunities across platforms whether that's radio, podcasting, on-screen hosting, or digital content creation. Let's connect and create something remarkable together.
+                  Beyond the mic, I'm a sneaker enthusiast, fashion collector, avid Rom-Com fan, and coffee connoisseur who believes the best conversations happen over good food. My passion? Creating content that makes people laugh while connecting, and sharing our differences. Because, if we're not experiencing each other's perspectives, are we really living?
+                </p>
+
+                <p className="text-lg sm:text-xl text-text-secondary font-sans leading-relaxed">
+                  Currently, I'm open to meaningful opportunities across platforms whether that's radio, podcasting, on-screen hosting, or digital content creation. Let's connect and create something super dope together.
                 </p>
               </motion.div>
 
