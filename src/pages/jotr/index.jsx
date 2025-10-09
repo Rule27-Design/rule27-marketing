@@ -76,13 +76,13 @@ const JotrPage = () => {
     },
     {
       id: 7,
-      title: "February 2019",
+      title: "March 2018",
       category: "demo",
       categoryLabel: "DEMO",
-      description: "Demo Reel February 2019",
+      description: "Demo Reel March 2018",
       image: "/assets/jotr/february-2019.jpg",
-      link: "https://soundcloud.com/julianontheradio/wild-949-demo-february-2019-3-7p",
-      year: "2019"
+      link: "https://soundcloud.com/julianontheradio/kyld-wild-949-march-2018-afternoons-3-7p",
+      year: "2018"
     },
     {
       id: 8,
