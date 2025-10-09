@@ -119,7 +119,7 @@ const JotrPage = () => {
       category: "demo",
       categoryLabel: "DEMO",
       description: "B96 Chicago",
-      image: "/assets/jotr/B96_chicago.jpg",
+      image: "/assets/jotr/B96-chicago.jpg",
       link: "https://soundcloud.com/julianontheradio/b96-julian-night-show-demo-1",
       year: "2019"
     },
