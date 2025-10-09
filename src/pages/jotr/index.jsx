@@ -16,6 +16,15 @@ const JotrPage = () => {
   const portfolioItems = [
     {
       id: 1,
+      title: "Mix 94.1",
+      category: "demo",
+      categoryLabel: "DEMO",
+      description: "Demo Reel 2025",
+      image: "/assets/jotr/mix941_Las_Vegas.jpg",
+      link: "https://soundcloud.com/julianontheradio/mix-941-las-vegas-2025-mornings-demo",
+      year: "2025"
+    },{
+      id: 2,
       title: "I've Been There",
       category: "video",
       categoryLabel: "VIDEO SERIES",
@@ -25,7 +34,7 @@ const JotrPage = () => {
       year: "2024"
     },
     {
-      id: 2,
+      id: 3,
       title: "Demo 2024",
       category: "demo",
       categoryLabel: "DEMO",
@@ -35,7 +44,7 @@ const JotrPage = () => {
       year: "2024"
     },
     {
-      id: 3,
+      id: 4,
       title: "Fall 2023",
       category: "demo",
       categoryLabel: "DEMO",
@@ -45,7 +54,7 @@ const JotrPage = () => {
       year: "2023"
     },
     {
-      id: 4,
+      id: 5,
       title: "Spring 2022",
       category: "demo",
       categoryLabel: "DEMO",
@@ -55,7 +64,7 @@ const JotrPage = () => {
       year: "2022"
     },
     {
-      id: 5,
+      id: 6,
       title: "January 2020",
       category: "demo",
       categoryLabel: "DEMO",
@@ -65,7 +74,7 @@ const JotrPage = () => {
       year: "2020"
     },
     {
-      id: 6,
+      id: 7,
       title: "January 2020",
       category: "demo",
       categoryLabel: "DEMO",
@@ -75,18 +84,18 @@ const JotrPage = () => {
       year: "2020"
     },
     {
-      id: 7,
-      title: "March 2018",
+      id: 8,
+      title: "February 2019",
       category: "demo",
       categoryLabel: "DEMO",
-      description: "Demo Reel March 2018",
+      description: "Demo Reel February 2019",
       image: "/assets/jotr/february-2019.jpg",
-      link: "https://soundcloud.com/julianontheradio/kyld-wild-949-march-2018-afternoons-3-7p",
-      year: "2018"
+      link: "https://soundcloud.com/julianontheradio/wild-949-demo-february-2019-3-7p",
+      year: "2019"
     },
     {
-      id: 8,
-      title: "Morning Show",
+      id: 9,
+      title: "B98 Chicago Morning Show",
       category: "demo",
       categoryLabel: "DEMO",
       description: "B96 Chicago Morning Show",
@@ -95,8 +104,8 @@ const JotrPage = () => {
       year: "2019"
     },
     {
-      id: 9,
-      title: "Evening Show",
+      id: 10,
+      title: "B98 Chicago Evening Show",
       category: "demo",
       categoryLabel: "DEMO",
       description: "B96 Chicago Evening Show",
@@ -105,7 +114,17 @@ const JotrPage = () => {
       year: "2019"
     },
     {
-      id: 10,
+      id: 11,
+      title: "B98 Chicago",
+      category: "demo",
+      categoryLabel: "DEMO",
+      description: "B96 Chicago",
+      image: "/assets/jotr/B98-chicago.jpg",
+      link: "https://soundcloud.com/julianontheradio/b96-julian-night-show-demo-1",
+      year: "2019"
+    },
+    {
+      id: 12,
       title: "Less Than Zero",
       category: "video",
       categoryLabel: "VIDEO SERIES",
@@ -115,7 +134,17 @@ const JotrPage = () => {
       year: "2023"
     },
     {
-      id: 11,
+      id: 13,
+      title: "Youtube Podcast",
+      category: "video",
+      categoryLabel: "VIDEO SERIES",
+      description: "Weekly video podcast production",
+      image: "/assets/jotr/Video_Podcast.jpg",
+      link: "https://www.youtube.com/watch?v=EN3xnVcweSw",
+      year: "2023"
+    },
+    {
+      id: 14,
       title: "April 2021",
       category: "video",
       categoryLabel: "VIDEO SERIES",
@@ -125,7 +154,7 @@ const JotrPage = () => {
       year: "2021"
     },
     {
-      id: 12,
+      id: 15,
       title: "Download Resume",
       category: "resume",
       categoryLabel: "RESUME",
@@ -135,7 +164,7 @@ const JotrPage = () => {
       year: "2024"
     },
     {
-      id: 13,
+      id: 16,
       title: "Instagram",
       category: "social",
       categoryLabel: "SOCIAL",
@@ -145,7 +174,17 @@ const JotrPage = () => {
       year: "2024"
     },
     {
-      id: 14,
+      id: 17,
+      title: "Sound Cloud",
+      category: "social",
+      categoryLabel: "SOCIAL",
+      description: "A voice chapter of my life",
+      image: "/assets/jotr/Sound_Cloud.jpg",
+      link: "https://soundcloud.com/julianontheradio",
+      year: "2024"
+    },
+    {
+      id: 18,
       title: "Facebook",
       category: "social",
       categoryLabel: "SOCIAL",
@@ -155,7 +194,7 @@ const JotrPage = () => {
       year: "2024"
     },
     {
-      id: 15,
+      id: 19,
       title: "TikTok",
       category: "social",
       categoryLabel: "SOCIAL",
@@ -281,23 +320,19 @@ const JotrPage = () => {
                 className="space-y-6 text-center"
               >
                 <p className="text-lg sm:text-xl text-text-secondary font-sans leading-relaxed">
-                  Welcome to my little corner in the digital space! I'll keep this brief—I'd rather you get to know me organically through my work and social media. 
+                  Welcome to my little corner of the digital world! I'll keep this brief—I'd rather you get to know me organically through my work and weekly podcast. 
                 </p>
                 
                 <p className="text-lg sm:text-xl text-text-secondary font-sans leading-relaxed">
-                  Born and raised in Washington D.C, that's where I caught the radio bug and launched my career in the DMV. Since then, I've brought my voice to airwaves in Chicago, Phoenix, San Francisco, Seattle and most recently Las Vegas, where I co-hosted Mornings on heritage MIX 94.1.  In addition, I've hosted literally every daypart all in competitive situations.
+                  Born and raised in Washington D.C., that's where I caught the radio bug and launched my career. Since then, I've brought my voice to airwaves in Chicago, Phoenix, San Francisco, Seattle and most recently Vegas, where I hosted Afternoons on heritage STAR 101.5 from 2021-2024. I've also tracked daily shows for Portland's LIVE 95.5, Louisville's 99.7 DJX, and weekends at 99.7 NOW San Francisco.
                 </p>
                 
                 <p className="text-lg sm:text-xl text-text-secondary font-sans leading-relaxed">
-                  I've also tracked daily shows for multiple stations across the country which include, 103.5 KISS-FM Chicago, HOT 995 Washington DC, Z104.3 Baltimore, Portland's LIVE 95.5, Louisville's 99.7 DJX, and weekends at 99.7 NOW San Francisco.
+                  Beyond the mic, I'm a sneaker enthusiast, fashion collector, Rom-Com defender, and coffee connoisseur who believes the best conversations happen over good food. My passion? Creating content that makes people laugh while connecting across our differences because if we're not experiencing each other's perspectives, are we really living?
                 </p>
                 
                 <p className="text-lg sm:text-xl text-text-secondary font-sans leading-relaxed">
-                  Beyond the mic, I'm a sneaker enthusiast, fashion collector, avid Rom-Com fan, and coffee connoisseur who believes the best conversations happen over good food. My passion? Creating content that makes people laugh while connecting, and sharing our differences. Because, if we're not experiencing each other's perspectives, are we really living?
-                </p>
-
-                <p className="text-lg sm:text-xl text-text-secondary font-sans leading-relaxed">
-                  Currently, I'm open to meaningful opportunities across platforms whether that's radio, podcasting, on-screen hosting, or digital content creation. Let's connect and create something super dope together.
+                  Currently, I'm open to meaningful opportunities across platforms whether that's radio, podcasting, on-screen hosting, or digital content creation. Let's connect and create something remarkable together.
                 </p>
               </motion.div>
 
