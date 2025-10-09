@@ -439,7 +439,7 @@ const JotrPage = () => {
                 Ready to create something remarkable together? Let's start a conversation.
               </p>
               <a
-                href="mailto:julianontheradio@gmail.com"
+                href="mailto:julianontheradio3@gmail.com"
                 className="group inline-flex items-center gap-2 bg-accent hover:bg-accent/90 text-white px-8 py-4 rounded-full font-heading-regular uppercase tracking-wider transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
               >
                 <span>Get In Touch</span>
