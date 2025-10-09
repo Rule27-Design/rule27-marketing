@@ -272,7 +272,7 @@ const JotrPage = () => {
         <title>Journey of the Remarkable | Julian on the Radio</title>
         <meta name="description" content="Explore Julian's journey through radio, video, and digital media. From Washington DC to San Francisco, experience the creative work of Julian on the Radio." />
         <meta name="keywords" content="Julian on the Radio, radio personality, demo reels, Star 101.5, B96 Chicago, media personality" />
-        <meta property="og:title" content="Journey of the Remarkable | Julian on the Radio" />
+        <meta property="og:title" content="Julian on the Radio" />
         <meta property="og:description" content="Explore Julian's creative journey through radio and digital media." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.rule27design.com/jotr" />
@@ -303,9 +303,9 @@ const JotrPage = () => {
               transition={{ duration: 1 }}
             >
               <h1 className="font-heading-regular text-5xl sm:text-7xl lg:text-9xl tracking-wider uppercase text-center">
-                <span className="text-white drop-shadow-2xl">Journey of the</span>
+                <span className="text-white drop-shadow-2xl">Julian on </span>
                 <br />
-                <span className="text-accent drop-shadow-2xl">Remarkable</span>
+                <span className="text-accent drop-shadow-2xl">The radio</span>
               </h1>
             </motion.div>
           </div>
