@@ -269,7 +269,7 @@ const JotrPage = () => {
   return (
     <>
       <Helmet>
-        <title>Journey of the Remarkable | Julian on the Radio</title>
+        <title>Julian on the Radio</title>
         <meta name="description" content="Explore Julian's journey through radio, video, and digital media. From Washington DC to San Francisco, experience the creative work of Julian on the Radio." />
         <meta name="keywords" content="Julian on the Radio, radio personality, demo reels, Star 101.5, B96 Chicago, media personality" />
         <meta property="og:title" content="Julian on the Radio" />
