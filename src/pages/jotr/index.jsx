@@ -356,7 +356,7 @@ const JotrPage = () => {
                       <img 
                         src={item.image} 
                         alt={item.title}
-                        className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+                        className="w-full h-full object-cover object-center transition-all duration-700 group-hover:scale-110 group-hover:shadow-2xl"
                         loading="lazy"
                         onError={(e) => {
                           e.target.src = '/assets/jotr/placeholder.jpg';
