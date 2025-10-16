@@ -31,7 +31,7 @@ const Routes = () => {
           <Route path="/case-studies" element={<WorkShowcaseTheater />} />
           <Route path="/case-studies/:slug" element={<CaseStudyDetail />} />
           <Route path="/articles" element={<ArticlesHub />} />
-          <Route path="/article/:slug" element={<ArticleDetail />} />
+          <Route path="/articles/:slug" element={<ArticleDetail />} />
           <Route path="/team" element={<TeamPage />} />
           <Route path="/team/:slug" element={<TeamMemberPage />} />
           <Route path="/about" element={<AboutProcessStudio />} />
