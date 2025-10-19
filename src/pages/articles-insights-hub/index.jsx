@@ -123,7 +123,7 @@ const ArticlesHub = () => {
   }, []);
 
   const handleViewArticle = useCallback((article) => {
-    navigate(`/article/${article.slug}`);
+    navigate(`/articles/${article.slug}`);
   }, [navigate]);
 
   // Loading state
