@@ -79,8 +79,14 @@ exports.handler = async () => {
         .select(columns)
         .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
-      for (const [col, val] of Object.entries(filters)) {
-        query = val === null ? query.not(col, 'is', null) : query.eq(col, val);
+      for (const [col, descriptor] of Object.entries(filters)) {
+        if (descriptor === null) {
+          query = query.not(col, 'is', null);
+        } else if (typeof descriptor === 'object' && descriptor.neq !== undefined) {
+          query = query.neq(col, descriptor.neq);
+        } else {
+          query = query.eq(col, descriptor);
+        }
       }
 
       const { data, error } = await query;
@@ -102,7 +108,7 @@ exports.handler = async () => {
   const [articles, caseStudies, team] = await Promise.all([
     fetchAllRows('articles',     'slug, updated_at, published_at', { status: 'published' }),
     fetchAllRows('case_studies', 'slug, updated_at, published_at', { status: 'published' }),
-    fetchAllRows('profiles',     'slug, updated_at',               { is_active: true }),
+    fetchAllRows('profiles',     'slug, updated_at, role',          { is_active: true, role: { neq: 'admin' } }),
   ]);
 
   console.log(`Sitemap: ${articles.length} articles, ${caseStudies.length} case studies, ${team.length} team members`);
