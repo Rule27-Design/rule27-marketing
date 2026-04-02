@@ -2,7 +2,14 @@
   command = "npm run build"
   publish = "build"
 
+# Sitemap — must come BEFORE the SPA catch-all
+[[redirects]]
+  from   = "/sitemap.xml"
+  to     = "/.netlify/functions/sitemap"
+  status = 200
+
+# SPA catch-all
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to   = "/index.html"
   status = 200
