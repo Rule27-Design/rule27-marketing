@@ -2,10 +2,15 @@
 // Dynamic XML sitemap — queries Supabase on every request.
 // Netlify CDN caches the response for 24 hours, so search engines
 // always see data that is at most one day old.
+//
+// Handles 1,000+ rows via pagination (Supabase caps each response at 1,000).
+// Handles 50,000+ URLs via a warning (sitemap index when needed).
 
 const { createClient } = require('@supabase/supabase-js');
 
-const BASE_URL = 'https://www.rule27design.com';
+const BASE_URL        = 'https://www.rule27design.com';
+const PAGE_SIZE       = 1000;  // Supabase/PostgREST hard ceiling per request
+const SITEMAP_URL_CAP = 50000; // Google's per-file limit
 
 // Static pages: [path, changefreq, priority]
 const STATIC_PAGES = [
@@ -60,29 +65,47 @@ exports.handler = async () => {
 
   // ── Fetch dynamic content ──────────────────────────────────────────────────
 
-  const [articlesRes, caseStudiesRes, teamRes] = await Promise.allSettled([
-    supabase
-      .from('articles')
-      .select('slug, updated_at, published_at')
-      .eq('status', 'published')
-      .order('published_at', { ascending: false }),
+  /**
+   * Paginate through a Supabase table so we never silently truncate at 1,000.
+   * Keeps fetching pages until a page returns fewer rows than PAGE_SIZE.
+   */
+  async function fetchAllRows(table, columns, filters = {}) {
+    const rows = [];
+    let   page = 0;
 
-    supabase
-      .from('case_studies')
-      .select('slug, updated_at, published_at')
-      .eq('status', 'published')
-      .order('published_at', { ascending: false }),
+    while (true) {
+      let query = supabase
+        .from(table)
+        .select(columns)
+        .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
-    supabase
-      .from('profiles')
-      .select('slug, updated_at')
-      .eq('is_active', true)
-      .not('slug', 'is', null),
+      for (const [col, val] of Object.entries(filters)) {
+        query = val === null ? query.not(col, 'is', null) : query.eq(col, val);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error(`Sitemap: error fetching ${table} page ${page}:`, error.message);
+        break;
+      }
+
+      if (!data || data.length === 0) break;
+      rows.push(...data);
+      if (data.length < PAGE_SIZE) break; // last page
+      page++;
+    }
+
+    return rows;
+  }
+
+  const [articles, caseStudies, team] = await Promise.all([
+    fetchAllRows('articles',     'slug, updated_at, published_at', { status: 'published' }),
+    fetchAllRows('case_studies', 'slug, updated_at, published_at', { status: 'published' }),
+    fetchAllRows('profiles',     'slug, updated_at',               { is_active: true }),
   ]);
 
-  const articles    = articlesRes.status    === 'fulfilled' ? (articlesRes.value.data    || []) : [];
-  const caseStudies = caseStudiesRes.status === 'fulfilled' ? (caseStudiesRes.value.data || []) : [];
-  const team        = teamRes.status        === 'fulfilled' ? (teamRes.value.data        || []) : [];
+  console.log(`Sitemap: ${articles.length} articles, ${caseStudies.length} case studies, ${team.length} team members`);
 
   // ── Build XML ──────────────────────────────────────────────────────────────
 
@@ -114,6 +137,10 @@ exports.handler = async () => {
     entries.push(urlEntry(`${BASE_URL}/team/${escapeXml(member.slug)}`, lastmod, 'monthly', '0.5'));
   }
 
+  if (entries.length > SITEMAP_URL_CAP) {
+    console.warn(`Sitemap: ${entries.length} URLs exceeds the 50,000 per-file limit. Consider a sitemap index.`);
+  }
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${entries.join('\n')}
@@ -125,6 +152,7 @@ ${entries.join('\n')}
       'Content-Type':  'application/xml; charset=utf-8',
       // CDN caches for 24 h; browsers/bots revalidate after 1 h
       'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400',
+      'X-Sitemap-Urls': String(entries.length),
     },
     body: xml,
   };
