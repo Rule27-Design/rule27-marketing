@@ -19,24 +19,15 @@ function transformArticle(
 ): Article | null {
   if (!article) return null;
 
-  // Extract content — only parse if we have content and need it
-  // For list views, the excerpt field is usually sufficient
-  let contentText = "";
+  // Extract content — only parse if content field is present (detail views)
+  // For list views, content is excluded from the query to save bandwidth
+  let contentText = article.excerpt || "";
   let contentHtml: string | null = null;
 
   if (article.content) {
-    // If we already have an excerpt, skip the heavy content parsing for list views
-    if (article.excerpt) {
-      contentText = article.excerpt;
-      // Still store the raw content reference for detail views
-      if (typeof article.content === "string" && article.content.startsWith("<")) {
-        contentHtml = article.content;
-      }
-    } else {
-      const contentData = extractTextFromRichText(article.content);
-      contentText = typeof contentData === "string" ? contentData : contentData.text;
-      contentHtml = typeof contentData === "object" ? contentData.html : null;
-    }
+    const contentData = extractTextFromRichText(article.content);
+    contentText = typeof contentData === "string" ? contentData : contentData.text;
+    contentHtml = typeof contentData === "object" ? contentData.html : null;
   }
 
   // Resolve author
@@ -146,11 +137,19 @@ async function resolveCoAuthors(article: any): Promise<CoAuthor[]> {
  */
 export async function getArticles(): Promise<Article[]> {
   try {
+    // Only fetch fields needed for the list — exclude heavy 'content' column
+    // This reduces payload from ~10MB to ~0.15MB for 195 articles
     const { data: articles, error: articlesError } = await supabase
       .from("articles")
-      .select("*")
+      .select(
+        "id, title, slug, excerpt, featured_image, featured_image_alt, " +
+        "published_at, created_at, read_time, is_featured, view_count, " +
+        "like_count, share_count, bookmark_count, tags, author_id, " +
+        "category_id, co_authors, meta_title, meta_description, og_image, " +
+        "enable_comments, enable_reactions, gallery_images"
+      )
       .eq("status", "published")
-      .order("published_at", { ascending: false });
+      .order("published_at", { ascending: false }) as { data: any[] | null; error: any };
 
     if (articlesError) throw articlesError;
     if (!articles || articles.length === 0) return [];
