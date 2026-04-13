@@ -5,6 +5,7 @@ import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { Analytics } from "./components/Analytics";
 import { BackToTop } from "./components/BackToTop";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -49,6 +50,7 @@ export default function RootLayout({
         <Footer />
         <BackToTop />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
