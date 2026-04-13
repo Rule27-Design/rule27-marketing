@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import type { ServiceZone, Service } from "@/app/lib/types";
 import { WaveBorder } from "@/app/components/WaveBorder";
+import { CalendlyModal } from "@/app/components/CalendlyModal";
 
 // ---------------------------------------------------------------------------
 // Inline SVG icons (lucide-style) — avoids external icon deps
@@ -149,6 +150,7 @@ export function CapabilitiesView({ serviceZones, services }: Props) {
   const [activeZone, setActiveZone] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [calendlyOpen, setCalendlyOpen] = useState(false);
 
   const categories = useMemo(() => getCategories(services), [services]);
 
@@ -542,10 +544,11 @@ export function CapabilitiesView({ serviceZones, services }: Props) {
                 >
                   Quick Actions
                 </label>
-                <Link
-                  href="/contact"
+                <button
+                  onClick={() => setCalendlyOpen(true)}
                   style={{
                     display: "block",
+                    width: "100%",
                     fontFamily: "var(--font-heading)",
                     fontSize: "14px",
                     letterSpacing: "0.1em",
@@ -554,13 +557,14 @@ export function CapabilitiesView({ serviceZones, services }: Props) {
                     background: "#E53E3E",
                     color: "#FFFFFF",
                     textAlign: "center",
-                    textDecoration: "none",
+                    border: "none",
+                    cursor: "pointer",
                     transition: "opacity 0.2s",
                     marginBottom: "0.5rem",
                   }}
                 >
                   Book Consultation
-                </Link>
+                </button>
                 <Link
                   href="/contact"
                   style={{
@@ -697,8 +701,8 @@ export function CapabilitiesView({ serviceZones, services }: Props) {
                 justifyContent: "center",
               }}
             >
-              <Link
-                href="/contact"
+              <button
+                onClick={() => setCalendlyOpen(true)}
                 style={{
                   fontFamily: "var(--font-heading)",
                   fontSize: "14px",
@@ -707,7 +711,8 @@ export function CapabilitiesView({ serviceZones, services }: Props) {
                   padding: "16px 36px",
                   background: "#FFFFFF",
                   color: "#111111",
-                  textDecoration: "none",
+                  border: "none",
+                  cursor: "pointer",
                   display: "inline-flex",
                   alignItems: "center",
                   gap: "10px",
@@ -716,7 +721,7 @@ export function CapabilitiesView({ serviceZones, services }: Props) {
               >
                 <ZoneIcon name="Calendar" size={18} />
                 Schedule Strategy Call
-              </Link>
+              </button>
               <Link
                 href="/contact"
                 style={{
@@ -751,6 +756,8 @@ export function CapabilitiesView({ serviceZones, services }: Props) {
           }
         }
       `}</style>
+
+      <CalendlyModal isOpen={calendlyOpen} onClose={() => setCalendlyOpen(false)} />
     </div>
   );
 }

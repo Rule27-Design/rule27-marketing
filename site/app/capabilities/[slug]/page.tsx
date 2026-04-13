@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getServiceZone, getServiceZones } from "@/app/lib/data/services";
 import { ZoneView } from "./components/ZoneView";
+import { BookCallButton } from "@/app/components/BookCallButton";
 
 // ---------------------------------------------------------------------------
 // Dynamic SEO metadata
@@ -544,8 +545,7 @@ export default async function ServiceZonePage({
               flexWrap: "wrap",
             }}
           >
-            <Link
-              href="/contact"
+            <BookCallButton
               style={{
                 fontFamily: "var(--font-heading)",
                 fontSize: "13px",
@@ -554,7 +554,7 @@ export default async function ServiceZonePage({
                 padding: "14px 32px",
                 background: "#FFFFFF",
                 color: "#111111",
-                textDecoration: "none",
+                border: "none",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "8px",
@@ -577,7 +577,7 @@ export default async function ServiceZonePage({
                 <line x1="3" y1="10" x2="21" y2="10" />
               </svg>
               Schedule Consultation
-            </Link>
+            </BookCallButton>
             <Link
               href="/contact"
               style={{

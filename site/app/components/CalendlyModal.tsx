@@ -36,44 +36,22 @@ export function CalendlyModal({ isOpen, onClose }: CalendlyModalProps) {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Full-screen overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            transition={{ duration: 0.25 }}
             style={{
               position: "fixed",
               inset: 0,
-              background: "rgba(0,0,0,0.6)",
-              backdropFilter: "blur(4px)",
               zIndex: 99998,
-            }}
-          />
-
-          {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.3, ease: "easeOut" as const }}
-            style={{
-              position: "fixed",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: "min(680px, 95vw)",
-              height: "min(750px, 90vh)",
-              background: "#FFFFFF",
-              borderRadius: 4,
-              overflow: "hidden",
-              zIndex: 99999,
+              background: "#111111",
               display: "flex",
               flexDirection: "column",
-              boxShadow: "0 25px 60px rgba(0,0,0,0.3)",
             }}
           >
-            {/* Header */}
+            {/* Header bar */}
             <div
               style={{
                 display: "flex",
@@ -81,16 +59,17 @@ export function CalendlyModal({ isOpen, onClose }: CalendlyModalProps) {
                 justifyContent: "space-between",
                 padding: "1rem 1.5rem",
                 borderBottom: "2px solid #E53E3E",
+                flexShrink: 0,
               }}
             >
               <div>
                 <h2
                   style={{
                     fontFamily: "'Steelfish', 'Impact', sans-serif",
-                    fontSize: "16px",
+                    fontSize: "18px",
                     letterSpacing: "0.15em",
                     textTransform: "uppercase",
-                    color: "#111111",
+                    color: "#FFFFFF",
                     margin: 0,
                   }}
                 >
@@ -99,9 +78,9 @@ export function CalendlyModal({ isOpen, onClose }: CalendlyModalProps) {
                 <p
                   style={{
                     fontFamily: "Helvetica Neue, sans-serif",
-                    fontSize: "13px",
-                    color: "rgba(0,0,0,0.45)",
-                    margin: "2px 0 0",
+                    fontSize: "14px",
+                    color: "rgba(255,255,255,0.5)",
+                    margin: "4px 0 0",
                   }}
                 >
                   Pick a time that works for you — 30 minutes, no commitment
@@ -110,18 +89,27 @@ export function CalendlyModal({ isOpen, onClose }: CalendlyModalProps) {
               <button
                 onClick={onClose}
                 style={{
-                  width: 32,
-                  height: 32,
+                  width: 40,
+                  height: 40,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  background: "rgba(229,62,62,0.06)",
-                  border: "1px solid rgba(229,62,62,0.15)",
+                  background: "rgba(229,62,62,0.15)",
+                  border: "1px solid rgba(229,62,62,0.3)",
                   color: "#E53E3E",
                   cursor: "pointer",
-                  fontSize: "18px",
+                  fontSize: "20px",
                   flexShrink: 0,
                   borderRadius: 2,
+                  transition: "background 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#E53E3E";
+                  e.currentTarget.style.color = "#FFFFFF";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(229,62,62,0.15)";
+                  e.currentTarget.style.color = "#E53E3E";
                 }}
                 aria-label="Close"
               >
@@ -129,8 +117,8 @@ export function CalendlyModal({ isOpen, onClose }: CalendlyModalProps) {
               </button>
             </div>
 
-            {/* Calendly Embed */}
-            <div style={{ flex: 1, position: "relative" }}>
+            {/* Calendly iframe — takes full remaining space */}
+            <div style={{ flex: 1, background: "#FFFFFF" }}>
               <iframe
                 src={`${CALENDLY_URL}?hide_gdpr_banner=1&background_color=ffffff&text_color=111111&primary_color=E53E3E`}
                 style={{
