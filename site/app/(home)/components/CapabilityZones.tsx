@@ -16,6 +16,7 @@ import {
   Code,
   Zap,
 } from "lucide-react";
+import { CalendlyModal } from "@/app/components/CalendlyModal";
 import type { ServiceZone } from "@/app/lib/types";
 
 // ---------------------------------------------------------------------------
@@ -201,6 +202,7 @@ interface Props {
 
 export default function CapabilityZones({ serviceZones }: Props) {
   const zones = serviceZones.length > 0 ? serviceZones : FALLBACK_ZONES;
+  const [calendlyOpen, setCalendlyOpen] = useState(false);
   const [hoveredZone, setHoveredZone] = useState<string | null>(null);
   const [visibleCards, setVisibleCards] = useState<number[]>([]);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -511,8 +513,8 @@ export default function CapabilityZones({ serviceZones }: Props) {
                   <Compass size={20} />
                   <span>Explore All Capabilities</span>
                 </Link>
-                <Link
-                  href="/contact"
+                <button
+                  onClick={() => setCalendlyOpen(true)}
                   className="inline-flex items-center justify-center space-x-2 rounded-lg uppercase tracking-wider transition-all duration-300 hover:scale-105"
                   style={{
                     fontFamily: "var(--font-heading)",
@@ -521,6 +523,7 @@ export default function CapabilityZones({ serviceZones }: Props) {
                     border: "2px solid #FFFFFF",
                     color: "#FFFFFF",
                     background: "transparent",
+                    cursor: "pointer",
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = "#fff";
@@ -532,8 +535,8 @@ export default function CapabilityZones({ serviceZones }: Props) {
                   }}
                 >
                   <MessageCircle size={20} />
-                  <span>Start Consultation</span>
-                </Link>
+                  <span>Book Free Consultation</span>
+                </button>
               </div>
             </div>
           </div>
@@ -562,6 +565,8 @@ export default function CapabilityZones({ serviceZones }: Props) {
           }
         }
       `}</style>
+
+      <CalendlyModal isOpen={calendlyOpen} onClose={() => setCalendlyOpen(false)} />
     </section>
   );
 }

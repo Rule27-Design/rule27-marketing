@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { motion, useMotionValue, useSpring } from "framer-motion";
-import { ArrowRight, ChevronDown, Compass } from "lucide-react";
+import { ArrowRight, ChevronDown, Compass, Calendar } from "lucide-react";
+import { CalendlyModal } from "@/app/components/CalendlyModal";
 
 // ---------------------------------------------------------------------------
 // Typewriter hook (matching old site speeds exactly)
@@ -83,6 +84,7 @@ export default function HeroSection() {
   const currentText = useTypewriter(dynamicWords, 100, 50, 2000);
 
   const [cursorVisible, setCursorVisible] = useState(true);
+  const [calendlyOpen, setCalendlyOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -387,8 +389,8 @@ export default function HeroSection() {
           variants={fadeUp}
         >
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
-            <Link
-              href="/contact"
+            <button
+              onClick={() => setCalendlyOpen(true)}
               className="inline-flex items-center gap-2 uppercase tracking-wider transition-all duration-300 hover:scale-105"
               style={{
                 fontFamily: "var(--font-heading)",
@@ -400,6 +402,7 @@ export default function HeroSection() {
                 backdropFilter: "blur(8px)",
                 borderRadius: "0.5rem",
                 boxShadow: "0 25px 50px -12px rgba(0,0,0,0.3)",
+                cursor: "pointer",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = "#fff";
@@ -412,9 +415,9 @@ export default function HeroSection() {
                 e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)";
               }}
             >
-              Start Writing Your Rules
-              <ArrowRight size={22} />
-            </Link>
+              <Calendar size={22} />
+              Book a Free Consultation
+            </button>
 
             <Link
               href="/case-studies"
@@ -502,6 +505,9 @@ export default function HeroSection() {
           50% { opacity: 1; }
         }
       `}</style>
+
+      {/* Calendly Modal */}
+      <CalendlyModal isOpen={calendlyOpen} onClose={() => setCalendlyOpen(false)} />
     </section>
   );
 }
