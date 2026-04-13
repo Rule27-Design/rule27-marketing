@@ -19,12 +19,25 @@ function transformArticle(
 ): Article | null {
   if (!article) return null;
 
-  // Extract content
-  const contentData = extractTextFromRichText(article.content);
-  const contentText =
-    typeof contentData === "string" ? contentData : contentData.text;
-  const contentHtml =
-    typeof contentData === "object" ? contentData.html : null;
+  // Extract content — only parse if we have content and need it
+  // For list views, the excerpt field is usually sufficient
+  let contentText = "";
+  let contentHtml: string | null = null;
+
+  if (article.content) {
+    // If we already have an excerpt, skip the heavy content parsing for list views
+    if (article.excerpt) {
+      contentText = article.excerpt;
+      // Still store the raw content reference for detail views
+      if (typeof article.content === "string" && article.content.startsWith("<")) {
+        contentHtml = article.content;
+      }
+    } else {
+      const contentData = extractTextFromRichText(article.content);
+      contentText = typeof contentData === "string" ? contentData : contentData.text;
+      contentHtml = typeof contentData === "object" ? contentData.html : null;
+    }
+  }
 
   // Resolve author
   const authorProfile = profilesMap[article.author_id];
@@ -150,13 +163,28 @@ export async function getArticles(): Promise<Article[]> {
       ...new Set(articles.map((a) => a.category_id).filter(Boolean)),
     ];
 
-    // Batch-fetch profiles and categories
-    const [profilesRes, categoriesRes] = await Promise.all([
+    // Collect ALL co-author IDs in one pass
+    const allCoAuthorIds = [
+      ...new Set(
+        articles.flatMap((a) =>
+          (a.co_authors || []).filter(
+            (id: string) =>
+              id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+          )
+        )
+      ),
+    ];
+
+    // Batch-fetch profiles, categories, AND co-authors in ONE parallel call
+    const [profilesRes, categoriesRes, coAuthorsRes] = await Promise.all([
       authorIds.length > 0
-        ? supabase.from("profiles").select("*").in("id", authorIds)
+        ? supabase.from("profiles").select("id, full_name, display_name, avatar_url, job_title, bio, slug").in("id", authorIds)
         : Promise.resolve({ data: [], error: null }),
       categoryIds.length > 0
-        ? supabase.from("categories").select("*").in("id", categoryIds)
+        ? supabase.from("categories").select("id, name, slug").in("id", categoryIds)
+        : Promise.resolve({ data: [], error: null }),
+      allCoAuthorIds.length > 0
+        ? supabase.from("profiles").select("id, full_name, display_name, avatar_url, job_title, bio, slug").in("id", allCoAuthorIds)
         : Promise.resolve({ data: [], error: null }),
     ]);
 
@@ -174,29 +202,38 @@ export async function getArticles(): Promise<Article[]> {
       acc[c.id] = c;
       return acc;
     }, {});
+
+    const coAuthorsMap: Record<string, any> = (
+      coAuthorsRes.data || []
+    ).reduce((acc: Record<string, any>, ca: any) => {
+      acc[ca.id] = ca;
+      return acc;
+    }, {});
     /* eslint-enable @typescript-eslint/no-explicit-any */
 
-    // Resolve co-authors for each article
-    const articlesWithCoAuthors = await Promise.all(
-      articles.map(async (article) => {
-        const coAuthors = await resolveCoAuthors(article);
-        return { ...article, coAuthorDetails: coAuthors };
-      }),
-    );
-
-    // Transform
-    return articlesWithCoAuthors
+    // Transform — resolve co-authors from the pre-fetched map (no extra queries)
+    return articles
       .map((article) => {
-        const transformed = transformArticle(
-          article,
-          profilesMap,
-          categoriesMap,
-        );
+        const transformed = transformArticle(article, profilesMap, categoriesMap);
         if (!transformed) return null;
-        return {
-          ...transformed,
-          coAuthors: article.coAuthorDetails,
-        };
+
+        // Resolve co-authors from the batch-fetched map
+        const coAuthorIds = (article.co_authors || []).filter(
+          (id: string) => id && coAuthorsMap[id]
+        );
+        const coAuthors: CoAuthor[] = coAuthorIds.map((id: string) => {
+          const ca = coAuthorsMap[id];
+          return {
+            id: ca.id,
+            name: ca.full_name || ca.display_name || "Team Member",
+            role: ca.job_title || "Team Member",
+            bio: ca.bio,
+            avatar: ca.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(ca.full_name || "User")}&background=FF6B6B&color=fff`,
+            slug: ca.slug,
+          };
+        });
+
+        return { ...transformed, coAuthors };
       })
       .filter((a): a is Article => a !== null);
   } catch (error) {
