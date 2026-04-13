@@ -14,6 +14,7 @@ import { StickyCTA } from "./StickyCTA";
 import { Accordion } from "@/app/components/Accordion";
 import { TestimonialCarousel } from "./TestimonialCarousel";
 import { ShowcaseGallery } from "./ShowcaseGallery";
+import { BookCallButton } from "@/app/components/BookCallButton";
 
 // ---------------------------------------------------------------------------
 // Inline SVG icons (server-safe)
@@ -486,8 +487,7 @@ export default async function ServiceDetailPage({
               marginBottom: "2rem",
             }}
           >
-            <Link
-              href="/contact"
+            <BookCallButton
               style={{
                 fontFamily: "var(--font-heading)",
                 fontSize: "14px",
@@ -497,7 +497,6 @@ export default async function ServiceDetailPage({
                 color: "#FFFFFF",
                 background: "transparent",
                 border: "2px solid rgba(255,255,255,0.6)",
-                textDecoration: "none",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "10px",
@@ -505,22 +504,10 @@ export default async function ServiceDetailPage({
                 transition: "all 0.3s",
               }}
             >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
               Get Started
-            </Link>
-            <Link
-              href="/contact"
+            </BookCallButton>
+            <BookCallButton
               style={{
                 fontFamily: "var(--font-heading)",
                 fontSize: "14px",
@@ -530,7 +517,6 @@ export default async function ServiceDetailPage({
                 color: "#FFFFFF",
                 background: "transparent",
                 border: "2px solid rgba(255,255,255,0.3)",
-                textDecoration: "none",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "10px",
@@ -538,23 +524,9 @@ export default async function ServiceDetailPage({
                 transition: "all 0.3s",
               }}
             >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
               Book Free Consultation
-            </Link>
+            </BookCallButton>
           </div>
 
           {/* Availability / Urgency */}
@@ -1533,10 +1505,10 @@ export default async function ServiceDetailPage({
                     </ul>
                   )}
 
-                  <Link
-                    href="/contact"
+                  <BookCallButton
                     style={{
                       display: "block",
+                      width: "100%",
                       textAlign: "center",
                       fontFamily: "var(--font-heading)",
                       fontSize: "13px",
@@ -1548,13 +1520,12 @@ export default async function ServiceDetailPage({
                       border: isPopular
                         ? "2px solid #E53E3E"
                         : "2px solid rgba(0,0,0,0.15)",
-                      textDecoration: "none",
                       borderRadius: 2,
                       transition: "all 0.3s",
                     }}
                   >
                     Get Started
-                  </Link>
+                  </BookCallButton>
                 </div>
               );
             })}
@@ -1604,8 +1575,7 @@ export default async function ServiceDetailPage({
               Every project is unique. We&apos;ll build a proposal around your goals, timeline, and budget
               {service.avgRoi && ` — our clients typically see ${service.avgRoi} returns on their investment`}.
             </p>
-            <Link
-              href="/contact"
+            <BookCallButton
               style={{
                 fontFamily: "var(--font-heading)",
                 fontSize: "13px",
@@ -1614,7 +1584,7 @@ export default async function ServiceDetailPage({
                 padding: "14px 36px",
                 background: "#E53E3E",
                 color: "#FFFFFF",
-                textDecoration: "none",
+                border: "none",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "8px",
@@ -1624,7 +1594,7 @@ export default async function ServiceDetailPage({
             >
               Get a Custom Quote
               <ArrowRightIcon size={16} />
-            </Link>
+            </BookCallButton>
           </div>
         </section>
       )}
@@ -1762,8 +1732,7 @@ export default async function ServiceDetailPage({
               marginBottom: "2.5rem",
             }}
           >
-            <Link
-              href="/contact"
+            <BookCallButton
               style={{
                 fontFamily: "var(--font-heading)",
                 fontSize: "14px",
@@ -1772,7 +1741,7 @@ export default async function ServiceDetailPage({
                 padding: "16px 40px",
                 background: "#E53E3E",
                 color: "#FFFFFF",
-                textDecoration: "none",
+                border: "none",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "10px",
@@ -1781,22 +1750,10 @@ export default async function ServiceDetailPage({
                 transition: "all 0.3s",
               }}
             >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
               Get Started Now
-            </Link>
-            <Link
-              href="/contact"
+            </BookCallButton>
+            <BookCallButton
               style={{
                 fontFamily: "var(--font-heading)",
                 fontSize: "14px",
@@ -1806,7 +1763,6 @@ export default async function ServiceDetailPage({
                 background: "transparent",
                 color: "#FFFFFF",
                 border: "2px solid rgba(255,255,255,0.25)",
-                textDecoration: "none",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "10px",
@@ -1814,23 +1770,9 @@ export default async function ServiceDetailPage({
                 transition: "all 0.3s",
               }}
             >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
               Book Free Consultation
-            </Link>
+            </BookCallButton>
           </div>
 
           {/* Trust indicators */}
