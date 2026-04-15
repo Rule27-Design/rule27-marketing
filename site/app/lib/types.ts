@@ -268,8 +268,36 @@ export interface Service {
   turnaround?: string | null;
   relatedCaseStudyIds?: string[];
   faqs?: ServiceFAQ[];
+  // Funnel fields
+  beforeImage?: string | null;
+  afterImage?: string | null;
+  leadMagnetTitle?: string | null;
+  leadMagnetDescription?: string | null;
+  leadMagnetUrl?: string | null;
+  roiFormula?: RoiFormula | null;
+  conversionBreaks?: ConversionBreakData[];
+  tooltipDefinitions?: Record<string, string>;
   // Populated at query time
   testimonials?: ServiceTestimonial[];
+}
+
+export interface RoiFormula {
+  title?: string;
+  inputs: string[];
+  formula: string;
+  example: {
+    inputs: Record<string, string>;
+    result: string;
+    explanation?: string;
+  };
+}
+
+export interface ConversionBreakData {
+  position: string;
+  text: string;
+  cta: string;
+  action: "calendly" | "scroll" | "link";
+  href?: string;
 }
 
 // --- Team ------------------------------------------------------------------

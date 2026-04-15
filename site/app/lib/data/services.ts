@@ -200,31 +200,43 @@ export async function getService(slug: string) {
         .neq("id", service.id)
         .limit(4),
 
-      // Service-specific testimonials
+      // Service-specific testimonials (try dedicated table first)
       supabase
         .from("service_testimonials")
         .select("*")
         .eq("service_id", service.id)
         .eq("is_active", true)
         .order("sort_order", { ascending: true })
-        .limit(6),
+        .limit(6)
+        .then(async (res) => {
+          // If we got results from service_testimonials, use them
+          if (res.data && res.data.length > 0) return res;
+          // Otherwise fall back to main testimonials table, matching by service category
+          return supabase
+            .from("testimonials")
+            .select("id, client_name, client_title, client_company, avatar_url, quote, rating, impact_metric, is_featured, is_approved")
+            .eq("is_approved", true)
+            .or(`service_type.ilike.%${service.category}%,service_type.ilike.%${service.title}%`)
+            .order("is_featured", { ascending: false })
+            .limit(6);
+        }),
 
       // Manual case study links (if any IDs specified)
       (service.related_case_study_ids && service.related_case_study_ids.length > 0)
         ? supabase
             .from("case_studies")
-            .select("id, slug, title, client_name, hero_image, industry, service_type, key_metrics, description")
+            .select("id, slug, title, client_name, hero_image, client_industry, service_type, key_metrics, results_summary")
             .in("id", service.related_case_study_ids)
             .eq("status", "published")
             .limit(4)
         : Promise.resolve({ data: [], error: null }),
 
-      // Auto-matched case studies by category (fallback)
+      // Auto-matched case studies by category, service title, or service_category field
       supabase
         .from("case_studies")
-        .select("id, slug, title, client_name, hero_image, industry, service_type, key_metrics, description")
+        .select("id, slug, title, client_name, hero_image, industry, service_type, key_metrics, description, service_category")
         .eq("status", "published")
-        .or(`service_type.ilike.%${service.category}%,industry.ilike.%${service.category}%`)
+        .or(`service_type.ilike.%${service.title}%,service_type.ilike.%${service.category}%,service_category.ilike.%${service.category}%,client_industry.ilike.%${service.category}%`)
         .limit(4),
     ]);
 
@@ -262,18 +274,27 @@ export async function getService(slug: string) {
       turnaround: service.turnaround,
       relatedCaseStudyIds: service.related_case_study_ids || [],
       faqs: service.faqs || [],
+      // Funnel fields
+      beforeImage: service.before_image,
+      afterImage: service.after_image,
+      leadMagnetTitle: service.lead_magnet_title,
+      leadMagnetDescription: service.lead_magnet_description,
+      leadMagnetUrl: service.lead_magnet_url,
+      roiFormula: service.roi_formula,
+      conversionBreaks: service.conversion_breaks || [],
+      tooltipDefinitions: service.tooltip_definitions || {},
     };
 
-    // Testimonials
+    // Testimonials — handles both service_testimonials and main testimonials table shapes
     const testimonials = (testimonialsRes.data || []).map((t: any) => ({
       id: t.id,
       clientName: t.client_name,
       clientTitle: t.client_title,
       clientCompany: t.client_company,
-      clientAvatar: t.client_avatar,
+      clientAvatar: t.client_avatar || t.avatar_url,
       quote: t.quote,
       rating: t.rating || 5,
-      resultMetric: t.result_metric,
+      resultMetric: t.result_metric || t.impact_metric,
       isFeatured: t.is_featured || false,
     }));
 
@@ -333,10 +354,10 @@ export async function getService(slug: string) {
       title: cs.title,
       client: cs.client_name,
       heroImage: cs.hero_image,
-      industry: cs.industry,
+      industry: cs.client_industry,
       serviceType: cs.service_type,
       keyMetrics: cs.key_metrics || [],
-      description: cs.description,
+      description: cs.results_summary,
     }));
     /* eslint-enable @typescript-eslint/no-explicit-any */
 

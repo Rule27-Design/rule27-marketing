@@ -15,6 +15,13 @@ import { Accordion } from "@/app/components/Accordion";
 import { TestimonialCarousel } from "./TestimonialCarousel";
 import { ShowcaseGallery } from "./ShowcaseGallery";
 import { BookCallButton } from "@/app/components/BookCallButton";
+import { Tooltip } from "@/app/components/Tooltip";
+import { ConversionBreak } from "@/app/components/ConversionBreak";
+import { BeforeAfterSlider } from "@/app/components/BeforeAfterSlider";
+import { ExpandableCard } from "@/app/components/ExpandableCard";
+import { ScrollProgress } from "@/app/components/ScrollProgress";
+import { ContextualPopup } from "@/app/components/ContextualPopup";
+import type { RoiFormula } from "@/app/lib/types";
 
 // ---------------------------------------------------------------------------
 // Inline SVG icons (server-safe)
@@ -222,6 +229,8 @@ export default async function ServiceDetailPage({
 
   return (
     <div style={{ background: "#FCFCFB", minHeight: "100vh" }}>
+      <ScrollProgress />
+
       {/* ================================================================ */}
       {/* 1. DARK HERO — Full viewport, homepage-matching energy           */}
       {/* ================================================================ */}
@@ -658,6 +667,20 @@ export default async function ServiceDetailPage({
         </section>
       )}
 
+      {/* ── Conversion Break: after metrics (from DB, or default) ── */}
+      {service.conversionBreaks?.some((cb: { position: string }) => cb.position === "after_metrics")
+        ? service.conversionBreaks.filter((cb: { position: string }) => cb.position === "after_metrics").map((cb: { text: string; cta: string; action: "calendly" | "scroll" | "link"; href?: string }, i: number) => (
+            <ConversionBreak key={`cb-metrics-${i}`} text={cb.text} ctaText={cb.cta} action={cb.action} href={cb.href} />
+          ))
+        : (
+            <ConversionBreak
+              text="Want results like these for your business?"
+              ctaText="Book a free strategy call"
+              action="calendly"
+            />
+          )
+      }
+
       {/* ================================================================ */}
       {/* 3. SHOWCASE GALLERY                                               */}
       {/* ================================================================ */}
@@ -695,6 +718,26 @@ export default async function ServiceDetailPage({
           </div>
 
           <ShowcaseGallery images={service.showcaseImages!} title={service.title} />
+
+          {/* Before/After Slider */}
+          {service.beforeImage && service.afterImage && (
+            <div style={{ marginTop: "2rem" }}>
+              <BeforeAfterSlider
+                beforeImage={service.beforeImage}
+                afterImage={service.afterImage}
+              />
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Show BeforeAfterSlider even without showcase images */}
+      {!hasShowcaseImages && service.beforeImage && service.afterImage && (
+        <section style={{ padding: "clamp(2rem, 4vw, 3rem) 1.5rem", maxWidth: 900, margin: "0 auto" }}>
+          <BeforeAfterSlider
+            beforeImage={service.beforeImage}
+            afterImage={service.afterImage}
+          />
         </section>
       )}
 
@@ -780,6 +823,21 @@ export default async function ServiceDetailPage({
           </div>
         </section>
       )}
+
+      {/* ── Conversion Break: after features (DB custom, or lead magnet fallback) ── */}
+      {service.conversionBreaks?.some((cb: { position: string }) => cb.position === "after_features")
+        ? service.conversionBreaks.filter((cb: { position: string }) => cb.position === "after_features").map((cb: { text: string; cta: string; action: "calendly" | "scroll" | "link"; href?: string }, i: number) => (
+            <ConversionBreak key={`cb-features-${i}`} text={cb.text} ctaText={cb.cta} action={cb.action} href={cb.href} />
+      ))
+        : service.leadMagnetUrl && service.leadMagnetTitle ? (
+            <ConversionBreak
+              text={service.leadMagnetDescription || "Download our comprehensive guide"}
+              ctaText={`Download: ${service.leadMagnetTitle}`}
+              action="link"
+              href={service.leadMagnetUrl}
+            />
+          ) : null
+      }
 
       {/* ================================================================ */}
       {/* 5. CLIENT RESULTS (Case Studies)                                  */}
@@ -1070,6 +1128,58 @@ export default async function ServiceDetailPage({
 
             <TestimonialCarousel testimonials={testimonials} />
           </div>
+        </section>
+      )}
+
+      {/* ── Conversion Break: after testimonials (from DB, or default) ── */}
+      {service.conversionBreaks?.some((cb: { position: string }) => cb.position === "after_testimonials")
+        ? service.conversionBreaks.filter((cb: { position: string }) => cb.position === "after_testimonials").map((cb: { text: string; cta: string; action: "calendly" | "scroll" | "link"; href?: string }, i: number) => (
+            <ConversionBreak key={`cb-test-${i}`} text={cb.text} ctaText={cb.cta} action={cb.action} href={cb.href} />
+          ))
+        : (
+            <ConversionBreak
+              text="Ready to see these results for yourself?"
+              ctaText="Get started today"
+              action="calendly"
+            />
+          )
+      }
+
+      {/* ── ROI Formula Card ── */}
+      {service.roiFormula && (
+        <section style={{ padding: "clamp(2rem, 4vw, 3rem) 1.5rem", maxWidth: 800, margin: "0 auto" }}>
+          <ExpandableCard
+            title={(service.roiFormula as RoiFormula).title || "How We Calculate Your Return"}
+            preview="See the exact formula we use to project your results"
+          >
+            <div style={{ fontFamily: "Helvetica Neue, sans-serif", fontSize: "14px", color: "rgba(0,0,0,0.6)", lineHeight: 1.7 }}>
+              <p style={{ marginBottom: "1rem" }}>
+                <strong style={{ color: "#111" }}>Formula:</strong> {(service.roiFormula as RoiFormula).formula}
+              </p>
+              {(service.roiFormula as RoiFormula).example && (
+                <>
+                  <p style={{ fontFamily: "'Steelfish', Impact, sans-serif", fontSize: "12px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#E53E3E", marginBottom: "0.5rem" }}>
+                    Example Calculation
+                  </p>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "0.75rem", marginBottom: "1rem" }}>
+                    {Object.entries((service.roiFormula as RoiFormula).example.inputs).map(([key, val]) => (
+                      <div key={key} style={{ background: "rgba(229,62,62,0.04)", padding: "0.75rem", borderTop: "2px solid #E53E3E" }}>
+                        <div style={{ fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(0,0,0,0.4)", marginBottom: "0.25rem" }}>{key}</div>
+                        <div style={{ fontFamily: "'Steelfish', Impact, sans-serif", fontSize: "1.25rem", color: "#111" }}>{val}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ background: "#111", color: "#FFFFFF", padding: "1rem", textAlign: "center" }}>
+                    <div style={{ fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", marginBottom: "0.25rem" }}>Projected Result</div>
+                    <div style={{ fontFamily: "'Steelfish', Impact, sans-serif", fontSize: "2rem", color: "#E53E3E" }}>{(service.roiFormula as RoiFormula).example.result}</div>
+                  </div>
+                  {(service.roiFormula as RoiFormula).example.explanation && (
+                    <p style={{ marginTop: "1rem", fontSize: "13px", color: "rgba(0,0,0,0.5)" }}>{(service.roiFormula as RoiFormula).example.explanation}</p>
+                  )}
+                </>
+              )}
+            </div>
+          </ExpandableCard>
         </section>
       )}
 
@@ -2059,6 +2169,15 @@ export default async function ServiceDetailPage({
       {/* ================================================================ */}
       {/* 13. STICKY CTA BAR                                                */}
       {/* ================================================================ */}
+      {/* ── Contextual Popup (60% scroll depth, once per session) ── */}
+      <ContextualPopup
+        triggerDepth={0.6}
+        title="Quick question"
+        text={`We can show you exactly how ${service.title} would work for your business — no commitment, just a conversation.`}
+        ctaText="Book a 30-min call"
+        serviceSlug={service.slug}
+      />
+
       <StickyCTA serviceTitle={service.title} />
     </div>
   );
