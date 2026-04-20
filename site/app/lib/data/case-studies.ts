@@ -61,6 +61,7 @@ function transformCaseStudy(study: any): CaseStudy | null {
     created_at: study.created_at,
     project_start_date: study.project_start_date,
     project_end_date: study.project_end_date,
+    gscSlug: study.custom_fields?.gsc_slug ?? null,
   };
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */

@@ -146,8 +146,8 @@ export function SEOBodySection() {
           dashboard within 4-6 weeks of launch - the same pattern that took
           NMHL from 14 indexed pages to 312 pages and 29,100 monthly
           impressions in 21 days. After deployment, the $1,500/month retainer
-          handles ongoing CTR optimization, content refresh, keyword expansion,
-          and weekly performance reporting from Josh.
+          (at the standard tier) handles ongoing CTR optimization, content
+          refresh, keyword expansion, and weekly performance reporting.
         </p>
 
         <p
@@ -186,7 +186,7 @@ export function SEOBodySection() {
               font: "inherit",
             }}
           >
-            book 15 minutes with Josh
+            book 15 minutes
           </button>{" "}
           to walk through what Phase 2 looks like for your specific industry.
         </p>

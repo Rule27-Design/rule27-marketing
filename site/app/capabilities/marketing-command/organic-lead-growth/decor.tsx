@@ -2,6 +2,19 @@
 
 import { motion } from "framer-motion";
 
+/** Global CSS class that hides any decorative element under 760px. Kept in
+ *  a singleton style tag so we only emit one media query rule no matter how
+ *  many decorative elements we render. */
+function DecorStyles() {
+  return (
+    <style>{`
+      @media (max-width: 760px) {
+        .olg-decor { display: none !important; }
+      }
+    `}</style>
+  );
+}
+
 /**
  * Subtle full-bleed accent strip - placed between sections to break up
  * the otherwise plain off-white background and add Lego-piece visual presence.
@@ -21,6 +34,7 @@ export function AccentStrip({
 
   return (
     <div
+      className="olg-decor"
       style={{
         position: "relative",
         height,
@@ -30,6 +44,7 @@ export function AccentStrip({
       }}
       aria-hidden="true"
     >
+      <DecorStyles />
       <div
         style={{
           position: "absolute",
@@ -90,18 +105,22 @@ export function AccentStrip({
  */
 export function DotGrid({ opacity = 0.05 }: { opacity?: number }) {
   return (
-    <div
-      aria-hidden="true"
-      style={{
-        position: "absolute",
-        inset: 0,
-        opacity,
-        backgroundImage:
-          "radial-gradient(circle, rgba(229,62,62,0.6) 1px, transparent 1px)",
-        backgroundSize: "24px 24px",
-        pointerEvents: "none",
-      }}
-    />
+    <>
+      <DecorStyles />
+      <div
+        aria-hidden="true"
+        className="olg-decor"
+        style={{
+          position: "absolute",
+          inset: 0,
+          opacity,
+          backgroundImage:
+            "radial-gradient(circle, rgba(229,62,62,0.6) 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+          pointerEvents: "none",
+        }}
+      />
+    </>
   );
 }
 
@@ -110,23 +129,86 @@ export function DotGrid({ opacity = 0.05 }: { opacity?: number }) {
  */
 export function DiagonalSweep() {
   return (
-    <motion.div
-      aria-hidden="true"
-      initial={{ opacity: 0, x: -40 }}
-      whileInView={{ opacity: 0.6, x: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 1, delay: 0.2 }}
-      style={{
-        position: "absolute",
-        top: "50%",
-        left: 0,
-        right: 0,
-        height: 1,
-        background:
-          "linear-gradient(90deg, transparent, rgba(229,62,62,0.3) 30%, rgba(229,62,62,0.6) 50%, rgba(229,62,62,0.3) 70%, transparent)",
-        transform: "rotate(-2deg)",
-        pointerEvents: "none",
-      }}
-    />
+    <>
+      <DecorStyles />
+      <motion.div
+        aria-hidden="true"
+        className="olg-decor"
+        initial={{ opacity: 0, x: -40 }}
+        whileInView={{ opacity: 0.6, x: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 1, delay: 0.2 }}
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: 0,
+          right: 0,
+          height: 1,
+          background:
+            "linear-gradient(90deg, transparent, rgba(229,62,62,0.3) 30%, rgba(229,62,62,0.6) 50%, rgba(229,62,62,0.3) 70%, transparent)",
+          transform: "rotate(-2deg)",
+          pointerEvents: "none",
+        }}
+      />
+    </>
+  );
+}
+
+/**
+ * Drifting graph-like SVG shapes — positioned absolute behind a section.
+ * Low opacity, slow drift. Purely atmospheric.
+ */
+export function FloatingGraphShapes({ count = 3 }: { count?: number }) {
+  return (
+    <>
+      <DecorStyles />
+      <div
+        aria-hidden="true"
+        className="olg-decor"
+        style={{
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          overflow: "hidden",
+          zIndex: 0,
+        }}
+      >
+        {Array.from({ length: count }).map((_, i) => (
+          <motion.svg
+            key={i}
+            viewBox="0 0 200 60"
+            preserveAspectRatio="none"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{
+              opacity: 0.12,
+              x: [0, i % 2 === 0 ? 14 : -14, 0],
+              y: [-8, 8, -8],
+            }}
+            transition={{
+              opacity: { duration: 1.4, delay: 0.2 * i },
+              x: { duration: 12 + i * 2, repeat: Infinity, ease: "easeInOut", delay: i * 0.8 },
+              y: { duration: 10 + i * 1.5, repeat: Infinity, ease: "easeInOut", delay: i * 0.4 },
+            }}
+            style={{
+              position: "absolute",
+              top: `${15 + i * 25}%`,
+              left: i % 2 === 0 ? "4%" : "auto",
+              right: i % 2 === 1 ? "4%" : "auto",
+              width: "40%",
+              height: 70,
+              filter: "blur(1.5px)",
+            }}
+          >
+            <path
+              d={`M 0 ${40 + i * 4} Q 25 ${30 - i * 4} 50 ${28 + i * 2} T 100 ${22 + i * 3} T 150 ${18 - i * 2} T 200 ${10 + i * 3}`}
+              stroke="rgba(229,62,62,0.5)"
+              strokeWidth={0.5}
+              fill="none"
+              vectorEffect="non-scaling-stroke"
+            />
+          </motion.svg>
+        ))}
+      </div>
+    </>
   );
 }

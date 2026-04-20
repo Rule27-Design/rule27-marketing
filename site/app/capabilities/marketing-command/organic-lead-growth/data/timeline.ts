@@ -46,7 +46,7 @@ export const WEEKS: WeekStep[] = [
     week: 4,
     label: "Complete + Handoff",
     title: "All 1,000+ pages live. Reporting starts.",
-    what: "Final pages deployed. Full handoff: Rule27 Studio CMS, AniltX, GSC, GA4. Dedicated Slack channel. First weekly performance report from Josh.",
+    what: "Final pages deployed. Full handoff: Rule27 Studio CMS, AniltX, GSC, GA4. Dedicated Slack channel. First weekly performance report from your account team.",
     deliverable: "1,000+ pages indexed. Retainer clock starts (30 days out).",
     metric: "1,000+",
     metricLabel: "pages live",
@@ -95,7 +95,7 @@ export const PHASES: Phase[] = [
     name: "SERP Validation",
     duration: "3-5 days",
     description:
-      "Query prioritization (P0/P1/P2), top-10 SERP analysis per query, content skeletons, validated CSV. THE GATE - Josh signs off before we move.",
+      "Query prioritization (P0/P1/P2), top-10 SERP analysis per query, content skeletons, validated CSV. THE GATE — we sign off before any deployment.",
     isGate: true,
   },
   {
@@ -138,6 +138,6 @@ export const PHASES: Phase[] = [
     name: "Monitoring + Optimization",
     duration: "Ongoing",
     description:
-      "Weekly reports from Josh. CTR optimization. Content refresh. Keyword expansion. Competitor watch. Slack support.",
+      "Weekly reports. CTR optimization. Content refresh. Keyword expansion. Competitor watch. Slack support.",
   },
 ];

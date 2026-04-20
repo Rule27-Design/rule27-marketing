@@ -1,22 +1,32 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip } from "@/app/components/Tooltip";
 import { GrowthGraph } from "./GrowthGraph";
-import type { ClientShowcaseData } from "./data/clients";
+import type { ClientEntry } from "./data/clients";
 import { TOOLTIPS } from "./data/copy";
 
 interface ClientShowcaseProps {
-  clients: ClientShowcaseData[];
+  clients: ClientEntry[];
+}
+
+function deriveDomain(meta: ClientEntry["data"]["meta"]): string {
+  // meta.name may be "NMHL" or "SolomonSignal.com" — derive a sensible domain string
+  const n = meta.name.toLowerCase();
+  if (n.includes(".")) return n;
+  return `${n}.com`;
 }
 
 export function ClientShowcase({ clients }: ClientShowcaseProps) {
-  const [activeId, setActiveId] = useState(clients[0]?.id ?? "");
-  const active = clients.find((c) => c.id === activeId) ?? clients[0];
+  const [activeSlug, setActiveSlug] = useState(clients[0]?.slug ?? "");
+  const active =
+    clients.find((c) => c.slug === activeSlug) ?? clients[0];
 
   if (!active) return null;
+
+  const { meta, summary, dataPoints } = active.data;
+  const domain = deriveDomain(meta);
 
   return (
     <div
@@ -67,12 +77,12 @@ export function ClientShowcase({ clients }: ClientShowcaseProps) {
           </span>
         </div>
 
-        {clients.map((client) => {
-          const isActive = client.id === activeId;
+        {clients.map((entry) => {
+          const isActive = entry.slug === activeSlug;
           return (
             <button
-              key={client.id}
-              onClick={() => setActiveId(client.id)}
+              key={entry.slug}
+              onClick={() => setActiveSlug(entry.slug)}
               style={{
                 textAlign: "left",
                 padding: "0.95rem 1.1rem",
@@ -87,7 +97,6 @@ export function ClientShowcase({ clients }: ClientShowcaseProps) {
                 display: "flex",
                 flexDirection: "column",
                 gap: "0.3rem",
-                position: "relative",
               }}
               onMouseEnter={(e) => {
                 if (!isActive)
@@ -97,35 +106,17 @@ export function ClientShowcase({ clients }: ClientShowcaseProps) {
                 if (!isActive) e.currentTarget.style.background = "transparent";
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <span
-                  style={{
-                    fontFamily: "'Steelfish', 'Impact', sans-serif",
-                    fontSize: "1.05rem",
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                    color: isActive ? "#111" : "rgba(0,0,0,0.78)",
-                  }}
-                >
-                  {client.name}
-                </span>
-                {client.realData && (
-                  <span
-                    style={{
-                      fontFamily: "Helvetica Neue, sans-serif",
-                      fontSize: 8,
-                      letterSpacing: "0.18em",
-                      textTransform: "uppercase",
-                      color: "#E53E3E",
-                      background: "rgba(229,62,62,0.08)",
-                      padding: "1px 5px",
-                      border: "1px solid rgba(229,62,62,0.2)",
-                    }}
-                  >
-                    Real
-                  </span>
-                )}
-              </div>
+              <span
+                style={{
+                  fontFamily: "'Steelfish', 'Impact', sans-serif",
+                  fontSize: "1.05rem",
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  color: isActive ? "#111" : "rgba(0,0,0,0.78)",
+                }}
+              >
+                {entry.data.meta.name}
+              </span>
               <span
                 style={{
                   fontFamily: "Helvetica Neue, sans-serif",
@@ -135,14 +126,14 @@ export function ClientShowcase({ clients }: ClientShowcaseProps) {
                   lineHeight: 1.4,
                 }}
               >
-                {client.micro}
+                {entry.data.meta.caseStudyHeadline} · {entry.data.meta.timeframeLabel}
               </span>
             </button>
           );
         })}
       </div>
 
-      {/* Right: graph + stats + story */}
+      {/* Right: graph + stats + headline */}
       <div
         style={{
           display: "flex",
@@ -153,14 +144,18 @@ export function ClientShowcase({ clients }: ClientShowcaseProps) {
       >
         <AnimatePresence mode="wait">
           <motion.div
-            key={active.id}
+            key={active.slug}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.4 }}
             style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
           >
-            <GrowthGraph daily={active.daily} domain={active.domain} height={420} />
+            <GrowthGraph
+              dataPoints={dataPoints}
+              domain={domain}
+              height={420}
+            />
 
             <div
               style={{
@@ -170,30 +165,29 @@ export function ClientShowcase({ clients }: ClientShowcaseProps) {
               }}
             >
               <ShowcaseStat
-                label="Pages before"
-                value={active.beforePages.toLocaleString()}
+                label="Pages deployed"
+                value={summary.pagesDeployed > 0 ? `${summary.pagesDeployed.toLocaleString()}+` : "—"}
                 tooltip={TOOLTIPS.pages_indexed}
               />
               <ShowcaseStat
-                label="Pages now"
-                value={active.afterPages.toLocaleString()}
-                tooltip={TOOLTIPS.pages_indexed}
+                label="Growth"
+                value={`${summary.growthMultiplier.toFixed(summary.growthMultiplier < 10 ? 1 : 0)}x`}
+                tooltip={TOOLTIPS.traffic_multiplier}
                 accent
               />
               <ShowcaseStat
-                label="Traffic multiplier"
-                value={active.trafficMultiplier}
-                tooltip={TOOLTIPS.traffic_multiplier}
+                label="Start / end impressions"
+                value={`${summary.startImpressions} → ${summary.endImpressions.toLocaleString()}/day`}
+                tooltip={TOOLTIPS.organic_traffic}
               />
               <ShowcaseStat
-                label="Est. monthly revenue"
-                value={`$${(active.monthlyRevenueEst / 1000).toFixed(1)}K`}
-                tooltip={TOOLTIPS.monthly_revenue}
+                label="Timeframe"
+                value={`${summary.timeframeDays} days`}
                 accent
               />
             </div>
 
-            {/* Story */}
+            {/* Headline callout */}
             <div
               style={{
                 background: "#FAF9F6",
@@ -237,50 +231,9 @@ export function ClientShowcase({ clients }: ClientShowcaseProps) {
                   lineHeight: 1.7,
                 }}
               >
-                {active.story}
+                {meta.description}
               </p>
             </div>
-
-            {/* Real-data proof image */}
-            {active.proofImage && (
-              <div
-                style={{
-                  background: "#0A0A0A",
-                  border: "1px solid rgba(229,62,62,0.2)",
-                  padding: "0.75rem",
-                  position: "relative",
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: "Helvetica Neue, sans-serif",
-                    fontSize: 9,
-                    letterSpacing: "0.22em",
-                    textTransform: "uppercase",
-                    color: "#E53E3E",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  ✓ Real GSC screenshot - {active.domain}
-                </div>
-                <div
-                  style={{
-                    position: "relative",
-                    width: "100%",
-                    aspectRatio: "16/9",
-                    overflow: "hidden",
-                  }}
-                >
-                  <Image
-                    src={active.proofImage}
-                    alt={`${active.name} GSC results`}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 700px"
-                    style={{ objectFit: "cover", objectPosition: "top" }}
-                  />
-                </div>
-              </div>
-            )}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -353,9 +306,9 @@ function ShowcaseStat({
       <div
         style={{
           fontFamily: "'Steelfish', 'Impact', sans-serif",
-          fontSize: "1.85rem",
+          fontSize: "1.45rem",
           color: accent ? "#E53E3E" : "#111",
-          lineHeight: 1,
+          lineHeight: 1.05,
           letterSpacing: "0.02em",
         }}
       >

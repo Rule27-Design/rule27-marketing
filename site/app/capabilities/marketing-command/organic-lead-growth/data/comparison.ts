@@ -26,7 +26,7 @@ export const COMPARISON: ComparisonRow[] = [
   },
   {
     dimension: "Weekly reporting",
-    rule27: "Real GSC + AniltX numbers, signed by Josh",
+    rule27: "Real GSC + AniltX numbers, signed by your account team",
     typical: "Vanity dashboard or PDF, monthly",
     rule27Wins: true,
   },

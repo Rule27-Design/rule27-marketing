@@ -64,17 +64,6 @@ export const ARTICLE_PREVIEWS = [
   },
 ];
 
-export const CASE_STUDY_QUOTE = {
-  client: "Vertex Roofing",
-  industry: "Home Services",
-  beforePages: 42,
-  afterPages: 418,
-  monthlyRevenue: "$14,200",
-  quote:
-    "We went from 42 pages and 350 visits a month to 418 pages capturing $14K/mo in organic leads. The work was structural - they showed us doors we didn't know we could open.",
-  attribution: "Marcus Hale, Owner",
-};
-
 export const DOWNLOADS = {
   playbook: {
     title: "Page Architecture Playbook",

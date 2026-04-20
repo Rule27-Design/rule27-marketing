@@ -1,67 +1,64 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { Tooltip } from "@/app/components/Tooltip";
-import type { CompetitorExample, IndustryContent } from "./data/industries";
+import type { IndustryContent } from "./data/industries";
+import type { MagnetReport } from "./data/magnet";
 import { TOOLTIPS } from "./data/copy";
 
 interface GapVisualizationProps {
   industry: IndustryContent;
-  /** Lead identifier passed in from UTMs - used to fetch real magnet data from Odoo. */
-  leadId?: string | null;
-  domain?: string | null;
+  /** When UTM identifies a lead with a magnet report, pass the full payload.
+   *  The visualization renders their actual competitor data instead of
+   *  industry defaults, and the section gets a "Live data" badge. */
+  magnet?: MagnetReport | null;
 }
 
-interface OdooMagnetData {
-  yourPages: number;
-  competitors: CompetitorExample[];
-}
-
-/**
- * STUB: when wired, this hook calls the Odoo magnet endpoint with the lead's
- * UTM identifier (or domain) and returns the actual scraped competitor + page
- * data for that lead. Until then, returns null and the component falls back
- * to industry defaults.
- *
- * Wiring path (Phase 2):
- *   1. Add NEXT_PUBLIC_ODOO_MAGNET_URL to env
- *   2. Replace the body below with:
- *        const res = await fetch(`${process.env.NEXT_PUBLIC_ODOO_MAGNET_URL}?lead_id=${leadId}&domain=${domain}`);
- *        return res.ok ? res.json() : null;
- *   3. Optionally add SWR/React Query for caching
- */
-function useOdooMagnetData(
-  leadId: string | null | undefined,
-  domain: string | null | undefined,
-): OdooMagnetData | null {
-  const [data, setData] = useState<OdooMagnetData | null>(null);
-
-  useEffect(() => {
-    if (!leadId && !domain) return;
-    // TODO: wire to Odoo when endpoint URL is provided
-    // fetch(`${process.env.NEXT_PUBLIC_ODOO_MAGNET_URL}?lead_id=${leadId}&domain=${domain}`)
-    //   .then(r => r.ok ? r.json() : null)
-    //   .then(setData);
-    setData(null);
-  }, [leadId, domain]);
-
-  return data;
-}
-
-export function GapVisualization({ industry, leadId, domain }: GapVisualizationProps) {
+export function GapVisualization({ industry, magnet }: GapVisualizationProps) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
-  const live = useOdooMagnetData(leadId, domain);
-  const isLive = !!live;
+  const isLive = !!magnet;
 
-  const yourLow = live?.yourPages ?? industry.avgPagesLow;
-  const yourHigh = live?.yourPages ?? industry.avgPagesHigh;
-  const competitors = live?.competitors ?? industry.topCompetitors;
-  const max = Math.max(yourHigh, ...competitors.map((c) => c.pages));
+  // Data source — live magnet wins, else industry defaults
+  const yourValue = magnet
+    ? magnet.siteMetrics.pagesIndexed
+    : (industry.avgPagesLow + industry.avgPagesHigh) / 2;
+  const yourLabel = magnet
+    ? `${magnet.companyName} · ${magnet.siteMetrics.pagesIndexed} pages`
+    : `Average ${industry.shortName}`;
+  const yourSubLabel = magnet
+    ? "Your actual indexed pages (via GSC)"
+    : "That's likely you";
+  const yourValueLabel = magnet
+    ? `${magnet.siteMetrics.pagesIndexed.toLocaleString()} pages`
+    : `${industry.avgPagesLow}–${industry.avgPagesHigh} pages`;
 
-  const yourBar = ((yourLow + yourHigh) / 2 / max) * 100;
+  const competitors = magnet
+    ? magnet.competitors.map((c) => ({
+        name: c.name,
+        pages: c.pagesIndexed,
+        monthlyRevenueEst: 0,
+        estimatedTraffic: c.estimatedTraffic,
+      }))
+    : industry.topCompetitors.map((c) => ({
+        name: c.name,
+        pages: c.pages,
+        monthlyRevenueEst: c.monthlyRevenueEst,
+        estimatedTraffic: 0,
+      }));
+
+  const max = Math.max(yourValue, ...competitors.map((c) => c.pages));
+  const yourBar = (yourValue / max) * 100;
+
+  const title = magnet
+    ? `The ${magnet.industry.toLowerCase()} gap — your actual numbers`
+    : `The ${industry.shortName} gap`;
+
+  const subtitle = magnet
+    ? `${magnet.keywordGapCount.toLocaleString()} keywords your competitors rank for that you don't. Sourced from your live GSC data and our SERP analysis on ${magnet.reportDate}.`
+    : `The average ${industry.shortName} business has ${industry.avgPagesLow}–${industry.avgPagesHigh} indexed pages. Here's what the names dominating your search results look like.`;
 
   return (
     <div ref={ref} style={{ width: "100%" }}>
@@ -95,7 +92,7 @@ export function GapVisualization({ industry, leadId, domain }: GapVisualizationP
               margin: 0,
             }}
           >
-            The {industry.shortName} gap
+            {title}
           </h3>
           {isLive && (
             <span
@@ -115,12 +112,13 @@ export function GapVisualization({ industry, leadId, domain }: GapVisualizationP
             >
               <span
                 style={{
+                  position: "relative",
                   width: 5,
                   height: 5,
                   borderRadius: "50%",
                   background: "#E53E3E",
                   display: "inline-block",
-                  animation: "pulse-dot 2s ease-in-out infinite",
+                  boxShadow: "0 0 8px rgba(229,62,62,0.7)",
                 }}
               />
               Live data
@@ -133,22 +131,19 @@ export function GapVisualization({ industry, leadId, domain }: GapVisualizationP
             fontSize: "0.95rem",
             color: "rgba(0,0,0,0.55)",
             margin: 0,
-            maxWidth: 560,
+            maxWidth: 620,
             lineHeight: 1.6,
           }}
         >
-          The average {industry.shortName} business has {yourLow}–{yourHigh}{" "}
-          indexed pages. Here&apos;s what the names dominating your search
-          results look like.
+          {subtitle}
         </p>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        {/* Your bar */}
         <BarRow
-          label={`Average ${industry.shortName}`}
-          subLabel="That's likely you"
-          value={`${yourLow}–${yourHigh} pages`}
+          label={yourLabel}
+          subLabel={yourSubLabel}
+          value={yourValueLabel}
           width={yourBar}
           color="rgba(0,0,0,0.18)"
           textColor="rgba(0,0,0,0.6)"
@@ -157,7 +152,6 @@ export function GapVisualization({ industry, leadId, domain }: GapVisualizationP
           isYou
         />
 
-        {/* Competitor bars */}
         {competitors.map((comp, i) => {
           const width = (comp.pages / max) * 100;
           return (
@@ -165,28 +159,118 @@ export function GapVisualization({ industry, leadId, domain }: GapVisualizationP
               key={comp.name}
               label={comp.name}
               subLabel={
-                comp.monthlyRevenueEst > 0
-                  ? `~$${(comp.monthlyRevenueEst / 1000).toFixed(0)}K/mo organic`
-                  : "Industry authority site"
+                comp.estimatedTraffic > 0
+                  ? `~${comp.estimatedTraffic.toLocaleString()} visits / mo`
+                  : comp.monthlyRevenueEst > 0
+                    ? `~$${(comp.monthlyRevenueEst / 1000).toFixed(0)}K/mo organic`
+                    : "Industry authority"
               }
               value={
                 <span style={{ display: "inline-flex", alignItems: "center" }}>
                   {comp.pages.toLocaleString()} pages
-                  <Tooltip
-                    content={TOOLTIPS.competitor_pages}
-                    position="top"
-                  />
+                  <Tooltip content={TOOLTIPS.competitor_pages} position="top" />
                 </span>
               }
               width={width}
               color="#E53E3E"
               textColor="#111"
               inView={inView}
-              delay={0.25 + i * 0.15}
+              delay={0.25 + i * 0.12}
             />
           );
         })}
       </div>
+
+      {/* Live formula steps when magnet payload is present */}
+      {magnet && (
+        <div
+          style={{
+            marginTop: "2rem",
+            padding: "1.25rem 1.5rem",
+            background:
+              "linear-gradient(135deg, rgba(229,62,62,0.05), rgba(229,62,62,0.01))",
+            border: "1px solid rgba(229,62,62,0.18)",
+            borderLeft: "3px solid #E53E3E",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "1rem",
+              marginBottom: "1rem",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "Helvetica Neue, sans-serif",
+                fontSize: 10,
+                letterSpacing: "0.24em",
+                textTransform: "uppercase",
+                color: "#E53E3E",
+              }}
+            >
+              Revenue you&apos;re missing — your math
+            </div>
+            <div
+              style={{
+                fontFamily: "'Steelfish', 'Impact', sans-serif",
+                fontSize: "clamp(1.5rem, 3.5vw, 2.25rem)",
+                color: "#E53E3E",
+                lineHeight: 1,
+              }}
+            >
+              ${magnet.revenueEstimate.monthlyRevenue.toLocaleString()}/mo
+            </div>
+          </div>
+          <ol
+            style={{
+              listStyle: "none",
+              counterReset: "step",
+              padding: 0,
+              margin: 0,
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.6rem",
+            }}
+          >
+            {magnet.revenueEstimate.formulaSteps.map((step, i) => (
+              <li
+                key={i}
+                style={{
+                  display: "flex",
+                  gap: "0.75rem",
+                  fontFamily: "Helvetica Neue, sans-serif",
+                  fontSize: "0.85rem",
+                  color: "rgba(0,0,0,0.7)",
+                  lineHeight: 1.6,
+                }}
+              >
+                <span
+                  style={{
+                    flexShrink: 0,
+                    width: 22,
+                    height: 22,
+                    borderRadius: "50%",
+                    background: "#E53E3E",
+                    color: "#FFFFFF",
+                    fontFamily: "'Steelfish', 'Impact', sans-serif",
+                    fontSize: 11,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {i + 1}
+                </span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
     </div>
   );
 }
@@ -292,7 +376,6 @@ function BarRow({
           style={{
             height: "100%",
             background: color,
-            position: "relative",
           }}
         />
       </div>

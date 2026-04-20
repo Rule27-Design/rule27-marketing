@@ -41,7 +41,7 @@ export function TeamCards() {
             lineHeight: 1.05,
           }}
         >
-          Three humans. Zero outsourcing. Real names.
+          Two humans. Zero outsourcing. The whole engine.
         </h2>
         <p
           style={{

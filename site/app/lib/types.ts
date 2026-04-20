@@ -76,6 +76,10 @@ export interface CaseStudy {
   created_at: string;
   project_start_date: string | null;
   project_end_date: string | null;
+  /** When set, the case study renders the live GSC graph (from
+   *  /lib/gsc-data/) as the hero instead of the image gallery.
+   *  Sourced from `case_studies.custom_fields.gsc_slug` in Supabase. */
+  gscSlug?: string | null;
 }
 
 /** Lightweight shape used on the homepage hero. */

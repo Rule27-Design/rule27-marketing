@@ -2,12 +2,13 @@
 
 import { useMemo, useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import type { DailyPoint } from "./data/clients";
+import type { GSCDataPoint } from "@/app/lib/gsc-data";
 
 interface GrowthGraphProps {
-  daily: DailyPoint[];
+  dataPoints: GSCDataPoint[];
   domain: string;
   height?: number;
+  showClicks?: boolean;
 }
 
 const SVG_W = 900;
@@ -23,69 +24,133 @@ function formatNum(n: number): string {
   return Math.round(n).toString();
 }
 
-function dateLabel(daysAgo: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() - daysAgo);
+function formatDate(iso: string): string {
+  const d = new Date(iso + "T00:00:00");
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-export function GrowthGraph({ daily, domain, height = 420 }: GrowthGraphProps) {
+/**
+ * Samples an array down to roughly targetLen points by picking evenly-spaced
+ * indices. Keeps first and last. Used to reduce huge GSC exports (200+ days)
+ * into something renderable without distorting the curve.
+ */
+function sample<T>(arr: T[], targetLen: number): T[] {
+  if (arr.length <= targetLen) return arr;
+  const result: T[] = [];
+  const step = (arr.length - 1) / (targetLen - 1);
+  for (let i = 0; i < targetLen; i++) {
+    result.push(arr[Math.round(i * step)]);
+  }
+  return result;
+}
+
+export function GrowthGraph({
+  dataPoints,
+  domain,
+  height = 420,
+  showClicks = true,
+}: GrowthGraphProps) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
-  const { path, area, dots, max, total, peakIndex } = useMemo(() => {
-    if (daily.length < 2) {
-      return { path: "", area: "", dots: [], max: 1, total: 0, peakIndex: 0 };
+  const {
+    impressionsPath,
+    impressionsArea,
+    clicksPath,
+    yTicks,
+    xTicks,
+    peak,
+    totalImpressions,
+    totalClicks,
+    avgCtr,
+    firstDate,
+    lastDate,
+  } = useMemo(() => {
+    if (dataPoints.length < 2) {
+      return {
+        impressionsPath: "",
+        impressionsArea: "",
+        clicksPath: "",
+        yTicks: [],
+        xTicks: [],
+        peak: null as { x: number; y: number; v: number; date: string } | null,
+        totalImpressions: 0,
+        totalClicks: 0,
+        avgCtr: 0,
+        firstDate: "",
+        lastDate: "",
+      };
     }
-    const max = Math.max(...daily.map((p) => p.v));
-    const stepX = (SVG_W - PAD_LEFT - PAD_RIGHT) / (daily.length - 1);
+
+    const sampled = sample(dataPoints, 120);
+    const maxImpr = Math.max(...sampled.map((p) => p.impressions));
+    const maxClicks = Math.max(...sampled.map((p) => p.clicks));
+    const stepX = (SVG_W - PAD_LEFT - PAD_RIGHT) / (sampled.length - 1);
     const innerH = SVG_H - PAD_TOP - PAD_BOTTOM;
 
-    const dots = daily.map((p, i) => ({
+    const impressionCoords = sampled.map((p, i) => ({
       x: PAD_LEFT + i * stepX,
-      y: PAD_TOP + innerH - (p.v / max) * innerH,
-      v: p.v,
-      d: p.d,
+      y: PAD_TOP + innerH - (p.impressions / Math.max(1, maxImpr)) * innerH,
+      v: p.impressions,
+      date: p.date,
     }));
 
-    const path = dots
+    const clickCoords = sampled.map((p, i) => ({
+      x: PAD_LEFT + i * stepX,
+      y: PAD_TOP + innerH - (p.clicks / Math.max(1, maxClicks)) * innerH,
+    }));
+
+    const impressionsPath = impressionCoords
       .map((pt, i) => `${i === 0 ? "M" : "L"}${pt.x.toFixed(1)},${pt.y.toFixed(1)}`)
       .join(" ");
-    const area = `${path} L${dots[dots.length - 1].x.toFixed(1)},${(SVG_H - PAD_BOTTOM).toFixed(1)} L${PAD_LEFT},${(SVG_H - PAD_BOTTOM).toFixed(1)} Z`;
-    const total = daily.reduce((sum, p) => sum + p.v, 0);
-    const peakIndex = daily.reduce(
-      (best, p, i) => (p.v > daily[best].v ? i : best),
+    const lastPt = impressionCoords[impressionCoords.length - 1];
+    const impressionsArea = `${impressionsPath} L${lastPt.x.toFixed(1)},${(SVG_H - PAD_BOTTOM).toFixed(1)} L${PAD_LEFT},${(SVG_H - PAD_BOTTOM).toFixed(1)} Z`;
+    const clicksPath = clickCoords
+      .map((pt, i) => `${i === 0 ? "M" : "L"}${pt.x.toFixed(1)},${pt.y.toFixed(1)}`)
+      .join(" ");
+
+    const peakIdx = impressionCoords.reduce(
+      (best, p, i) => (p.v > impressionCoords[best].v ? i : best),
       0,
     );
+    const peak = impressionCoords[peakIdx];
 
-    return { path, area, dots, max, total, peakIndex };
-  }, [daily]);
-
-  const yTicks = useMemo(() => {
-    const ticks: { y: number; label: string }[] = [];
-    const innerH = SVG_H - PAD_TOP - PAD_BOTTOM;
+    const yTicks: { y: number; label: string }[] = [];
     for (let i = 0; i <= 4; i++) {
-      const v = (max / 4) * i;
-      ticks.push({
-        y: PAD_TOP + innerH - (v / max) * innerH,
+      const v = (maxImpr / 4) * i;
+      yTicks.push({
+        y: PAD_TOP + innerH - (v / Math.max(1, maxImpr)) * innerH,
         label: formatNum(v),
       });
     }
-    return ticks.reverse();
-  }, [max]);
+    yTicks.reverse();
 
-  const xTicks = useMemo(() => {
-    if (dots.length === 0) return [];
-    const step = Math.floor(dots.length / 6) || 1;
-    return dots
-      .filter((_, i) => i % step === 0 || i === dots.length - 1)
-      .map((p) => ({
-        x: p.x,
-        label: dateLabel(daily.length - 1 - p.d),
-      }));
-  }, [dots, daily.length]);
+    const xTickStep = Math.max(1, Math.floor(impressionCoords.length / 6));
+    const xTicks = impressionCoords
+      .filter((_, i) => i % xTickStep === 0 || i === impressionCoords.length - 1)
+      .map((p) => ({ x: p.x, label: formatDate(p.date) }));
 
-  const peak = dots[peakIndex];
+    const totalImpressions = dataPoints.reduce(
+      (sum, p) => sum + p.impressions,
+      0,
+    );
+    const totalClicks = dataPoints.reduce((sum, p) => sum + p.clicks, 0);
+    const avgCtr = totalImpressions > 0 ? totalClicks / totalImpressions : 0;
+
+    return {
+      impressionsPath,
+      impressionsArea,
+      clicksPath,
+      yTicks,
+      xTicks,
+      peak,
+      totalImpressions,
+      totalClicks,
+      avgCtr,
+      firstDate: dataPoints[0].date,
+      lastDate: dataPoints[dataPoints.length - 1].date,
+    };
+  }, [dataPoints]);
 
   return (
     <div
@@ -126,7 +191,7 @@ export function GrowthGraph({ daily, domain, height = 420 }: GrowthGraphProps) {
           }}
         >
           <span style={{ color: "#4285F4", fontWeight: 600 }}>Google</span>{" "}
-          Search Console - Performance
+          Search Console — Performance
           <span
             style={{
               marginLeft: 12,
@@ -153,12 +218,20 @@ export function GrowthGraph({ daily, domain, height = 420 }: GrowthGraphProps) {
           borderBottom: "1px solid rgba(0,0,0,0.04)",
         }}
       >
-        <ToolbarPill label="Date range" value="Last 21 days" />
+        <ToolbarPill
+          label="Date range"
+          value={
+            firstDate && lastDate
+              ? `${formatDate(firstDate)} – ${formatDate(lastDate)}`
+              : "—"
+          }
+        />
         <ToolbarPill label="Metric" value="Total impressions" accent />
-        <ToolbarPill label="Comparison" value="No comparison" />
+        {showClicks && <ToolbarPill label="Overlay" value="Total clicks" />}
         <div style={{ marginLeft: "auto", display: "flex", gap: 18 }}>
-          <Headline label="Impressions" value={formatNum(total)} />
-          <Headline label="Peak day" value={formatNum(peak?.v ?? 0)} accent />
+          <Headline label="Total impressions" value={formatNum(totalImpressions)} accent />
+          <Headline label="Total clicks" value={formatNum(totalClicks)} />
+          <Headline label="Avg CTR" value={`${(avgCtr * 100).toFixed(1)}%`} />
         </div>
       </div>
 
@@ -224,16 +297,32 @@ export function GrowthGraph({ daily, domain, height = 420 }: GrowthGraphProps) {
 
           {/* Area fill */}
           <motion.path
-            d={area}
+            d={impressionsArea}
             fill="url(#gscFill)"
             initial={{ opacity: 0 }}
             animate={inView ? { opacity: 1 } : {}}
             transition={{ duration: 0.9, delay: 0.5 }}
           />
 
-          {/* Line */}
+          {/* Clicks overlay */}
+          {showClicks && (
+            <motion.path
+              d={clicksPath}
+              stroke="rgba(66,133,244,0.55)"
+              strokeWidth={1.2}
+              fill="none"
+              strokeDasharray="3 2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              initial={{ pathLength: 0 }}
+              animate={inView ? { pathLength: 1 } : {}}
+              transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+            />
+          )}
+
+          {/* Impressions line */}
           <motion.path
-            d={path}
+            d={impressionsPath}
             stroke="#E53E3E"
             strokeWidth={2.5}
             fill="none"
@@ -244,32 +333,20 @@ export function GrowthGraph({ daily, domain, height = 420 }: GrowthGraphProps) {
             transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
           />
 
-          {/* Day dots */}
-          {inView &&
-            dots.map((p, i) => (
-              <motion.circle
-                key={i}
-                cx={p.x}
-                cy={p.y}
-                r={2.5}
-                fill="#E53E3E"
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 0.85, scale: 1 }}
-                transition={{
-                  duration: 0.25,
-                  delay: 0.6 + i * 0.045,
-                }}
-              />
-            ))}
-
           {/* Peak callout */}
           {inView && peak && (
             <motion.g
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 1.6 + dots.length * 0.045 }}
+              transition={{ duration: 0.5, delay: 1.7 }}
             >
-              <circle cx={peak.x} cy={peak.y} r={6} fill="#E53E3E" filter="url(#gscGlow)" />
+              <circle
+                cx={peak.x}
+                cy={peak.y}
+                r={6}
+                fill="#E53E3E"
+                filter="url(#gscGlow)"
+              />
               <line
                 x1={peak.x}
                 y1={peak.y - 10}
@@ -280,9 +357,9 @@ export function GrowthGraph({ daily, domain, height = 420 }: GrowthGraphProps) {
                 strokeDasharray="2 3"
               />
               <rect
-                x={peak.x - 52}
+                x={peak.x - 60}
                 y={peak.y - 60}
-                width={104}
+                width={120}
                 height={22}
                 fill="#111111"
                 rx={2}
@@ -296,7 +373,7 @@ export function GrowthGraph({ daily, domain, height = 420 }: GrowthGraphProps) {
                 fontFamily="Helvetica Neue, sans-serif"
                 fontWeight={600}
               >
-                Peak: {formatNum(peak.v)} imp
+                Peak: {formatNum(peak.v)} impr · {formatDate(peak.date)}
               </text>
             </motion.g>
           )}

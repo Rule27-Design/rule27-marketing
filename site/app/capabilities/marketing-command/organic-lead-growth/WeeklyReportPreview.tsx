@@ -68,7 +68,7 @@ export function WeeklyReportPreview() {
               lineHeight: 1.05,
             }}
           >
-            A real report. Signed by Josh. Numbers from your GSC.
+            A real report. Signed by your account team. Numbers from your GSC.
           </h2>
           <p
             style={{
@@ -79,9 +79,10 @@ export function WeeklyReportPreview() {
               lineHeight: 1.7,
             }}
           >
-            Every retainer week, Josh hand-validates your numbers and writes 3-5
-            insights - what worked, what to watch, what to do next. No vanity
-            dashboards. No exported PDFs from a tool you can&apos;t verify.
+            Every retainer week, your account team hand-validates your numbers
+            and writes 3-5 insights — what worked, what to watch, what to do
+            next. No vanity dashboards. No exported PDFs from a tool you
+            can&apos;t verify.
           </p>
 
           <ul
@@ -100,7 +101,7 @@ export function WeeklyReportPreview() {
               "Top 10 queries by impressions with position trend",
               "Identified leads with intent score (via AniltX)",
               "Technical health (Core Web Vitals, indexing status)",
-              "3-5 next steps from Josh - not auto-generated",
+              "3-5 next steps from your account team — not auto-generated",
             ].map((line) => (
               <li
                 key={line}
@@ -338,16 +339,18 @@ export function WeeklyReportPreview() {
                   height: 24,
                   borderRadius: "50%",
                   background: "#0A0A0A",
-                  color: "#FFFFFF",
+                  border: "1px solid rgba(229,62,62,0.4)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontFamily: "'Steelfish', 'Impact', sans-serif",
-                  fontSize: 10,
-                  letterSpacing: "0.08em",
                 }}
               >
-                JA
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#E53E3E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
               </div>
               <div
                 style={{
@@ -358,7 +361,7 @@ export function WeeklyReportPreview() {
                   color: "rgba(0,0,0,0.45)",
                 }}
               >
-                From Josh
+                From your team
               </div>
             </div>
             <p

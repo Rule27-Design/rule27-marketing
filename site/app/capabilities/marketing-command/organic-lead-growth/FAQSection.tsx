@@ -189,7 +189,7 @@ export function FAQSection() {
             gap: "0.5rem",
           }}
         >
-          Book 15 minutes with Josh
+          Book 15 minutes
           <svg
             width="14"
             height="14"

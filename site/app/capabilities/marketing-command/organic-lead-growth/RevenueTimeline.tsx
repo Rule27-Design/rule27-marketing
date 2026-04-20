@@ -457,10 +457,11 @@ function PhaseFlow({ inView }: { inView: boolean }) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+          gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
           gap: "0.6rem",
           position: "relative",
         }}
+        className="olg-phase-grid"
       >
         {PHASES.map((p, i) => (
           <motion.div
@@ -567,6 +568,19 @@ function PhaseFlow({ inView }: { inView: boolean }) {
         Hover any phase for the detail. Phase 2 (SERP Validation) is the gate.
         Every other agency&apos;s failed deployment we&apos;ve seen skipped it.
       </p>
+
+      <style>{`
+        @media (max-width: 760px) {
+          .olg-phase-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+        }
+        @media (max-width: 420px) {
+          .olg-phase-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
