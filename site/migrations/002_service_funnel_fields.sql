@@ -37,10 +37,10 @@ ALTER TABLE public.services ADD COLUMN IF NOT EXISTS conversion_breaks jsonb DEF
 ALTER TABLE public.services ADD COLUMN IF NOT EXISTS tooltip_definitions jsonb DEFAULT '{}';
 -- Format: {
 --   "pages_indexed": "Each page is a door to a customer searching for what you sell. More pages = more doors.",
---   "organic_traffic": "Visitors who find you through Google search — not ads, not social, not referrals.",
---   "conversion_rate": "The percentage of visitors who take a desired action — call, form fill, purchase."
+--   "organic_traffic": "Visitors who find you through Google search - not ads, not social, not referrals.",
+--   "conversion_rate": "The percentage of visitors who take a desired action - call, form fill, purchase."
 -- }
 
 -- ============================================================================
--- DONE. All fields are optional — services without data render as before.
+-- DONE. All fields are optional - services without data render as before.
 -- ============================================================================

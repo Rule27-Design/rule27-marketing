@@ -5,7 +5,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
 export const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
 
-// Only create the client if credentials exist — prevents build-time crashes
+// Only create the client if credentials exist - prevents build-time crashes
 export const supabase: SupabaseClient = supabaseEnabled
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: { persistSession: false, autoRefreshToken: false },

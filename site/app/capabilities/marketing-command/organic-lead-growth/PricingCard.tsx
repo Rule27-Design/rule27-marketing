@@ -30,7 +30,7 @@ export function PricingCard() {
             marginBottom: "1rem",
           }}
         >
-          Pricing — fully exposed
+          Pricing - fully exposed
         </div>
         <h2
           style={{
@@ -57,7 +57,7 @@ export function PricingCard() {
           }}
         >
           Same scope, same price for every client. The only thing that varies
-          is the size of your industry — see the{" "}
+          is the size of your industry - see the{" "}
           <a href="#domain-capture" style={{ color: "#E53E3E" }}>
             page-count benchmarks above
           </a>{" "}

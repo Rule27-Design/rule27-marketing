@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getArticles, getArticleFilters } from "@/app/lib/data/articles";
 import ArticlesView from "./components/ArticlesView";
 
-// Render on each request — article list is too large to pre-render
+// Render on each request - article list is too large to pre-render
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {

@@ -14,7 +14,7 @@ export const COMPARISON: ComparisonRow[] = [
   },
   {
     dimension: "SERP validation gate",
-    rule27: "Phase 2 — non-negotiable, every engagement",
+    rule27: "Phase 2 - non-negotiable, every engagement",
     typical: "Skipped or done 'directionally'",
     rule27Wins: true,
   },
@@ -38,7 +38,7 @@ export const COMPARISON: ComparisonRow[] = [
   },
   {
     dimension: "Real client data shared",
-    rule27: "NMHL, FreedomDev, AniltX — exact numbers, exact methods",
+    rule27: "NMHL, FreedomDev, AniltX - exact numbers, exact methods",
     typical: "Anonymous case studies, no metrics",
     rule27Wins: true,
   },

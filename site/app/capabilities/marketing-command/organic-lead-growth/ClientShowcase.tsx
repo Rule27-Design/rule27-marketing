@@ -261,7 +261,7 @@ export function ClientShowcase({ clients }: ClientShowcaseProps) {
                     marginBottom: "0.5rem",
                   }}
                 >
-                  ✓ Real GSC screenshot — {active.domain}
+                  ✓ Real GSC screenshot - {active.domain}
                 </div>
                 <div
                   style={{

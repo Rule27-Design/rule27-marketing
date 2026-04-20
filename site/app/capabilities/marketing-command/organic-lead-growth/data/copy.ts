@@ -8,7 +8,7 @@ export const TOOLTIPS = {
   pages_indexed:
     "Each page is a door to a customer searching for what you sell. More pages = more doors.",
   organic_traffic:
-    "Visitors who find you through Google search — not ads, not social, not referrals.",
+    "Visitors who find you through Google search - not ads, not social, not referrals.",
   traffic_multiplier:
     "How many times more traffic the client receives now versus before we restructured their site.",
   monthly_revenue:
@@ -16,7 +16,7 @@ export const TOOLTIPS = {
   competitor_pages:
     "The number of indexed pages your top competitors have, each one targeting a specific search query a real buyer is making.",
   competitor_revenue:
-    "Estimated monthly revenue your top 3 competitors are capturing through organic search alone — money currently flowing to them, not you.",
+    "Estimated monthly revenue your top 3 competitors are capturing through organic search alone - money currently flowing to them, not you.",
   domain_capture:
     "We'll analyze your indexed pages, top organic keywords, and the gap between you and your top 3 local competitors. Delivered in under 60 minutes.",
 };
@@ -43,7 +43,7 @@ export const ARTICLE_PREVIEWS = [
     title:
       "Why your competitor's 3,000-page website is eating your lunch",
     excerpt:
-      "Page count isn't a vanity metric — it's a search-share multiplier. Here's the math behind why architecture beats content.",
+      "Page count isn't a vanity metric - it's a search-share multiplier. Here's the math behind why architecture beats content.",
     readMin: 6,
   },
   {
@@ -71,7 +71,7 @@ export const CASE_STUDY_QUOTE = {
   afterPages: 418,
   monthlyRevenue: "$14,200",
   quote:
-    "We went from 42 pages and 350 visits a month to 418 pages capturing $14K/mo in organic leads. The work was structural — they showed us doors we didn't know we could open.",
+    "We went from 42 pages and 350 visits a month to 418 pages capturing $14K/mo in organic leads. The work was structural - they showed us doors we didn't know we could open.",
   attribution: "Marcus Hale, Owner",
 };
 

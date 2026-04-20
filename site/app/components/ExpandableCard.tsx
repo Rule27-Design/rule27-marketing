@@ -23,7 +23,7 @@ export function ExpandableCard({ title, preview, children, defaultOpen = false }
         overflow: "hidden",
       }}
     >
-      {/* Header — clickable */}
+      {/* Header - clickable */}
       <button
         onClick={() => setOpen((v) => !v)}
         style={{

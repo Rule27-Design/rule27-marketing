@@ -8,7 +8,7 @@ interface TableProps {
 }
 
 /**
- * R27Table — RULE27 Data Table component.
+ * R27Table - RULE27 Data Table component.
  * Matches the Theme Component Display exactly:
  * - Red uppercase Steelfish headers with 2px red bottom border
  * - Subtle red-tinted header background

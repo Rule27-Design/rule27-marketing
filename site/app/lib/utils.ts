@@ -2,7 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 // ---------------------------------------------------------------------------
-// cn — Tailwind-aware class-name merger (clsx + tailwind-merge)
+// cn - Tailwind-aware class-name merger (clsx + tailwind-merge)
 // ---------------------------------------------------------------------------
 
 export function cn(...inputs: ClassValue[]) {
@@ -10,7 +10,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // ---------------------------------------------------------------------------
-// formatDate — human-readable date string
+// formatDate - human-readable date string
 // ---------------------------------------------------------------------------
 
 const MONTHS_SHORT = [
@@ -89,7 +89,7 @@ export function formatDate(
 }
 
 // ---------------------------------------------------------------------------
-// generateSlug — URL-friendly slug from any text
+// generateSlug - URL-friendly slug from any text
 // ---------------------------------------------------------------------------
 
 export function generateSlug(text: string): string {
@@ -198,7 +198,7 @@ export function extractTextFromRichText(
 
       return { html: null, text: richText };
     } catch {
-      // Not valid JSON — treat as plain text.
+      // Not valid JSON - treat as plain text.
       return { html: null, text: richText };
     }
   }
@@ -236,7 +236,7 @@ export function extractPlainText(richText: unknown): string {
 }
 
 // ---------------------------------------------------------------------------
-// calculateReadTime — estimated minutes to read a block of text
+// calculateReadTime - estimated minutes to read a block of text
 // ---------------------------------------------------------------------------
 
 export function calculateReadTime(

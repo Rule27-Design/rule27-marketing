@@ -13,7 +13,7 @@ interface CardProps {
 }
 
 /**
- * R27Card — RULE27 Primary Card with WaveBorder animation.
+ * R27Card - RULE27 Primary Card with WaveBorder animation.
  * Matches the Theme Component Display's R27Card exactly.
  */
 export function Card({
@@ -98,7 +98,7 @@ export function Card({
 }
 
 /**
- * R27StatCard — RULE27 Statistics Card with red top border.
+ * R27StatCard - RULE27 Statistics Card with red top border.
  * Matches the Theme Component Display's R27StatCard exactly.
  */
 export function StatCard({

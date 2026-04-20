@@ -80,7 +80,7 @@ export function WeeklyReportPreview() {
             }}
           >
             Every retainer week, Josh hand-validates your numbers and writes 3-5
-            insights — what worked, what to watch, what to do next. No vanity
+            insights - what worked, what to watch, what to do next. No vanity
             dashboards. No exported PDFs from a tool you can&apos;t verify.
           </p>
 
@@ -100,7 +100,7 @@ export function WeeklyReportPreview() {
               "Top 10 queries by impressions with position trend",
               "Identified leads with intent score (via AniltX)",
               "Technical health (Core Web Vitals, indexing status)",
-              "3-5 next steps from Josh — not auto-generated",
+              "3-5 next steps from Josh - not auto-generated",
             ].map((line) => (
               <li
                 key={line}

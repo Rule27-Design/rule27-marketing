@@ -117,7 +117,7 @@ export function RevenueCounter({
           fontStyle: "italic",
         }}
       >
-        — captured by your competitors. Right now.
+        - captured by your competitors. Right now.
       </div>
     </div>
   );

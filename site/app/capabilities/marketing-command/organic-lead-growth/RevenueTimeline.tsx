@@ -47,7 +47,7 @@ export function RevenueTimeline() {
             lineHeight: 1.05,
           }}
         >
-          From contract to indexed pages — 28 days flat.
+          From contract to indexed pages - 28 days flat.
         </h2>
         <p
           style={{
@@ -450,7 +450,7 @@ function PhaseFlow({ inView }: { inView: boolean }) {
             fontWeight: 400,
           }}
         >
-          8 phases — one of them gates everything.
+          8 phases - one of them gates everything.
         </h3>
       </div>
 

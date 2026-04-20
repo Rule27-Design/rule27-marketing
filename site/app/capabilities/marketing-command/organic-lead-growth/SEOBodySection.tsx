@@ -56,7 +56,7 @@ export function SEOBodySection() {
       >
         <p style={{ margin: "0 0 1.5rem" }}>
           Organic Lead Growth (OLG) is the deliberate construction of search
-          architecture — the structure of indexed pages on your website — to
+          architecture - the structure of indexed pages on your website - to
           capture buyer-intent traffic that compounds over time. Unlike paid
           advertising, where every click costs you money, organic lead
           generation creates leverage: pages you publish today generate
@@ -82,13 +82,13 @@ export function SEOBodySection() {
 
         <p style={{ margin: "0 0 1.5rem" }}>
           Most agencies pitch one of two flawed playbooks: <strong>(1)</strong>{" "}
-          slow-drip blog publishing — 4 to 8 articles a month, hoping the
+          slow-drip blog publishing - 4 to 8 articles a month, hoping the
           aggregate signal moves the needle, or <strong>(2)</strong> bulk
-          programmatic content — tens of thousands of templated pages that rank
+          programmatic content - tens of thousands of templated pages that rank
           for queries the business can&apos;t actually serve. Both fail for the
           same reason: neither approach validates whether the targeted query
           will produce a buyer-ready visitor. Rule27&apos;s OLG framework gates
-          every engagement on Phase 2 (SERP Validation) — analyzing the
+          every engagement on Phase 2 (SERP Validation) - analyzing the
           existing top-ranking pages for each priority query and matching their
           depth, structure, and intent before deploying. This is the
           single-largest predictor of post-launch CTR.
@@ -111,7 +111,7 @@ export function SEOBodySection() {
         <p style={{ margin: "0 0 1.5rem" }}>
           Each indexed page is an independent door into your business. A site
           with 1,000 pages targeting 1,000 distinct buyer queries generates
-          ~1,000 separate impression streams in Google Search Console — every
+          ~1,000 separate impression streams in Google Search Console - every
           one of them a potential lead. Compounding kicks in by month 2-3 as
           rankings consolidate and Google&apos;s algorithm rewards topical
           authority. By month 6, the site is operating as a 24/7 sales
@@ -143,7 +143,7 @@ export function SEOBodySection() {
           Weeks 3-4 deploy at ~71 pages/day with manual Google Search Console
           indexing, ensuring every page enters the index within the same
           window. The result is a near-vertical impression curve in your GSC
-          dashboard within 4-6 weeks of launch — the same pattern that took
+          dashboard within 4-6 weeks of launch - the same pattern that took
           NMHL from 14 indexed pages to 312 pages and 29,100 monthly
           impressions in 21 days. After deployment, the $1,500/month retainer
           handles ongoing CTR optimization, content refresh, keyword expansion,

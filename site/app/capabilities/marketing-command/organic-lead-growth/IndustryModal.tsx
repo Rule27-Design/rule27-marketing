@@ -116,7 +116,7 @@ export function IndustryModal({
                 zIndex: 1,
               }}
             >
-              First — pick your world
+              First - pick your world
             </span>
 
             <h2
@@ -183,7 +183,7 @@ export function IndustryModal({
                 zIndex: 1,
               }}
             >
-              We use this to swap the data — nothing else. Pick the closest fit
+              We use this to swap the data - nothing else. Pick the closest fit
               if your industry isn&apos;t on the list.
             </p>
           </motion.div>

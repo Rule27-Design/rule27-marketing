@@ -8,7 +8,7 @@ import { WaveBorder } from "@/app/components/WaveBorder";
 import { CalendlyModal } from "@/app/components/CalendlyModal";
 
 // ---------------------------------------------------------------------------
-// Inline SVG icons (lucide-style) — avoids external icon deps
+// Inline SVG icons (lucide-style) - avoids external icon deps
 // ---------------------------------------------------------------------------
 
 function ZoneIcon({ name, size = 24 }: { name: string; size?: number }) {
@@ -1017,7 +1017,7 @@ function ZoneCard({ zone, isActive, index, onActivate }: ZoneCardProps) {
           </div>
         )}
 
-        {/* Action Button — links to /capabilities/[zone-slug] */}
+        {/* Action Button - links to /capabilities/[zone-slug] */}
         <Link
           href={`/capabilities/${zone.slug}`}
           onClick={(e) => e.stopPropagation()}

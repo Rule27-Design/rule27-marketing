@@ -51,7 +51,7 @@ export const CLIENTS: ClientShowcaseData[] = [
     proofImage: "/proof/nmhl-results-1-week.png",
     micro: "+1,040% impressions in 21 days (real GSC)",
     story:
-      "NMHL went from 14 indexed pages to 312 in three weeks. Daily impressions climbed from 80 to 920 — every new page locked onto a buyer-intent query nobody else was answering.",
+      "NMHL went from 14 indexed pages to 312 in three weeks. Daily impressions climbed from 80 to 920 - every new page locked onto a buyer-intent query nobody else was answering.",
     daily: curve(
       (i, total) => {
         const t = i / (total - 1);
@@ -73,7 +73,7 @@ export const CLIENTS: ClientShowcaseData[] = [
     realData: true,
     micro: "667 → 1,230 pages, branded → buyer-intent clicks",
     story:
-      "FreedomDev had 667 pages already indexed at ~4,000 impressions/day with 0.08% CTR — content that ranked but didn't convert. We restructured titles, metas, and 1,230 programmatic pages locked onto specific service-location queries. Branded clicks dropped, buyer-intent clicks 3.4×'d.",
+      "FreedomDev had 667 pages already indexed at ~4,000 impressions/day with 0.08% CTR - content that ranked but didn't convert. We restructured titles, metas, and 1,230 programmatic pages locked onto specific service-location queries. Branded clicks dropped, buyer-intent clicks 3.4×'d.",
     daily: curve(
       (i, total) => {
         const t = i / (total - 1);
@@ -98,7 +98,7 @@ export const CLIENTS: ClientShowcaseData[] = [
     realData: true,
     micro: "0 → 248 pages targeting state-by-state queries",
     story:
-      "AniltX launched with 8 pages and zero search presence. We seeded 248 state-expansion pages — each targeting a specific 'AI consulting [state]' query — and watched the daily impression count climb every weekday for three weeks straight.",
+      "AniltX launched with 8 pages and zero search presence. We seeded 248 state-expansion pages - each targeting a specific 'AI consulting [state]' query - and watched the daily impression count climb every weekday for three weeks straight.",
     daily: curve(
       (i, total) => {
         const t = i / (total - 1);
@@ -118,9 +118,9 @@ export const CLIENTS: ClientShowcaseData[] = [
     trafficMultiplier: "6.1x",
     monthlyRevenueEst: 9100,
     realData: true,
-    micro: "Stair-step growth — every weekly publish lifted the floor",
+    micro: "Stair-step growth - every weekly publish lifted the floor",
     story:
-      "SolomonSignal launched a SaaS directory with 22 pages. We added pages in weekly batches — each batch caught a fresh wave of long-tail queries. Visible as a clean stair-step curve.",
+      "SolomonSignal launched a SaaS directory with 22 pages. We added pages in weekly batches - each batch caught a fresh wave of long-tail queries. Visible as a clean stair-step curve.",
     daily: curve(
       (i, total) => {
         const t = i / (total - 1);
@@ -140,9 +140,9 @@ export const CLIENTS: ClientShowcaseData[] = [
     afterPages: 418,
     trafficMultiplier: "9.4x",
     monthlyRevenueEst: 14200,
-    micro: "+340% organic — recovered $14K/mo in seasonal leads",
+    micro: "+340% organic - recovered $14K/mo in seasonal leads",
     story:
-      "Vertex Roofing had 42 service pages, all Phoenix-only. We built city + service-type combinations across a 30-mile radius. Storm-season impressions hockey-sticked — emergency-repair queries hit at the exact moment buyers were ready.",
+      "Vertex Roofing had 42 service pages, all Phoenix-only. We built city + service-type combinations across a 30-mile radius. Storm-season impressions hockey-sticked - emergency-repair queries hit at the exact moment buyers were ready.",
     daily: curve(
       (i, total) => {
         const t = i / (total - 1);
@@ -163,7 +163,7 @@ export const CLIENTS: ClientShowcaseData[] = [
     monthlyRevenueEst: 9400,
     micro: "Booked 60+ events from organic in 90 days",
     story:
-      "8 pages of menus and a contact form. We built one page per event type per city — wedding, corporate retreat, intimate dinner — across 12 metros. The daily count grew like a vine, never a sharp spike.",
+      "8 pages of menus and a contact form. We built one page per event type per city - wedding, corporate retreat, intimate dinner - across 12 metros. The daily count grew like a vine, never a sharp spike.",
     daily: curve(
       (i, total) => {
         const t = i / (total - 1);

@@ -18,9 +18,9 @@ export const PRICING_TIERS: PricingTier[] = [
     description:
       "1,000+ pages designed, built, and deployed across 4 weeks. From research to live indexed pages in your GSC dashboard.",
     schedule: [
-      "$1,437.50 — on contract signing (25%)",
-      "$1,437.50 — at week 2, build approved (25%)",
-      "$2,875.00 — at week 4, handoff complete (50%)",
+      "$1,437.50 - on contract signing (25%)",
+      "$1,437.50 - at week 2, build approved (25%)",
+      "$2,875.00 - at week 4, handoff complete (50%)",
     ],
     inclusions: [
       "Phase 1-7 execution (research → deploy)",

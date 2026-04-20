@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 
 /**
- * Subtle full-bleed accent strip — placed between sections to break up
+ * Subtle full-bleed accent strip - placed between sections to break up
  * the otherwise plain off-white background and add Lego-piece visual presence.
  */
 export function AccentStrip({
@@ -106,7 +106,7 @@ export function DotGrid({ opacity = 0.05 }: { opacity?: number }) {
 }
 
 /**
- * Hairline diagonal sweep — adds motion energy under headlines.
+ * Hairline diagonal sweep - adds motion energy under headlines.
  */
 export function DiagonalSweep() {
   return (

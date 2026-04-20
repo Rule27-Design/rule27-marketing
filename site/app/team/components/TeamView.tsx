@@ -180,7 +180,7 @@ export function TeamView({ members }: Props) {
               }}
             >
               Meet the certified professionals who make Rule27 Design the
-              digital powerhouse it is — experts in marketing platforms, cloud
+              digital powerhouse it is - experts in marketing platforms, cloud
               development, and everything in between.
             </p>
           </motion.div>

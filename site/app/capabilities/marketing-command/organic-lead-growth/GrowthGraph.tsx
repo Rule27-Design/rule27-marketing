@@ -126,7 +126,7 @@ export function GrowthGraph({ daily, domain, height = 420 }: GrowthGraphProps) {
           }}
         >
           <span style={{ color: "#4285F4", fontWeight: 600 }}>Google</span>{" "}
-          Search Console — Performance
+          Search Console - Performance
           <span
             style={{
               marginLeft: 12,

@@ -3,7 +3,7 @@
 -- Run this in your Supabase SQL Editor
 -- ============================================================================
 
--- ─── 1. SERVICES TABLE — New conversion columns ────────────────────────────
+-- ─── 1. SERVICES TABLE - New conversion columns ────────────────────────────
 
 -- Hero & visual storytelling
 ALTER TABLE public.services ADD COLUMN IF NOT EXISTS tagline text;
@@ -31,7 +31,7 @@ ALTER TABLE public.services ADD COLUMN IF NOT EXISTS faqs jsonb DEFAULT '[]';
 -- faqs format: [{"q": "How long does this take?", "a": "Typically 2-4 weeks..."}, ...]
 
 
--- ─── 2. SERVICE ZONES TABLE — Conversion columns ───────────────────────────
+-- ─── 2. SERVICE ZONES TABLE - Conversion columns ───────────────────────────
 
 ALTER TABLE public.service_zones ADD COLUMN IF NOT EXISTS tagline text;
 ALTER TABLE public.service_zones ADD COLUMN IF NOT EXISTS hero_image text;
@@ -41,7 +41,7 @@ ALTER TABLE public.service_zones ADD COLUMN IF NOT EXISTS featured_metric jsonb;
 -- featured_metric format: {"label": "Average ROI", "value": "340%"}
 
 
--- ─── 3. SERVICE TESTIMONIALS TABLE — New table ─────────────────────────────
+-- ─── 3. SERVICE TESTIMONIALS TABLE - New table ─────────────────────────────
 
 CREATE TABLE IF NOT EXISTS public.service_testimonials (
   id uuid NOT NULL DEFAULT gen_random_uuid(),

@@ -466,7 +466,7 @@ export default function SocialProofSection({
           </div>
         )}
 
-        {/* ── Stats Grid — R27StatCard pattern ── */}
+        {/* ── Stats Grid - R27StatCard pattern ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
           {[
             { value: displayStats.satisfaction, label: "Client Satisfaction", change: "+12%" },

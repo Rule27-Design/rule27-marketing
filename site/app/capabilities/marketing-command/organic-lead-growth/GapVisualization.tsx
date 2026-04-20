@@ -8,7 +8,7 @@ import { TOOLTIPS } from "./data/copy";
 
 interface GapVisualizationProps {
   industry: IndustryContent;
-  /** Lead identifier passed in from UTMs — used to fetch real magnet data from Odoo. */
+  /** Lead identifier passed in from UTMs - used to fetch real magnet data from Odoo. */
   leadId?: string | null;
   domain?: string | null;
 }

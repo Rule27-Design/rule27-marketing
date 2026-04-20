@@ -195,7 +195,7 @@ function ExperienceInner() {
     <div style={{ background: "#FCFCFB", minHeight: "100vh" }}>
       <ScrollProgress />
 
-      {/* Industry modal — Beat 1 */}
+      {/* Industry modal - Beat 1 */}
       <IndustryModal
         open={modalOpen}
         suggested={utmContentSuggestion}
@@ -203,7 +203,7 @@ function ExperienceInner() {
         firstName={firstName}
       />
 
-      {/* Beat 1 — Arrival hero */}
+      {/* Beat 1 - Arrival hero */}
       <Beat1Arrival
         industryDisplay={industry.displayName}
         firstName={firstName}
@@ -212,18 +212,18 @@ function ExperienceInner() {
         onOpenModal={() => setModalOpen(true)}
       />
 
-      {/* Video — env-gated placeholder, hidden in prod */}
+      {/* Video - env-gated placeholder, hidden in prod */}
       <VideoSection industryDisplay={industry.displayName} />
 
       <AccentStrip variant="left" height={80} />
 
-      {/* Beat 2 — Proof */}
+      {/* Beat 2 - Proof */}
       <Beat2Proof headline={industry.headline} clients={clients} onTrack={track} />
 
-      {/* NMHL ✓ vs AniltX V1 ✗ — the killer Lego piece */}
+      {/* NMHL ✓ vs AniltX V1 ✗ - the killer Lego piece */}
       <ProofJuxtaposition />
 
-      {/* High-impact CTA card — replaces flat ConversionBreak */}
+      {/* High-impact CTA card - replaces flat ConversionBreak */}
       <section
         style={{
           padding: "clamp(1.5rem, 3vw, 2.5rem) 1.5rem",
@@ -263,7 +263,7 @@ function ExperienceInner() {
         />
       </section>
 
-      {/* Beat 3 — Revelation (woven Lego pieces) */}
+      {/* Beat 3 - Revelation (woven Lego pieces) */}
       <Beat3Revelation industry={industry} domain={sessionRef.current.domain} />
 
       <section
@@ -301,23 +301,23 @@ function ExperienceInner() {
           variant="calendly"
           eyebrow="Book the walkthrough"
           title="Want Josh to walk you through the 4 weeks live?"
-          description="15 minutes. We'll show you exactly what week 1 looks like for your industry, what we'll need from you, and what your week-4 dashboard will look like. No pitch — just the plan."
+          description="15 minutes. We'll show you exactly what week 1 looks like for your industry, what we'll need from you, and what your week-4 dashboard will look like. No pitch - just the plan."
           ctaLabel="Book 15 min with Josh"
         />
       </section>
 
-      {/* Weekly report preview — what they get every Friday */}
+      {/* Weekly report preview - what they get every Friday */}
       <WeeklyReportPreview />
 
       <AccentStrip variant="right" height={100} />
 
-      {/* Beat 4 — The Mirror */}
+      {/* Beat 4 - The Mirror */}
       <Beat4Mirror
         industry={industry}
         onWaitlistSubmit={handleWaitlistSubmit}
       />
 
-      {/* Pricing — fully exposed */}
+      {/* Pricing - fully exposed */}
       <PricingCard />
 
       {/* What we need from you */}
@@ -337,13 +337,13 @@ function ExperienceInner() {
 
       <AccentStrip variant="left" height={80} />
 
-      {/* Beat 5 — The Bridge */}
+      {/* Beat 5 - The Bridge */}
       <Beat5Bridge
         defaultDomain={sessionRef.current.domain ?? ""}
         onSubmit={handleDomainSubmit}
       />
 
-      {/* Beat 6 — Post-conversion exit */}
+      {/* Beat 6 - Post-conversion exit */}
       <Beat6Exit onTrack={track} />
 
       {/* Persistent: scroll-depth contextual popup */}
@@ -362,7 +362,7 @@ function ExperienceInner() {
 }
 
 // ---------------------------------------------------------------------------
-// Beat 1 — Arrival
+// Beat 1 - Arrival
 // ---------------------------------------------------------------------------
 
 function Beat1Arrival({
@@ -463,7 +463,7 @@ function Beat1Arrival({
             marginBottom: "1.5rem",
           }}
         >
-          Q2 2026 — Exposing Industry Secrets
+          Q2 2026 - Exposing Industry Secrets
         </motion.div>
 
         <motion.h1
@@ -633,7 +633,7 @@ function DriftingShapes() {
 }
 
 // ---------------------------------------------------------------------------
-// Beat 2 — Proof
+// Beat 2 - Proof
 // ---------------------------------------------------------------------------
 
 function Beat2Proof({
@@ -685,7 +685,7 @@ function Beat2Proof({
 }
 
 // ---------------------------------------------------------------------------
-// Beat 3 — Revelation (Lego pieces)
+// Beat 3 - Revelation (Lego pieces)
 // ---------------------------------------------------------------------------
 
 function Beat3Revelation({
@@ -994,7 +994,7 @@ function RevenueFormulaSection() {
 }
 
 // ---------------------------------------------------------------------------
-// Beat 4 — The Mirror
+// Beat 4 - The Mirror
 // ---------------------------------------------------------------------------
 
 function Beat4Mirror({
@@ -1051,7 +1051,7 @@ function Beat4Mirror({
               margin: "0 0 1.5rem",
             }}
           >
-            Each dot is a door — a single indexed page targeting a real search
+            Each dot is a door - a single indexed page targeting a real search
             query. Most {industry.shortName} sites have a handful. The names
             you&apos;re losing to have hundreds. The work isn&apos;t louder.
             It&apos;s structural.
@@ -1070,7 +1070,7 @@ function Beat4Mirror({
                 marginBottom: "0.6rem",
               }}
             >
-              Live deep-dives — get notified
+              Live deep-dives - get notified
             </div>
             <p
               style={{
@@ -1081,7 +1081,7 @@ function Beat4Mirror({
                 lineHeight: 1.6,
               }}
             >
-              We&apos;re launching a series breaking down these strategies live —
+              We&apos;re launching a series breaking down these strategies live -
               webinars, case studies, teardowns of businesses like yours.
             </p>
             <WaitlistInput onSubmit={onWaitlistSubmit} />
@@ -1266,14 +1266,14 @@ function AniltXSignal() {
         }}
       >
         We partner with AniltX to give businesses visibility into traffic
-        they&apos;ve never had access to — including yours.
+        they&apos;ve never had access to - including yours.
       </div>
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Beat 5 — The Bridge
+// Beat 5 - The Bridge
 // ---------------------------------------------------------------------------
 
 function Beat5Bridge({
@@ -1356,8 +1356,8 @@ function Beat5Bridge({
             lineHeight: 1.6,
           }}
         >
-          One field. No call. The full breakdown — your indexed pages, top
-          competitors, revenue gap — lands in your inbox in under an hour.
+          One field. No call. The full breakdown - your indexed pages, top
+          competitors, revenue gap - lands in your inbox in under an hour.
         </p>
 
         <DomainCaptureForm onSubmit={onSubmit} defaultDomain={defaultDomain} />
@@ -1367,7 +1367,7 @@ function Beat5Bridge({
 }
 
 // ---------------------------------------------------------------------------
-// Beat 6 — Exit
+// Beat 6 - Exit
 // ---------------------------------------------------------------------------
 
 function Beat6Exit({
@@ -1392,7 +1392,7 @@ function Beat6Exit({
       >
         {/* Soft demo */}
         <div>
-          <SectionHeader eyebrow="One last thing" title="Walk it through with us — live." />
+          <SectionHeader eyebrow="One last thing" title="Walk it through with us - live." />
           <p
             style={{
               fontFamily: "Helvetica Neue, sans-serif",
@@ -1462,7 +1462,7 @@ function Beat6Exit({
               marginBottom: "0.75rem",
             }}
           >
-            {CASE_STUDY_QUOTE.industry} — {CASE_STUDY_QUOTE.client}
+            {CASE_STUDY_QUOTE.industry} - {CASE_STUDY_QUOTE.client}
           </div>
           <p
             style={{
@@ -1484,7 +1484,7 @@ function Beat6Exit({
               marginBottom: "1rem",
             }}
           >
-            — {CASE_STUDY_QUOTE.attribution}
+            - {CASE_STUDY_QUOTE.attribution}
           </div>
           <div
             style={{
@@ -1654,7 +1654,7 @@ function QuoteStat({
 }
 
 // ---------------------------------------------------------------------------
-// Sticky CTA bar (OLG-specific — scrolls to domain capture, not Calendly)
+// Sticky CTA bar (OLG-specific - scrolls to domain capture, not Calendly)
 // ---------------------------------------------------------------------------
 
 function OLGStickyBar({ industryShortName }: { industryShortName: string }) {

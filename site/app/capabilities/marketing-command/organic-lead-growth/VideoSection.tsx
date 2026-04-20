@@ -113,7 +113,7 @@ export function VideoSection({ videoSrc, posterSrc, industryDisplay }: VideoSect
           >
             A 90-second walkthrough showing how page architecture changes the
             search game for {industryDisplay.toLowerCase()} businesses. Watch
-            once — the rest of this page makes a different kind of sense after.
+            once - the rest of this page makes a different kind of sense after.
           </p>
         </div>
 

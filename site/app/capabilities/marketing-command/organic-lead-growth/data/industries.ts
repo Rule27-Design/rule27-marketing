@@ -35,7 +35,7 @@ export const INDUSTRIES: Record<IndustrySlug, IndustryContent> = {
     shortName: "home services",
     headline: "See what's already working for home services businesses.",
     painLine:
-      "Most home services companies have the same invisible problem — and it's costing them more than they realize.",
+      "Most home services companies have the same invisible problem - and it's costing them more than they realize.",
     mirrorLine:
       "Your biggest competitor right now has more doors open than you. Customers are searching for what you sell every hour, and they're finding someone else.",
     avgPagesLow: 12,
@@ -58,7 +58,7 @@ export const INDUSTRIES: Record<IndustrySlug, IndustryContent> = {
     shortName: "construction",
     headline: "See what's already working for construction & industrial firms.",
     painLine:
-      "The biggest names in your trade aren't winning because of their work — they're winning because of their architecture.",
+      "The biggest names in your trade aren't winning because of their work - they're winning because of their architecture.",
     mirrorLine:
       "While you're bidding on jobs, your competitors are getting found before the bid even starts. Their site does the qualifying.",
     avgPagesLow: 8,
@@ -81,7 +81,7 @@ export const INDUSTRIES: Record<IndustrySlug, IndustryContent> = {
     shortName: "food & hospitality",
     headline: "See what's already working for food & hospitality brands.",
     painLine:
-      "Restaurants and food brands are losing dinner reservations to competitors with better digital architecture — not better food.",
+      "Restaurants and food brands are losing dinner reservations to competitors with better digital architecture - not better food.",
     mirrorLine:
       "Tonight, somebody is searching for what you serve. They're going to make a reservation. The only question is: with whom?",
     avgPagesLow: 5,
@@ -127,7 +127,7 @@ export const INDUSTRIES: Record<IndustrySlug, IndustryContent> = {
     shortName: "professional services",
     headline: "See what's already working for professional services firms.",
     painLine:
-      "The firms taking your prospective clients aren't more credentialed — they're more findable.",
+      "The firms taking your prospective clients aren't more credentialed - they're more findable.",
     mirrorLine:
       "When your ideal client searches for what you do, do they find you in the top 3, or scroll past you to your competitor's 47th page?",
     avgPagesLow: 8,
@@ -150,7 +150,7 @@ export const INDUSTRIES: Record<IndustrySlug, IndustryContent> = {
     shortName: "health & fitness",
     headline: "See what's already working for health & fitness brands.",
     painLine:
-      "Your future members are searching for transformation. The gym they're finding isn't yours — it's the one with 200 location-specific landing pages.",
+      "Your future members are searching for transformation. The gym they're finding isn't yours - it's the one with 200 location-specific landing pages.",
     mirrorLine:
       "Health is local. Fitness is intimate. So why does the chain with no community get all the searches your studio should be winning?",
     avgPagesLow: 4,
@@ -173,7 +173,7 @@ export const INDUSTRIES: Record<IndustrySlug, IndustryContent> = {
     shortName: "agriculture & outdoors",
     headline: "See what's already working for ag & outdoor businesses.",
     painLine:
-      "Your buyers know exactly what they want. The question is whether they find it on your site — or someone else's.",
+      "Your buyers know exactly what they want. The question is whether they find it on your site - or someone else's.",
     mirrorLine:
       "The land moves slow. Search doesn't. The operations winning rural business have built more digital infrastructure than you'd guess.",
     avgPagesLow: 6,
@@ -196,7 +196,7 @@ export const INDUSTRIES: Record<IndustrySlug, IndustryContent> = {
     shortName: "your industry",
     headline: "See what's already working in your space.",
     painLine:
-      "Most businesses in any industry have the same invisible problem — and it's costing them more than they realize.",
+      "Most businesses in any industry have the same invisible problem - and it's costing them more than they realize.",
     mirrorLine:
       "Your biggest competitor right now has more doors open than you. The math doesn't care about your industry.",
     avgPagesLow: 10,

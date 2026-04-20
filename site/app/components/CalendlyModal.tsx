@@ -79,7 +79,7 @@ function CalendlyOverlay({ onClose }: { onClose: () => void }) {
               margin: "4px 0 0",
             }}
           >
-            Pick a time that works for you — 30 minutes, no commitment
+            Pick a time that works for you - 30 minutes, no commitment
           </p>
         </div>
         <button
@@ -113,7 +113,7 @@ function CalendlyOverlay({ onClose }: { onClose: () => void }) {
         </button>
       </div>
 
-      {/* Calendly iframe — takes full remaining space */}
+      {/* Calendly iframe - takes full remaining space */}
       <div style={{ flex: 1, background: "#FFFFFF" }}>
         <iframe
           src={`${CALENDLY_URL}?hide_gdpr_banner=1&background_color=ffffff&text_color=111111&primary_color=E53E3E`}

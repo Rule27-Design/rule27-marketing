@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Experience } from "./Experience";
 
-const TITLE = "Organic Lead Growth — Exposing Industry Secrets | Rule27 Design";
+const TITLE = "Organic Lead Growth - Exposing Industry Secrets | Rule27 Design";
 const DESCRIPTION =
-  "See where your business stands against your top local competitors. We pull the numbers, run the gap analysis, and show you what's actually working in your industry — in under 60 minutes.";
+  "See where your business stands against your top local competitors. We pull the numbers, run the gap analysis, and show you what's actually working in your industry - in under 60 minutes.";
 const URL =
   "https://www.rule27design.com/capabilities/marketing-command/organic-lead-growth";
 

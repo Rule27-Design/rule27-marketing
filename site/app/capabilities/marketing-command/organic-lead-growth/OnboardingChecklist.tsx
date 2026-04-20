@@ -6,12 +6,12 @@ const STEPS = [
   {
     num: "01",
     title: "GSC property access",
-    detail: "Add info@rule27design.com as a Full user on your Google Search Console property. We use this to manually submit URLs and pull real performance data — never scraped, never guessed.",
+    detail: "Add info@rule27design.com as a Full user on your Google Search Console property. We use this to manually submit URLs and pull real performance data - never scraped, never guessed.",
   },
   {
     num: "02",
     title: "Domain control",
-    detail: "DNS access for SSL setup and any subdomain routing we need. If you'd rather we work on a staging subdomain first, that works too — just point us to the right registrar.",
+    detail: "DNS access for SSL setup and any subdomain routing we need. If you'd rather we work on a staging subdomain first, that works too - just point us to the right registrar.",
   },
   {
     num: "03",
@@ -62,7 +62,7 @@ export function OnboardingChecklist() {
             lineHeight: 1.05,
           }}
         >
-          4 things — you can send them in one email.
+          4 things - you can send them in one email.
         </h2>
         <p
           style={{

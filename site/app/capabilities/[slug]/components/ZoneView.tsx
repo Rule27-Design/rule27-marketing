@@ -360,7 +360,7 @@ export function ZoneView({ zone, services }: ZoneViewProps) {
 }
 
 // ---------------------------------------------------------------------------
-// ServiceCard — animated card linking to service detail
+// ServiceCard - animated card linking to service detail
 // ---------------------------------------------------------------------------
 
 function ServiceCard({

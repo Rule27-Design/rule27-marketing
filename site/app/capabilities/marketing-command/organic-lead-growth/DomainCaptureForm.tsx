@@ -151,7 +151,7 @@ export function DomainCaptureForm({
             >
               We&apos;ll analyze your online presence against your top local
               competitors and send you a full breakdown within the hour. No
-              calls, no BS — just your numbers.
+              calls, no BS - just your numbers.
             </p>
           </motion.form>
         ) : (
