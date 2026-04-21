@@ -20,6 +20,7 @@ import { CTACard } from "./CTACard";
 import { VideoSection } from "./VideoSection";
 import { AccentStrip, ArchGridBackdrop, DotGrid, FloatingGraphShapes } from "./decor";
 import { ProofJuxtaposition } from "./ProofJuxtaposition";
+import { QueryGapProbe } from "./QueryGapProbe";
 import { RevenueTimeline } from "./RevenueTimeline";
 import { WeeklyReportPreview } from "./WeeklyReportPreview";
 import { RevenueConfigurator } from "./RevenueConfigurator";
@@ -296,6 +297,20 @@ function ExperienceInner({ supabase }: { supabase: OLGSupabaseProps }) {
 
       {/* NMHL ✓ vs AniltX V1 ✗ - the killer Lego piece */}
       <ProofJuxtaposition />
+
+      {/* Query Gap Probe — user-typed search → mock SERP with an empty slot
+          where their domain should be. Self-discovered pain. */}
+      <QueryGapProbe
+        industry={industry}
+        userDomain={sessionRef.current.domain ?? undefined}
+        onSubmitQuery={(q) => track("query_probe_submitted", { query: q })}
+        onCaptureClick={() => {
+          track("query_probe_capture_clicked", {});
+          document
+            .getElementById("domain-capture")
+            ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }}
+      />
 
       {/* High-impact CTA card - replaces flat ConversionBreak */}
       <section
