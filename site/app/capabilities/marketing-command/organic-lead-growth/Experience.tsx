@@ -23,6 +23,7 @@ import { ProofJuxtaposition } from "./ProofJuxtaposition";
 import { QueryGapProbe } from "./QueryGapProbe";
 import { DomainDuel } from "./DomainDuel";
 import { TimeMachine } from "./TimeMachine";
+import { SERPAutopsy } from "./SERPAutopsy";
 import { RevenueTimeline } from "./RevenueTimeline";
 import { WeeklyReportPreview } from "./WeeklyReportPreview";
 import { RevenueConfigurator } from "./RevenueConfigurator";
@@ -425,6 +426,19 @@ function ExperienceInner({ supabase }: { supabase: OLGSupabaseProps }) {
       <WeeklyReportPreview />
 
       <AccentStrip variant="right" height={100} />
+
+      {/* SERP Autopsy — tile the competitor's indexed surface, then toggle
+          to the user's grid. The contrast is visceral. */}
+      <SERPAutopsy
+        industry={industry}
+        userDomain={sessionRef.current.domain ?? undefined}
+        onCaptureClick={() => {
+          track("serp_autopsy_capture_clicked", {});
+          document
+            .getElementById("domain-capture")
+            ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }}
+      />
 
       {/* Beat 4 - The Mirror */}
       <Beat4Mirror
