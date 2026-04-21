@@ -20,7 +20,7 @@ import { CalendlyModal } from "@/app/components/CalendlyModal";
 import type { ServiceZone } from "@/app/lib/types";
 
 // ---------------------------------------------------------------------------
-// Icon mapping — Lucide icons, NOT emojis
+// Icon mapping - Lucide icons, NOT emojis
 // ---------------------------------------------------------------------------
 
 const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
@@ -79,7 +79,7 @@ const FALLBACK_ZONES: ServiceZone[] = [
     title: "Digital Marketing",
     subtitle: "Performance & Growth Strategy",
     description:
-      "Data-driven campaigns that don't just reach audiences — they move them. Measurable growth at every touchpoint.",
+      "Data-driven campaigns that don't just reach audiences - they move them. Measurable growth at every touchpoint.",
     icon: "TrendingUp",
     features: [
       "SEO & Content Strategy",

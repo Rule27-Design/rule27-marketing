@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { StatCard } from "@/app/components/Card";
+import { CaseStudyGSCHero } from "./CaseStudyGSCHero";
 import type { CaseStudy } from "@/app/lib/types";
 
 // ---------------------------------------------------------------------------
@@ -174,11 +175,25 @@ export default function CaseStudyDetail({
       prev === 0 ? gallery.length - 1 : prev - 1
     );
 
+  // OLG-style case studies render the live GSC graph as the hero
+  // (sourced from /lib/gsc-data/) instead of an image gallery. Triggered
+  // by `custom_fields.gsc_slug` on the case_studies row.
+  const useGscHero = !!study.gscSlug;
+
   return (
     <div className="min-h-screen" style={{ background: "#FCFCFB" }}>
       {/* ================================================================== */}
-      {/* HERO GALLERY                                                       */}
+      {/* HERO — GSC graph variant OR image gallery                          */}
       {/* ================================================================== */}
+      {useGscHero ? (
+        <CaseStudyGSCHero
+          gscSlug={study.gscSlug as string}
+          title={study.title}
+          client={study.client}
+          industry={study.industry}
+          serviceType={study.serviceType}
+        />
+      ) : (
       <section className="relative h-[50vh] sm:h-[60vh] min-h-[400px] overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
@@ -345,6 +360,7 @@ export default function CaseStudyDetail({
           </div>
         </div>
       </section>
+      )}
 
       {/* ================================================================== */}
       {/* KEY METRICS BAR                                                    */}

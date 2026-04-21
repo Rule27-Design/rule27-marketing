@@ -13,7 +13,7 @@ interface AccordionProps {
 }
 
 /**
- * R27Accordion — RULE27 FAQ/Accordion component.
+ * R27Accordion - RULE27 FAQ/Accordion component.
  * Matches the Theme Component Display exactly:
  * - 2px red left-border on open
  * - Rotating "+" icon

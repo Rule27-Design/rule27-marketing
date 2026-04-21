@@ -19,7 +19,7 @@ function transformArticle(
 ): Article | null {
   if (!article) return null;
 
-  // Extract content — only parse if content field is present (detail views)
+  // Extract content - only parse if content field is present (detail views)
   // For list views, content is excluded from the query to save bandwidth
   let contentText = article.excerpt || "";
   let contentHtml: string | null = null;
@@ -137,7 +137,7 @@ async function resolveCoAuthors(article: any): Promise<CoAuthor[]> {
  */
 export async function getArticles(): Promise<Article[]> {
   try {
-    // Only fetch fields needed for the list — exclude heavy 'content' column
+    // Only fetch fields needed for the list - exclude heavy 'content' column
     // This reduces payload from ~10MB to ~0.15MB for 195 articles
     const { data: articles, error: articlesError } = await supabase
       .from("articles")
@@ -210,7 +210,7 @@ export async function getArticles(): Promise<Article[]> {
     }, {});
     /* eslint-enable @typescript-eslint/no-explicit-any */
 
-    // Transform — resolve co-authors from the pre-fetched map (no extra queries)
+    // Transform - resolve co-authors from the pre-fetched map (no extra queries)
     return articles
       .map((article) => {
         const transformed = transformArticle(article, profilesMap, categoriesMap);

@@ -9,7 +9,7 @@ interface TimelineProps {
 }
 
 /**
- * R27Timeline — RULE27 Timeline component.
+ * R27Timeline - RULE27 Timeline component.
  * Matches the Theme Component Display exactly:
  * - Vertical red gradient line
  * - Red-bordered circles with red dot centers

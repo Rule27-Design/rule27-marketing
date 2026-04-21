@@ -232,7 +232,7 @@ export default async function ServiceDetailPage({
       <ScrollProgress />
 
       {/* ================================================================ */}
-      {/* 1. DARK HERO — Full viewport, homepage-matching energy           */}
+      {/* 1. DARK HERO - Full viewport, homepage-matching energy           */}
       {/* ================================================================ */}
       <section
         style={{
@@ -1471,7 +1471,7 @@ export default async function ServiceDetailPage({
             >
               Flexible packages designed for measurable ROI
               {service.avgRoi &&
-                ` — clients typically see ${service.avgRoi} returns`}
+                ` - clients typically see ${service.avgRoi} returns`}
             </p>
           </div>
 
@@ -1683,7 +1683,7 @@ export default async function ServiceDetailPage({
               }}
             >
               Every project is unique. We&apos;ll build a proposal around your goals, timeline, and budget
-              {service.avgRoi && ` — our clients typically see ${service.avgRoi} returns on their investment`}.
+              {service.avgRoi && ` - our clients typically see ${service.avgRoi} returns on their investment`}.
             </p>
             <BookCallButton
               style={{
@@ -2173,7 +2173,7 @@ export default async function ServiceDetailPage({
       <ContextualPopup
         triggerDepth={0.6}
         title="Quick question"
-        text={`We can show you exactly how ${service.title} would work for your business — no commitment, just a conversation.`}
+        text={`We can show you exactly how ${service.title} would work for your business - no commitment, just a conversation.`}
         ctaText="Book a 30-min call"
         serviceSlug={service.slug}
       />

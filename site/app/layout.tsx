@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL || "https://www.rule27design.com"
   ),
   title: {
-    default: "Rule27 Design — Digital Powerhouse",
+    default: "Rule27 Design - Digital Powerhouse",
     template: "%s | Rule27 Design",
   },
   description:
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     siteName: "Rule27 Design",
-    title: "Rule27 Design — Digital Powerhouse",
+    title: "Rule27 Design - Digital Powerhouse",
     description:
       "Creative + technical excellence for brands that refuse to blend in.",
   },

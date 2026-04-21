@@ -285,7 +285,7 @@ export async function getService(slug: string) {
       tooltipDefinitions: service.tooltip_definitions || {},
     };
 
-    // Testimonials — handles both service_testimonials and main testimonials table shapes
+    // Testimonials - handles both service_testimonials and main testimonials table shapes
     const testimonials = (testimonialsRes.data || []).map((t: any) => ({
       id: t.id,
       clientName: t.client_name,
