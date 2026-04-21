@@ -13,17 +13,74 @@ interface MagnetSocialCounterProps {
   durationMs?: number;
 }
 
-function format(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 10_000) return `${Math.floor(n / 1_000).toLocaleString()}K`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return n.toLocaleString();
+const DIGIT_HEIGHT_REM = 3.4;
+
+function OdometerDigit({ target }: { target: number }) {
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        width: "0.7em",
+        height: `${DIGIT_HEIGHT_REM}rem`,
+        overflow: "hidden",
+        position: "relative",
+        verticalAlign: "bottom",
+      }}
+    >
+      <span
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          transform: `translateY(-${target * DIGIT_HEIGHT_REM}rem)`,
+          transition: "transform 900ms cubic-bezier(0.22, 0.61, 0.36, 1)",
+        }}
+      >
+        {Array.from({ length: 10 }, (_, i) => (
+          <span
+            key={i}
+            style={{
+              height: `${DIGIT_HEIGHT_REM}rem`,
+              lineHeight: `${DIGIT_HEIGHT_REM}rem`,
+              textAlign: "center",
+            }}
+          >
+            {i}
+          </span>
+        ))}
+      </span>
+    </span>
+  );
+}
+
+function Odometer({ value }: { value: number }) {
+  const str = Math.floor(value).toLocaleString();
+  return (
+    <span style={{ display: "inline-flex", alignItems: "baseline" }}>
+      {str.split("").map((ch, i) =>
+        /[0-9]/.test(ch) ? (
+          <OdometerDigit key={i} target={Number(ch)} />
+        ) : (
+          <span
+            key={i}
+            style={{
+              display: "inline-block",
+              height: `${DIGIT_HEIGHT_REM}rem`,
+              lineHeight: `${DIGIT_HEIGHT_REM}rem`,
+              padding: "0 0.02em",
+            }}
+          >
+            {ch}
+          </span>
+        ),
+      )}
+    </span>
+  );
 }
 
 export function MagnetSocialCounter({
   total,
   label = "Companies in our magnet pipeline",
-  tooltip = "Pipeline count = businesses we've researched and have magnet reports prepared for — regardless of whether they've engaged yet. Social proof from scale, not claimed outcomes.",
+  tooltip = "Pipeline count = businesses we've researched and have magnet reports prepared for, regardless of whether they've engaged yet. Social proof from scale, not claimed outcomes.",
   durationMs = 2400,
 }: MagnetSocialCounterProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -48,111 +105,134 @@ export function MagnetSocialCounter({
     <div
       ref={ref}
       style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "1.25rem",
-        padding: "0.9rem 1.25rem",
-        background: "linear-gradient(135deg, #0A0A0A 0%, #1a0606 100%)",
-        border: "1px solid rgba(229,62,62,0.3)",
-        borderLeft: "3px solid #E53E3E",
-        maxWidth: 760,
-        margin: "0 auto",
+        width: "100vw",
         position: "relative",
+        left: "50%",
+        right: "50%",
+        marginLeft: "-50vw",
+        marginRight: "-50vw",
+        background:
+          "linear-gradient(90deg, #050505 0%, #0A0A0A 35%, #1a0606 100%)",
+        borderTop: "1px solid rgba(229,62,62,0.25)",
+        borderBottom: "1px solid rgba(229,62,62,0.25)",
         overflow: "hidden",
-        flexWrap: "wrap",
       }}
     >
       <div
         style={{
           position: "absolute",
           top: 0,
+          left: 0,
+          bottom: 0,
+          width: 3,
+          background: "#E53E3E",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
           right: 0,
-          width: "60%",
+          width: "45%",
           height: "100%",
           background:
-            "radial-gradient(circle, rgba(229,62,62,0.15), transparent 65%)",
-          filter: "blur(30px)",
+            "radial-gradient(ellipse at right, rgba(229,62,62,0.18), transparent 70%)",
+          filter: "blur(40px)",
           pointerEvents: "none",
         }}
       />
 
-      {/* Pulsing live dot */}
       <div
         style={{
-          position: "relative",
+          maxWidth: 1440,
+          margin: "0 auto",
+          padding: "1.6rem clamp(1.25rem, 4vw, 3rem)",
           display: "flex",
           alignItems: "center",
-          gap: 10,
+          justifyContent: "center",
+          gap: "clamp(1rem, 3vw, 2.4rem)",
+          flexWrap: "wrap",
+          position: "relative",
         }}
       >
-        <span
+        <div
           style={{
-            position: "relative",
-            width: 8,
-            height: 8,
-            borderRadius: "50%",
-            background: "#E53E3E",
-            display: "inline-block",
-            boxShadow: "0 0 12px rgba(229,62,62,0.7)",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            flexShrink: 0,
           }}
         >
           <span
             style={{
-              position: "absolute",
-              inset: -4,
+              position: "relative",
+              width: 9,
+              height: 9,
               borderRadius: "50%",
-              border: "2px solid #E53E3E",
-              animation: "mag-pulse 2s ease-out infinite",
+              background: "#E53E3E",
+              display: "inline-block",
+              boxShadow: "0 0 14px rgba(229,62,62,0.8)",
             }}
-          />
-        </span>
-        <span
+          >
+            <span
+              style={{
+                position: "absolute",
+                inset: -5,
+                borderRadius: "50%",
+                border: "2px solid #E53E3E",
+                animation: "mag-pulse 2s ease-out infinite",
+              }}
+            />
+          </span>
+          <span
+            style={{
+              fontFamily: "Helvetica Neue, sans-serif",
+              fontSize: 10,
+              letterSpacing: "0.28em",
+              textTransform: "uppercase",
+              color: "#E53E3E",
+            }}
+          >
+            Live
+          </span>
+        </div>
+
+        <div
           style={{
-            fontFamily: "Helvetica Neue, sans-serif",
-            fontSize: 9,
-            letterSpacing: "0.24em",
-            textTransform: "uppercase",
-            color: "#E53E3E",
+            fontFamily: "'Steelfish', 'Impact', sans-serif",
+            fontSize: "clamp(2.4rem, 6vw, 3.8rem)",
+            color: "#FFFFFF",
+            lineHeight: 1,
+            letterSpacing: "0.04em",
+            fontVariantNumeric: "tabular-nums",
+            textShadow: "0 0 32px rgba(229,62,62,0.3)",
+            display: "inline-flex",
+            alignItems: "baseline",
           }}
         >
-          Live
-        </span>
-      </div>
+          <Odometer value={value} />
+        </div>
 
-      <div
-        style={{
-          fontFamily: "'Steelfish', 'Impact', sans-serif",
-          fontSize: "clamp(1.75rem, 4vw, 2.6rem)",
-          color: "#FFFFFF",
-          lineHeight: 1,
-          letterSpacing: "0.04em",
-          fontVariantNumeric: "tabular-nums",
-          position: "relative",
-        }}
-      >
-        {format(value)}
-      </div>
-
-      <div
-        style={{
-          fontFamily: "Helvetica Neue, sans-serif",
-          fontSize: "0.85rem",
-          color: "rgba(255,255,255,0.7)",
-          lineHeight: 1.45,
-          display: "flex",
-          alignItems: "center",
-          position: "relative",
-        }}
-      >
-        {label}
-        <Tooltip content={tooltip} position="top" />
+        <div
+          style={{
+            fontFamily: "Helvetica Neue, sans-serif",
+            fontSize: "clamp(0.85rem, 1.4vw, 1rem)",
+            color: "rgba(255,255,255,0.75)",
+            lineHeight: 1.5,
+            display: "flex",
+            alignItems: "center",
+            maxWidth: 360,
+          }}
+        >
+          {label}
+          <Tooltip content={tooltip} position="top" />
+        </div>
       </div>
 
       <style>{`
         @keyframes mag-pulse {
           0% { transform: scale(1); opacity: 0.6; }
-          100% { transform: scale(2.2); opacity: 0; }
+          100% { transform: scale(2.4); opacity: 0; }
         }
       `}</style>
     </div>

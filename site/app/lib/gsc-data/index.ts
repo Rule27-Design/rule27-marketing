@@ -20,6 +20,11 @@ export { freedomdevData } from "./freedomdev";
 export { solomonsignalData } from "./solomonsignal";
 export { aniltxData } from "./aniltx";
 export { ladjinnData } from "./ladjinn";
+export {
+  vertexRoofingData,
+  harvestTableData,
+  ridgebackPowersportsData,
+} from "./mocks";
 
 // Lookup by slug
 import { nmhlData } from "./nmhl";
@@ -27,6 +32,11 @@ import { freedomdevData } from "./freedomdev";
 import { solomonsignalData } from "./solomonsignal";
 import { aniltxData } from "./aniltx";
 import { ladjinnData } from "./ladjinn";
+import {
+  vertexRoofingData,
+  harvestTableData,
+  ridgebackPowersportsData,
+} from "./mocks";
 import type { CompanyGSCData } from "./types";
 
 export const GSC_DATA: Record<string, CompanyGSCData> = {
@@ -35,6 +45,9 @@ export const GSC_DATA: Record<string, CompanyGSCData> = {
   solomonsignal: solomonsignalData,
   aniltx: aniltxData,
   ladjinn: ladjinnData,
+  vertexroofing: vertexRoofingData,
+  harvesttable: harvestTableData,
+  ridgebackpowersports: ridgebackPowersportsData,
 };
 
 /** Get company GSC data by slug. Returns undefined for unknown slugs. */

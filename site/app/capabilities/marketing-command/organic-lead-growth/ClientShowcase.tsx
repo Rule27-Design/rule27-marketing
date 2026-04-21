@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { Tooltip } from "@/app/components/Tooltip";
 import { GrowthGraph } from "./GrowthGraph";
 import type { ClientEntry } from "./data/clients";
@@ -20,6 +21,17 @@ function deriveDomain(meta: ClientEntry["data"]["meta"]): string {
 
 export function ClientShowcase({ clients }: ClientShowcaseProps) {
   const [activeSlug, setActiveSlug] = useState(clients[0]?.slug ?? "");
+
+  // Re-sync activeSlug when the clients prop changes (e.g., industry switch).
+  // Without this, activeSlug could reference a slug that is no longer in the
+  // filtered list, which would silently fall back to clients[0] and never
+  // update when the user clicks a different entry.
+  useEffect(() => {
+    if (clients.length === 0) return;
+    const hasCurrent = clients.some((c) => c.slug === activeSlug);
+    if (!hasCurrent) setActiveSlug(clients[0].slug);
+  }, [clients, activeSlug]);
+
   const active =
     clients.find((c) => c.slug === activeSlug) ?? clients[0];
 
@@ -106,17 +118,44 @@ export function ClientShowcase({ clients }: ClientShowcaseProps) {
                 if (!isActive) e.currentTarget.style.background = "transparent";
               }}
             >
-              <span
-                style={{
-                  fontFamily: "'Steelfish', 'Impact', sans-serif",
-                  fontSize: "1.05rem",
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                  color: isActive ? "#111" : "rgba(0,0,0,0.78)",
-                }}
-              >
-                {entry.data.meta.name}
-              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                {entry.data.meta.logo ? (
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 2,
+                      background: "#FFFFFF",
+                      border: "1px solid rgba(0,0,0,0.08)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                      overflow: "hidden",
+                      position: "relative",
+                    }}
+                  >
+                    <Image
+                      src={entry.data.meta.logo}
+                      alt={entry.data.meta.name}
+                      width={24}
+                      height={24}
+                      style={{ objectFit: "contain", width: "auto", height: "auto", maxWidth: 24, maxHeight: 24 }}
+                    />
+                  </div>
+                ) : null}
+                <span
+                  style={{
+                    fontFamily: "'Steelfish', 'Impact', sans-serif",
+                    fontSize: "1.05rem",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    color: isActive ? "#111" : "rgba(0,0,0,0.78)",
+                  }}
+                >
+                  {entry.data.meta.name}
+                </span>
+              </div>
               <span
                 style={{
                   fontFamily: "Helvetica Neue, sans-serif",
@@ -142,15 +181,13 @@ export function ClientShowcase({ clients }: ClientShowcaseProps) {
           minWidth: 0,
         }}
       >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={active.slug}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.4 }}
-            style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
-          >
+        <motion.div
+          key={active.slug}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
+        >
             <GrowthGraph
               dataPoints={dataPoints}
               domain={domain}
@@ -234,8 +271,7 @@ export function ClientShowcase({ clients }: ClientShowcaseProps) {
                 {meta.description}
               </p>
             </div>
-          </motion.div>
-        </AnimatePresence>
+        </motion.div>
       </div>
 
       <style>{`

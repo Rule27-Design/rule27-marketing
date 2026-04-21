@@ -1417,6 +1417,32 @@ export default function CaseStudiesView({
     businessStage: string[];
   }>({ industry: [], serviceType: [], businessStage: [] });
 
+  // Hydrate filters from URL search params on mount so deep links like
+  // `/case-studies?service=Organic%20Lead%20Growth` pre-apply the filter.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const initial: {
+      industry: string[];
+      serviceType: string[];
+      businessStage: string[];
+    } = { industry: [], serviceType: [], businessStage: [] };
+    const serviceParam = params.getAll("service");
+    const industryParam = params.getAll("industry");
+    const stageParam = params.getAll("stage");
+    if (serviceParam.length > 0) initial.serviceType = serviceParam;
+    if (industryParam.length > 0) initial.industry = industryParam;
+    if (stageParam.length > 0) initial.businessStage = stageParam;
+    if (
+      initial.serviceType.length +
+        initial.industry.length +
+        initial.businessStage.length >
+      0
+    ) {
+      setActiveFilters(initial);
+    }
+  }, []);
+
   // Persist view mode
   useEffect(() => {
     if (typeof window !== "undefined") {

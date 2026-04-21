@@ -6,8 +6,9 @@ import { useSearchParams } from "next/navigation";
 import { motion, useInView } from "framer-motion";
 import { ScrollProgress } from "@/app/components/ScrollProgress";
 import { Tooltip } from "@/app/components/Tooltip";
-import { ContextualPopup } from "@/app/components/ContextualPopup";
 import { CalendlyModal } from "@/app/components/CalendlyModal";
+
+import { OLGDomainPopup } from "./OLGDomainPopup";
 
 import { IndustryModal } from "./IndustryModal";
 import { ClientShowcase } from "./ClientShowcase";
@@ -17,7 +18,7 @@ import { DomainCaptureForm } from "./DomainCaptureForm";
 import { WaitlistInput } from "./WaitlistInput";
 import { CTACard } from "./CTACard";
 import { VideoSection } from "./VideoSection";
-import { AccentStrip, DotGrid, FloatingGraphShapes } from "./decor";
+import { AccentStrip, ArchGridBackdrop, DotGrid, FloatingGraphShapes } from "./decor";
 import { ProofJuxtaposition } from "./ProofJuxtaposition";
 import { RevenueTimeline } from "./RevenueTimeline";
 import { WeeklyReportPreview } from "./WeeklyReportPreview";
@@ -291,7 +292,6 @@ function ExperienceInner({ supabase }: { supabase: OLGSupabaseProps }) {
         headline={industry.headline}
         clients={clients}
         onTrack={track}
-        relatedArticle={supabase.recentArticles?.[0]}
       />
 
       {/* NMHL ✓ vs AniltX V1 ✗ - the killer Lego piece */}
@@ -423,13 +423,12 @@ function ExperienceInner({ supabase }: { supabase: OLGSupabaseProps }) {
       {/* Beat 6 - Post-conversion exit */}
       <Beat6Exit onTrack={track} supabase={supabase} />
 
-      {/* Persistent: scroll-depth contextual popup */}
-      <ContextualPopup
-        triggerDepth={0.6}
-        title="Want your exact numbers?"
-        text="We can show you your page count vs your top 3 local competitors in under 60 minutes. Free."
-        ctaText="Get my free analysis"
-        serviceSlug="olg-mirror-popup"
+      {/* Scroll-depth + exit-intent domain capture popup */}
+      <OLGDomainPopup
+        triggerDepth={0.45}
+        defaultDomain={sessionRef.current.domain ?? ""}
+        onSubmit={handleDomainSubmit}
+        storageKey="olg-domain-popup-dismissed"
       />
 
       {/* Sticky bar */}
@@ -689,12 +688,10 @@ function Beat2Proof({
   headline,
   clients,
   onTrack,
-  relatedArticle,
 }: {
   headline: string;
   clients: ReturnType<typeof getClientsForIndustry>;
   onTrack: (event: string, payload?: unknown) => void;
-  relatedArticle?: NonNullable<OLGSupabaseProps["recentArticles"]>[number];
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
@@ -715,24 +712,44 @@ function Beat2Proof({
       <SectionHeader eyebrow="The proof" title={headline} />
       <ClientShowcase clients={clients} />
 
-      {relatedArticle && (
-        <div
+      <div
+        style={{
+          marginTop: "1.75rem",
+          display: "flex",
+          justifyContent: "flex-end",
+        }}
+      >
+        <Link
+          href="/case-studies?service=Organic%20Lead%20Growth"
+          onClick={() =>
+            onTrack("olg_case_studies_link_clicked", { source: "beat2_proof" })
+          }
           style={{
-            marginTop: "1.5rem",
-            fontFamily: "Helvetica Neue, sans-serif",
-            fontSize: "0.85rem",
-            color: "rgba(0,0,0,0.45)",
+            fontFamily: "'Steelfish', 'Impact', sans-serif",
+            fontSize: "0.95rem",
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: "#E53E3E",
+            textDecoration: "none",
+            padding: "0.55rem 0.9rem",
+            border: "1px solid rgba(229,62,62,0.4)",
+            background: "rgba(229,62,62,0.05)",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            transition: "background 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(229,62,62,0.12)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(229,62,62,0.05)";
           }}
         >
-          Related:{" "}
-          <Link
-            href={`/articles/${relatedArticle.slug}`}
-            style={{ color: "#E53E3E", textDecoration: "underline" }}
-          >
-            {relatedArticle.title} →
-          </Link>
-        </div>
-      )}
+          See every OLG case study
+          <span aria-hidden>→</span>
+        </Link>
+      </div>
     </section>
   );
 }
@@ -1067,8 +1084,11 @@ function Beat4Mirror({
         padding: "clamp(4rem, 8vw, 6rem) 1.5rem",
         maxWidth: 1100,
         margin: "0 auto",
+        position: "relative",
       }}
     >
+      <ArchGridBackdrop opacity={0.09} />
+      <div style={{ position: "relative", zIndex: 1 }}>
       <SectionHeader eyebrow="The mirror" title={industry.mirrorLine} centered />
 
       <div
@@ -1153,6 +1173,7 @@ function Beat4Mirror({
           }
         }
       `}</style>
+      </div>
     </section>
   );
 }

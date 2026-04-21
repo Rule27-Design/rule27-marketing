@@ -24,6 +24,10 @@ export interface CompanyMeta {
   accentColor: string;        // CSS var e.g. "var(--byte-cyan)"
   accentRGB: string;          // raw RGB for SVGs e.g. "39, 194, 242"
   hasData: boolean;
+  /** Synthetic entry used only for visual variety in the showcase. No
+   *  linked case_studies row, no real GSC export backing the curve. Kept
+   *  separate so we can filter these out of any "real client" display. */
+  isMock?: boolean;
   headlineStat: string;
   headlineUnit: string;
   timeframeLabel: string;
