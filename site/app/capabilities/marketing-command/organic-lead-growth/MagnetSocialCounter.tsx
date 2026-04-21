@@ -13,25 +13,28 @@ interface MagnetSocialCounterProps {
   durationMs?: number;
 }
 
-const DIGIT_HEIGHT_REM = 3.4;
+/** Digit column is sized in `em` (relative to the parent's font-size) so the
+ *  odometer cell scales with the clamp() sizing around it and never clips
+ *  cap/descender height no matter how large the banner renders. */
+const DIGIT_HEIGHT_EM = 1.1;
 
 function OdometerDigit({ target }: { target: number }) {
   return (
     <span
       style={{
         display: "inline-block",
-        width: "0.7em",
-        height: `${DIGIT_HEIGHT_REM}rem`,
+        width: "0.62em",
+        height: `${DIGIT_HEIGHT_EM}em`,
         overflow: "hidden",
         position: "relative",
-        verticalAlign: "bottom",
+        verticalAlign: "middle",
       }}
     >
       <span
         style={{
           display: "flex",
           flexDirection: "column",
-          transform: `translateY(-${target * DIGIT_HEIGHT_REM}rem)`,
+          transform: `translateY(-${target * DIGIT_HEIGHT_EM}em)`,
           transition: "transform 900ms cubic-bezier(0.22, 0.61, 0.36, 1)",
         }}
       >
@@ -39,9 +42,10 @@ function OdometerDigit({ target }: { target: number }) {
           <span
             key={i}
             style={{
-              height: `${DIGIT_HEIGHT_REM}rem`,
-              lineHeight: `${DIGIT_HEIGHT_REM}rem`,
+              height: `${DIGIT_HEIGHT_EM}em`,
+              lineHeight: `${DIGIT_HEIGHT_EM}em`,
               textAlign: "center",
+              display: "block",
             }}
           >
             {i}
@@ -55,7 +59,13 @@ function OdometerDigit({ target }: { target: number }) {
 function Odometer({ value }: { value: number }) {
   const str = Math.floor(value).toLocaleString();
   return (
-    <span style={{ display: "inline-flex", alignItems: "baseline" }}>
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        lineHeight: DIGIT_HEIGHT_EM,
+      }}
+    >
       {str.split("").map((ch, i) =>
         /[0-9]/.test(ch) ? (
           <OdometerDigit key={i} target={Number(ch)} />
@@ -63,10 +73,13 @@ function Odometer({ value }: { value: number }) {
           <span
             key={i}
             style={{
-              display: "inline-block",
-              height: `${DIGIT_HEIGHT_REM}rem`,
-              lineHeight: `${DIGIT_HEIGHT_REM}rem`,
-              padding: "0 0.02em",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: `${DIGIT_HEIGHT_EM}em`,
+              lineHeight: `${DIGIT_HEIGHT_EM}em`,
+              padding: "0 0.06em",
+              verticalAlign: "middle",
             }}
           >
             {ch}
@@ -146,7 +159,7 @@ export function MagnetSocialCounter({
         style={{
           maxWidth: 1440,
           margin: "0 auto",
-          padding: "1.6rem clamp(1.25rem, 4vw, 3rem)",
+          padding: "2.2rem clamp(1.25rem, 4vw, 3rem)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -202,12 +215,13 @@ export function MagnetSocialCounter({
             fontFamily: "'Steelfish', 'Impact', sans-serif",
             fontSize: "clamp(2.4rem, 6vw, 3.8rem)",
             color: "#FFFFFF",
-            lineHeight: 1,
+            lineHeight: DIGIT_HEIGHT_EM,
             letterSpacing: "0.04em",
             fontVariantNumeric: "tabular-nums",
             textShadow: "0 0 32px rgba(229,62,62,0.3)",
             display: "inline-flex",
-            alignItems: "baseline",
+            alignItems: "center",
+            padding: "0.1em 0",
           }}
         >
           <Odometer value={value} />
