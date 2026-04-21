@@ -8,7 +8,7 @@ import type { IndustrySlug } from "./industries";
 /**
  * The showcase reads canonical client data directly from /app/lib/gsc-data/.
  * No per-component synthetic curves, no invented micro-copy, no
- * "real vs mock" distinction — every client here is real.
+ * "real vs mock" distinction - every client here is real.
  *
  * Industry tags map each client to one or more of our industry slugs so the
  * showcase can surface the most relevant clients when an industry is selected.

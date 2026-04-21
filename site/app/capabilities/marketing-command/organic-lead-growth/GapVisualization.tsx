@@ -21,7 +21,7 @@ export function GapVisualization({ industry, magnet }: GapVisualizationProps) {
 
   const isLive = !!magnet;
 
-  // Data source — live magnet wins, else industry defaults
+  // Data source - live magnet wins, else industry defaults
   const yourValue = magnet
     ? magnet.siteMetrics.pagesIndexed
     : (industry.avgPagesLow + industry.avgPagesHigh) / 2;
@@ -53,7 +53,7 @@ export function GapVisualization({ industry, magnet }: GapVisualizationProps) {
   const yourBar = (yourValue / max) * 100;
 
   const title = magnet
-    ? `The ${magnet.industry.toLowerCase()} gap — your actual numbers`
+    ? `The ${magnet.industry.toLowerCase()} gap - your actual numbers`
     : `The ${industry.shortName} gap`;
 
   const subtitle = magnet
@@ -212,7 +212,7 @@ export function GapVisualization({ industry, magnet }: GapVisualizationProps) {
                 color: "#E53E3E",
               }}
             >
-              Revenue you&apos;re missing — your math
+              Revenue you&apos;re missing - your math
             </div>
             <div
               style={{

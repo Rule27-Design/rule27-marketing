@@ -155,7 +155,7 @@ export function DiagonalSweep() {
 }
 
 /**
- * Drifting graph-like SVG shapes — positioned absolute behind a section.
+ * Drifting graph-like SVG shapes - positioned absolute behind a section.
  * Low opacity, slow drift. Purely atmospheric.
  */
 export function FloatingGraphShapes({ count = 3 }: { count?: number }) {

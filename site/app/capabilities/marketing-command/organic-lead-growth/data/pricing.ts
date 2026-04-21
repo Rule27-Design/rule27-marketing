@@ -28,7 +28,7 @@ export const PRICING_TIERS: PricingTier[] = [
     revenueMin: 0,
     revenueMax: 10000,
     description:
-      "1,000 pages built, indexed, and handed off in 4 weeks. The standard deployment — fits most service businesses targeting local-to-regional organic reach.",
+      "1,000 pages built, indexed, and handed off in 4 weeks. The standard deployment - fits most service businesses targeting local-to-regional organic reach.",
     inclusions: [
       "Design system + SEO strategy doc",
       "Custom Next.js site, CMS setup with full access",
@@ -50,7 +50,7 @@ export const PRICING_TIERS: PricingTier[] = [
     revenueMin: 10000,
     revenueMax: 25000,
     description:
-      "2,500 pages for markets where you need broader coverage — more city / service combinations, more buyer-intent queries, or a complete content architecture reset. Also the entry point for e-commerce migrations.",
+      "2,500 pages for markets where you need broader coverage - more city / service combinations, more buyer-intent queries, or a complete content architecture reset. Also the entry point for e-commerce migrations.",
     inclusions: [
       "Everything in Standard",
       "2.5× the page surface area",
@@ -94,7 +94,7 @@ export const PRICING_TIERS: PricingTier[] = [
     revenueMin: 60000,
     revenueMax: null,
     description:
-      "10,000+ pages. Custom architecture. Multi-market, multi-vertical, or enterprise-scale deployments. We scope per project — price range starts at $20K and scales with page count, integration depth, and content complexity.",
+      "10,000+ pages. Custom architecture. Multi-market, multi-vertical, or enterprise-scale deployments. We scope per project - price range starts at $20K and scales with page count, integration depth, and content complexity.",
     inclusions: [
       "Everything in Dominate",
       "Custom page types + templates",

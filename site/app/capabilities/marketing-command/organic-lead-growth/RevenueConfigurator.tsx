@@ -104,7 +104,7 @@ export function RevenueConfigurator() {
           }}
         >
           Drag the slider. We&apos;ll show you the page architecture that
-          produces it — and the package it maps to. Same numbers we used to
+          produces it - and the package it maps to. Same numbers we used to
           get NMHL from 79 to 7,300 daily impressions.
         </p>
       </div>

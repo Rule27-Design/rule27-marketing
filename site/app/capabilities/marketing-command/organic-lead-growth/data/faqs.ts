@@ -22,7 +22,7 @@ export const FAQS: FAQ[] = [
   },
   {
     q: "What happens after the 4 weeks?",
-    a: "The retainer ($1,500/mo on the standard tier) kicks in 30 days after final project payment. Weekly performance reports, CTR optimization, content refresh, 5-20 new pages a month, competitor monitoring, dedicated Slack channel, bi-weekly strategy calls. 4-month minimum, then month-to-month. The retainer is momentum — not maintenance.",
+    a: "The retainer ($1,500/mo on the standard tier) kicks in 30 days after final project payment. Weekly performance reports, CTR optimization, content refresh, 5-20 new pages a month, competitor monitoring, dedicated Slack channel, bi-weekly strategy calls. 4-month minimum, then month-to-month. The retainer is momentum - not maintenance.",
   },
   {
     q: "Are you using AI to write the content?",

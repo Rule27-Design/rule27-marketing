@@ -23,7 +23,7 @@ function format(n: number): string {
 export function MagnetSocialCounter({
   total,
   label = "Companies in our magnet pipeline",
-  tooltip = "Pipeline count = businesses we've researched and have magnet reports prepared for — regardless of whether they've engaged yet. Social proof from scale, not claimed outcomes.",
+  tooltip = "Pipeline count = businesses we've researched and have magnet reports prepared for - regardless of whether they've engaged yet. Social proof from scale, not claimed outcomes.",
   durationMs = 2400,
 }: MagnetSocialCounterProps) {
   const ref = useRef<HTMLDivElement>(null);

@@ -12,7 +12,7 @@ export const COMPANY_META: Record<string, CompanyMeta> = {
     headlineUnit: "organic growth",
     timeframeLabel: "7 months",
     description:
-      "Deployed 7,000+ programmatic SEO pages. Grew from 79 to 7,300+ daily impressions — a 92x increase in organic visibility over 7 months.",
+      "Deployed 7,000+ programmatic SEO pages. Grew from 79 to 7,300+ daily impressions - a 92x increase in organic visibility over 7 months.",
     cardStats: [
       { label: "Pages", value: "7,000+" },
       { label: "Impressions", value: "7.3K/day" },
@@ -37,7 +37,7 @@ export const COMPANY_META: Record<string, CompanyMeta> = {
     headlineUnit: "organic growth",
     timeframeLabel: "12 months",
     description:
-      "Built and deployed 1,000+ optimized pages. Grew from 39 to 3,900+ daily impressions — a 99x increase over 12 months of continuous optimization.",
+      "Built and deployed 1,000+ optimized pages. Grew from 39 to 3,900+ daily impressions - a 99x increase over 12 months of continuous optimization.",
     cardStats: [
       { label: "Pages", value: "1,000+" },
       { label: "Impressions", value: "3.9K/day" },
@@ -87,7 +87,7 @@ export const COMPANY_META: Record<string, CompanyMeta> = {
     headlineUnit: "organic growth",
     timeframeLabel: "3 months",
     description:
-      "Visitor analytics platform. Grew from 5 to 148 daily impressions — a 30x increase in 3 months with early-stage SEO infrastructure.",
+      "Visitor analytics platform. Grew from 5 to 148 daily impressions - a 30x increase in 3 months with early-stage SEO infrastructure.",
     cardStats: [
       { label: "Impressions", value: "148/day" },
       { label: "Growth", value: "30x" },
@@ -106,7 +106,7 @@ export const COMPANY_META: Record<string, CompanyMeta> = {
     accentColor: "var(--byte-blue)",
     accentRGB: "37, 99, 235",
     hasData: false,
-    headlineStat: "—",
+    headlineStat: "-",
     headlineUnit: "GSC coming soon",
     timeframeLabel: "launching",
     description: "",

@@ -80,7 +80,7 @@ export function WeeklyReportPreview() {
             }}
           >
             Every retainer week, your account team hand-validates your numbers
-            and writes 3-5 insights — what worked, what to watch, what to do
+            and writes 3-5 insights - what worked, what to watch, what to do
             next. No vanity dashboards. No exported PDFs from a tool you
             can&apos;t verify.
           </p>
@@ -101,7 +101,7 @@ export function WeeklyReportPreview() {
               "Top 10 queries by impressions with position trend",
               "Identified leads with intent score (via AniltX)",
               "Technical health (Core Web Vitals, indexing status)",
-              "3-5 next steps from your account team — not auto-generated",
+              "3-5 next steps from your account team - not auto-generated",
             ].map((line) => (
               <li
                 key={line}

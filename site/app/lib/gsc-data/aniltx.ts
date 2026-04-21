@@ -2,7 +2,7 @@ import type { CompanyGSCData } from "./types";
 import { COMPANY_META } from "./companies";
 
 /**
- * AniltX GSC data — real export from Google Search Console.
+ * AniltX GSC data - real export from Google Search Console.
  * 92 days: 2025-12-18 → 2026-03-19
  * Growth: 5 → 148 impressions/day (29.6x)
  */
