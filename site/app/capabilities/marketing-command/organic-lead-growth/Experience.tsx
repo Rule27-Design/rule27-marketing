@@ -22,6 +22,7 @@ import { AccentStrip, ArchGridBackdrop, DotGrid, FloatingGraphShapes } from "./d
 import { ProofJuxtaposition } from "./ProofJuxtaposition";
 import { QueryGapProbe } from "./QueryGapProbe";
 import { DomainDuel } from "./DomainDuel";
+import { TimeMachine } from "./TimeMachine";
 import { RevenueTimeline } from "./RevenueTimeline";
 import { WeeklyReportPreview } from "./WeeklyReportPreview";
 import { RevenueConfigurator } from "./RevenueConfigurator";
@@ -271,6 +272,16 @@ function ExperienceInner({ supabase }: { supabase: OLGSupabaseProps }) {
 
       {/* Video - env-gated placeholder, hidden in prod */}
       <VideoSection industryDisplay={industry.displayName} />
+
+      {/* Time Machine — real SolomonSignal curve replayed day-by-day. First
+          real-data moment the visitor can touch. */}
+      <TimeMachine
+        onCaptureClick={() => track("time_machine_capture_clicked", {})}
+        onDomainSubmit={(d) => {
+          handleDomainSubmit(d);
+          track("time_machine_domain_submitted", { domain: d });
+        }}
+      />
 
       {/* Social proof counter — rendered only for anon (no magnet match).
           Magnet-matched visitors already see their own live data in Beat 3,
