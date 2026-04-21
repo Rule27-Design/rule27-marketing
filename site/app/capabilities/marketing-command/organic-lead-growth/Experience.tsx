@@ -21,6 +21,7 @@ import { VideoSection } from "./VideoSection";
 import { AccentStrip, ArchGridBackdrop, DotGrid, FloatingGraphShapes } from "./decor";
 import { ProofJuxtaposition } from "./ProofJuxtaposition";
 import { QueryGapProbe } from "./QueryGapProbe";
+import { DomainDuel } from "./DomainDuel";
 import { RevenueTimeline } from "./RevenueTimeline";
 import { WeeklyReportPreview } from "./WeeklyReportPreview";
 import { RevenueConfigurator } from "./RevenueConfigurator";
@@ -354,6 +355,20 @@ function ExperienceInner({ supabase }: { supabase: OLGSupabaseProps }) {
 
       {/* Beat 3 - Revelation (woven Lego pieces) */}
       <Beat3Revelation industry={industry} magnet={magnet} />
+
+      {/* Domain Duel — twelve-week animated race, status-quo first then
+          Rule27-intervention overlay. Lego piece: the prospect plays the
+          future with their own hands. */}
+      <DomainDuel
+        industry={industry}
+        userDomain={sessionRef.current.domain ?? undefined}
+        onRunNumbers={() => {
+          track("domain_duel_run_numbers_clicked", {});
+          document
+            .getElementById("domain-capture")
+            ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }}
+      />
 
       <section
         style={{
