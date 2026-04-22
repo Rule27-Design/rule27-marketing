@@ -21,8 +21,8 @@ export interface CompanyMeta {
   slug: string;
   name: string;
   logo: string;
-  accentColor: string;        // CSS var e.g. "var(--byte-cyan)"
-  accentRGB: string;          // raw RGB for SVGs e.g. "39, 194, 242"
+  accentColor: string;        // Hex color string, e.g. "#27C2F2"
+  accentRGB: string;          // raw RGB for SVGs, e.g. "39, 194, 242"
   hasData: boolean;
   /** Synthetic entry used only for visual variety in the showcase. No
    *  linked case_studies row, no real GSC export backing the curve. Kept
