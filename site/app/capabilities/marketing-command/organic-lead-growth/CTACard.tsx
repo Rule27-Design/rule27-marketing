@@ -258,6 +258,8 @@ function CalendlyButtonWrapper({ children }: { children: React.ReactNode }) {
     <>
       <button
         onClick={() => setOpen(true)}
+        data-funnel="demo-book"
+        data-funnel-source="cta-card"
         style={{
           background: "none",
           border: "none",

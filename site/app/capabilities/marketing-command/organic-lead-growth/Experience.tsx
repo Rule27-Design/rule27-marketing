@@ -1485,6 +1485,8 @@ function Beat6Exit({
               setCalendlyOpen(true);
               onTrack("demo_book_clicked", {});
             }}
+            data-funnel="demo-book"
+            data-funnel-source="beat6-exit"
             style={{
               fontFamily: "'Steelfish', 'Impact', sans-serif",
               fontSize: "13px",

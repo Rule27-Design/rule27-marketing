@@ -170,6 +170,8 @@ export function FAQSection() {
         </p>
         <button
           onClick={() => setCalendlyOpen(true)}
+          data-funnel="demo-book"
+          data-funnel-source="faq"
           style={{
             fontFamily: "'Steelfish', 'Impact', sans-serif",
             fontSize: "13px",

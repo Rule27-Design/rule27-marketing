@@ -197,6 +197,8 @@ export function DomainCaptureForm({
             <button
               type="button"
               onClick={() => setCalendlyOpen(true)}
+              data-funnel="demo-book"
+              data-funnel-source="domain-capture-confirmation"
               style={{
                 fontFamily: "'Steelfish', 'Impact', sans-serif",
                 fontSize: "13px",

@@ -175,6 +175,8 @@ export function SEOBodySection() {
           and we&apos;ll send you the gap analysis in under an hour. Or{" "}
           <button
             onClick={() => setCalendlyOpen(true)}
+            data-funnel="demo-book"
+            data-funnel-source="seo-body"
             style={{
               background: "none",
               border: "none",

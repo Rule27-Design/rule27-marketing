@@ -574,6 +574,9 @@ function TierCard({
 
       <button
         onClick={onBook}
+        data-funnel="demo-book"
+        data-funnel-source="revenue-configurator"
+        data-tier={tier.id}
         style={{
           marginTop: "0.5rem",
           fontFamily: "'Steelfish', 'Impact', sans-serif",
