@@ -205,6 +205,8 @@ function IndustryButton({
   return (
     <motion.button
       onClick={onClick}
+      data-funnel="industry-select"
+      data-industry={industry.slug}
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2 }}
       style={{

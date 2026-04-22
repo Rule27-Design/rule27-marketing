@@ -24,8 +24,9 @@ export interface CompanyMeta {
   accentColor: string;        // Hex color string, e.g. "#27C2F2"
   accentRGB: string;          // raw RGB for SVGs, e.g. "39, 194, 242"
   hasData: boolean;
-  /** Synthetic showcase entry. No linked case_studies row, no real GSC
-   *  export backing the curve. Filtered out of any "real client" surface. */
+  /** Synthetic entry used only for visual variety in the showcase. No
+   *  linked case_studies row, no real GSC export backing the curve. Kept
+   *  separate so we can filter these out of any "real client" display. */
   isMock?: boolean;
   headlineStat: string;
   headlineUnit: string;

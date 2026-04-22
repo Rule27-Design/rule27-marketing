@@ -6,8 +6,9 @@ import { useSearchParams } from "next/navigation";
 import { motion, useInView } from "framer-motion";
 import { ScrollProgress } from "@/app/components/ScrollProgress";
 import { Tooltip } from "@/app/components/Tooltip";
-import { ContextualPopup } from "@/app/components/ContextualPopup";
 import { CalendlyModal } from "@/app/components/CalendlyModal";
+
+import { OLGDomainPopup } from "./OLGDomainPopup";
 
 import { IndustryModal } from "./IndustryModal";
 import { ClientShowcase } from "./ClientShowcase";
@@ -17,8 +18,12 @@ import { DomainCaptureForm } from "./DomainCaptureForm";
 import { WaitlistInput } from "./WaitlistInput";
 import { CTACard } from "./CTACard";
 import { VideoSection } from "./VideoSection";
-import { AccentStrip, DotGrid, FloatingGraphShapes } from "./decor";
+import { AccentStrip, ArchGridBackdrop, DotGrid, FloatingGraphShapes } from "./decor";
 import { ProofJuxtaposition } from "./ProofJuxtaposition";
+import { QueryGapProbe } from "./QueryGapProbe";
+import { DomainDuel } from "./DomainDuel";
+import { TimeMachine } from "./TimeMachine";
+import { SERPAutopsy } from "./SERPAutopsy";
 import { RevenueTimeline } from "./RevenueTimeline";
 import { WeeklyReportPreview } from "./WeeklyReportPreview";
 import { RevenueConfigurator } from "./RevenueConfigurator";
@@ -183,12 +188,40 @@ function ExperienceInner({ supabase }: { supabase: OLGSupabaseProps }) {
     session.interactions = [...(session.interactions ?? []), entry];
     sessionRef.current = session;
     writeSession(session);
-    if (typeof window !== "undefined") {
-      // eslint-disable-next-line no-console
-      console.log("[OLG]", event, payload ?? "");
-      const w = window as unknown as { gtag?: (...args: unknown[]) => void };
-      w.gtag?.("event", event, (payload as Record<string, unknown>) ?? {});
-    }
+    if (typeof window === "undefined") return;
+
+    // eslint-disable-next-line no-console
+    console.log("[OLG]", event, payload ?? "");
+    const w = window as unknown as { gtag?: (...args: unknown[]) => void };
+    w.gtag?.("event", event, (payload as Record<string, unknown>) ?? {});
+
+    // Fan out to n8n via /api/track. Includes the lead_id threaded through
+    // the email UTM so n8n can write back to the right Rolodoo row without
+    // a by-email lookup.
+    const utm = new URLSearchParams(window.location.search);
+    const body = {
+      event,
+      lead_id: utm.get("lead_id") ? Number(utm.get("lead_id")) : undefined,
+      session_id: session.utm_campaign ? `${session.utm_campaign}-${session.utm_content ?? ""}` : undefined,
+      utm_source: session.utm_source,
+      utm_medium: session.utm_medium,
+      utm_campaign: session.utm_campaign,
+      utm_content: session.utm_content,
+      domain: session.domain || utm.get("domain") || undefined,
+      industry: session.industry,
+      first_name: session.first_name || utm.get("first_name") || undefined,
+      company_name: session.company_name || utm.get("company_name") || undefined,
+      ts: new Date().toISOString(),
+      payload,
+    };
+    fetch("/api/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      keepalive: true,
+    }).catch(() => {
+      // Silent — fanout is best-effort, we already logged locally.
+    });
   }, []);
 
   const handleIndustrySelect = useCallback(
@@ -291,11 +324,24 @@ function ExperienceInner({ supabase }: { supabase: OLGSupabaseProps }) {
         headline={industry.headline}
         clients={clients}
         onTrack={track}
-        relatedArticle={supabase.recentArticles?.[0]}
       />
 
       {/* NMHL ✓ vs AniltX V1 ✗ - the killer Lego piece */}
       <ProofJuxtaposition />
+
+      {/* Query Gap Probe — user-typed search → mock SERP with an empty slot
+          where their domain should be. Self-discovered pain. */}
+      <QueryGapProbe
+        industry={industry}
+        userDomain={sessionRef.current.domain ?? undefined}
+        onSubmitQuery={(q) => track("query_probe_submitted", { query: q })}
+        onCaptureClick={() => {
+          track("query_probe_capture_clicked", {});
+          document
+            .getElementById("domain-capture")
+            ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }}
+      />
 
       {/* High-impact CTA card - replaces flat ConversionBreak */}
       <section
@@ -339,6 +385,20 @@ function ExperienceInner({ supabase }: { supabase: OLGSupabaseProps }) {
 
       {/* Beat 3 - Revelation (woven Lego pieces) */}
       <Beat3Revelation industry={industry} magnet={magnet} />
+
+      {/* Domain Duel — twelve-week animated race, status-quo first then
+          Rule27-intervention overlay. Lego piece: the prospect plays the
+          future with their own hands. */}
+      <DomainDuel
+        industry={industry}
+        userDomain={sessionRef.current.domain ?? undefined}
+        onRunNumbers={() => {
+          track("domain_duel_run_numbers_clicked", {});
+          document
+            .getElementById("domain-capture")
+            ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }}
+      />
 
       <section
         style={{
@@ -385,6 +445,19 @@ function ExperienceInner({ supabase }: { supabase: OLGSupabaseProps }) {
 
       <AccentStrip variant="right" height={100} />
 
+      {/* SERP Autopsy — tile the competitor's indexed surface, then toggle
+          to the user's grid. The contrast is visceral. */}
+      <SERPAutopsy
+        industry={industry}
+        userDomain={sessionRef.current.domain ?? undefined}
+        onCaptureClick={() => {
+          track("serp_autopsy_capture_clicked", {});
+          document
+            .getElementById("domain-capture")
+            ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }}
+      />
+
       {/* Beat 4 - The Mirror */}
       <Beat4Mirror
         industry={industry}
@@ -423,13 +496,12 @@ function ExperienceInner({ supabase }: { supabase: OLGSupabaseProps }) {
       {/* Beat 6 - Post-conversion exit */}
       <Beat6Exit onTrack={track} supabase={supabase} />
 
-      {/* Persistent: scroll-depth contextual popup */}
-      <ContextualPopup
-        triggerDepth={0.6}
-        title="Want your exact numbers?"
-        text="We can show you your page count vs your top 3 local competitors in under 60 minutes. Free."
-        ctaText="Get my free analysis"
-        serviceSlug="olg-mirror-popup"
+      {/* Scroll-depth + exit-intent domain capture popup */}
+      <OLGDomainPopup
+        triggerDepth={0.45}
+        defaultDomain={sessionRef.current.domain ?? ""}
+        onSubmit={handleDomainSubmit}
+        storageKey="olg-domain-popup-dismissed"
       />
 
       {/* Sticky bar */}
@@ -689,12 +761,10 @@ function Beat2Proof({
   headline,
   clients,
   onTrack,
-  relatedArticle,
 }: {
   headline: string;
   clients: ReturnType<typeof getClientsForIndustry>;
   onTrack: (event: string, payload?: unknown) => void;
-  relatedArticle?: NonNullable<OLGSupabaseProps["recentArticles"]>[number];
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
@@ -715,24 +785,44 @@ function Beat2Proof({
       <SectionHeader eyebrow="The proof" title={headline} />
       <ClientShowcase clients={clients} />
 
-      {relatedArticle && (
-        <div
+      <div
+        style={{
+          marginTop: "1.75rem",
+          display: "flex",
+          justifyContent: "flex-end",
+        }}
+      >
+        <Link
+          href="/case-studies?service=Organic%20Lead%20Growth"
+          onClick={() =>
+            onTrack("olg_case_studies_link_clicked", { source: "beat2_proof" })
+          }
           style={{
-            marginTop: "1.5rem",
-            fontFamily: "Helvetica Neue, sans-serif",
-            fontSize: "0.85rem",
-            color: "rgba(0,0,0,0.45)",
+            fontFamily: "'Steelfish', 'Impact', sans-serif",
+            fontSize: "0.95rem",
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: "#E53E3E",
+            textDecoration: "none",
+            padding: "0.55rem 0.9rem",
+            border: "1px solid rgba(229,62,62,0.4)",
+            background: "rgba(229,62,62,0.05)",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            transition: "background 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(229,62,62,0.12)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(229,62,62,0.05)";
           }}
         >
-          Related:{" "}
-          <Link
-            href={`/articles/${relatedArticle.slug}`}
-            style={{ color: "#E53E3E", textDecoration: "underline" }}
-          >
-            {relatedArticle.title} →
-          </Link>
-        </div>
-      )}
+          See every OLG case study
+          <span aria-hidden>→</span>
+        </Link>
+      </div>
     </section>
   );
 }
@@ -1067,8 +1157,11 @@ function Beat4Mirror({
         padding: "clamp(4rem, 8vw, 6rem) 1.5rem",
         maxWidth: 1100,
         margin: "0 auto",
+        position: "relative",
       }}
     >
+      <ArchGridBackdrop opacity={0.09} />
+      <div style={{ position: "relative", zIndex: 1 }}>
       <SectionHeader eyebrow="The mirror" title={industry.mirrorLine} centered />
 
       <div
@@ -1153,6 +1246,7 @@ function Beat4Mirror({
           }
         }
       `}</style>
+      </div>
     </section>
   );
 }
@@ -1485,6 +1579,8 @@ function Beat6Exit({
               setCalendlyOpen(true);
               onTrack("demo_book_clicked", {});
             }}
+            data-funnel="demo-book"
+            data-funnel-source="beat6-exit"
             style={{
               fontFamily: "'Steelfish', 'Impact', sans-serif",
               fontSize: "13px",

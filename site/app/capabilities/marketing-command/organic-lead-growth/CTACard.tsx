@@ -226,8 +226,17 @@ export function CTACard({
     return <CalendlyButtonWrapper>{Body}</CalendlyButtonWrapper>;
   }
   if (ctaHref) {
+    // Downloads (playbook, benchmarks PDFs) open in a new tab so the user
+    // doesn't lose their place on the page. Inquiry/other links navigate
+    // in place as usual.
+    const openInNewTab = variant === "download";
     return (
-      <Link href={ctaHref} style={{ textDecoration: "none", color: "inherit" }}>
+      <Link
+        href={ctaHref}
+        target={openInNewTab ? "_blank" : undefined}
+        rel={openInNewTab ? "noopener noreferrer" : undefined}
+        style={{ textDecoration: "none", color: "inherit" }}
+      >
         {Body}
       </Link>
     );
@@ -258,6 +267,8 @@ function CalendlyButtonWrapper({ children }: { children: React.ReactNode }) {
     <>
       <button
         onClick={() => setOpen(true)}
+        data-funnel="demo-book"
+        data-funnel-source="cta-card"
         style={{
           background: "none",
           border: "none",
