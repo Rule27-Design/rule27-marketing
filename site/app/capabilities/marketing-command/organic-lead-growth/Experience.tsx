@@ -105,7 +105,16 @@ function readSession(): SessionData {
 function writeSession(data: SessionData) {
   if (typeof window === "undefined") return;
   try {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    // Use a seen-set to drop circular references instead of crashing
+    const seen = new WeakSet<object>();
+    const safe = JSON.stringify(data, (_key, value) => {
+      if (typeof value === "object" && value !== null) {
+        if (seen.has(value)) return undefined;
+        seen.add(value);
+      }
+      return value;
+    });
+    sessionStorage.setItem(SESSION_KEY, safe);
   } catch {
     // ignore
   }
@@ -178,7 +187,19 @@ function ExperienceInner({ supabase }: { supabase: OLGSupabaseProps }) {
     }
 
     setHydrated(true);
-    track("page_view", { utms: fromQuery, magnet: !!(demoMagnet || leadId) });
+    // Only pass primitive UTM fields — NOT the full session (which contains
+    // `interactions`, causing a circular reference when stringified).
+    const utmsOnly = {
+      utm_source: fromQuery.utm_source,
+      utm_medium: fromQuery.utm_medium,
+      utm_campaign: fromQuery.utm_campaign,
+      utm_content: fromQuery.utm_content,
+      first_name: fromQuery.first_name,
+      company_name: fromQuery.company_name,
+      domain: fromQuery.domain,
+      industry: fromQuery.industry,
+    };
+    track("page_view", { utms: utmsOnly, magnet: !!(demoMagnet || leadId) });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
