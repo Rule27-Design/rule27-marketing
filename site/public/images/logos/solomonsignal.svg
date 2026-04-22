@@ -1,0 +1,74 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer circle (subtle) -->
+  <circle cx="256" cy="256" r="230" stroke="url(#ringGrad)" stroke-width="2" fill="none" opacity="0.4"/>
+  
+  <!-- Signal broadcast arcs - top right quadrant -->
+  <path d="M280 140 A130 130 0 0 1 372 232" stroke="url(#signalBlue)" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M280 180 A90 90 0 0 1 332 232" stroke="url(#signalBlue)" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M280 210 A50 50 0 0 1 302 232" stroke="url(#signalBlue)" stroke-width="4" fill="none" stroke-linecap="round"/>
+  
+  <!-- Signal broadcast arcs - top left quadrant -->
+  <path d="M232 140 A130 130 0 0 0 140 232" stroke="url(#signalBlue)" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M232 180 A90 90 0 0 0 180 232" stroke="url(#signalBlue)" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M232 210 A50 50 0 0 0 210 232" stroke="url(#signalBlue)" stroke-width="4" fill="none" stroke-linecap="round"/>
+  
+  <!-- Signal broadcast arcs - bottom right quadrant -->
+  <path d="M280 372 A130 130 0 0 0 372 280" stroke="url(#signalBlue)" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M280 332 A90 90 0 0 0 332 280" stroke="url(#signalBlue)" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M280 302 A50 50 0 0 0 302 280" stroke="url(#signalBlue)" stroke-width="4" fill="none" stroke-linecap="round"/>
+  
+  <!-- Signal broadcast arcs - bottom left quadrant -->
+  <path d="M232 372 A130 130 0 0 1 140 280" stroke="url(#signalBlue)" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M232 332 A90 90 0 0 1 180 280" stroke="url(#signalBlue)" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M232 302 A50 50 0 0 1 210 280" stroke="url(#signalBlue)" stroke-width="4" fill="none" stroke-linecap="round"/>
+  
+  <!-- Center Star of David (simplified) -->
+  <!-- Up triangle -->
+  <path d="M256 175 L315 280 L197 280 Z" 
+        stroke="url(#silverGrad)" stroke-width="8" fill="none" stroke-linejoin="round"/>
+  <!-- Down triangle -->
+  <path d="M256 337 L315 232 L197 232 Z" 
+        stroke="url(#silverGrad)" stroke-width="8" fill="none" stroke-linejoin="round"/>
+  
+  <!-- Center orb with glow -->
+  <circle cx="256" cy="256" r="40" fill="url(#orbGlow)" opacity="0.6"/>
+  <circle cx="256" cy="256" r="28" fill="url(#orbCore)"/>
+  <circle cx="256" cy="256" r="14" fill="#ffffff" opacity="0.95"/>
+  <circle cx="256" cy="256" r="8" fill="url(#innerBlue)"/>
+  
+  <defs>
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#c0c0c0"/>
+      <stop offset="100%" style="stop-color:#808080"/>
+    </linearGradient>
+    
+    <linearGradient id="signalBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5aafff"/>
+      <stop offset="100%" style="stop-color:#2a5a8f"/>
+    </linearGradient>
+    
+    <linearGradient id="silverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f0f0"/>
+      <stop offset="25%" style="stop-color:#a0a0a0"/>
+      <stop offset="50%" style="stop-color:#d0d0d0"/>
+      <stop offset="75%" style="stop-color:#888888"/>
+      <stop offset="100%" style="stop-color:#c0c0c0"/>
+    </linearGradient>
+    
+    <radialGradient id="orbGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#4a9eff"/>
+      <stop offset="100%" style="stop-color:#4a9eff" stop-opacity="0"/>
+    </radialGradient>
+    
+    <radialGradient id="orbCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#a8d4ff"/>
+      <stop offset="50%" style="stop-color:#4a9eff"/>
+      <stop offset="100%" style="stop-color:#1e3a5f"/>
+    </radialGradient>
+    
+    <radialGradient id="innerBlue" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#4a9eff"/>
+      <stop offset="100%" style="stop-color:#1e3a5f"/>
+    </radialGradient>
+  </defs>
+</svg>

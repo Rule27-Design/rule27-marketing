@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
+import { AnimatePresence, motion, useInView } from "framer-motion";
 import { CalendlyModal } from "@/app/components/CalendlyModal";
 import {
   PRICING_TIERS,
@@ -27,31 +27,40 @@ function formatPages(n: number): string {
   return n.toLocaleString();
 }
 
+/** End-of-quarter date anchor for honest scarcity copy. */
+function endOfQuarterLabel(now = new Date()): string {
+  const month = now.getMonth();
+  const year = now.getFullYear();
+  const endMonth = month - (month % 3) + 2;
+  const end = new Date(year, endMonth + 1, 0);
+  return end.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 export function RevenueConfigurator() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const [revenue, setRevenue] = useState(DEFAULT_REVENUE);
+  const [moved, setMoved] = useState(false);
   const [calendlyOpen, setCalendlyOpen] = useState(false);
+  const [revealOpen, setRevealOpen] = useState(false);
+  const [emailSent, setEmailSent] = useState<string | null>(null);
+  const [quarterEnd, setQuarterEnd] = useState<string | null>(null);
+
+  useEffect(() => {
+    setQuarterEnd(endOfQuarterLabel());
+  }, []);
 
   const activeTier = useMemo(() => getTierForRevenue(revenue), [revenue]);
   const pagesNeeded = useMemo(() => getPagesForRevenue(revenue), [revenue]);
 
-  // Scroll-focus the matched tier after the user stops adjusting for 1.2s
-  const activeTierIdRef = useRef(activeTier.id);
-  useEffect(() => {
-    activeTierIdRef.current = activeTier.id;
-    const handle = setTimeout(() => {
-      if (activeTierIdRef.current !== activeTier.id) return;
-      const el = document.getElementById(`tier-${activeTier.id}`);
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const visible = rect.top >= 0 && rect.bottom <= window.innerHeight;
-      if (!visible) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    }, 1200);
-    return () => clearTimeout(handle);
-  }, [activeTier.id]);
+  const handleSlide = (next: number) => {
+    setRevenue(next);
+    if (!moved) setMoved(true);
+  };
 
   return (
     <section
@@ -77,7 +86,7 @@ export function RevenueConfigurator() {
             marginBottom: "1rem",
           }}
         >
-          Configure your engine
+          The number you want
         </div>
         <h2
           style={{
@@ -91,7 +100,7 @@ export function RevenueConfigurator() {
             lineHeight: 1.05,
           }}
         >
-          How much revenue do you want to see?
+          How much revenue do you want organic to deliver?
         </h2>
         <p
           style={{
@@ -109,21 +118,20 @@ export function RevenueConfigurator() {
         </p>
       </div>
 
-      {/* Slider */}
+      {/* Act 1 — the slider. No prices, no cards, no "recommended tier." */}
       <div
         style={{
           background:
             "linear-gradient(135deg, #0A0A0A 0%, #1a0606 50%, #0A0A0A 100%)",
           border: "1px solid rgba(229,62,62,0.3)",
           borderLeft: "3px solid #E53E3E",
-          padding: "clamp(1.5rem, 3vw, 2.25rem)",
+          padding: "clamp(1.75rem, 3.5vw, 2.75rem)",
           position: "relative",
           overflow: "hidden",
-          marginBottom: "2rem",
         }}
       >
-        {/* Ambient glow */}
         <div
+          aria-hidden
           style={{
             position: "absolute",
             top: 0,
@@ -145,7 +153,7 @@ export function RevenueConfigurator() {
             justifyContent: "space-between",
             flexWrap: "wrap",
             gap: "1rem",
-            marginBottom: "2rem",
+            marginBottom: "1.75rem",
           }}
         >
           <div>
@@ -165,7 +173,7 @@ export function RevenueConfigurator() {
               key={revenue}
               initial={{ scale: 0.96, opacity: 0.6 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.25 }}
+              transition={{ duration: 0.2 }}
               style={{
                 fontFamily: "'Steelfish', 'Impact', sans-serif",
                 fontSize: "clamp(2.75rem, 8vw, 4.5rem)",
@@ -190,13 +198,23 @@ export function RevenueConfigurator() {
             </motion.div>
           </div>
 
-          <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
-            <Metric label="You'd need" value={`${formatPages(pagesNeeded)} pages`} />
-            <Metric
-              label="Recommended tier"
-              value={activeTier.name}
-              accent
-            />
+          <div
+            style={{
+              fontFamily: "Helvetica Neue, sans-serif",
+              fontSize: "0.85rem",
+              color: "rgba(255,255,255,0.55)",
+              maxWidth: 280,
+              lineHeight: 1.55,
+              textAlign: "right",
+            }}
+          >
+            At this target, the math lands near{" "}
+            <strong
+              style={{ color: "#FFFFFF", fontVariantNumeric: "tabular-nums" }}
+            >
+              {formatPages(pagesNeeded)} indexed pages
+            </strong>{" "}
+            backed by validated queries.
           </div>
         </div>
 
@@ -206,7 +224,7 @@ export function RevenueConfigurator() {
           max={MAX_REVENUE}
           step={500}
           value={revenue}
-          onChange={(e) => setRevenue(parseInt(e.target.value, 10))}
+          onChange={(e) => handleSlide(parseInt(e.target.value, 10))}
           aria-label="Monthly revenue target"
           style={{ width: "100%", position: "relative" }}
         />
@@ -226,30 +244,43 @@ export function RevenueConfigurator() {
           <span>{formatMoney(MIN_REVENUE)}</span>
           <span>
             {formatMoney(MAX_REVENUE)}
-            <span style={{ color: "rgba(255,255,255,0.5)", marginLeft: 6 }}>+</span>
+            <span style={{ color: "rgba(255,255,255,0.5)", marginLeft: 6 }}>
+              +
+            </span>
           </span>
         </div>
-      </div>
 
-      {/* Tier cards */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-          gap: "1rem",
-        }}
-        className="olg-tier-grid"
-      >
-        {PRICING_TIERS.map((tier, i) => (
-          <TierCard
-            key={tier.id}
-            tier={tier}
-            isActive={tier.id === activeTier.id}
-            delay={0.1 + i * 0.06}
-            inView={inView}
-            onBook={() => setCalendlyOpen(true)}
-          />
-        ))}
+        {/* Act 2 — the Hold. Fades in only once the user has engaged with the slider. */}
+        <AnimatePresence>
+          {moved && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              style={{
+                marginTop: "2.25rem",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "0.75rem",
+                position: "relative",
+              }}
+            >
+              <LockButton onClick={() => setRevealOpen(true)} />
+              <div
+                style={{
+                  fontFamily: "Helvetica Neue, sans-serif",
+                  fontSize: "0.8rem",
+                  color: "rgba(255,255,255,0.55)",
+                  letterSpacing: "0.04em",
+                }}
+              >
+                See what it takes to hit this number.
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <p
@@ -266,22 +297,29 @@ export function RevenueConfigurator() {
         retainer). Custom projects scope in consultation.
       </p>
 
+      {/* Act 3 — the Reveal. Modal only — doesn't live inline on the page. */}
+      <RevealModal
+        open={revealOpen}
+        onClose={() => setRevealOpen(false)}
+        revenue={revenue}
+        pagesNeeded={pagesNeeded}
+        tier={activeTier}
+        quarterEnd={quarterEnd}
+        onSchedule={() => {
+          setRevealOpen(false);
+          setCalendlyOpen(true);
+        }}
+        onEmailCaptured={(email) => setEmailSent(email)}
+        emailSent={emailSent}
+        inView={inView}
+      />
+
       <CalendlyModal
         isOpen={calendlyOpen}
         onClose={() => setCalendlyOpen(false)}
       />
 
       <style>{`
-        @media (max-width: 880px) {
-          .olg-tier-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-          }
-        }
-        @media (max-width: 480px) {
-          .olg-tier-grid {
-            grid-template-columns: 1fr !important;
-          }
-        }
         input[type="range"] {
           -webkit-appearance: none;
           appearance: none;
@@ -312,12 +350,529 @@ export function RevenueConfigurator() {
           box-shadow: 0 0 20px rgba(229,62,62,0.6), 0 4px 12px rgba(0,0,0,0.3);
           cursor: grab;
         }
+        @keyframes lock-halo {
+          0% { transform: scale(1); opacity: 0.65; }
+          100% { transform: scale(1.35); opacity: 0; }
+        }
       `}</style>
     </section>
   );
 }
 
-function Metric({
+function LockButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        position: "relative",
+        fontFamily: "'Steelfish', 'Impact', sans-serif",
+        fontSize: "1.05rem",
+        letterSpacing: "0.18em",
+        textTransform: "uppercase",
+        padding: "1rem 2.25rem",
+        background:
+          "linear-gradient(135deg, #E53E3E 0%, #C42828 50%, #E53E3E 100%)",
+        color: "#FFFFFF",
+        border: "1px solid rgba(229,62,62,0.8)",
+        cursor: "pointer",
+        boxShadow:
+          "0 8px 28px rgba(229,62,62,0.5), 0 0 0 1px rgba(255,255,255,0.06), inset 0 0 24px rgba(255,255,255,0.08)",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "0.65rem",
+      }}
+    >
+      <span
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: -6,
+          borderRadius: 2,
+          border: "2px solid rgba(229,62,62,0.6)",
+          animation: "lock-halo 1.8s ease-out infinite",
+          pointerEvents: "none",
+        }}
+      />
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+      Lock this in
+    </button>
+  );
+}
+
+interface RevealModalProps {
+  open: boolean;
+  onClose: () => void;
+  revenue: number;
+  pagesNeeded: number;
+  tier: PricingTier;
+  quarterEnd: string | null;
+  onSchedule: () => void;
+  onEmailCaptured: (email: string) => void;
+  emailSent: string | null;
+  inView: boolean;
+}
+
+function RevealModal({
+  open,
+  onClose,
+  revenue,
+  pagesNeeded,
+  tier,
+  quarterEnd,
+  onSchedule,
+  onEmailCaptured,
+  emailSent,
+}: RevealModalProps) {
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open, onClose]);
+
+  const handleEmailSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmailError(null);
+    const trimmed = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setEmailError("That doesn't look like a valid email.");
+      return;
+    }
+    onEmailCaptured(trimmed);
+  };
+
+  const deploymentWindow =
+    tier.pages >= 10000
+      ? "8 to 12 weeks"
+      : tier.pages >= 5000
+        ? "6 to 8 weeks"
+        : tier.pages >= 2500
+          ? "5 to 6 weeks"
+          : "4 weeks";
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Your plan"
+          onClick={onClose}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 99999,
+            background: "rgba(0,0,0,0.72)",
+            backdropFilter: "blur(8px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1.5rem",
+            overflowY: "auto",
+          }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.98 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: "relative",
+              background: "#FAF9F6",
+              border: "1px solid rgba(0,0,0,0.1)",
+              borderLeft: "3px solid #E53E3E",
+              maxWidth: 720,
+              width: "100%",
+              maxHeight: "calc(100vh - 3rem)",
+              overflow: "hidden auto",
+              boxShadow:
+                "0 32px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(229,62,62,0.1)",
+            }}
+          >
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                width: 30,
+                height: 30,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "transparent",
+                border: "1px solid rgba(0,0,0,0.1)",
+                color: "rgba(0,0,0,0.55)",
+                cursor: "pointer",
+                fontSize: "12px",
+                zIndex: 2,
+              }}
+            >
+              ✕
+            </button>
+
+            <div
+              style={{
+                padding: "2rem clamp(1.5rem, 3vw, 2.25rem) 0",
+              }}
+            >
+              <div
+                style={{
+                  display: "inline-block",
+                  fontFamily: "Helvetica Neue, sans-serif",
+                  fontSize: 10,
+                  letterSpacing: "0.25em",
+                  textTransform: "uppercase",
+                  color: "#E53E3E",
+                  borderBottom: "1px solid rgba(229,62,62,0.3)",
+                  paddingBottom: "4px",
+                  marginBottom: "0.85rem",
+                }}
+              >
+                Locked ·{" "}
+                <span style={{ color: "rgba(0,0,0,0.55)" }}>
+                  {formatMoney(revenue)}/mo target
+                </span>
+              </div>
+              <h3
+                style={{
+                  fontFamily: "var(--font-heading)",
+                  fontSize: "clamp(1.5rem, 3.5vw, 2rem)",
+                  fontWeight: 400,
+                  letterSpacing: "0.04em",
+                  textTransform: "uppercase",
+                  color: "#111",
+                  margin: "0 0 0.5rem",
+                  lineHeight: 1.1,
+                }}
+              >
+                To hit {formatMoney(revenue)}/mo, here is what we build for you.
+              </h3>
+              <p
+                style={{
+                  fontFamily: "Helvetica Neue, sans-serif",
+                  fontSize: "0.95rem",
+                  color: "rgba(0,0,0,0.6)",
+                  margin: 0,
+                  lineHeight: 1.65,
+                }}
+              >
+                The{" "}
+                <strong style={{ color: "#111" }}>{tier.name}</strong>{" "}
+                deployment: {formatPages(tier.pages)} indexed pages, built and
+                shipped over {deploymentWindow}. Architecture matched to
+                validated buyer-intent queries in your category.
+              </p>
+            </div>
+
+            <div
+              style={{
+                margin: "1.5rem clamp(1.5rem, 3vw, 2.25rem)",
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+                gap: "0.75rem",
+              }}
+            >
+              <StatTile
+                label="Named tier"
+                value={tier.name}
+                accent
+              />
+              <StatTile
+                label="Pages"
+                value={formatPages(tier.pages)}
+              />
+              <StatTile
+                label="Deployment"
+                value={deploymentWindow}
+              />
+              <StatTile
+                label="Target pages at your goal"
+                value={formatPages(pagesNeeded)}
+              />
+            </div>
+
+            <div
+              style={{
+                margin: "0 clamp(1.5rem, 3vw, 2.25rem) 1.5rem",
+                padding: "1.1rem 1.25rem",
+                background: "#FFFFFF",
+                border: "1px solid rgba(0,0,0,0.08)",
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "Helvetica Neue, sans-serif",
+                  fontSize: 9,
+                  letterSpacing: "0.22em",
+                  textTransform: "uppercase",
+                  color: "rgba(0,0,0,0.45)",
+                  marginBottom: "0.65rem",
+                }}
+              >
+                What&apos;s included
+              </div>
+              <ul
+                style={{
+                  margin: 0,
+                  padding: 0,
+                  listStyle: "none",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.4rem",
+                }}
+              >
+                {tier.inclusions.map((item) => (
+                  <li
+                    key={item}
+                    style={{
+                      fontFamily: "Helvetica Neue, sans-serif",
+                      fontSize: "0.88rem",
+                      color: "rgba(0,0,0,0.7)",
+                      lineHeight: 1.55,
+                      display: "flex",
+                      gap: "0.5rem",
+                    }}
+                  >
+                    <span
+                      aria-hidden
+                      style={{
+                        color: "#E53E3E",
+                        fontFamily: "'Steelfish', 'Impact', sans-serif",
+                        flexShrink: 0,
+                      }}
+                    >
+                      +
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div
+              style={{
+                margin: "0 clamp(1.5rem, 3vw, 2.25rem) 1.5rem",
+                padding: "1rem 1.25rem",
+                background:
+                  "linear-gradient(135deg, rgba(229,62,62,0.06), rgba(229,62,62,0.02))",
+                border: "1px solid rgba(229,62,62,0.25)",
+                borderLeft: "2px solid #E53E3E",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "0.75rem",
+              }}
+            >
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: "#E53E3E",
+                  marginTop: 8,
+                  flexShrink: 0,
+                  boxShadow: "0 0 8px rgba(229,62,62,0.7)",
+                }}
+              />
+              <div>
+                <div
+                  style={{
+                    fontFamily: "Helvetica Neue, sans-serif",
+                    fontSize: 9,
+                    letterSpacing: "0.22em",
+                    textTransform: "uppercase",
+                    color: "#E53E3E",
+                    marginBottom: "0.3rem",
+                  }}
+                >
+                  Current pricing holds through
+                </div>
+                <div
+                  style={{
+                    fontFamily: "Helvetica Neue, sans-serif",
+                    fontSize: "0.88rem",
+                    color: "rgba(0,0,0,0.7)",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  Scopes opened before{" "}
+                  <strong style={{ color: "#111" }}>
+                    {quarterEnd ?? "the end of this quarter"}
+                  </strong>{" "}
+                  lock in today&apos;s rates. We adjust pricing quarterly as
+                  our deployment capacity fills up, not through fake countdown
+                  timers.
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                padding: "0 clamp(1.5rem, 3vw, 2.25rem) 2rem",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.85rem",
+              }}
+            >
+              <button
+                onClick={onSchedule}
+                style={{
+                  fontFamily: "'Steelfish', 'Impact', sans-serif",
+                  fontSize: "1rem",
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  padding: "1rem 1.5rem",
+                  background: "#E53E3E",
+                  color: "#FFFFFF",
+                  border: "none",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.5rem",
+                  boxShadow: "0 6px 20px rgba(229,62,62,0.4)",
+                }}
+              >
+                Schedule now
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </button>
+
+              {emailSent ? (
+                <div
+                  style={{
+                    background: "#FFFFFF",
+                    border: "1px solid rgba(0,0,0,0.08)",
+                    borderLeft: "2px solid #E53E3E",
+                    padding: "0.85rem 1rem",
+                    fontFamily: "Helvetica Neue, sans-serif",
+                    fontSize: "0.88rem",
+                    color: "rgba(0,0,0,0.7)",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  The plan is on its way to{" "}
+                  <strong style={{ color: "#111" }}>{emailSent}</strong>.
+                  We&apos;ll send the scoped outline plus a booking link in
+                  case you want to walk it through live.
+                </div>
+              ) : (
+                <form
+                  onSubmit={handleEmailSubmit}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.35rem",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "0.4rem",
+                      background: "#FFFFFF",
+                      border: "1px solid rgba(0,0,0,0.1)",
+                      padding: "0.3rem",
+                    }}
+                  >
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@yourbusiness.com"
+                      aria-label="Email the plan to"
+                      autoComplete="email"
+                      style={{
+                        flex: 1,
+                        padding: "0.65rem 0.7rem",
+                        fontFamily: "Helvetica Neue, sans-serif",
+                        fontSize: "0.9rem",
+                        border: "none",
+                        outline: "none",
+                        background: "transparent",
+                        color: "#111",
+                      }}
+                    />
+                    <button
+                      type="submit"
+                      style={{
+                        fontFamily: "'Steelfish', 'Impact', sans-serif",
+                        fontSize: "11px",
+                        letterSpacing: "0.14em",
+                        textTransform: "uppercase",
+                        padding: "0 1rem",
+                        background: "transparent",
+                        color: "#111",
+                        border: "1px solid rgba(229,62,62,0.4)",
+                        cursor: "pointer",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      Email me the plan
+                    </button>
+                  </div>
+                  {emailError && (
+                    <p
+                      style={{
+                        fontFamily: "Helvetica Neue, sans-serif",
+                        fontSize: "0.78rem",
+                        color: "#C42828",
+                        margin: 0,
+                      }}
+                    >
+                      {emailError}
+                    </p>
+                  )}
+                </form>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function StatTile({
   label,
   value,
   accent,
@@ -327,294 +882,41 @@ function Metric({
   accent?: boolean;
 }) {
   return (
-    <div style={{ textAlign: "right" }}>
+    <div
+      style={{
+        background: "#FFFFFF",
+        border: "1px solid rgba(0,0,0,0.08)",
+        borderTop: accent ? "2px solid #E53E3E" : "1px solid rgba(0,0,0,0.08)",
+        padding: "0.75rem 0.9rem",
+      }}
+    >
       <div
         style={{
           fontFamily: "Helvetica Neue, sans-serif",
-          fontSize: 10,
-          letterSpacing: "0.22em",
+          fontSize: 9,
+          letterSpacing: "0.18em",
           textTransform: "uppercase",
-          color: "rgba(255,255,255,0.45)",
-          marginBottom: "0.3rem",
+          color: "rgba(0,0,0,0.45)",
+          marginBottom: "0.35rem",
         }}
       >
         {label}
       </div>
-      <motion.div
-        key={value}
-        initial={{ opacity: 0.6, y: -4 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25 }}
+      <div
         style={{
           fontFamily: "'Steelfish', 'Impact', sans-serif",
-          fontSize: "clamp(1.4rem, 3vw, 1.85rem)",
-          color: accent ? "#E53E3E" : "#FFFFFF",
-          lineHeight: 1,
-          letterSpacing: "0.04em",
+          fontSize: "1.35rem",
+          color: accent ? "#E53E3E" : "#111",
+          lineHeight: 1.05,
+          letterSpacing: "0.02em",
         }}
       >
         {value}
-      </motion.div>
+      </div>
     </div>
   );
 }
 
-function TierCard({
-  tier,
-  isActive,
-  delay,
-  inView,
-  onBook,
-}: {
-  tier: PricingTier;
-  isActive: boolean;
-  delay: number;
-  inView: boolean;
-  onBook: () => void;
-}) {
-  return (
-    <motion.div
-      id={`tier-${tier.id}`}
-      initial={{ opacity: 0, y: 18 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.45, delay, ease: [0.16, 1, 0.3, 1] }}
-      style={{
-        position: "relative",
-        background: isActive
-          ? "linear-gradient(135deg, rgba(229,62,62,0.06), rgba(229,62,62,0.02)) #FAF9F6"
-          : "#FAF9F6",
-        border: isActive
-          ? "1px solid rgba(229,62,62,0.5)"
-          : "1px solid rgba(0,0,0,0.08)",
-        borderLeft: "3px solid #E53E3E",
-        boxShadow: isActive
-          ? "0 16px 50px rgba(229,62,62,0.18), inset 0 0 80px rgba(229,62,62,0.04), 0 0 0 1px rgba(229,62,62,0.2)"
-          : "0 2px 8px rgba(0,0,0,0.04)",
-        padding: "1.25rem 1.25rem 1.1rem",
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.6rem",
-        overflow: "hidden",
-        transform: isActive ? "translateY(-4px)" : "none",
-        transition: "box-shadow 0.35s, transform 0.35s, border-color 0.35s",
-      }}
-    >
-      {/* Active glow */}
-      {isActive && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0.25, 0.5, 0.25] }}
-          transition={{
-            duration: 2.4,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          style={{
-            position: "absolute",
-            top: -40,
-            left: -40,
-            right: -40,
-            bottom: -40,
-            background:
-              "radial-gradient(circle, rgba(229,62,62,0.18), transparent 60%)",
-            filter: "blur(30px)",
-            pointerEvents: "none",
-          }}
-        />
-      )}
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          position: "relative",
-        }}
-      >
-        <span
-          style={{
-            fontFamily: "Helvetica Neue, sans-serif",
-            fontSize: 9,
-            letterSpacing: "0.22em",
-            textTransform: "uppercase",
-            color: "#E53E3E",
-            background: "rgba(229,62,62,0.08)",
-            padding: "2px 8px",
-            border: "1px solid rgba(229,62,62,0.3)",
-          }}
-        >
-          {tier.pill}
-        </span>
-        {isActive && (
-          <motion.span
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.2 }}
-            style={{
-              fontFamily: "Helvetica Neue, sans-serif",
-              fontSize: 8,
-              letterSpacing: "0.24em",
-              textTransform: "uppercase",
-              color: "#E53E3E",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-            }}
-          >
-            <span
-              style={{
-                width: 5,
-                height: 5,
-                borderRadius: "50%",
-                background: "#E53E3E",
-                display: "inline-block",
-                boxShadow: "0 0 8px rgba(229,62,62,0.8)",
-              }}
-            />
-            Match
-          </motion.span>
-        )}
-      </div>
-
-      <h3
-        style={{
-          fontFamily: "'Steelfish', 'Impact', sans-serif",
-          fontSize: "1.25rem",
-          letterSpacing: "0.06em",
-          textTransform: "uppercase",
-          color: "#111",
-          margin: "0.25rem 0 0",
-          lineHeight: 1.1,
-          position: "relative",
-        }}
-      >
-        {tier.name}
-      </h3>
-      <div
-        style={{
-          fontFamily: "Helvetica Neue, sans-serif",
-          fontSize: "0.78rem",
-          color: "rgba(0,0,0,0.5)",
-          fontStyle: "italic",
-          position: "relative",
-        }}
-      >
-        {tier.tagline}
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          gap: "0.4rem",
-          position: "relative",
-          marginTop: "0.25rem",
-        }}
-      >
-        <span
-          style={{
-            fontFamily: "'Steelfish', 'Impact', sans-serif",
-            fontSize: "2rem",
-            color: "#E53E3E",
-            lineHeight: 1,
-            letterSpacing: "0.02em",
-          }}
-        >
-          {tier.price}
-        </span>
-        <span
-          style={{
-            fontFamily: "Helvetica Neue, sans-serif",
-            fontSize: "0.75rem",
-            color: "rgba(0,0,0,0.45)",
-          }}
-        >
-          {tier.cadence}
-        </span>
-      </div>
-
-      <div
-        style={{
-          fontFamily: "Helvetica Neue, sans-serif",
-          fontSize: "0.75rem",
-          color: "rgba(0,0,0,0.55)",
-          position: "relative",
-        }}
-      >
-        Retainer: <strong style={{ color: "#111" }}>{tier.retainer}</strong>
-      </div>
-
-      <p
-        style={{
-          fontFamily: "Helvetica Neue, sans-serif",
-          fontSize: "0.82rem",
-          color: "rgba(0,0,0,0.6)",
-          lineHeight: 1.55,
-          margin: "0.5rem 0 0.5rem",
-          flex: 1,
-          position: "relative",
-        }}
-      >
-        {tier.description}
-      </p>
-
-      {tier.note && (
-        <div
-          style={{
-            fontFamily: "Helvetica Neue, sans-serif",
-            fontSize: "0.72rem",
-            color: "#E53E3E",
-            fontStyle: "italic",
-            position: "relative",
-          }}
-        >
-          {tier.note}
-        </div>
-      )}
-
-      <button
-        onClick={onBook}
-        style={{
-          marginTop: "0.5rem",
-          fontFamily: "'Steelfish', 'Impact', sans-serif",
-          fontSize: "12px",
-          letterSpacing: "0.14em",
-          textTransform: "uppercase",
-          padding: "0.75rem 1rem",
-          background: isActive ? "#E53E3E" : "transparent",
-          color: isActive ? "#FFFFFF" : "#111",
-          border: isActive
-            ? "1px solid #E53E3E"
-            : "1px solid rgba(229,62,62,0.4)",
-          borderLeft: "3px solid #E53E3E",
-          cursor: "pointer",
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "0.4rem",
-          boxShadow: isActive
-            ? "0 6px 20px rgba(229,62,62,0.4)"
-            : "inset 0 0 30px rgba(229,62,62,0.08)",
-          transition: "all 0.25s",
-          width: "100%",
-          position: "relative",
-        }}
-      >
-        {isActive ? "Book this" : "Talk about it"}
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <line x1="5" y1="12" x2="19" y2="12" />
-          <polyline points="12 5 19 12 12 19" />
-        </svg>
-      </button>
-    </motion.div>
-  );
-}
+// Keep PRICING_TIERS import alive even though we no longer render tier cards
+// inline — the reveal modal still references tier.inclusions.
+void PRICING_TIERS;

@@ -187,16 +187,69 @@ export function CaseStudyGSCHero({
           <HeroStat label="Timeframe" value={meta.timeframeLabel} />
         </div>
 
-        {/* The graph itself */}
+        {/* The graph framed as a browser chrome screenshot */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+          style={{
+            background: "rgba(255,255,255,0.02)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(229,62,62,0.06)",
+            overflow: "hidden",
+          }}
         >
-          <GrowthGraph dataPoints={dataPoints} domain={domainFromName(meta.name)} height={460} />
+          <BrowserChromeBar domain={`search.google.com/search-console · ${domainFromName(meta.name)}`} />
+          <div style={{ background: "#FFFFFF", padding: "1.25rem 1.25rem 0.5rem" }}>
+            <GrowthGraph dataPoints={dataPoints} domain={domainFromName(meta.name)} height={460} />
+          </div>
         </motion.div>
       </div>
     </section>
+  );
+}
+
+function BrowserChromeBar({ domain }: { domain: string }) {
+  return (
+    <div
+      aria-hidden
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "0.75rem",
+        padding: "0.55rem 0.85rem",
+        background: "linear-gradient(180deg, #1C1C1C 0%, #121212 100%)",
+        borderBottom: "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      <div style={{ display: "flex", gap: 6 }}>
+        <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#FF5F57", display: "inline-block" }} />
+        <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#FEBC2E", display: "inline-block" }} />
+        <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#28C840", display: "inline-block" }} />
+      </div>
+      <div
+        style={{
+          flex: 1,
+          background: "rgba(255,255,255,0.06)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: 3,
+          padding: "4px 10px",
+          fontFamily: "'Courier New', monospace",
+          fontSize: 10.5,
+          color: "rgba(255,255,255,0.55)",
+          letterSpacing: "0.02em",
+          overflow: "hidden",
+          whiteSpace: "nowrap",
+          textOverflow: "ellipsis",
+        }}
+      >
+        <span style={{ color: "#4ade80", marginRight: 6 }}>https://</span>
+        {domain}
+      </div>
+      <div style={{ fontFamily: "Helvetica Neue, sans-serif", fontSize: 9, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(229,62,62,0.8)" }}>
+        GSC
+      </div>
+    </div>
   );
 }
 
