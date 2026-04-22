@@ -112,9 +112,9 @@ export function RevenueConfigurator() {
             lineHeight: 1.65,
           }}
         >
-          Pick a number. We&apos;ll show you the page architecture that
-          supports it. No tiers, no pricing, no fine print until you decide
-          you want the plan.
+          Drag the slider. We&apos;ll show you the page architecture that
+          produces it - and the package it maps to. Same numbers we used to
+          get NMHL from 79 to 7,300 daily impressions.
         </p>
       </div>
 

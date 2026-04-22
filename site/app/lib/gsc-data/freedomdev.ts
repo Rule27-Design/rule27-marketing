@@ -2,7 +2,7 @@ import type { CompanyGSCData } from "./types";
 import { COMPANY_META } from "./companies";
 
 /**
- * FreedomDev GSC data — real export from Google Search Console.
+ * FreedomDev GSC data - real export from Google Search Console.
  * 365 days: 2025-03-20 → 2026-03-19
  * Growth: 39 → 3876 impressions/day (99.4x)
  */

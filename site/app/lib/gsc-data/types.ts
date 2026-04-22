@@ -1,4 +1,4 @@
-/** Raw GSC data point — one row from a CSV export */
+/** Raw GSC data point - one row from a CSV export */
 export interface GSCDataPoint {
   date: string;           // "2025-09-20" (ISO date from GSC)
   impressions: number;
@@ -38,7 +38,7 @@ export interface CompanyMeta {
   heroPosition: { x: string; y: string; rotate: number };
 }
 
-/** Full company data — metadata + summary + time-series */
+/** Full company data - metadata + summary + time-series */
 export interface CompanyGSCData {
   meta: CompanyMeta;
   summary: CompanySummary;

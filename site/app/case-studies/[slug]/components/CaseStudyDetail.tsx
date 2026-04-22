@@ -183,7 +183,7 @@ export default function CaseStudyDetail({
   return (
     <div className="min-h-screen" style={{ background: "#FCFCFB" }}>
       {/* ================================================================== */}
-      {/* HERO — GSC graph variant OR image gallery                          */}
+      {/* HERO - GSC graph variant OR image gallery                          */}
       {/* ================================================================== */}
       {useGscHero ? (
         <CaseStudyGSCHero

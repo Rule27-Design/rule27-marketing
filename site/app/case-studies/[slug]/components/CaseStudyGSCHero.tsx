@@ -19,7 +19,7 @@ function formatNum(n: number): string {
 }
 
 /**
- * Hero block for OLG case studies — renders the client's actual GSC graph
+ * Hero block for OLG case studies - renders the client's actual GSC graph
  * (sourced from /lib/gsc-data/) as the primary visual instead of a
  * marketing screenshot. When `custom_fields.gsc_slug` is set on the
  * case_studies row, CaseStudyDetail uses this in place of the image gallery.
@@ -33,7 +33,7 @@ export function CaseStudyGSCHero({
 }: CaseStudyGSCHeroProps) {
   const data = getCompanyData(gscSlug);
 
-  // No data yet (e.g., pending engagement) — render an atmospheric "engagement
+  // No data yet (e.g., pending engagement) - render an atmospheric "engagement
   // in progress" panel instead of the graph.
   if (!data || !data.meta.hasData || data.dataPoints.length < 2) {
     return <PendingHero title={title} client={client} industry={industry} serviceType={serviceType} />;
@@ -183,7 +183,7 @@ export function CaseStudyGSCHero({
         >
           <HeroStat label="Daily impressions" value={`${formatNum(summary.startImpressions)} → ${formatNum(summary.endImpressions)}`} accent />
           <HeroStat label="Growth multiplier" value={`${summary.growthMultiplier.toFixed(summary.growthMultiplier < 10 ? 1 : 0)}×`} accent />
-          <HeroStat label="Pages deployed" value={summary.pagesDeployed > 0 ? `${formatNum(summary.pagesDeployed)}+` : "—"} />
+          <HeroStat label="Pages deployed" value={summary.pagesDeployed > 0 ? `${formatNum(summary.pagesDeployed)}+` : "-"} />
           <HeroStat label="Timeframe" value={meta.timeframeLabel} />
         </div>
 
@@ -342,7 +342,7 @@ function PendingHero({
             lineHeight: 1.6,
           }}
         >
-          {client} — {industry} · {serviceType}. The full results case study
+          {client} - {industry} · {serviceType}. The full results case study
           publishes once GSC data crosses our publication threshold.
         </p>
       </div>

@@ -191,7 +191,7 @@ export function GrowthGraph({
           }}
         >
           <span style={{ color: "#4285F4", fontWeight: 600 }}>Google</span>{" "}
-          Search Console — Performance
+          Search Console - Performance
           <span
             style={{
               marginLeft: 12,
@@ -223,7 +223,7 @@ export function GrowthGraph({
           value={
             firstDate && lastDate
               ? `${formatDate(firstDate)} – ${formatDate(lastDate)}`
-              : "—"
+              : "-"
           }
         />
         <ToolbarPill label="Metric" value="Total impressions" accent />

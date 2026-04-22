@@ -1,5 +1,5 @@
 /**
- * Magnet report payload shape — mirrors
+ * Magnet report payload shape - mirrors
  * Command-Center/services/oranic-lead-gen/magnet-reports/data/schema.json
  *
  * When an inbound UTM lead matches a record in our magnet pipeline, we pull
@@ -59,7 +59,7 @@ export interface MagnetReport {
   keywordGapCount: number;
 }
 
-/** Sample payload for dev — real Allied Gases & Welding Supplies data,
+/** Sample payload for dev - real Allied Gases & Welding Supplies data,
  *  abbreviated. Used when `?demo_magnet=1` or during local preview. */
 export const SAMPLE_MAGNET: MagnetReport = {
   companyName: "Allied Gases & Welding Supplies",

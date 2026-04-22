@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 };
 
 export default async function OrganicLeadGrowthPage() {
-  // Partial templating — base + conversional page stays intentional,
+  // Partial templating - base + conversional page stays intentional,
   // but we pull real linked resources (lead magnet URL, case studies,
   // articles) from Supabase when available. Falls back gracefully.
   let supabaseData: OLGSupabaseProps = {};

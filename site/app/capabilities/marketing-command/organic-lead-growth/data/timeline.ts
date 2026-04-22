@@ -95,7 +95,7 @@ export const PHASES: Phase[] = [
     name: "SERP Validation",
     duration: "3-5 days",
     description:
-      "Query prioritization (P0/P1/P2), top-10 SERP analysis per query, content skeletons, validated CSV. THE GATE — we sign off before any deployment.",
+      "Query prioritization (P0/P1/P2), top-10 SERP analysis per query, content skeletons, validated CSV. THE GATE - we sign off before any deployment.",
     isGate: true,
   },
   {

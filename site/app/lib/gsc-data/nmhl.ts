@@ -2,7 +2,7 @@ import type { CompanyGSCData } from "./types";
 import { COMPANY_META } from "./companies";
 
 /**
- * NMHL GSC data — real export from Google Search Console.
+ * NMHL GSC data - real export from Google Search Console.
  * 225 days: 2025-08-06 → 2026-03-19
  * Growth: 79 → 7289 impressions/day (92.3x)
  */

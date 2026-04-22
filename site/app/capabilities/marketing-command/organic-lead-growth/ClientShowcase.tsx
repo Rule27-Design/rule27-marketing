@@ -13,7 +13,7 @@ interface ClientShowcaseProps {
 }
 
 function deriveDomain(meta: ClientEntry["data"]["meta"]): string {
-  // meta.name may be "NMHL" or "SolomonSignal.com" — derive a sensible domain string
+  // meta.name may be "NMHL" or "SolomonSignal.com" - derive a sensible domain string
   const n = meta.name.toLowerCase();
   if (n.includes(".")) return n;
   return `${n}.com`;
@@ -203,7 +203,7 @@ export function ClientShowcase({ clients }: ClientShowcaseProps) {
             >
               <ShowcaseStat
                 label="Pages deployed"
-                value={summary.pagesDeployed > 0 ? `${summary.pagesDeployed.toLocaleString()}+` : "—"}
+                value={summary.pagesDeployed > 0 ? `${summary.pagesDeployed.toLocaleString()}+` : "-"}
                 tooltip={TOOLTIPS.pages_indexed}
               />
               <ShowcaseStat

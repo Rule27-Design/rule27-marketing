@@ -1,17 +1,17 @@
 -- ============================================================================
--- MIGRATION 003: CMS scaffold — collections + collection_items
+-- MIGRATION 003: CMS scaffold - collections + collection_items
 -- ----------------------------------------------------------------------------
 -- Future-proof CMS layer. Today, content lives in dedicated tables (case_studies,
 -- articles, services, testimonials). This scaffold sets up a generic
--- collection / collection_items pattern so we can migrate incrementally —
--- one collection at a time — without disrupting existing fetchers.
+-- collection / collection_items pattern so we can migrate incrementally -
+-- one collection at a time - without disrupting existing fetchers.
 --
 -- This migration is ADDITIVE ONLY. It does not move any data. The dedicated
 -- tables stay live and authoritative until a future migration explicitly
 -- ports them.
 -- ============================================================================
 
--- 1. Collections — metadata about each content type
+-- 1. Collections - metadata about each content type
 CREATE TABLE IF NOT EXISTS public.cms_collections (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   slug            text UNIQUE NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS public.cms_collections (
   updated_at      timestamptz DEFAULT now()
 );
 
--- 2. Collection items — polymorphic content rows
+-- 2. Collection items - polymorphic content rows
 CREATE TABLE IF NOT EXISTS public.cms_collection_items (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   collection_id   uuid NOT NULL REFERENCES public.cms_collections(id) ON DELETE CASCADE,

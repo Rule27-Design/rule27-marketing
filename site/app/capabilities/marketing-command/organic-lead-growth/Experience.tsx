@@ -47,7 +47,7 @@ import {
 
 /**
  * Supabase-sourced data passed in from the server component. All fields
- * optional — the page falls back to static defaults when Supabase isn't
+ * optional - the page falls back to static defaults when Supabase isn't
  * populated (or when the row doesn't exist yet).
  */
 export interface OLGSupabaseProps {
@@ -71,7 +71,7 @@ export interface OLGSupabaseProps {
   }>;
 }
 
-/** Magnet pipeline count — stub value (manifest currently has 44 real leads +
+/** Magnet pipeline count - stub value (manifest currently has 44 real leads +
  *  Odoo has ~22k magnet-eligible leads in the outreach pipeline). When the
  *  Odoo endpoint is wired, replace with a live fetch. */
 const MAGNET_PIPELINE_COUNT = 22000;
@@ -156,14 +156,14 @@ function ExperienceInner({ supabase }: { supabase: OLGSupabaseProps }) {
     const resolved = stored ?? (fromUtm && fromUtm in resolveIndustryMap() ? fromUtm : null);
 
     if (resolved) {
-      // UTM or stored — skip modal entirely, just apply the industry.
+      // UTM or stored - skip modal entirely, just apply the industry.
       setIndustrySlug(resolved);
     } else {
       setModalOpen(true);
     }
 
     // Magnet lookup: if the UTM carries a lead_id or a domain matching our
-    // magnet library, surface their specific data. Today this is a stub —
+    // magnet library, surface their specific data. Today this is a stub -
     // we recognize `demo_magnet=1` or `lead_id=allied-gases-welding-supplies`
     // and return the sample payload. When Odoo is wired, replace with fetch.
     const demoMagnet = searchParams.get("demo_magnet");
@@ -274,17 +274,7 @@ function ExperienceInner({ supabase }: { supabase: OLGSupabaseProps }) {
       {/* Video - env-gated placeholder, hidden in prod */}
       <VideoSection industryDisplay={industry.displayName} />
 
-      {/* Time Machine — real SolomonSignal curve replayed day-by-day. First
-          real-data moment the visitor can touch. */}
-      <TimeMachine
-        onCaptureClick={() => track("time_machine_capture_clicked", {})}
-        onDomainSubmit={(d) => {
-          handleDomainSubmit(d);
-          track("time_machine_domain_submitted", { domain: d });
-        }}
-      />
-
-      {/* Social proof counter — rendered only for anon (no magnet match).
+      {/* Social proof counter - rendered only for anon (no magnet match).
           Magnet-matched visitors already see their own live data in Beat 3,
           which is stronger than abstract pipeline-scale signal. */}
       {!magnet && (
@@ -417,7 +407,7 @@ function ExperienceInner({ supabase }: { supabase: OLGSupabaseProps }) {
           variant="calendly"
           eyebrow="Book the walkthrough"
           title="Want us to walk you through the 4 weeks live?"
-          description="15 minutes. We'll show you exactly what week 1 looks like for your industry, what we'll need from you, and what your week-4 dashboard will look like. No pitch — just the plan."
+          description="15 minutes. We'll show you exactly what week 1 looks like for your industry, what we'll need from you, and what your week-4 dashboard will look like. No pitch - just the plan."
           ctaLabel="Book 15 min"
         />
       </section>
@@ -446,7 +436,7 @@ function ExperienceInner({ supabase }: { supabase: OLGSupabaseProps }) {
         onWaitlistSubmit={handleWaitlistSubmit}
       />
 
-      {/* Revenue configurator — replaces static pricing. User builds their own
+      {/* Revenue configurator - replaces static pricing. User builds their own
           engine by setting their revenue target; we highlight the matching tier. */}
       <RevenueConfigurator />
 
@@ -1593,7 +1583,7 @@ function Beat6Exit({
           </button>
         </div>
 
-        {/* Case study — live from Supabase when available, else NMHL fallback */}
+        {/* Case study - live from Supabase when available, else NMHL fallback */}
         {hasLiveCS ? (
           <Link
             href={`/case-studies/${heroCS!.slug}`}
@@ -1625,7 +1615,7 @@ function Beat6Exit({
                 marginBottom: "0.75rem",
               }}
             >
-              {heroCS!.industry ?? "Case study"} — {heroCS!.client ?? "Client"}
+              {heroCS!.industry ?? "Case study"} - {heroCS!.client ?? "Client"}
             </div>
             <h3
               style={{
@@ -1717,7 +1707,7 @@ function Beat6Exit({
               }}
             >
               NMHL deployed 7,000+ programmatic SEO pages. Daily impressions
-              grew from 79 to 7,300+ over 7 months — a 92× increase in organic
+              grew from 79 to 7,300+ over 7 months - a 92× increase in organic
               visibility, all from architecture.
             </p>
             <div
