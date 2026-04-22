@@ -135,6 +135,8 @@ export function WeeklyReportPreview() {
 
           <button
             onClick={() => setCalendlyOpen(true)}
+            data-funnel="demo-book"
+            data-funnel-source="weekly-report-preview"
             style={{
               fontFamily: "'Steelfish', 'Impact', sans-serif",
               fontSize: "13px",
