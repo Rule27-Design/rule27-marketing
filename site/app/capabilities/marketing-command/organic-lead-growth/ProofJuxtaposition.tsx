@@ -23,7 +23,7 @@ const NMHL: ProofCardData = {
   clicks: "1,180",
   ctr: "4.0%",
   ctrEmphasis: "good",
-  reason: "Phase 2 done properly. Every page targeted a validated SERP query, with content matched to actual intent.",
+  reason: "Every page targeted a real query with buyer intent, and the content matched what those searchers actually wanted.",
   takeaway:
     "Quality over quantity. 179 pages outperformed 33,332 because the architecture was correct.",
 };
@@ -36,9 +36,9 @@ const ANILTX_V1: ProofCardData = {
   clicks: "13",
   ctr: "0.16%",
   ctrEmphasis: "bad",
-  reason: "Phase 2 skipped. Template swaps. Pages ranked for queries the business couldn't actually serve.",
+  reason: "Pages were shipped without checking whether real searchers wanted them. They ranked for queries the business could not serve.",
   takeaway:
-    "32,000 more pages. 1,167 fewer clicks. The lesson: you can't volume your way past missing the gate.",
+    "32,000 more pages. 1,167 fewer clicks. The lesson: you cannot volume your way past missing the gate.",
 };
 
 export function ProofJuxtaposition() {
@@ -75,7 +75,7 @@ export function ProofJuxtaposition() {
             marginBottom: "0.75rem",
           }}
         >
-          The difference is one phase
+          One decision, two outcomes
         </div>
         <h2
           style={{
@@ -91,7 +91,7 @@ export function ProofJuxtaposition() {
             marginInline: "auto",
           }}
         >
-          Same playbook. Same agency. Two outcomes.
+          Same agency. Same playbook. One decision between them.
         </h2>
         <p
           style={{
@@ -103,8 +103,9 @@ export function ProofJuxtaposition() {
             lineHeight: 1.65,
           }}
         >
-          The only variable is whether Phase 2 (SERP validation) was done. The
-          numbers are real, pulled directly from Google Search Console.
+          The only difference: whether every page was tied to a real search a
+          buyer was actually making. Numbers below are pulled directly from
+          Google Search Console.
         </p>
       </div>
 
@@ -175,7 +176,7 @@ export function ProofJuxtaposition() {
             lineHeight: 1.3,
           }}
         >
-          Rule27 gates every engagement on Phase 2.{" "}
+          Rule27 gates every engagement on query validation.{" "}
           <span style={{ color: "#E53E3E" }}>No exceptions.</span>
         </p>
       </motion.div>
@@ -286,7 +287,7 @@ function ProofCard({
             gap: 5,
           }}
         >
-          {isWin ? "✓ Phase 2 done" : "✗ Phase 2 skipped"}
+          {isWin ? "Validated queries" : "Unvalidated rollout"}
         </span>
       </div>
 
