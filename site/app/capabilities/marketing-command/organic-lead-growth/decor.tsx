@@ -125,6 +125,31 @@ export function DotGrid({ opacity = 0.05 }: { opacity?: number }) {
 }
 
 /**
+ * ArchGridBackdrop - architectural grid overlay with crossing lines.
+ * Used as a background decoration in large hero/feature sections.
+ */
+export function ArchGridBackdrop({ opacity = 0.08 }: { opacity?: number }) {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: "absolute",
+        inset: 0,
+        opacity,
+        backgroundImage:
+          "linear-gradient(to right, rgba(229,62,62,0.4) 1px, transparent 1px), linear-gradient(to bottom, rgba(229,62,62,0.4) 1px, transparent 1px)",
+        backgroundSize: "80px 80px",
+        pointerEvents: "none",
+        maskImage:
+          "radial-gradient(ellipse at center, black 40%, transparent 80%)",
+        WebkitMaskImage:
+          "radial-gradient(ellipse at center, black 40%, transparent 80%)",
+      }}
+    />
+  );
+}
+
+/**
  * Hairline diagonal sweep - adds motion energy under headlines.
  */
 export function DiagonalSweep() {
