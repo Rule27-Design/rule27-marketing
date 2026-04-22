@@ -183,12 +183,40 @@ function ExperienceInner({ supabase }: { supabase: OLGSupabaseProps }) {
     session.interactions = [...(session.interactions ?? []), entry];
     sessionRef.current = session;
     writeSession(session);
-    if (typeof window !== "undefined") {
-      // eslint-disable-next-line no-console
-      console.log("[OLG]", event, payload ?? "");
-      const w = window as unknown as { gtag?: (...args: unknown[]) => void };
-      w.gtag?.("event", event, (payload as Record<string, unknown>) ?? {});
-    }
+    if (typeof window === "undefined") return;
+
+    // eslint-disable-next-line no-console
+    console.log("[OLG]", event, payload ?? "");
+    const w = window as unknown as { gtag?: (...args: unknown[]) => void };
+    w.gtag?.("event", event, (payload as Record<string, unknown>) ?? {});
+
+    // Fan out to n8n via /api/track. Includes the lead_id threaded through
+    // the email UTM so n8n can write back to the right Rolodoo row without
+    // a by-email lookup.
+    const utm = new URLSearchParams(window.location.search);
+    const body = {
+      event,
+      lead_id: utm.get("lead_id") ? Number(utm.get("lead_id")) : undefined,
+      session_id: session.utm_campaign ? `${session.utm_campaign}-${session.utm_content ?? ""}` : undefined,
+      utm_source: session.utm_source,
+      utm_medium: session.utm_medium,
+      utm_campaign: session.utm_campaign,
+      utm_content: session.utm_content,
+      domain: session.domain || utm.get("domain") || undefined,
+      industry: session.industry,
+      first_name: session.first_name || utm.get("first_name") || undefined,
+      company_name: session.company_name || utm.get("company_name") || undefined,
+      ts: new Date().toISOString(),
+      payload,
+    };
+    fetch("/api/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      keepalive: true,
+    }).catch(() => {
+      // Silent — fanout is best-effort, we already logged locally.
+    });
   }, []);
 
   const handleIndustrySelect = useCallback(
