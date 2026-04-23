@@ -4,6 +4,7 @@ import { steelfish } from "./fonts";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { Analytics } from "./components/Analytics";
+import { AniltX } from "./components/AniltX";
 import { BackToTop } from "./components/BackToTop";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -50,6 +51,7 @@ export default function RootLayout({
         <Footer />
         <BackToTop />
         <Analytics />
+        <AniltX />
         <SpeedInsights />
       </body>
     </html>
