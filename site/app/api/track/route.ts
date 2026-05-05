@@ -36,11 +36,18 @@ export async function POST(request: Request) {
   // Fire-and-forget to n8n — don't block the client on CRM writes.
   // If n8n is down, we still return ok so the browser doesn't retry.
   try {
+    // X-Rule27-Token authenticates against the Odoo rule27_funnel controller
+    // (set via N8N_SITE_EVENT_WEBHOOK_URL=https://crm.../rule27/webhook/site).
+    // Empty string when unset is fine — Odoo logs a warning and accepts; we
+    // never want to fail the browser-side request because of a missing env var.
+    const token = process.env.RULE27_TRACK_TOKEN ?? "";
     await fetch(N8N_WEBHOOK, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { "X-Rule27-Token": token } : {}),
+      },
       body: JSON.stringify(body),
-      // Timeout so a hung n8n can't stall the whole request.
       signal: AbortSignal.timeout(3000),
     });
   } catch {
