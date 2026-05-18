@@ -15,6 +15,11 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "assets.conversion.ai" },
     ],
   },
+  async rewrites() {
+    return [
+      { source: "/:path*.md", destination: "/md/:path*" },
+    ];
+  },
 };
 
 export default nextConfig;
